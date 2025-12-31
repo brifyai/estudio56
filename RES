@@ -1,0 +1,168 @@
+# 🎯 RESPUESTA DIRECTA: Dónde están las opciones en Supabase
+
+## 📍 UBICACIÓN EXACTA
+
+### Paso 1: Dashboard de Supabase
+```
+🌐 Ve a: https://supabase.com/dashboard
+👤 Inicia sesión
+📂 Selecciona tu proyecto
+```
+
+### Paso 2: Navegación
+```
+🔐 Authentication (en el menú lateral izquierdo)
+└── ⚙️ Settings (dentro de Authentication)
+```
+
+### Paso 3: Dentro de Settings
+
+Una vez en `Authentication > Settings`, busca estas secciones:
+
+## 🎛️ CONFIGURACIONES ESPECÍFICAS
+
+### 📍 OPCIÓN 1: En la pestaña "General"
+```
+┌─ Authentication Settings ──────────────────┐
+│ [General] [Users] [Email] [Security]      │ ← Haz clic en "General"
+│                                             │
+│ Site URL: [________________] 📝             │
+│ Redirect URLs: [________________] 📝        │
+│                                             │
+│ ☑️ Enable email confirmations ← ESTO       │
+│ ☐ Auto confirm users ← Y ESTO              │
+│                                             │
+│ [Save]                                      │
+└─────────────────────────────────────────────┘
+```
+
+### 📍 OPCIÓN 2: En la pestaña "Users"
+```
+┌─ Authentication Settings ──────────────────┐
+│ [General] [Users] [Email] [Security]      │ ← Haz clic en "Users"
+│                                             │
+│ User Registration:                          │
+│ ☑️ Enable email confirmations ← ESTO       │
+│ ☐ Auto confirm users ← Y ESTO              │
+│                                             │
+│ [Save]                                      │
+└─────────────────────────────────────────────┘
+```
+
+### 📍 OPCIÓN 3: En la pestaña "Email"
+```
+┌─ Authentication Settings ──────────────────┐
+│ [General] [Users] [Email] [Security]      │ ← Haz clic en "Email"
+│                                             │
+│ Email Confirmations:                        │
+│ ☑️ Require email confirmation ← ESTO       │
+│ ☐ Skip confirmation ← Y ESTO               │
+│                                             │
+│ [Save]                                      │
+└─────────────────────────────────────────────┘
+```
+
+## 🔍 QUÉ BUSCAR EXACTAMENTE
+
+### Para "Enable email confirmations":
+**Palabras que pueden aparecer:**
+- ✅ "Enable email confirmations"
+- ✅ "Require email verification"
+- ✅ "Email confirmations required"
+- ✅ "Email verification required"
+- ✅ "Confirm email address"
+
+### Para "Auto confirm users":
+**Palabras que pueden aparecer:**
+- ❌ "Auto confirm users"
+- ❌ "Skip email confirmation"
+- ❌ "Auto-approve users"
+- ❌ "Instant confirmation"
+- ❌ "Auto-verify email"
+
+## 📱 INTERFAZ VISUAL COMPLETA
+
+```
+┌─ Supabase Dashboard ────────────────────────────────┐
+│                                                     │
+│ ┌─ Menú Lateral ──────────────────────────────────┐ │
+│ │ 🏠 Overview                                     │ │
+│ │ 📊 Database                                     │ │
+│ │ 🔐 Authentication ← CLIC AQUÍ                   │ │
+│ │   ├─ 👥 Users                                   │ │
+│ │   ├─ 📧 Email Templates                         │ │
+│ │   ├─ 🔑 Providers                               │ │
+│ │   └─ ⚙️ Settings ← LUEGO CLIC AQUÍ             │ │
+│ │ 💳 Billing                                     │ │
+│ │ ⚙️ Settings                                     │ │
+│ └─────────────────────────────────────────────────┘ │
+│                                                     │
+│ ┌─ Authentication Settings ───────────────────────┐ │
+│ │ [General] [Users] [Email] [Security]           │ │
+│ │                                                   │ │
+│ │ Configuration:                                   │ │
+│ │ Site URL: [http://localhost:3000        ] 📝    │ │
+│ │ Redirect URLs: [http://localhost:3000/**] 📝    │ │
+│ │                                                   │ │
+│ │ User Signups:                                    │ │
+│ │ ☑️ Enable email confirmations ← ACTIVAR ✅     │ │
+│ │ ☐ Auto confirm users ← DESACTIVAR ❌           │ │
+│ │                                                   │ │
+│ │ [💾 Save Changes]                                │ │
+│ └─────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+## ⚡ RESPUESTA RÁPIDA
+
+**Si solo quieres saber dónde hacer clic:**
+
+1. **Dashboard** → `Authentication` → `Settings`
+2. **Busca la sección** "User Signups" o "User Management"
+3. **Activa** el toggle que diga "Enable email confirmations"
+4. **Desactiva** el toggle que diga "Auto confirm users"
+5. **Haz clic en "Save"**
+
+## 🆘 SI NO LAS ENCUENTRAS
+
+### Posibles ubicaciones alternativas:
+
+**Opción A:**
+```
+Authentication > Settings > User Management
+├── ☑️ Email confirmations required
+└── ☐ Auto-approve users
+```
+
+**Opción B:**
+```
+Authentication > Settings > Security
+├── ☑️ Require email verification
+└── ☐ Auto-confirm users
+```
+
+**Opción C:**
+```
+Authentication > Settings > Registration
+├── ☑️ Email verification required
+└── ☐ Instant registration
+```
+
+## 🔍 BUSCAR CON CTRL+F
+
+**En la página de Settings, usa:**
+- `Ctrl+F` (Windows) o `Cmd+F` (Mac)
+- Busca: "email confirm"
+- Busca: "auto confirm"
+- Busca: "verification"
+
+## ✅ VERIFICACIÓN FINAL
+
+**Antes de guardar, asegúrate de ver:**
+- [x] Site URL configurado
+- [x] Redirect URLs configurado  
+- [x] Email confirmations = **ACTIVADO**
+- [x] Auto confirm = **DESACTIVADO**
+- [x] Has hecho clic en "Save"
+
+**¡Eso es todo! Después de guardar, espera 2-3 minutos y prueba registrar un usuario.**

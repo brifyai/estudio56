@@ -1,0 +1,1139 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { FlyerStyleKey, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle } from './types';
+import { FlyerForm } from './components/FlyerForm';
+import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
+import { TextEditorPanel } from './components/TextEditorPanel';
+import { PricingModal } from './components/PricingModal';
+import { StyleGallery } from './components/StyleGallery';
+import { LandingPage } from './components/LandingPage';
+import { LoginPage } from './components/LoginPage';
+import { RegisterPage } from './components/RegisterPage';
+import { AuthCallback } from './components/AuthCallback';
+import { DiagnosticPage } from './components/DiagnosticPage';
+import { ProfilePage } from './components/ProfilePage';
+import { supabase } from './services/supabaseService';
+import { enhancePrompt, generateFlyerImage, generateFlyerVideo, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
+import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
+
+// Dashboard Component
+const Dashboard: React.FC = () => {
+  const [hasKey, setHasKey] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showPricing, setShowPricing] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  
+  // User Data State
+  const [activePlan, setActivePlan] = useState<string>('GRATIS');
+  
+  // App State
+  const [styleKey, setStyleKey] = useState<FlyerStyleKey>('retail_sale');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
+  const [mediaType, setMediaType] = useState<MediaType>('image');
+  const [description, setDescription] = useState<string>('');
+  const [workMode, setWorkMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de trabajo (por defecto AUTO)
+  const [textMode, setTextMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de texto (Opción B)
+  
+  // NEW: Handler para cambio de modo de trabajo
+  const handleWorkModeChange = (mode: 'auto' | 'manual') => {
+    setWorkMode(mode);
+    // Si cambiamos a modo MANUAL, limpiar customStylePrompt
+    if (mode === 'manual' && customStylePrompt) {
+      console.log('🔄 Cambiando a modo MANUAL - limpiando análisis automático');
+      setCustomStylePrompt(undefined);
+    }
+  };
+  
+  // NEW: Handler para limpiar entrada y análisis automático
+  const handleClearInput = () => {
+    setDescription('');
+    setCustomStylePrompt(undefined);
+    setOverlayText('');
+    console.log('🧹 Entrada limpiada - análisis automático removido');
+  };
+  
+  const [imageQuality, setImageQuality] = useState<ImageQuality>('draft');
+  const [isDraft, setIsDraft] = useState(false);
+  const [seed, setSeed] = useState<number>(0);
+  const [customStylePrompt, setCustomStylePrompt] = useState<string | undefined>(undefined);
+  
+  // URLs separadas para draft y HD
+  const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
+  const [hdImageUrl, setHdImageUrl] = useState<string | null>(null);
+  
+  // NEW: Estado para el ID de generación actual
+  const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
+  const [currentGeneration, setCurrentGeneration] = useState<FlyerGeneration | null>(null);
+
+  // Estado para almacenar el estilo detectado automáticamente - DEBE ESTAR ANTES DEL USEEFFECT
+  const [detectedStyleKey, setDetectedStyleKey] = useState<FlyerStyleKey | null>(null);
+
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoColor, setLogoColor] = useState<string | null>(null);
+  const [logoFilters, setLogoFilters] = useState({
+    grayscale: 0,
+    brightness: 100,
+    contrast: 100,
+    opacity: 100,
+  });
+  const [productUrl, setProductUrl] = useState<string | null>(null);
+  const [overlayText, setOverlayText] = useState<string>('');
+  const [overlayStyle, setOverlayStyle] = useState<OverlayStyle>('modern');
+
+  const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  
+  // NEW: Estados para análisis inteligente
+  const [intelligentTextStyles, setIntelligentTextStyles] = useState<any>(null);
+  const [imageAnalysis, setImageAnalysis] = useState<any>(null);
+  
+  // NEW: Estados para servicios avanzados
+  const [contextualTypography, setContextualTypography] = useState<any>(null);
+  const [contrastAnalysis, setContrastAnalysis] = useState<any>(null);
+  const [contextualEffects, setContextualEffects] = useState<any>(null);
+  const [compositionAnalysis, setCompositionAnalysis] = useState<any>(null);
+  const [autoTextValidation, setAutoTextValidation] = useState<any>(null);
+  const [enhancedStyles, setEnhancedStyles] = useState<any>(null);
+  
+  // NEW: Estados para posición del texto draggable
+  const [textPosition, setTextPosition] = useState<{x: number, y: number}>({ x: 50, y: 50 }); // Porcentajes
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  
+  // NEW: Estados para posición de logo y producto
+  const [logoPosition, setLogoPosition] = useState<{x: number, y: number; width: number}>({ x: 10, y: 10, width: 80 });
+  const [productPosition, setProductPosition] = useState<{x: number, y: number; width: number; height: number}>({ x: 50, y: 70, width: 120, height: 120 });
+  
+  // NEW: Estados para estilos manuales del editor de texto
+  const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
+    fontSize: 24,
+    fontFamily: 'Inter, sans-serif',
+    fontWeight: 'bold',
+    textColor: '#FFFFFF',
+    backgroundColor: 'transparent',
+    letterSpacing: 0,
+    textTransform: 'none',
+    lineWidth: 200, // Ancho del texto para controlar líneas
+    effects: {
+      shadow: true,
+      stroke: false,
+      glow: false
+    }
+  });
+  
+  const [status, setStatus] = useState<GenerationStatus>({
+    isLoading: false,
+    step: 'idle',
+    message: ''
+  });
+
+  useEffect(() => {
+    // Enhanced auth check with better error handling
+    const checkAuth = async () => {
+      try {
+        console.log('🔍 Iniciando verificación de autenticación...');
+        setIsCheckingAuth(true);
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Error obteniendo sesión:', error);
+          setHasKey(false);
+          setIsCheckingAuth(false);
+          // Redirect to login
+          setTimeout(() => {
+            window.location.href = '/iniciar-sesion';
+          }, 1000);
+          return;
+        }
+        
+        if (session?.user) {
+          console.log('✅ Usuario autenticado:', session.user.email);
+          console.log('✅ Email confirmado:', !!session.user.email_confirmed_at);
+          setHasKey(true);
+          
+          // Load user data with better error handling
+          try {
+            console.log('🔄 Cargando datos de usuario...');
+            const { data: user, error: userError } = await supabase
+              .from('users')
+              .select('*, user_plans(*)')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (userError) {
+              console.log('⚠️ Error cargando datos de usuario:', userError.message);
+              console.log('🔄 Usando plan por defecto...');
+              setActivePlan('GRATIS');
+            } else if (user?.user_plans?.name) {
+              setActivePlan(user.user_plans.name);
+              console.log('✅ Plan cargado:', user.user_plans.name);
+              console.log('✅ Créditos:', user.credits);
+            } else {
+              console.log('⚠️ Datos de usuario incompletos, usando plan por defecto');
+              setActivePlan('GRATIS');
+            }
+          } catch (userLoadError) {
+            console.log('⚠️ Excepción cargando datos de usuario:', userLoadError);
+            setActivePlan('GRATIS');
+          }
+        } else {
+          console.log('❌ No hay sesión activa');
+          setHasKey(false);
+          // Redirect to login
+          setTimeout(() => {
+            window.location.href = '/iniciar-sesion';
+          }, 1000);
+          return;
+        }
+      } catch (error) {
+        console.error('❌ Error general en verificación de auth:', error);
+        setHasKey(false);
+        // Redirect to login
+        setTimeout(() => {
+          window.location.href = '/iniciar-sesion';
+        }, 1000);
+        return;
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+
+    // Enhanced auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('🔔 Evento de autenticación:', event);
+        if (session?.user) {
+          console.log('✅ Sesión establecida:', session.user.email);
+          setHasKey(true);
+        } else {
+          console.log('❌ Sesión cerrada');
+          setHasKey(false);
+          setActivePlan('GRATIS');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Show loading state while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Verificando autenticación...</p>
+          <p className="text-white/50 text-sm mt-2">Esto puede tomar unos segundos</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check authentication
+  if (!hasKey) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">🔒</div>
+          <h1 className="text-white text-xl mb-4">Acceso Requerido</h1>
+          <p className="text-white/70 mb-6">Redirigiendo al login...</p>
+          <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleConnect = async () => {
+    try {
+      // Redirect to login if not authenticated
+      window.location.href = '/iniciar-sesion';
+    } catch (e) {
+      console.error("Error redirecting to login", e);
+      alert("Error al redirigir al login.");
+    }
+  };
+
+  const handleStyleDetected = (detectedStyle: string, detectedText?: string, textStyle?: string) => {
+    // SOLO establecer customStylePrompt si estamos en modo AUTO
+    if (workMode === 'auto') {
+      // MEJORADO: Detectar si el detectedStyle indica un estilo específico de industria
+      const styleLower = detectedStyle.toLowerCase();
+      
+      // Mapear descripciones visuales a estilos de flyer correctos
+      let correctStyleKey: FlyerStyleKey | null = null;
+      
+      // Pilates/Yoga/Wellness → wellness_zen
+      if (styleLower.includes('pilates') ||
+          styleLower.includes('yoga') ||
+          styleLower.includes('wellness') ||
+          styleLower.includes('zen') ||
+          styleLower.includes('spa') ||
+          styleLower.includes('meditation') ||
+          styleLower.includes('relax') ||
+          styleLower.includes('massage') ||
+          styleLower.includes('stretching') ||
+          styleLower.includes('breathing') ||
+          styleLower.includes('mindfulness') ||
+          styleLower.includes('reiki') ||
+          styleLower.includes('holistic')) {
+        correctStyleKey = 'wellness_zen';
+        console.log('🔮 WELLNESS DETECTADO → wellness_zen');
+      }
+      // Iglesia/Religioso → worship_sky
+      else if (styleLower.includes('iglesia') ||
+               styleLower.includes('church') ||
+               styleLower.includes('religious') ||
+               styleLower.includes('cristo') ||
+               styleLower.includes('evangelio') ||
+               styleLower.includes('fe') ||
+               styleLower.includes('esperanza') ||
+               styleLower.includes('dios') ||
+               styleLower.includes('biblia')) {
+        correctStyleKey = 'worship_sky';
+        console.log('⛪ IGLESIA DETECTADO → worship_sky');
+      }
+      // Fitness/Gym → sport_gritty
+      else if (styleLower.includes('gym') ||
+               styleLower.includes('fitness') ||
+               styleLower.includes('deporte') ||
+               styleLower.includes('workout') ||
+               styleLower.includes('entrenamiento') ||
+               styleLower.includes('crossfit') ||
+               styleLower.includes('musculacion') ||
+               styleLower.includes('entrenar')) {
+        correctStyleKey = 'sport_gritty';
+        console.log('💪 GYM/FITNESS DETECTADO → sport_gritty');
+      }
+      // Belleza → aesthetic_min
+      else if (styleLower.includes('belleza') ||
+               styleLower.includes('beauty') ||
+               styleLower.includes('aesthetic') ||
+               styleLower.includes('estetica') ||
+               styleLower.includes('uñas') ||
+               styleLower.includes('peluqueria') ||
+               styleLower.includes('barber') ||
+               styleLower.includes('makeup') ||
+               styleLower.includes('cosmetico')) {
+        correctStyleKey = 'aesthetic_min';
+        console.log('💅 BELLEZA DETECTADO → aesthetic_min');
+      }
+      // Ofertas/Liquidación → retail_sale
+      else if (styleLower.includes('oferta') ||
+               styleLower.includes('liquidacion') ||
+               styleLower.includes('sale') ||
+               styleLower.includes('descuento') ||
+               styleLower.includes('promocion') ||
+               styleLower.includes('rebaja') ||
+               styleLower.includes('cyber') ||
+               styleLower.includes('black friday')) {
+        correctStyleKey = 'retail_sale';
+        console.log('🏷️ OFERTAS DETECTADO → retail_sale');
+      }
+      // Gastronomía/Restaurante → gastronomy
+      else if (styleLower.includes('restaurante') ||
+               styleLower.includes('comida') ||
+               styleLower.includes('food') ||
+               styleLower.includes('sushi') ||
+               styleLower.includes('cafe') ||
+               styleLower.includes('coffee') ||
+               styleLower.includes('bar') ||
+               styleLower.includes('pub') ||
+               styleLower.includes('cerveza') ||
+               styleLower.includes('vino') ||
+               styleLower.includes('menu') ||
+               styleLower.includes('gastronomi') ||
+               styleLower.includes('chef') ||
+               styleLower.includes('cocina') ||
+               styleLower.includes('empanada') ||
+               styleLower.includes('asado') ||
+               styleLower.includes('churrasco')) {
+        correctStyleKey = 'gastronomy';
+        console.log('🍽️ GASTRONOMÍA DETECTADO → gastronomy');
+      }
+      // Corporativo/Inmobiliaria → corporate
+      else if (styleLower.includes('empresa') ||
+               styleLower.includes('corporativo') ||
+               styleLower.includes('oficina') ||
+               styleLower.includes('inmobiliaria') ||
+               styleLower.includes('inmueble') ||
+               styleLower.includes('propiedad') ||
+               styleLower.includes('departamento') ||
+               styleLower.includes('casa') ||
+               styleLower.includes('terreno') ||
+               styleLower.includes('broker') ||
+               styleLower.includes('business') ||
+               styleLower.includes('consultoria')) {
+        correctStyleKey = 'corporate';
+        console.log('🏢 CORPORATIVO DETECTADO → corporate');
+      }
+      // Médico/Clínica/Salud → medical_clean
+      else if (styleLower.includes('medico') ||
+               styleLower.includes('doctor') ||
+               styleLower.includes('clinica') ||
+               styleLower.includes('salud') ||
+               styleLower.includes('dental') ||
+               styleLower.includes('dentista') ||
+               styleLower.includes('odontologia') ||
+               styleLower.includes('hospital') ||
+               styleLower.includes('farmacia') ||
+               styleLower.includes('veterinaria') ||
+               styleLower.includes('veterinario') ||
+               styleLower.includes('optica') ||
+               styleLower.includes('psicologo') ||
+               styleLower.includes('terapia') ||
+               styleLower.includes('kinesiologia')) {
+        correctStyleKey = 'medical_clean';
+        console.log('🏥 MÉDICO/SALUD DETECTADO → medical_clean');
+      }
+      // Tecnología/Software → tech_saas
+      else if (styleLower.includes('tecnologia') ||
+               styleLower.includes('tech') ||
+               styleLower.includes('software') ||
+               styleLower.includes('computador') ||
+               styleLower.includes('celular') ||
+               styleLower.includes('iphone') ||
+               styleLower.includes('digital') ||
+               styleLower.includes('internet') ||
+               styleLower.includes('web') ||
+               styleLower.includes('app') ||
+               styleLower.includes('programacion') ||
+               styleLower.includes('coding') ||
+               styleLower.includes('ia') ||
+               styleLower.includes('ai') ||
+               styleLower.includes('cripto') ||
+               styleLower.includes('bitcoin') ||
+               styleLower.includes('blockchain')) {
+        correctStyleKey = 'tech_saas';
+        console.log('💻 TECNOLOGÍA DETECTADO → tech_saas');
+      }
+      // Educación/Cursos → edu_sketch
+      else if (styleLower.includes('educacion') ||
+               styleLower.includes('escuela') ||
+               styleLower.includes('colegio') ||
+               styleLower.includes('universidad') ||
+               styleLower.includes('curso') ||
+               styleLower.includes('clase') ||
+               styleLower.includes('estudiar') ||
+               styleLower.includes('estudio') ||
+               styleLower.includes('aprendizaje') ||
+               styleLower.includes('academia') ||
+               styleLower.includes('preuniversitario') ||
+               styleLower.includes('idiomas') ||
+               styleLower.includes('ingles') ||
+               styleLower.includes('formacion')) {
+        correctStyleKey = 'edu_sketch';
+        console.log('📚 EDUCACIÓN DETECTADO → edu_sketch');
+      }
+      // Discoteca/Fiesta/Neón → urban_night
+      else if (styleLower.includes('discoteca') ||
+               styleLower.includes('club') ||
+               styleLower.includes('fiesta') ||
+               styleLower.includes('party') ||
+               styleLower.includes('noche') ||
+               styleLower.includes('nocturno') ||
+               styleLower.includes('neon') ||
+               styleLower.includes('nightlife') ||
+               styleLower.includes('bar') ||
+               styleLower.includes('pub') ||
+               styleLower.includes('karaoke') ||
+               styleLower.includes('entretencion')) {
+        correctStyleKey = 'urban_night';
+        console.log('🎉 FIESTA/DISCOTECA DETECTADO → urban_night');
+      }
+      // Lujo/VIP/Gala → luxury_gold
+      else if (styleLower.includes('lujo') ||
+               styleLower.includes('luxury') ||
+               styleLower.includes('vip') ||
+               styleLower.includes('gala') ||
+               styleLower.includes('elegante') ||
+               styleLower.includes('premium') ||
+               styleLower.includes('exclusivo') ||
+               styleLower.includes('oro') ||
+               styleLower.includes('gold') ||
+               styleLower.includes('ano nuevo') ||
+               styleLower.includes('celebracion') ||
+               styleLower.includes('evento especial')) {
+        correctStyleKey = 'luxury_gold';
+        console.log('👑 LUJO/VIP DETECTADO → luxury_gold');
+      }
+      // Verano/Piscina/Playa → summer_beach
+      else if (styleLower.includes('verano') ||
+               styleLower.includes('piscina') ||
+               styleLower.includes('playa') ||
+               styleLower.includes('beach') ||
+               styleLower.includes('pool') ||
+               styleLower.includes('mar') ||
+               styleLower.includes('sol') ||
+               styleLower.includes('vacaciones') ||
+               styleLower.includes('turismo') ||
+               styleLower.includes('hotel') ||
+               styleLower.includes('hostal') ||
+               styleLower.includes('resort')) {
+        correctStyleKey = 'summer_beach';
+        console.log('☀️ VERANO/PLAYA DETECTADO → summer_beach');
+      }
+      // Ecológico/Natural → eco_organic
+      else if (styleLower.includes('ecologico') ||
+               styleLower.includes('eco') ||
+               styleLower.includes('organico') ||
+               styleLower.includes('natural') ||
+               styleLower.includes('bio') ||
+               styleLower.includes('sustentable') ||
+               styleLower.includes('reciclado') ||
+               styleLower.includes('feria') ||
+               styleLower.includes('agricultura') ||
+               styleLower.includes('vegan') ||
+               styleLower.includes('vegetariano') ||
+               styleLower.includes('saludable')) {
+        correctStyleKey = 'eco_organic';
+        console.log('🌿 ECOLÓGICO DETECTADO → eco_organic');
+      }
+      // Inmuebles de lujo → realestate_night
+      else if (styleLower.includes('venta') ||
+               styleLower.includes('en venta') ||
+               styleLower.includes('property') ||
+               styleLower.includes('real estate') ||
+               styleLower.includes('penthouse') ||
+               styleLower.includes('villa') ||
+               styleLower.includes('mansión') ||
+               styleLower.includes('inmobiliario')) {
+        correctStyleKey = 'realestate_night';
+        console.log('🏠 INMOBILIARIO DETECTADO → realestate_night');
+      }
+      // Infantil/Cumpleaños → kids_fun
+      else if (styleLower.includes('niños') ||
+               styleLower.includes('ninos') ||
+               styleLower.includes('infantil') ||
+               styleLower.includes('cumpleaños') ||
+               styleLower.includes('birthday') ||
+               styleLower.includes('juguete') ||
+               styleLower.includes('jugueteria') ||
+               styleLower.includes('guarderia') ||
+               styleLower.includes('kinder') ||
+               styleLower.includes('fiesta infantil')) {
+        correctStyleKey = 'kids_fun';
+        console.log('🎈 INFANTIL DETECTADO → kids_fun');
+      }
+      // Navidad/Festividades → seasonal_holiday
+      else if (styleLower.includes('navidad') ||
+               styleLower.includes('christmas') ||
+               styleLower.includes('año nuevo') ||
+               styleLower.includes('new year') ||
+               styleLower.includes('regalo') ||
+               styleLower.includes('gifts') ||
+               styleLower.includes('festividades') ||
+               styleLower.includes('celebracion') ||
+               styleLower.includes('feriado')) {
+        correctStyleKey = 'seasonal_holiday';
+        console.log('🎄 NAVIDAD DETECTADO → seasonal_holiday');
+      }
+      // Teatro/Arte/Arteístico → art_double_exp
+      else if (styleLower.includes('teatro') ||
+               styleLower.includes('arte') ||
+               styleLower.includes('artist') ||
+               styleLower.includes('cultural') ||
+               styleLower.includes('museo') ||
+               styleLower.includes('galeria') ||
+               styleLower.includes('exposicion') ||
+               styleLower.includes('espectaculo') ||
+               styleLower.includes('performance')) {
+        correctStyleKey = 'art_double_exp';
+        console.log('🎭 ARTE/TEATRO DETECTADO → art_double_exp');
+      }
+      // Retro/Vintage → retro_vintage
+      else if (styleLower.includes('retro') ||
+               styleLower.includes('vintage') ||
+               styleLower.includes('90s') ||
+               styleLower.includes('80s') ||
+               styleLower.includes('nostalgia') ||
+               styleLower.includes('clásico') ||
+               styleLower.includes('clasico') ||
+               styleLower.includes('antiguo') ||
+               styleLower.includes('coleccion')) {
+        correctStyleKey = 'retro_vintage';
+        console.log('📼 RETRO/VINTAGE DETECTADO → retro_vintage');
+      }
+      // Podcast/Radio → podcast_mic
+      else if (styleLower.includes('podcast') ||
+               styleLower.includes('radio') ||
+               styleLower.includes('entrevista') ||
+               styleLower.includes('audio') ||
+               styleLower.includes('streaming') ||
+               styleLower.includes('youtuber') ||
+               styleLower.includes('influencer') ||
+               styleLower.includes('contenido digital')) {
+        correctStyleKey = 'podcast_mic';
+        console.log('🎙️ PODCAST/RADIO DETECTADO → podcast_mic');
+      }
+      // Gamer/Twitch → gamer_stream
+      else if (styleLower.includes('gamer') ||
+               styleLower.includes('gaming') ||
+               styleLower.includes('twitch') ||
+               styleLower.includes('videojuego') ||
+               styleLower.includes('video game') ||
+               styleLower.includes('esports') ||
+               styleLower.includes('playstation') ||
+               styleLower.includes('xbox') ||
+               styleLower.includes('nintendo') ||
+               styleLower.includes('consola')) {
+        correctStyleKey = 'gamer_stream';
+        console.log('🎮 GAMER DETECTADO → gamer_stream');
+      }
+      // Rock/Música/Conciertos → indie_grunge
+      else if (styleLower.includes('rock') ||
+               styleLower.includes('musica') ||
+               styleLower.includes('music') ||
+               styleLower.includes('concierto') ||
+               styleLower.includes('tocata') ||
+               styleLower.includes('banda') ||
+               styleLower.includes('grupo') ||
+               styleLower.includes('indie') ||
+               styleLower.includes('alternativo') ||
+               styleLower.includes('metal') ||
+               styleLower.includes('jazz') ||
+               styleLower.includes('live')) {
+        correctStyleKey = 'indie_grunge';
+        console.log('🎸 ROCK/MÚSICA DETECTADO → indie_grunge');
+      }
+      // Automotriz/Taller → auto_metallic
+      else if (styleLower.includes('auto') ||
+               styleLower.includes('automotriz') ||
+               styleLower.includes('carro') ||
+               styleLower.includes('coche') ||
+               styleLower.includes('vehiculo') ||
+               styleLower.includes('taller') ||
+               styleLower.includes('mecanico') ||
+               styleLower.includes('mecanica') ||
+               styleLower.includes('repuesto') ||
+               styleLower.includes('lubricante') ||
+               styleLower.includes('llanta') ||
+               styleLower.includes('neumatico')) {
+        correctStyleKey = 'auto_metallic';
+        console.log('🚗 AUTOMOTRIZ DETECTADO → auto_metallic');
+      }
+      
+      if (correctStyleKey) {
+        // Si detectamos un estilo específico, guardarlo y usarlo directamente
+        setDetectedStyleKey(correctStyleKey);
+        setStyleKey(correctStyleKey);
+        console.log('🤖 ESTILO CORREGIDO AUTOMÁTICAMENTE:', correctStyleKey);
+        // NO usar customStylePrompt, usar el estilo predefinido
+        setCustomStylePrompt(undefined);
+      } else {
+        // Usar el detectedStyle como customStylePrompt para brand_identity
+        setCustomStylePrompt(detectedStyle);
+        setDetectedStyleKey(null);
+        console.log('🤖 ANÁLISIS AUTOMÁTICO GUARDADO (modo AUTO):', detectedStyle.substring(0, 50) + '...');
+      }
+    } else {
+      // En modo MANUAL, no guardar el análisis automático
+      console.log('🎨 MODO MANUAL - Ignorando análisis automático');
+    }
+    
+    // NEW: Si hay texto detectado automáticamente, usarlo como overlayText
+    if (detectedText && detectedText.trim()) {
+      setOverlayText(detectedText);
+      console.log('🤖 TEXTO AUTOMÁTICO DETECTADO:', detectedText);
+    }
+  };
+
+const handleGenerate = async () => {
+    if (!description.trim()) return;
+
+    console.log('🚀 Starting generation with:', {
+      description: description.substring(0, 50) + '...',
+      workMode,
+      styleKey,
+      aspectRatio,
+      mediaType,
+      imageQuality,
+      hasProductOverlay: !!productUrl,
+      hasLogo: !!logoUrl,
+      hasOverlay: !!overlayText,
+      customStylePrompt: customStylePrompt ? 'present' : 'none'
+    });
+
+    // NO borrar draftImageUrl si estamos en modo HD - lo necesitamos para comparar
+    if (imageQuality === 'draft') {
+      setDraftImageUrl(null);
+    }
+    setImageUrl(null);
+    setHdImageUrl(null);
+    setCurrentEnhancedPrompt('');
+    const newSeed = Math.floor(Math.random() * 2000000000);
+    setSeed(newSeed);
+    const hasProductOverlay = !!productUrl;
+
+    // DETERMINE STYLE KEY BASED ON WORK MODE - CAMINOS COMPLETAMENTE SEPARADOS
+    let effectiveStyleKey = styleKey;
+    let effectiveCustomPrompt = customStylePrompt;
+
+    if (workMode === 'auto') {
+      // CAMINO 1: ANÁLISIS AUTOMÁTICO (URL)
+      // PRIORIDAD 1: Usar estilo detectado automáticamente (detectedStyleKey)
+      if (detectedStyleKey) {
+        effectiveStyleKey = detectedStyleKey;
+        console.log('🤖 CAMINO 1 - ANÁLISIS AUTOMÁTICO: Using detectedStyleKey:', effectiveStyleKey);
+      }
+      // PRIORIDAD 2: Solo usar customStylePrompt si existe (viene de análisis de URL)
+      else if (customStylePrompt) {
+        effectiveStyleKey = 'brand_identity';
+        console.log('🤖 CAMINO 1 - ANÁLISIS AUTOMÁTICO: Using customStylePrompt:', customStylePrompt.substring(0, 50) + '...');
+      } else {
+        // Si no hay customStylePrompt, usar el styleKey seleccionado normalmente
+        console.log('🤖 CAMINO 1 - ANÁLISIS AUTOMÁTICO: Using styleKey:', styleKey);
+      }
+    } else {
+      // CAMINO 2: SELECCIÓN MANUAL (Texto + Modelo)
+      // En modo manual, SIEMPRE usar el styleKey seleccionado y limpiar customStylePrompt
+      effectiveCustomPrompt = undefined;
+      console.log('🎨 CAMINO 2 - SELECCIÓN MANUAL: Using styleKey:', styleKey);
+    }
+
+    try {
+      setStatus({ isLoading: true, step: 'translating', message: ':: ANALIZANDO_CONTEXTO ::' });
+      console.log('🔄 Enhancing prompt...');
+      const enhancedPrompt = await enhancePrompt(description, effectiveStyleKey);
+      console.log('✅ Enhanced prompt:', enhancedPrompt.substring(0, 100) + '...');
+      setCurrentEnhancedPrompt(enhancedPrompt);
+      
+      if (mediaType === 'image') {
+        setStatus({
+          isLoading: true,
+          step: 'rendering',
+          message: imageQuality === 'draft' ? ':: GENERANDO_PIXELES_BORRADOR ::' : ':: RENDERIZANDO_TEXTURAS_HD ::'
+        });
+        console.log('🎨 Generating image with aspectRatio:', aspectRatio);
+        
+        // NEW: Determinar si hay texto extraído automáticamente
+        const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
+        const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
+        
+        if (autoExtractedText) {
+          console.log('🤖 USANDO TEXTO AUTOMÁTICO EXTRAÍDO:', autoExtractedText);
+        }
+        
+        const result = await generateFlyerImage(
+          enhancedPrompt,
+          effectiveStyleKey,
+          aspectRatio,
+          imageQuality,
+          newSeed,
+          effectiveCustomPrompt,
+          hasProductOverlay,
+          true, // enableIntelligentTextStyles
+          autoExtractedText,
+          autoTextStyle
+        );
+        console.log('✅ Image generated:', result.imageDataUrl?.substring(0, 50) + '...');
+        console.log('🎨 Análisis completo:', {
+          imageAnalysis: result.imageAnalysis ? 'Disponible' : 'No disponible',
+          contextualTypography: result.contextualTypography ? 'Disponible' : 'No disponible',
+          contrastAnalysis: result.contrastAnalysis ? 'Disponible' : 'No disponible',
+          contextualEffects: result.contextualEffects ? 'Disponible' : 'No disponible',
+          compositionAnalysis: result.compositionAnalysis ? 'Disponible' : 'No disponible',
+          autoTextValidation: result.autoTextValidation ? 'Disponible' : 'No disponible',
+          enhancedStyles: result.enhancedStyles ? 'Disponible' : 'No disponible'
+        });
+        setImageUrl(result.imageDataUrl);
+        setDraftImageUrl(result.imageDataUrl);
+        
+        // NEW: Guardar generación en base de datos
+        if (imageQuality === 'draft') {
+          const generation = await createGeneration({
+            userId: (await supabase.auth.getSession()).data.session?.user.id || '',
+            draftImageUrl: result.imageDataUrl,
+            prompt: enhancedPrompt,
+            styleKey: effectiveStyleKey,
+            aspectRatio,
+            seed: newSeed
+          });
+          
+          if (generation) {
+            setCurrentGenerationId(generation.id);
+            setCurrentGeneration(generation);
+            console.log('✅ Generación guardada con ID:', generation.id);
+          }
+        }
+        setIntelligentTextStyles(result.intelligentTextStyles);
+        setImageAnalysis(result.imageAnalysis);
+        setContextualTypography(result.contextualTypography);
+        setContrastAnalysis(result.contrastAnalysis);
+        setContextualEffects(result.contextualEffects);
+        setCompositionAnalysis(result.compositionAnalysis);
+        setAutoTextValidation(result.autoTextValidation);
+        setEnhancedStyles(result.enhancedStyles);
+        setIsDraft(imageQuality === 'draft');
+      } else {
+        setStatus({
+            isLoading: true,
+            step: 'rendering',
+            message: imageQuality === 'draft' ? ':: SIMULANDO_FISICAS_RAPIDAS ::' : ':: PRODUCIENDO_VIDEO_CINEMATICO ::'
+          });
+        console.log('🎬 Generating video with aspectRatio:', aspectRatio);
+        const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay);
+        console.log('✅ Video generated:', url?.substring(0, 50) + '...');
+        setImageUrl(url);
+        setIsDraft(imageQuality === 'draft');
+      }
+      setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
+      console.log('🎉 Generation completed successfully');
+    } catch (error: any) {
+      console.error('❌ Generation failed:', error);
+      handleError(error);
+    }
+  };
+
+  const handleUpgradeToHD = async () => {
+    if (!currentEnhancedPrompt) return;
+    const hasProductOverlay = !!productUrl;
+    try {
+        setStatus({ isLoading: true, step: 'rendering', message: ':: ESCALANDO_A_PRODUCCION ::' });
+        let url;
+        if (mediaType === 'image') {
+            // NEW: Pasar texto automático también en upgrade
+            const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
+            const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
+            
+            // NEW: Pasar imagen de borrador como referencia para mantener consistencia
+            const result = await generateFlyerImage(
+              currentEnhancedPrompt,
+              styleKey,
+              aspectRatio,
+              'hd',
+              seed,
+              customStylePrompt,
+              hasProductOverlay,
+              true, // enableIntelligentTextStyles
+              autoExtractedText,
+              autoTextStyle,
+              draftImageUrl || undefined // Usar borrador como referencia para HD
+            );
+            url = result.imageDataUrl;
+            setIntelligentTextStyles(result.intelligentTextStyles);
+            setImageAnalysis(result.imageAnalysis);
+            setContextualTypography(result.contextualTypography);
+            setContrastAnalysis(result.contrastAnalysis);
+            setContextualEffects(result.contextualEffects);
+            setCompositionAnalysis(result.compositionAnalysis);
+            setAutoTextValidation(result.autoTextValidation);
+            setEnhancedStyles(result.enhancedStyles);
+            
+            // NEW: Actualizar generación con imagen HD
+            if (currentGenerationId) {
+              const userId = (await supabase.auth.getSession()).data.session?.user.id || '';
+              const success = await updateGenerationToHD(currentGenerationId, url, userId);
+              if (success) {
+                // Recargar la generación actualizada
+                const updated = await getGenerationById(currentGenerationId);
+                if (updated) {
+                  setCurrentGeneration(updated);
+                }
+                console.log('✅ Generación HD actualizada con ID:', currentGenerationId);
+              }
+            }
+        } else {
+            url = await generateFlyerVideo(currentEnhancedPrompt, styleKey, aspectRatio, 'hd', hasProductOverlay);
+        }
+        setImageUrl(url);
+        setHdImageUrl(url);
+        setIsDraft(false);
+        setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
+    } catch (error: any) {
+        handleError(error);
+    }
+  };
+
+  const handleRefine = async (instruction: string) => {
+    if (!currentEnhancedPrompt || !imageUrl) return;
+    const hasProductOverlay = !!productUrl;
+    try {
+      setStatus({ isLoading: true, step: 'translating', message: ':: REFINANDO_LOGICA_PROMPT ::' });
+      const newPrompt = await refineDescription(currentEnhancedPrompt, instruction);
+      setCurrentEnhancedPrompt(newPrompt);
+      const qualityToUse = isDraft ? 'draft' : 'hd';
+      
+      setStatus({ 
+        isLoading: true, 
+        step: 'rendering', 
+        message: ':: REGENERANDO_ASSET ::' 
+      });
+
+      let url;
+      if (mediaType === 'image') {
+         // NEW: Pasar texto automático también en refine
+         const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
+         const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
+         
+         const result = await generateFlyerImage(
+           newPrompt,
+           styleKey,
+           aspectRatio,
+           qualityToUse,
+           seed,
+           customStylePrompt,
+           hasProductOverlay,
+           true, // enableIntelligentTextStyles
+           autoExtractedText,
+           autoTextStyle
+         );
+         url = result.imageDataUrl;
+         setIntelligentTextStyles(result.intelligentTextStyles);
+         setImageAnalysis(result.imageAnalysis);
+         setContextualTypography(result.contextualTypography);
+         setContrastAnalysis(result.contrastAnalysis);
+         setContextualEffects(result.contextualEffects);
+         setCompositionAnalysis(result.compositionAnalysis);
+         setAutoTextValidation(result.autoTextValidation);
+         setEnhancedStyles(result.enhancedStyles);
+      } else {
+         url = await generateFlyerVideo(newPrompt, styleKey, aspectRatio, qualityToUse, hasProductOverlay);
+      }
+      setImageUrl(url);
+      setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
+    } catch (error: any) {
+        handleError(error);
+    }
+  };
+
+  const handleError = (error: any) => {
+    if (error.message && (error.message.includes('permission denied') || error.message.includes('403'))) {
+      setStatus({ isLoading: false, step: 'error', message: ':: ERROR_AUTENTICACION ::' });
+      setHasKey(false); 
+      alert('Tu sesión expiró. Conecta nuevamente.');
+    } else {
+      setStatus({ isLoading: false, step: 'error', message: ':: FALLO_DEL_SISTEMA ::' });
+      alert('Error al generar. Intenta de nuevo.');
+    }
+  };
+
+  const handleStyleSelect = (key: FlyerStyleKey) => {
+    setStyleKey(key);
+    // NEW: Si el usuario selecciona manualmente un estilo en modo AUTO,
+    // limpiar el customStylePrompt para usar el estilo seleccionado
+    if (workMode === 'auto' && customStylePrompt) {
+      console.log('🎨 Usuario cambió estilo manualmente en modo AUTO - limpiando análisis automático');
+      setCustomStylePrompt(undefined);
+    }
+    setShowGallery(false);
+  };
+
+  // Check authentication
+  if (!hasKey) {
+      return <Navigate to="/iniciar-sesion" replace />;
+  }
+
+  return (
+    <div className="flex h-screen w-full bg-[#030303] text-white overflow-hidden font-sans selection:bg-blue-500/30 relative">
+      
+      {/* BACKGROUND AMBIENCE */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/10 blur-[150px] rounded-full animate-pulse-slow"></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[150px] rounded-full"></div>
+      </div>
+
+      {/* LEFT PANEL: CONTROLS */}
+      <aside className="w-[440px] flex-shrink-0 flex flex-col z-20 h-full p-4">
+        <div className="glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
+            
+            {/* Header */}
+            <div className="h-16 flex items-center justify-between px-6 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                    <span className="font-bold text-lg tracking-tight">Estudio 56</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => window.location.href = '/'}
+                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-white/70 transition-all uppercase hover:border-white/30 flex items-center gap-2"
+                    >
+                        🏠 Inicio
+                    </button>
+                    <button
+                      onClick={() => setShowPricing(true)}
+                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-white/70 transition-all uppercase hover:border-white/30 flex items-center gap-2"
+                    >
+                        <span className={`w-1.5 h-1.5 rounded-full ${activePlan === 'GRATIS' ? 'bg-gray-500' : 'bg-yellow-400 animate-pulse'}`}></span>
+                        {activePlan}
+                    </button>
+                </div>
+            </div>
+
+            {/* Form Container */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <FlyerForm
+                    styleKey={styleKey}
+                    aspectRatio={aspectRatio}
+                    mediaType={mediaType}
+                    description={description}
+                    logoUrl={logoUrl}
+                    setLogoUrl={setLogoUrl}
+                    productUrl={productUrl}
+                    setProductUrl={setProductUrl}
+                    setStyleKey={setStyleKey}
+                    setAspectRatio={setAspectRatio}
+                    setMediaType={setMediaType}
+                    setDescription={setDescription}
+                    workMode={workMode} // NEW: Modo de trabajo
+                    setWorkMode={handleWorkModeChange} // NEW: Handler personalizado para modo de trabajo
+                    onSubmit={handleGenerate}
+                    isLoading={status.isLoading}
+                    imageQuality={imageQuality}
+                    setImageQuality={setImageQuality}
+                    onStyleDetected={handleStyleDetected}
+                    overlayText={overlayText}
+                    overlayStyle={overlayStyle}
+                    setOverlayText={setOverlayText}
+                    setOverlayStyle={setOverlayStyle}
+                    onOpenGallery={() => setShowGallery(true)}
+                    imageAnalysis={imageAnalysis}
+                    intelligentTextStyles={intelligentTextStyles}
+                    contextualTypography={contextualTypography}
+                    contrastAnalysis={contrastAnalysis}
+                    contextualEffects={contextualEffects}
+                    compositionAnalysis={compositionAnalysis}
+                    autoTextValidation={autoTextValidation}
+                    enhancedStyles={enhancedStyles}
+                    textMode={textMode}
+                    setTextMode={setTextMode}
+                    textPosition={textPosition}
+                    setTextPosition={setTextPosition}
+                    resetTextPosition={() => setTextPosition({ x: 50, y: 50 })}
+                    manualTextStyles={manualTextStyles}
+                    onManualTextStylesChange={setManualTextStyles}
+                    onClearInput={handleClearInput}
+                />
+                
+                {/* Panel de Editor de Texto */}
+                {imageUrl && (
+                  <div className="p-4 border-t border-white/10">
+                    <TextEditorPanel
+                      overlayText={overlayText}
+                      setOverlayText={setOverlayText}
+                      textStyles={manualTextStyles}
+                      setTextStyles={setManualTextStyles}
+                      onResetPosition={() => setTextPosition({ x: 50, y: 50 })}
+                      logoUrl={logoUrl}
+                      setLogoUrl={setLogoUrl}
+                      logoColor={logoColor}
+                      setLogoColor={setLogoColor}
+                      logoFilters={logoFilters}
+                      setLogoFilters={setLogoFilters}
+                      productUrl={productUrl}
+                      setProductUrl={setProductUrl}
+                    />
+                  </div>
+                )}
+            </div>
+            
+            {/* Minimal Footer */}
+            <div className="p-4 border-t border-white/5 bg-black/20 text-[10px] text-white/30 flex justify-between font-mono">
+                <span>V2.0.0_ESTABLE</span>
+                <span
+                  className="cursor-pointer text-white hover:text-white/70 transition-colors"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setHasKey(false);
+                    window.location.href = '/';
+                  }}
+                >
+                  DESCONECTAR
+                </span>
+            </div>
+        </div>
+      </aside>
+
+      {/* RIGHT AREA: CANVAS */}
+      <main className="flex-1 flex flex-col relative z-10 p-4 pl-0">
+         <div className="w-full h-full rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
+            
+            {/* Top Bar */}
+            <header className="h-14 flex items-center justify-between px-6 border-b border-white/5">
+                <div className="flex items-center gap-4 text-xs font-medium text-white/50">
+                    <span className={!imageUrl ? "text-white" : ""}>Diseño</span>
+                    <span>/</span>
+                    <span className={imageUrl ? "text-white" : ""}>Previsualización</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => window.location.href = '/perfil'}
+                        className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
+                        title="Ver perfil de cuenta"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                    </button>
+                </div>
+            </header>
+
+            {/* Viewport */}
+            <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100">
+                {/* Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                
+                <FlyerDisplay
+                    imageUrl={imageUrl}
+                    draftImageUrl={draftImageUrl}
+                    hdImageUrl={hdImageUrl}
+                    status={status}
+                    aspectRatio={aspectRatio}
+                    logoUrl={logoUrl}
+                    logoColor={logoColor}
+                    logoFilters={logoFilters}
+                    productUrl={productUrl}
+                    onRefine={handleRefine}
+                    isDraft={isDraft}
+                    onUpgradeToHD={handleUpgradeToHD}
+                    initialOverlayText={overlayText}
+                    textPosition={textPosition}
+                    setTextPosition={setTextPosition}
+                    workMode={workMode}
+                    styleKey={styleKey}
+                    overlayText={overlayText}
+                    setOverlayText={setOverlayText}
+                    textStyles={manualTextStyles}
+                    setTextStyles={setManualTextStyles}
+                    logoPosition={logoPosition}
+                    setLogoPosition={setLogoPosition}
+                    productPosition={productPosition}
+                    setProductPosition={setProductPosition}
+                />
+            </div>
+         </div>
+      </main>
+
+      {/* MODALS */}
+      <PricingModal 
+        isOpen={showPricing} 
+        onClose={() => setShowPricing(false)} 
+        onSelectPlan={setActivePlan}
+      />
+      <StyleGallery 
+        isOpen={showGallery} 
+        onClose={() => setShowGallery(false)} 
+        onSelect={handleStyleSelect} 
+      />
+    </div>
+  );
+};
+
+// Main App Component with Routing
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/iniciar-sesion" element={<LoginPage />} />
+        <Route path="/registrarse" element={<RegisterPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/panel" element={<Dashboard />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;

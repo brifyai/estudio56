@@ -1,0 +1,141 @@
+# 🔧 Guía Detallada: Configuración de Email en Supabase
+
+## 📍 Navegación Exacta en Supabase Dashboard
+
+### Paso 1: Acceder al Dashboard
+1. Ve a [https://supabase.com/dashboard](https://supabase.com/dashboard)
+2. Inicia sesión con tu cuenta
+3. Selecciona tu proyecto: `zskunemvffyqyxtfqyzm`
+
+### Paso 2: Navegar a Authentication
+En el menú lateral izquierdo, busca y haz clic en:
+```
+🔐 Authentication
+```
+
+### Paso 3: Ir a Settings
+Dentro de la sección Authentication, verás varias pestañas. Haz clic en:
+```
+⚙️ Settings
+```
+
+## 🎯 Configuraciones Específicas
+
+### Configuración 1: Site URL y Redirect URLs
+
+En la página de Settings, busca la sección **"Configuration"**:
+
+**Site URL:**
+- Campo: `Site URL`
+- Valor: `http://localhost:3000`
+
+**Redirect URLs:**
+- Campo: `Redirect URLs` 
+- Valor: `http://localhost:3000/**`
+
+### Configuración 2: Email Confirmations
+
+En la misma página, busca la sección **"User Signups"**:
+
+**Enable email confirmations:**
+- Busca un toggle o checkbox que diga:
+  - `Enable email confirmations` ✅
+  - `Email confirmations enabled` ✅
+  - `Require email confirmation` ✅
+- **DEBE ESTAR ACTIVADO** (toggle en ON)
+
+**Auto confirm users:**
+- Busca una opción que diga:
+  - `Auto confirm users` ❌
+  - `Skip email confirmation` ❌
+  - `Auto-approve new users` ❌
+- **DEBE ESTAR DESACTIVADO** (toggle en OFF)
+
+## 📍 Ubicaciones Alternativas
+
+Si no encuentras las opciones en "User Signups", pueden estar en:
+
+### Opción A: Sección "Auth"
+```
+Authentication > Settings > Auth
+```
+
+### Opción B: Sección "Email"
+```
+Authentication > Settings > Email
+```
+
+### Opción C: Sección "General"
+```
+Authentication > Settings > General
+```
+
+## 🔍 Qué Buscar Exactamente
+
+### Palabras Clave en la Interfaz:
+- ✅ "Enable email confirmations"
+- ✅ "Email confirmations required"
+- ✅ "Require email verification"
+- ❌ "Auto confirm users"
+- ❌ "Skip email confirmation"
+- ❌ "Auto-approve"
+
+## 📱 Captura Conceptual de la Interfaz
+
+```
+┌─ Supabase Dashboard ──────────────────────────────┐
+│ 🔐 Authentication                                 │
+│ ├─ ⚙️ Settings ← ESTÁS AQUÍ                       │
+│ ├─ 📧 Email Templates                             │
+│ └─ 🔑 Providers                                   │
+│                                                   │
+│ Configuration:                                    │
+│ Site URL: [http://localhost:3000        ] 📝      │
+│ Redirect URLs: [http://localhost:3000/**] 📝      │
+│                                                   │
+│ User Signups:                                     │
+│ ☑️ Enable email confirmations ← ACTIVAR          │
+│ ☐ Auto confirm users ← DESACTIVAR                │
+│                                                   │
+│ [Save]                                            │
+└───────────────────────────────────────────────────┘
+```
+
+## 🆘 Si No Encuentras las Opciones
+
+### Opción 1: Verificar el Plan
+- Algunos planes gratuitos tienen limitaciones
+- Verifica tu plan en: `Billing > Plan`
+
+### Opción 2: Versión de Supabase
+- La interfaz puede variar según la versión
+- Busca opciones similares con nombres diferentes
+
+### Opción 3: Contactar Soporte
+- Si no encuentras las opciones, contacta a Supabase
+- Dashboard > Help > Contact Support
+
+## ✅ Lista de Verificación
+
+Antes de guardar, asegúrate de que:
+- [ ] Site URL = `http://localhost:3000`
+- [ ] Redirect URLs = `http://localhost:3000/**`
+- [ ] Email confirmations = **ACTIVADO**
+- [ ] Auto confirm = **DESACTIVADO**
+- [ ] Has hecho clic en "Save" o "Update"
+
+## 🚀 Después de Guardar
+
+1. **Espera 2-3 minutos** para que se propaguen los cambios
+2. **Borra el caché** del navegador (Ctrl+Shift+R)
+3. **Prueba registrar un usuario nuevo**
+4. **Revisa tu email** (bandeja de entrada y spam)
+
+## 💡 Tip Adicional
+
+Si sigues sin encontrar las opciones, es posible que:
+- Tu proyecto tenga una configuración diferente
+- Estés en una versión antigua de Supabase
+- Necesites actualizar la configuración desde la API
+
+En ese caso, ejecuta el script de diagnóstico para más información específica.
