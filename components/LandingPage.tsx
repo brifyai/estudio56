@@ -61,10 +61,9 @@ export const LandingPage: React.FC = () => {
 
         <button
             onClick={() => navigate('/iniciar-sesion')}
-            className="group relative inline-flex items-center justify-center px-8 py-6 text-xl font-black text-black transition-all duration-200 bg-green-400 rounded-2xl hover:bg-green-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 shadow-[0_0_40px_rgba(74,222,128,0.4)]"
+            className="inline-flex items-center justify-center px-8 py-6 text-xl font-black text-black transition-all duration-200 bg-green-400 rounded-2xl hover:bg-green-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 shadow-[0_0_40px_rgba(74,222,128,0.4)]"
         >
-            <span>REPARAR MI DIGNIDAD DIGITAL</span>
-            <span className="ml-3 text-2xl group-hover:rotate-12 transition-transform">🚀</span>
+            REPARAR MI DIGNIDAD DIGITAL
         </button>
 
         <p className="mt-6 text-white/30 text-xs font-mono">
