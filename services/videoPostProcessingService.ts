@@ -55,9 +55,13 @@ export async function loadFFmpeg(
 
       ffmpeg = new FFmpeg();
 
-      // Configurar logger
+      // Configurar logger con más detalles
       ffmpeg.on('log', ({ message }) => {
         console.log('[FFmpeg]', message);
+        // Guardar último mensaje de error para debugging
+        if (message.toLowerCase().includes('error') || message.toLowerCase().includes('failed')) {
+          (ffmpeg as any).lastError = message;
+        }
       });
 
       // Configurar progreso
@@ -258,21 +262,39 @@ export async function processVideoWithOverlays(
   } catch (error) {
     console.error('❌ Error procesando video:', error);
     
-    // Verificar si es error de memoria
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-    const isMemoryError = errorMessage.includes('memory') || errorMessage.includes('Memory');
+    // Obtener el último mensaje de error de FFmpeg
+    const ffmpegError = (ffmpeg as any).lastError || '';
+    
+    // Verificar tipos de errores comunes
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isMemoryError = errorMessage.includes('memory') || errorMessage.includes('Memory') || ffmpegError.includes('memory');
+    const isCodecError = ffmpegError.includes('codec') || ffmpegError.includes('encoder');
+    const isFormatError = ffmpegError.includes('format') || ffmpegError.includes('demuxer');
+    const isSharedArrayBufferError = errorMessage.includes('SharedArrayBuffer') || errorMessage.includes('cross-origin');
     
     if (isMemoryError) {
       return {
         success: false,
-        error: 'Tu dispositivo se ha quedado sin memoria para procesar el video en 1080p.',
+        error: 'Tu dispositivo se ha quedado sin memoria para procesar el video en 1080p. Intenta cerrar otras pestañas.',
+        fallbackUrl: videoUrl
+      };
+    }
+    
+    if (isSharedArrayBufferError) {
+      return {
+        success: false,
+        error: 'Tu navegador no soporta SharedArrayBuffer. Actualiza Chrome o Edge a la última versión.',
         fallbackUrl: videoUrl
       };
     }
 
+    // Mostrar el error real de FFmpeg
+    const detailedError = ffmpegError || errorMessage;
+    console.error('🔍 Error detallado de FFmpeg:', detailedError);
+    
     return {
       success: false,
-      error: `Error procesando video: ${errorMessage}`,
+      error: `Error: ${detailedError.substring(0, 200)}`,
       fallbackUrl: videoUrl
     };
   }
