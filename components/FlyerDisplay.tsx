@@ -130,12 +130,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // Estado para mostrar/ocultar handles de resize del logo
   const [showLogoHandles, setShowLogoHandles] = useState(false);
   
-  // Estado para comparación draft vs HD
+  // Estado para comparación draft vs HD (IMÁGENES)
   const [showComparison, setShowComparison] = useState(false);
   const [comparisonMode, setComparisonMode] = useState<'side-by-side' | 'toggle'>('side-by-side');
   
   // Ref para rastrear si ya se mostró la comparación automáticamente (para evitar reopen automático)
   const hasShownComparison = useRef(false);
+  
+  // Estado para comparación draft vs HD (VIDEOS)
+  const [showVideoComparison, setShowVideoComparison] = useState(false);
+  
+  // Ref para rastrear si ya se mostró la comparación de video automáticamente
+  const hasShownVideoComparison = useRef(false);
   
   // Estado para almacenar el canvas recoloreado del logo (useState para forzar re-render)
   const [recoloredLogoUrl, setRecoloredLogoUrl] = useState<string | null>(null);
@@ -197,14 +203,23 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     recolorLogo();
   }, [logoUrl, logoColor]);
   
-  // Auto-show comparison when HD is generated - solo la primera vez
+  // Auto-show comparison when HD image is generated - solo la primera vez
   useEffect(() => {
     if (draftImageUrl && hdImageUrl && !showComparison && !hasShownComparison.current) {
-      console.log('🎯 Auto-mostrando comparación Draft vs HD');
+      console.log('🎯 Auto-mostrando comparación Draft vs HD (imagen)');
       hasShownComparison.current = true;
       setShowComparison(true);
     }
   }, [draftImageUrl, hdImageUrl, showComparison]);
+  
+  // Auto-show video comparison when HD video is generated - solo la primera vez
+  useEffect(() => {
+    if (draftVideoUrl && hdVideoUrl && !showVideoComparison && !hasShownVideoComparison.current) {
+      console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
+      hasShownVideoComparison.current = true;
+      setShowVideoComparison(true);
+    }
+  }, [draftVideoUrl, hdVideoUrl, showVideoComparison]);
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const defaultStyles: TextStyleOptions = {
@@ -1278,14 +1293,26 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
-      {/* CERRAR COMPARACIÓN */}
-      {showComparison && (
+      {/* CERRAR COMPARACIÓN DE IMÁGENES */}
+      {showComparison && !showVideoComparison && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
           <button
             onClick={() => setShowComparison(false)}
             className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
           >
-            ✕ CERRAR COMPARACIÓN
+            ✕ CERRAR COMPARACIÓN (IMAGEN)
+          </button>
+        </div>
+      )}
+      
+      {/* CERRAR COMPARACIÓN DE VIDEOS */}
+      {showVideoComparison && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+          <button
+            onClick={() => setShowVideoComparison(false)}
+            className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
+          >
+            ✕ CERRAR COMPARACIÓN (VIDEO)
           </button>
         </div>
       )}
@@ -1295,19 +1322,91 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <div className="absolute top-36 left-1/2 -translate-x-1/2 z-[60] bg-yellow-500/90 backdrop-blur text-black text-[10px] font-mono font-bold px-3 py-1 rounded-sm">⚡ MODO_BORRADOR</div>
       )}
       
-      {/* COMPARISON BADGE - Solo mostrar indicador, no botón */}
+      {/* COMPARISON BADGE - IMÁGENES */}
       {!isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && showComparison && (
         <div className="absolute top-36 left-1/2 -translate-x-1/2 z-[60]">
           <div className="bg-blue-500/90 backdrop-blur text-white text-[10px] font-mono font-bold px-3 py-1 rounded-sm">
-            <span>👁️</span> COMPARANDO BORRADOR Y HD
+            <span>👁️</span> COMPARANDO BORRADOR Y HD (IMAGEN)
+          </div>
+        </div>
+      )}
+      
+      {/* VIDEO COMPARISON BADGE */}
+      {!isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && showVideoComparison && (
+        <div className="absolute top-36 left-1/2 -translate-x-1/2 z-[60]">
+          <div className="bg-purple-500/90 backdrop-blur text-white text-[10px] font-mono font-bold px-3 py-1 rounded-sm">
+            <span>🎬</span> COMPARANDO BORRADOR Y HD (VIDEO)
           </div>
         </div>
       )}
 
       {/* CANVAS */}
       <div className="flex-1 w-full flex items-center justify-center py-12 relative z-0">
-        {/* COMPARISON MODE - SIDE BY SIDE */}
-        {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
+        {/* VIDEO COMPARISON MODE - SIDE BY SIDE */}
+        {showVideoComparison && !isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
+          <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
+            <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
+              {/* VIDEO BORRADOR */}
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-yellow-400 text-xs font-mono font-bold">BORRADOR (16fps)</span>
+                </div>
+                <div
+                  className={`relative bg-black rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-yellow-500/30 overflow-hidden
+                    ${aspectRatio === '9:16' ? 'w-[200px] h-[356px]' :
+                      aspectRatio === '1:1' ? 'w-[225px] h-[225px]' :
+                      aspectRatio === '4:5' ? 'w-[200px] h-[250px]' :
+                      'w-[200px] h-[356px]'}`}
+                >
+                  <div className="w-full h-full relative">
+                    <video
+                      src={draftVideoUrl}
+                      className="w-full h-full object-cover opacity-90"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* VS */}
+              <div className="flex flex-col items-center">
+                <span className="text-white/30 text-xl lg:text-3xl font-mono">VS</span>
+              </div>
+              
+              {/* VIDEO HD */}
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-emerald-400 text-xs font-mono font-bold">HD (24fps)</span>
+                </div>
+                <div
+                  className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden
+                    ${aspectRatio === '9:16' ? 'w-[320px] h-[569px]' :
+                      aspectRatio === '1:1' ? 'w-[360px] h-[360px]' :
+                      aspectRatio === '4:5' ? 'w-[320px] h-[400px]' :
+                      'w-[320px] h-[569px]'}`}
+                >
+                  <div className="w-full h-full relative">
+                    <video
+                      src={hdVideoUrl}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        )}
+        
+        {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
+        {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
           <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
             <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* BORRADOR - Gemini 2.5 Flash */}
@@ -1501,6 +1600,21 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <input value={refineText} onChange={(e) => setRefineText(e.target.value)} placeholder="Refinar prompt..." className="bg-transparent text-sm outline-none text-white w-full placeholder-white/20 font-light" />
           <button onClick={() => {onRefine(refineText); setRefineText('')}} disabled={!refineText.trim()} className="text-white/40 hover:text-white transition-colors">→</button>
         </div>
+        <div className="h-6 w-px bg-white/10 mx-2"></div>
+        
+        {/* BOTÓN COMPARAR VIDEOS */}
+        {!isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
+          <>
+            <button
+              onClick={() => setShowVideoComparison(!showVideoComparison)}
+              className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl transition-all text-xs flex items-center gap-2 whitespace-nowrap"
+            >
+              <span>🎬</span> {showVideoComparison ? 'OCULTAR' : 'COMPARAR'} VIDEOS
+            </button>
+            <div className="h-6 w-px bg-white/10 mx-2"></div>
+          </>
+        )}
+        
         <div className="h-6 w-px bg-white/10 mx-2"></div>
         {isDraft ? (
           <button onClick={onUpgradeToHD} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all text-xs flex items-center gap-2 whitespace-nowrap">
