@@ -718,6 +718,9 @@ export const enhancePrompt = async (userInput: string, styleKey: FlyerStyleKey):
     const model = "gemini-3-flash-preview";
     
     const styleConfig = FLYER_STYLES[styleKey];
+    
+    // Fallback si no existe el estilo
+    const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
 
     const systemInstruction = `You are an expert AI Prompt Engineer for image generation.
     Your task is to take a raw Spanish description of a business service or product and translate the VISUAL DESCRIPTION into English.
@@ -726,12 +729,12 @@ export const enhancePrompt = async (userInput: string, styleKey: FlyerStyleKey):
     1. Translate visual elements (lighting, composition, objects) to English.
     2. PRESERVE LOCATION NAMES (e.g., "Santiago", "Torres del Paine").
     3. TEXT PRESERVATION: If user wants specific text, keep it in SPANISH inside single quotes.
-    4. Focus on physical details based on style: ${styleConfig.label}.
+    4. Focus on physical details based on style: ${safeStyleConfig.label}.
     5. Return ONLY the enhanced prompt.`;
 
     const response = await ai.models.generateContent({
       model,
-      contents: `Input: "${userInput}"\nStyle: ${styleConfig.english_prompt}\nTranslate to English visual prompt:`,
+      contents: `Input: "${userInput}"\nStyle: ${safeStyleConfig.english_prompt}\nTranslate to English visual prompt:`,
       config: { systemInstruction }
     });
 
@@ -1027,6 +1030,9 @@ export const generateHDFromDraft = async (
   const ai = getAiClient();
   const styleConfig = FLYER_STYLES[styleKey];
   
+  // Fallback si no existe el estilo
+  const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
+  
   console.log('🎯 [HD From Draft] Generando HD usando borrador como referencia...');
   console.log('📝 [HD From Draft] Seed:', seed);
   
@@ -1047,7 +1053,7 @@ export const generateHDFromDraft = async (
     7. Output must be the same aspect ratio: ${aspectRatio}
     
     Subject: ${enhancedDescription}
-    Style: ${styleConfig.label}
+    Style: ${safeStyleConfig.label}
   `.replace(/\n/g, ' ').trim();
 
   try {

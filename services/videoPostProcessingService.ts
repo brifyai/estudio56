@@ -13,9 +13,26 @@ let loadPromise: Promise<void> | null = null;
 
 /**
  * Verifica si SharedArrayBuffer está disponible (requerido para FFmpeg.wasm)
+ * Esta verificación es más robusta: intenta crear un SharedArrayBuffer real
  */
 export function isSharedArrayBufferSupported(): boolean {
-  return typeof SharedArrayBuffer !== 'undefined';
+  // Verificación básica de existencia
+  if (typeof SharedArrayBuffer === 'undefined') {
+    console.warn('⚠️ SharedArrayBuffer no está definido en este navegador');
+    return false;
+  }
+  
+  // Verificación adicional: intentar crear uno real
+  // Esto fallará si los headers COOP/COEP no están configurados correctamente
+  try {
+    const sab = new SharedArrayBuffer(8);
+    // Si llegamos aquí, SharedArrayBuffer está realmente disponible
+    console.log('✅ SharedArrayBuffer verificado y disponible');
+    return true;
+  } catch (error) {
+    console.warn('⚠️ SharedArrayBuffer existe pero no está operativo:', error);
+    return false;
+  }
 }
 
 /**
