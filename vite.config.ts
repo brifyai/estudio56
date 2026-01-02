@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
         host: 'localhost',
         hmr: false, // DESACTIVAR completamente HMR para evitar errores WebSocket
         strictPort: true,
+        // Headers requeridos para FFmpeg.wasm (SharedArrayBuffer)
+        headers: {
+          'Cross-Origin-Opener-Policy': 'same-origin',
+          'Cross-Origin-Embedder-Policy': 'require-corp',
+        },
       },
       plugins: [react()],
       define: {
@@ -20,6 +25,10 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      // Optimización para FFmpeg.wasm
+      optimizeDeps: {
+        exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+      },
     };
   });

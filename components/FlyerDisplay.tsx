@@ -2,6 +2,14 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { GenerationStatus, AspectRatio, FlyerStyleKey } from '../types';
 import { downloadComposedImage, getDimensionsForAspectRatio } from '../services/compositionExportService';
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
+import {
+  processVideoWithOverlays,
+  downloadProcessedVideo,
+  downloadOriginalVideo,
+  isSharedArrayBufferSupported,
+  loadFFmpeg
+} from '../services/videoPostProcessingService';
+import Swal from 'sweetalert2';
 
 interface LogoFilters {
   grayscale: number;
@@ -145,6 +153,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   
   // Estado para almacenar el canvas recoloreado del logo (useState para forzar re-render)
   const [recoloredLogoUrl, setRecoloredLogoUrl] = useState<string | null>(null);
+  
+  // Estados para procesamiento de video con FFmpeg.wasm
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingMessage, setProcessingMessage] = useState('');
+  const [videoProcessingError, setVideoProcessingError] = useState<string | null>(null);
+  const [fallbackVideoUrl, setFallbackVideoUrl] = useState<string | null>(null);
   
   // Efecto para recolorar el logo cuando cambia el color
   useEffect(() => {
@@ -1601,6 +1616,33 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         )}
       </div>
 
+      {/* UI DE PROGRESO DE PROCESAMIENTO DE VIDEO */}
+      {isProcessingVideo && (
+        <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center">
+          <div className="w-80 bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <div className="text-center mb-4">
+              <h3 className="text-white font-bold text-lg mb-1">Procesando Video</h3>
+              <p className="text-white/60 text-sm">{processingMessage}</p>
+            </div>
+            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                style={{ width: `${processingProgress}%` }}
+              />
+            </div>
+            <div className="text-center mt-2">
+              <span className="text-blue-400 text-sm font-mono">{processingProgress}%</span>
+            </div>
+            <p className="text-white/40 text-xs text-center mt-4">
+              No cierres esta pestaña mientras procesamos tu video
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* BOTTOM ACTION BAR */}
       <div className="absolute bottom-6 flex items-center gap-3 bg-black/80 backdrop-blur-xl p-2 pr-2 pl-4 rounded-2xl shadow-2xl border border-white/10 z-50">
         <div className="flex items-center w-64">
@@ -1635,24 +1677,109 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 const isVideo = imageUrl && imageUrl.startsWith('blob:');
                 
                 if (isVideo && imageUrl) {
-                  // Descargar video directamente
-                  console.log('🎬 Descargando video directamente:', imageUrl);
-                  try {
-                    const response = await fetch(imageUrl);
-                    const blob = await response.blob();
-                    const videoUrl = URL.createObjectURL(blob);
+                  // Verificar si hay logo o texto para procesar
+                  const hasOverlays = logoUrl || (overlayText && overlayText.trim());
+                  
+                  if (hasOverlays) {
+                    // Usar FFmpeg.wasm para procesar video con overlays
+                    console.log('🎬 Procesando video con overlays...');
+                    setIsProcessingVideo(true);
+                    setProcessingProgress(0);
+                    setProcessingMessage('Inicializando...');
+                    setVideoProcessingError(null);
+                    setFallbackVideoUrl(null);
                     
-                    const link = document.createElement('a');
-                    link.href = videoUrl;
-                    link.download = `estudio56-video-${Date.now()}.mp4`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(videoUrl);
-                    
-                    console.log('✅ Video descargado exitosamente');
-                  } catch (error) {
-                    console.error('❌ Error descargando video:', error);
+                    try {
+                      // Verificar soporte de SharedArrayBuffer
+                      if (!isSharedArrayBufferSupported()) {
+                        throw new Error('Tu navegador no soporta la edición de video HD. Actualiza Chrome o Edge.');
+                      }
+                      
+                      const result = await processVideoWithOverlays(imageUrl, {
+                        logoUrl: logoUrl || undefined,
+                        overlayText: overlayText || undefined,
+                        textPosition: textPosition,
+                        textStyles: {
+                          fontSize: displayStyles.fontSize,
+                          textColor: displayStyles.textColor,
+                          backgroundColor: displayStyles.backgroundColor !== 'transparent' ? displayStyles.backgroundColor : 'black@0.5',
+                        },
+                        onProgress: (progress, message) => {
+                          setProcessingProgress(progress);
+                          setProcessingMessage(message);
+                        },
+                      });
+                      
+                      if (result.success && result.videoUrl) {
+                        // Descargar video procesado
+                        downloadProcessedVideo(result.videoUrl, `estudio56-video-${Date.now()}.mp4`);
+                        console.log('✅ Video procesado descargado exitosamente');
+                        
+                        await Swal.fire({
+                          title: '¡Video listo!',
+                          text: 'Tu video con logo y texto ha sido descargado.',
+                          icon: 'success',
+                          timer: 2000,
+                          showConfirmButton: false,
+                          background: '#1a1a1a',
+                          color: '#ffffff',
+                        });
+                      } else if (result.fallbackUrl) {
+                        // Mostrar opción de descargar original
+                        setFallbackVideoUrl(result.fallbackUrl);
+                        await Swal.fire({
+                          title: '⚠️ Procesamiento no disponible',
+                          text: result.error || 'No se pudo procesar el video con los overlays.',
+                          icon: 'warning',
+                          showCancelButton: true,
+                          confirmButtonText: 'Descargar video original',
+                          cancelButtonText: 'Cancelar',
+                          background: '#1a1a1a',
+                          color: '#ffffff',
+                          confirmButtonColor: '#3b82f6',
+                        }).then((swalResult) => {
+                          if (swalResult.isConfirmed && fallbackVideoUrl) {
+                            downloadOriginalVideo(fallbackVideoUrl, `estudio56-video-original-${Date.now()}.mp4`);
+                          }
+                        });
+                      }
+                    } catch (error) {
+                      console.error('❌ Error procesando video:', error);
+                      setVideoProcessingError(error instanceof Error ? error.message : 'Error desconocido');
+                      
+                      await Swal.fire({
+                        title: '❌ Error',
+                        text: 'No se pudo procesar el video. Descargando versión original...',
+                        icon: 'error',
+                        confirmButtonText: 'Descargar original',
+                        background: '#1a1a1a',
+                        color: '#ffffff',
+                      }).then(() => {
+                        downloadOriginalVideo(imageUrl, `estudio56-video-${Date.now()}.mp4`);
+                      });
+                    } finally {
+                      setIsProcessingVideo(false);
+                    }
+                  } else {
+                    // Descargar video directamente sin procesar (sin overlays)
+                    console.log('🎬 Descargando video directamente:', imageUrl);
+                    try {
+                      const response = await fetch(imageUrl);
+                      const blob = await response.blob();
+                      const videoUrl = URL.createObjectURL(blob);
+                      
+                      const link = document.createElement('a');
+                      link.href = videoUrl;
+                      link.download = `estudio56-video-${Date.now()}.mp4`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(videoUrl);
+                      
+                      console.log('✅ Video descargado exitosamente');
+                    } catch (error) {
+                      console.error('❌ Error descargando video:', error);
+                    }
                   }
                   return;
                 }
