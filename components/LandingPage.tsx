@@ -323,9 +323,18 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="py-12 text-center text-white/20 text-sm bg-black border-t border-white/10">
+      <footer className="py-12 text-center text-white text-sm bg-black border-t border-white/10">
           <p>© 2026 Estudio 56. Hecho con paciencia y mucha cafeína.</p>
           <p className="mt-2 text-[10px] font-mono">No nos hacemos responsables si tus ventas explotan.</p>
+          <div className="mt-4 flex justify-center gap-4 text-xs">
+            <a href="/privacidad" className="hover:text-green-400 transition-colors">Privacidad</a>
+            <span className="text-white/40">|</span>
+            <a href="/cookies" className="hover:text-green-400 transition-colors">Cookies</a>
+            <span className="text-white/40">|</span>
+            <a href="/terminos" className="hover:text-green-400 transition-colors">Términos</a>
+            <span className="text-white/40">|</span>
+            <a href="/condiciones" className="hover:text-green-400 transition-colors">Condiciones</a>
+          </div>
       </footer>
     </div>
   );

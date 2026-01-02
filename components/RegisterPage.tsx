@@ -285,6 +285,21 @@ Serás redirigido al login.`);
                 </button>
             </div>
         </div>
+
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <p className="text-center text-white/20 text-xs">
+            Al registrarte, aceptas nuestros Términos y Condiciones.
+          </p>
+          <div className="flex justify-center gap-3 text-[10px]">
+            <a href="/privacidad" className="text-white/40 hover:text-white transition-colors">Privacidad</a>
+            <span className="text-white/20">|</span>
+            <a href="/cookies" className="text-white/40 hover:text-white transition-colors">Cookies</a>
+            <span className="text-white/20">|</span>
+            <a href="/terminos" className="text-white/40 hover:text-white transition-colors">Términos</a>
+            <span className="text-white/20">|</span>
+            <a href="/condiciones" className="text-white/40 hover:text-white transition-colors">Condiciones</a>
+          </div>
+        </div>
       </div>
     </div>
   );

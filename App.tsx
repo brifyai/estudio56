@@ -12,6 +12,10 @@ import { RegisterPage } from './components/RegisterPage';
 import { AuthCallback } from './components/AuthCallback';
 import { DiagnosticPage } from './components/DiagnosticPage';
 import { ProfilePage } from './components/ProfilePage';
+import { PrivacyPage } from './components/PrivacyPage';
+import { CookiesPage } from './components/CookiesPage';
+import { TermsPage } from './components/TermsPage';
+import { ServiceConditionsPage } from './components/ServiceConditionsPage';
 import { CommercialCalendar } from './components/CommercialCalendar';
 import { CalendarNotifications } from './components/CalendarNotifications';
 import { BrandPanel } from './components/BrandPanel';
@@ -1178,18 +1182,30 @@ const handleGenerate = async () => {
             </div>
             
             {/* Minimal Footer */}
-            <div className="p-4 border-t border-white/5 bg-black/20 text-[10px] text-white/30 flex justify-between font-mono">
-                <span>V2.0.0_ESTABLE</span>
-                <span
-                  className="cursor-pointer text-white hover:text-white/70 transition-colors"
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setHasKey(false);
-                    window.location.href = '/';
-                  }}
-                >
-                  DESCONECTAR
-                </span>
+            <div className="p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono">
+                <div className="flex gap-2">
+                    <span>V2.0.0_ESTABLE</span>
+                </div>
+                <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 max-w-full">
+                    <a href="/privacidad" className="hover:text-green-400 transition-colors px-1">Privacidad</a>
+                    <span className="text-white/40">|</span>
+                    <a href="/cookies" className="hover:text-green-400 transition-colors px-1">Cookies</a>
+                    <span className="text-white/40">|</span>
+                    <a href="/terminos" className="hover:text-green-400 transition-colors px-1">Términos</a>
+                    <span className="text-white/40">|</span>
+                    <a href="/condiciones" className="hover:text-green-400 transition-colors px-1">Condiciones</a>
+                    <span className="text-white/40">|</span>
+                    <span
+                      className="cursor-pointer hover:text-green-400 transition-colors px-1"
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        setHasKey(false);
+                        window.location.href = '/';
+                      }}
+                    >
+                      DESCONECTAR
+                    </span>
+                </div>
             </div>
         </div>
       </aside>
@@ -1353,6 +1369,10 @@ const App: React.FC = () => {
         <Route path="/registrarse" element={<RegisterPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/privacidad" element={<PrivacyPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
+        <Route path="/terminos" element={<TermsPage />} />
+        <Route path="/condiciones" element={<ServiceConditionsPage />} />
         <Route path="/panel" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
