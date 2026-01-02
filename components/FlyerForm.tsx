@@ -560,7 +560,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          )}
          
          {/* BOTÓN ANALIZAR URL - OCULTO cuando hay análisis completado */}
-         {(urlInput.includes('http') || description.includes('http')) && !currentSpanishPrompt && (
+         {(urlInput.includes('http') || description.includes('http')) && !currentSpanishPrompt?.trim() && (
            <div className="flex justify-center">
              <button
                onClick={handleAnalyzeUrl}
