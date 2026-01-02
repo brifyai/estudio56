@@ -49,8 +49,8 @@ export const LandingPage: React.FC = () => {
             ⚠️ Alerta de Cringe Visual
         </div>
 
-        <h1 className="text-6xl md:text-8xl font-black leading-[0.9] mb-8 tracking-tighter">
-            ¿TU PYME SE VE <br />
+        <h1 className="text-4xl md:text-8xl font-black leading-[1] mb-8 tracking-tighter text-center">
+            ¿TU PYME SE VE <br className="md:hidden" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-purple-500">COMO EL HOY*?</span>
         </h1>
 
@@ -260,7 +260,7 @@ export const LandingPage: React.FC = () => {
          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
          
          <div className="max-w-3xl mx-auto relative z-10 text-center">
-            <h2 className="text-4xl md:text-6xl font-black mb-6 uppercase tracking-tighter whitespace-nowrap">¿Dudas? ¿Miedo al éxito?</h2>
+            <h2 className="text-2xl md:text-6xl font-black mb-6 uppercase tracking-tighter">¿Dudas? ¿Miedo al éxito?</h2>
             <p className="text-lg font-mono mb-10 opacity-90">
                 Escríbenos. Prometemos no responder con un bot (mentira, probablemente sí, pero uno simpático).
             </p>
