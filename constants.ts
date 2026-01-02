@@ -754,3 +754,49 @@ export const VEO_VIDEO_CONFIG: VideoPlanConfig = {
     quality: 'high'
   }
 };
+
+// ============================================
+// CONFIGURACIÓN DE CHUTES API (Wan-2.2-I2V-14B-Fast)
+// https://chutes-wan-2-2-i2v-14b-fast.chutes.ai/
+// ============================================
+
+// Obtener URL de API desde variable de entorno o usar默认值
+const getChutesApiUrl = (): string => {
+  return import.meta.env.VITE_CHUTES_API_URL || 'https://chutes-wan-2-2-i2v-14b-fast.chutes.ai/image2video';
+};
+
+// Configuración de video: 6 segundos (96 frames × 16 fps)
+const VIDEO_DURATION_SECONDS = 6;
+const VIDEO_DEFAULT_FPS = 16;
+const VIDEO_DEFAULT_FRAMES = VIDEO_DURATION_SECONDS * VIDEO_DEFAULT_FPS; // 96 frames
+
+export const CHUTES_VIDEO_CONFIG = {
+  // URL del endpoint de Chutes para image-to-video (desde variable de entorno)
+  apiUrl: getChutesApiUrl(),
+  
+  // Obtener API key desde variable de entorno
+  getApiKey: () => import.meta.env.VITE_CHUTES_API_KEY || '',
+  
+  // Parámetros por defecto (6 segundos)
+  defaultParams: {
+    steps: 25,
+    fps: VIDEO_DEFAULT_FPS,        // 16 fps
+    frames: VIDEO_DEFAULT_FRAMES,  // 96 frames = 6 segundos
+    seed: 42,
+    guidanceScale: 5.0,
+    singleFrame: false
+  },
+  
+  // Configuración de calidad
+  quality: {
+    draft: { steps: 20, fps: 16, frames: 96 },
+    standard: { steps: 25, fps: 16, frames: 96 },
+    high: { steps: 30, fps: 24, frames: 144 } // 6 segundos a 24fps
+  },
+  
+  // Duración del video en segundos
+  videoDurationSeconds: VIDEO_DURATION_SECONDS,
+  
+  // Prompt negativo por defecto
+  negativePrompt: "Vibrant colors, overexposed, static, blurry details, subtitles, style, artwork, painting, picture, still, overall grayish, worst quality, low quality, JPEG compression artifacts, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn face, deformed, disfigured, malformed limbs, fused fingers, motionless image, cluttered background, three legs, many people in the background, walking backwards, slow motion"
+};

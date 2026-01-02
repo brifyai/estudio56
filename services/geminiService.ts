@@ -9,6 +9,7 @@ import { analyzeCompositionForText, generateCompositionBasedStyles, generateComp
 import { validateAutoTextAnalysis, improveAutoTextAnalysis, ValidationResult } from "./autoTextValidationService";
 import { RealTimePreview, PreviewState } from "./realTimePreviewService";
 import { detectIndustryFromInput, processMagicMode } from "./magicModeService";
+import { generateVideoFromImage, generateStyledVideo, ChutesVideoResponse } from "./chutesVideoService";
 
 // Exportar función de diagnóstico para uso en otros servicios
 export const diagnoseAndFixBlackImage = async (imageDataUrl: string): Promise<string> => {
@@ -1361,7 +1362,8 @@ export const generateFlyerImage = async (
 };
 
 /**
- * Step 2 (Video): Generate Video
+ * Step 2 (Video): Generate Video using Chutes API (Wan-2.2-I2V-14B-Fast)
+ * This function first generates an image, then converts it to video using Chutes
  */
 export const generateFlyerVideo = async (
   enhancedDescription: string,
@@ -1371,127 +1373,217 @@ export const generateFlyerVideo = async (
   hasProductOverlay: boolean = false // NEW
 ): Promise<string> => {
     try {
-      const ai = getAiClient();
-      const model = quality === 'draft' ? 'veo-3.1-fast-generate-preview' : 'veo-3.1-generate-preview';
-      const resolution = quality === 'draft' ? '720p' : '1080p';
+      console.log('🎬 [generateFlyerVideo] Iniciando generación con Chutes API...');
       
-      // Usar VIDEO_STYLES para videos (tiene todos los prompts de video configurados)
+      // Step 1: Generar imagen primero (necesaria para Chutes image-to-video)
+      console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
+      
+      const seed = Math.floor(Math.random() * 2000000000);
+      
+      // Generar imagen con Gemini
+      const imageResult = await generateFlyerImage(
+        enhancedDescription,
+        styleKey,
+        aspectRatio,
+        quality === 'draft' ? 'draft' : 'hd',
+        seed,
+        undefined, // customStylePrompt
+        hasProductOverlay,
+        false, // enableIntelligentTextStyles
+        undefined, // autoExtractedText
+        undefined // autoTextStyle
+      );
+      
+      if (!imageResult.imageDataUrl) {
+        throw new Error("No se pudo generar la imagen base para el video");
+      }
+      
+      console.log('✅ [generateFlyerVideo] Imagen base generada:', imageResult.imageDataUrl.substring(0, 50) + '...');
+      
+      // Step 2: Convertir imagen a video usando Chutes API
+      console.log('🎬 [generateFlyerVideo] Paso 2: Convirtiendo a video con Chutes (Wan-2.2-I2V-14B-Fast)...');
+      
+      // Construir prompt de movimiento basado en el estilo
       const videoStyleKey = styleKey.startsWith('video_') ? styleKey : `video_${styleKey}`;
       const videoStyleConfig = VIDEO_STYLES[videoStyleKey];
+      const styleConfig = FLYER_STYLES[styleKey];
       
-      // Si no existe el estilo de video, usar fallback de FLYER_STYLES
-      const styleConfig = videoStyleConfig ? null : FLYER_STYLES[styleKey];
-      
-      let motionPrompt: string;
-      let promptBase: string;
-      
+      let motionPrompt = "";
       if (videoStyleConfig) {
-        // Usar configuración de VIDEO_STYLES
-        motionPrompt = videoStyleConfig.motionStyle || "Cinematic steady motion.";
-        promptBase = videoStyleConfig.prompt || "";
+        motionPrompt = videoStyleConfig.prompt || "";
       } else if (styleConfig) {
-        // Fallback a FLYER_STYLES
-        motionPrompt = styleConfig.video_motion || "Cinematic steady motion.";
-        promptBase = styleConfig.english_prompt || "";
-      } else {
-        // Fallback por defecto
-        motionPrompt = "Cinematic steady motion.";
-        promptBase = "Professional commercial video.";
+        motionPrompt = styleConfig.video_motion || "";
       }
-
-      // VIDEO SPECIFIC CLEANING:
-      const cleanDescription = enhancedDescription
-        .replace(/'[^']*'/g, '') // Remove quoted text
-        .replace(/text saying/gi, '')
-        .replace(/\b(letrero|cartel|sign|banner|logo|marca|brand|label|writing|words|letters)\b/gi, '') // Remove trigger nouns
-        .trim();
-
-      // PRODUCT OVERLAY STRATEGY FOR VIDEO
-      let productPromptSuffix = "";
-      if (hasProductOverlay) {
-        // If overlay is on, we want a moving background but NO subject in the middle.
-        productPromptSuffix = " EMPTY CENTER. BACKGROUND ONLY. No main subject. Focus on environment texture and lighting.";
-      }
-
-      // Simplify prompt for Draft Video too
-      let finalPrompt = "";
-      if (quality === 'draft') {
-         finalPrompt = `HIGH FIDELITY PHYSICS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.`;
-      } else {
-         finalPrompt = `HIGH FIDELITY PHYSICS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.`;
-      }
-  
-      let operation = await ai.models.generateVideos({
-        model,
-        prompt: finalPrompt,
-        config: {
-          numberOfVideos: 1,
-          resolution: resolution,
-          aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
-                       aspectRatio === '1.91:1' ? '16:9' :
-                       aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
-                       aspectRatio === '1080x1080' ? '1:1' :
-                       '16:9'
+      
+      // Usar Chutes API para convertir imagen a video
+      const chutesResult: ChutesVideoResponse = await generateVideoFromImage(
+        imageResult.imageDataUrl,
+        motionPrompt || enhancedDescription,
+        {
+          steps: quality === 'draft' ? 20 : 25,
+          fps: quality === 'draft' ? 16 : 24,
+          seed: seed,
+          guidanceScale: 5.0,
+          onProgress: (status) => {
+            console.log(`📹 [Chutes] ${status}`);
+          }
         }
-      });
-  
-      console.log("Generating video operation started...");
-      while (!operation.done) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        operation = await ai.operations.getVideosOperation({operation: operation});
-      }
-  
-      const uri = operation.response?.generatedVideos?.[0]?.video?.uri;
-      if (!uri) throw new Error("No video URI returned.");
-
-      console.log("📹 Video URI received:", uri);
-
-      // CRITICAL FIX: Fetch the video bytes and create a Blob.
-      // Direct access to the URI fails in <video> tags due to CORS/Auth issues.
-      // Use same API key pattern as getAiClient
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-      const videoUrl = `${uri}&key=${apiKey}`;
-      console.log("Downloading video bytes...");
-
-      const response = await fetch(videoUrl);
+      );
       
-      if (!response.ok) {
-          console.error("❌ Video download failed:", response.status, response.statusText);
-          throw new Error(`Failed to download video: ${response.statusText}`);
+      if (!chutesResult.success || !chutesResult.videoUrl) {
+        console.error('❌ [generateFlyerVideo] Error con Chutes:', chutesResult.error);
+        throw new Error(chutesResult.error || "Falló la generación del video con Chutes");
       }
-
-      const blob = await response.blob();
-      console.log("📹 Blob info:", {
-        type: blob.type,
-        size: blob.size
-      });
-
-      // VALIDACIÓN: Detectar video vacío o corrupto
-      if (blob.size < 1000) {
-        console.error("❌ Video blob is too small (likely black/corrupt):", blob.size, "bytes");
-        throw new Error("Video generado está vacío o corrupto. Intenta con una descripción diferente.");
-      }
-
-      // Verificar que sea un video válido
-      if (!blob.type.startsWith('video/')) {
-        console.error("❌ Invalid blob type:", blob.type);
-        throw new Error("El archivo descargado no es un video válido.");
-      }
-
-      const localBlobUrl = URL.createObjectURL(blob);
       
-      console.log("✅ Video downloaded successfully:", {
-        url: localBlobUrl,
-        size: blob.size,
-        type: blob.type
-      });
-      return localBlobUrl;
+      console.log('✅ [generateFlyerVideo] Video generado exitosamente:', chutesResult.videoUrl);
+      return chutesResult.videoUrl;
 
     } catch (error) {
-      console.error("Video Error:", error);
-      throw new Error("Falló la generación del video.");
+      console.error("❌ [generateFlyerVideo] Video Error:", error);
+      // Fallback: intentar con VEO si Chutes falla
+      console.log('🔄 [generateFlyerVideo] Intentando fallback con Google VEO...');
+      return await generateFlyerVideoVEO(
+        enhancedDescription,
+        styleKey,
+        aspectRatio,
+        quality,
+        hasProductOverlay
+      );
     }
   };
+
+/**
+ * Fallback: Generar video usando Google VEO (original implementation)
+ */
+const generateFlyerVideoVEO = async (
+  enhancedDescription: string,
+  styleKey: FlyerStyleKey,
+  aspectRatio: AspectRatio,
+  quality: ImageQuality,
+  hasProductOverlay: boolean = false
+): Promise<string> => {
+  try {
+    const ai = getAiClient();
+    const model = quality === 'draft' ? 'veo-3.1-fast-generate-preview' : 'veo-3.1-generate-preview';
+    const resolution = quality === 'draft' ? '720p' : '1080p';
+    
+    // Usar VIDEO_STYLES para videos (tiene todos los prompts de video configurados)
+    const videoStyleKey = styleKey.startsWith('video_') ? styleKey : `video_${styleKey}`;
+    const videoStyleConfig = VIDEO_STYLES[videoStyleKey];
+    
+    // Si no existe el estilo de video, usar fallback de FLYER_STYLES
+    const styleConfig = videoStyleConfig ? null : FLYER_STYLES[styleKey];
+    
+    let motionPrompt: string;
+    let promptBase: string;
+    
+    if (videoStyleConfig) {
+      // Usar configuración de VIDEO_STYLES
+      motionPrompt = videoStyleConfig.motionStyle || "Cinematic steady motion.";
+      promptBase = videoStyleConfig.prompt || "";
+    } else if (styleConfig) {
+      // Fallback a FLYER_STYLES
+      motionPrompt = styleConfig.video_motion || "Cinematic steady motion.";
+      promptBase = styleConfig.english_prompt || "";
+    } else {
+      // Fallback por defecto
+      motionPrompt = "Cinematic steady motion.";
+      promptBase = "Professional commercial video.";
+    }
+
+    // VIDEO SPECIFIC CLEANING:
+    const cleanDescription = enhancedDescription
+      .replace(/'[^']*'/g, '') // Remove quoted text
+      .replace(/text saying/gi, '')
+      .replace(/\b(letrero|cartel|sign|banner|logo|marca|brand|label|writing|words|letters)\b/gi, '') // Remove trigger nouns
+      .trim();
+
+    // PRODUCT OVERLAY STRATEGY FOR VIDEO
+    let productPromptSuffix = "";
+    if (hasProductOverlay) {
+      // If overlay is on, we want a moving background but NO subject in the middle.
+      productPromptSuffix = " EMPTY CENTER. BACKGROUND ONLY. No main subject. Focus on environment texture and lighting.";
+    }
+
+    // Simplify prompt for Draft Video too
+    let finalPrompt = "";
+    if (quality === 'draft') {
+       finalPrompt = `HIGH FIDELITY PHYSICS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.`;
+    } else {
+       finalPrompt = `HIGH FIDELITY PHYSICS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.`;
+    }
+
+    let operation = await ai.models.generateVideos({
+      model,
+      prompt: finalPrompt,
+      config: {
+        numberOfVideos: 1,
+        resolution: resolution,
+        aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
+                     aspectRatio === '1.91:1' ? '16:9' :
+                     aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
+                     aspectRatio === '1080x1080' ? '1:1' :
+                     '16:9'
+      }
+    });
+
+    console.log("Generating video operation started...");
+    while (!operation.done) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      operation = await ai.operations.getVideosOperation({operation: operation});
+    }
+
+    const uri = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!uri) throw new Error("No video URI returned.");
+
+    console.log("📹 Video URI received:", uri);
+
+    // CRITICAL FIX: Fetch the video bytes and create a Blob.
+    // Direct access to the URI fails in <video> tags due to CORS/Auth issues.
+    // Use same API key pattern as getAiClient
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const videoUrl = `${uri}&key=${apiKey}`;
+    console.log("Downloading video bytes...");
+
+    const response = await fetch(videoUrl);
+    
+    if (!response.ok) {
+        console.error("❌ Video download failed:", response.status, response.statusText);
+        throw new Error(`Failed to download video: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    console.log("📹 Blob info:", {
+      type: blob.type,
+      size: blob.size
+    });
+
+    // VALIDACIÓN: Detectar video vacío o corrupto
+    if (blob.size < 1000) {
+      console.error("❌ Video blob is too small (likely black/corrupt):", blob.size, "bytes");
+      throw new Error("Video generado está vacío o corrupto. Intenta con una descripción diferente.");
+    }
+
+    // Verificar que sea un video válido
+    if (!blob.type.startsWith('video/')) {
+      console.error("❌ Invalid blob type:", blob.type);
+      throw new Error("El archivo descargado no es un video válido.");
+    }
+
+    const localBlobUrl = URL.createObjectURL(blob);
+    
+    console.log("✅ Video downloaded successfully:", {
+      url: localBlobUrl,
+      size: blob.size,
+      type: blob.type
+    });
+    return localBlobUrl;
+
+  } catch (error) {
+    console.error("❌ Video Error (VEO fallback):", error);
+    throw new Error("Falló la generación del video con ambos proveedores (Chutes y VEO).");
+  }
+};
 
 /**
  * ============================================
