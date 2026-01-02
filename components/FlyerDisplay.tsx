@@ -1367,6 +1367,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       loop
                       playsInline
                     />
+                    {/* OVERLAYS PARA BORRADOR */}
+                    {renderLogoComparison(true)}
+                    {renderProductComparison(true)}
+                    {renderText(true)}
                   </div>
                 </div>
               </div>
@@ -1397,6 +1401,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       loop
                       playsInline
                     />
+                    {/* OVERLAYS PARA HD */}
+                    {renderLogoComparison(false)}
+                    {renderProductComparison(false)}
+                    {renderText(false)}
                   </div>
                 </div>
               </div>
