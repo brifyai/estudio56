@@ -1066,8 +1066,8 @@ const handleGenerate = async () => {
       </div>
 
       {/* LEFT PANEL: CONTROLS */}
-      <aside className="w-[440px] flex-shrink-0 flex flex-col z-20 h-full p-4">
-        <div className="glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
+      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-full p-2 md:p-4">
+        <div className="glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
             
             {/* Header */}
             <div className="h-14 flex items-center justify-between px-4 border-b border-white/5">
@@ -1195,8 +1195,8 @@ const handleGenerate = async () => {
       </aside>
 
       {/* CENTER: CANVAS */}
-      <main className="flex-1 flex flex-col relative z-10 p-4 pl-0">
-         <div className="w-full h-full rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
+      <main className="flex-1 flex flex-col relative z-10 p-2 md:p-4 pl-0">
+         <div className="w-full h-full rounded-xl md:rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
              
              {/* Top Bar */}
              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
@@ -1267,8 +1267,8 @@ const handleGenerate = async () => {
       </main>
 
       {/* RIGHT PANEL: CALENDAR - Más angosto */}
-      <aside className={`${showCalendar ? 'w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-20 h-full py-4 pr-4 transition-all duration-300 overflow-hidden`}>
-        <div className={`glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
+      <aside className={`${showCalendar ? 'w-0 md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-20 h-full py-2 md:py-4 pr-2 md:pr-4 transition-all duration-300 overflow-hidden`}>
+        <div className={`glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
           <CommercialCalendar
             onGenerateForEvent={(event) => {
               // Pre-llenar la descripción con el evento comercial
