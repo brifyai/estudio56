@@ -14,6 +14,9 @@ interface FlyerDisplayProps {
   imageUrl: string | null;
   draftImageUrl?: string | null;
   hdImageUrl?: string | null;
+  // Videos draft/HD
+  draftVideoUrl?: string | null;
+  hdVideoUrl?: string | null;
   status: GenerationStatus;
   aspectRatio: AspectRatio;
   logoUrl: string | null;
@@ -59,6 +62,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   imageUrl,
   draftImageUrl,
   hdImageUrl,
+  // Videos
+  draftVideoUrl,
+  hdVideoUrl,
   status,
   aspectRatio,
   logoUrl,

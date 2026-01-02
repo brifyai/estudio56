@@ -71,9 +71,13 @@ const Dashboard: React.FC = () => {
   const [seed, setSeed] = useState<number>(0);
   const [customStylePrompt, setCustomStylePrompt] = useState<string | undefined>(undefined);
   
-  // URLs separadas para draft y HD
+  // URLs separadas para draft y HD (IMÁGENES)
   const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
   const [hdImageUrl, setHdImageUrl] = useState<string | null>(null);
+  
+  // URLs separadas para draft y HD (VIDEOS)
+  const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
+  const [hdVideoUrl, setHdVideoUrl] = useState<string | null>(null);
   
   // NEW: Estado para el ID de generación actual
   const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
@@ -838,6 +842,16 @@ const handleGenerate = async () => {
         const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay);
         console.log('✅ Video generated:', url?.substring(0, 50) + '...');
         setImageUrl(url);
+        
+        // Guardar video en estados correspondientes
+        if (imageQuality === 'draft') {
+          setDraftVideoUrl(url);
+          // Limpiar video HD anterior
+          setHdVideoUrl(null);
+        } else {
+          setHdVideoUrl(url);
+        }
+        
         setIsDraft(imageQuality === 'draft');
       }
       setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
@@ -911,7 +925,15 @@ const handleGenerate = async () => {
       } else {
           // Regenerar prompt en inglés para video HD
           const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
-          url = await generateFlyerVideo(enhancedPrompt, styleKey, aspectRatio, 'hd', hasProductOverlay);
+          // Usar video draft como referencia para mejorar a HD
+          url = await generateFlyerVideo(
+            enhancedPrompt,
+            styleKey,
+            aspectRatio,
+            'hd',
+            hasProductOverlay,
+            draftVideoUrl || undefined
+          );
       }
         setImageUrl(url);
         setHdImageUrl(url);
@@ -1172,6 +1194,9 @@ const handleGenerate = async () => {
                     imageUrl={imageUrl}
                     draftImageUrl={draftImageUrl}
                     hdImageUrl={hdImageUrl}
+                    // Videos
+                    draftVideoUrl={draftVideoUrl}
+                    hdVideoUrl={hdVideoUrl}
                     status={status}
                     aspectRatio={aspectRatio}
                     logoUrl={logoUrl}

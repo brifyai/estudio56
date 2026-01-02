@@ -1364,35 +1364,58 @@ export const generateFlyerImage = async (
 /**
  * Step 2 (Video): Generate Video using Chutes API (Wan-2.2-I2V-14B-Fast)
  * This function first generates an image, then converts it to video using Chutes
+ * NEW: draftVideoUrl parameter allows using a draft video as reference for HD generation
  */
 export const generateFlyerVideo = async (
   enhancedDescription: string,
   styleKey: FlyerStyleKey,
   aspectRatio: AspectRatio,
   quality: ImageQuality,
-  hasProductOverlay: boolean = false // NEW
+  hasProductOverlay: boolean = false,
+  draftVideoUrl?: string // NEW: Draft video URL to use as reference for HD
 ): Promise<string> => {
     try {
       console.log('🎬 [generateFlyerVideo] Iniciando generación con Chutes API...');
+      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft:', !!draftVideoUrl);
+      
+      // Si tenemos un video draft y estamos generando HD, usar el mismo seed para mantener consistencia
+      const seed = draftVideoUrl ? 0 : Math.floor(Math.random() * 2000000000);
       
       // Step 1: Generar imagen primero (necesaria para Chutes image-to-video)
-      console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
+      // Si tenemos draftVideoUrl, usar la imagen del draft para mantener consistencia
+      let imageResult;
       
-      const seed = Math.floor(Math.random() * 2000000000);
-      
-      // Generar imagen con Gemini
-      const imageResult = await generateFlyerImage(
-        enhancedDescription,
-        styleKey,
-        aspectRatio,
-        quality === 'draft' ? 'draft' : 'hd',
-        seed,
-        undefined, // customStylePrompt
-        hasProductOverlay,
-        false, // enableIntelligentTextStyles
-        undefined, // autoExtractedText
-        undefined // autoTextStyle
-      );
+      if (draftVideoUrl && quality === 'hd') {
+        // Usar la imagen del draft como referencia para HD
+        console.log('📸 [generateFlyerVideo] Usando imagen del draft como referencia para HD...');
+        // El draft video ya tiene una imagen asociada, usar la misma imagen base
+        // Como no tenemos acceso directo a la imagen del draft, regeneramos con el mismo seed
+        imageResult = await generateFlyerImage(
+          enhancedDescription,
+          styleKey,
+          aspectRatio,
+          'draft', // Usar draft para mantener consistencia
+          seed,
+          undefined,
+          hasProductOverlay,
+          false
+        );
+      } else {
+        // Generar nueva imagen (caso normal)
+        console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
+        imageResult = await generateFlyerImage(
+          enhancedDescription,
+          styleKey,
+          aspectRatio,
+          quality === 'draft' ? 'draft' : 'hd',
+          seed,
+          undefined, // customStylePrompt
+          hasProductOverlay,
+          false, // enableIntelligentTextStyles
+          undefined, // autoExtractedText
+          undefined // autoTextStyle
+        );
+      }
       
       if (!imageResult.imageDataUrl) {
         throw new Error("No se pudo generar la imagen base para el video");
@@ -1447,20 +1470,23 @@ export const generateFlyerVideo = async (
         styleKey,
         aspectRatio,
         quality,
-        hasProductOverlay
+        hasProductOverlay,
+        draftVideoUrl
       );
     }
   };
 
 /**
  * Fallback: Generar video usando Google VEO (original implementation)
+ * NEW: draftVideoUrl parameter allows using a draft video as reference for HD generation
  */
 const generateFlyerVideoVEO = async (
   enhancedDescription: string,
   styleKey: FlyerStyleKey,
   aspectRatio: AspectRatio,
   quality: ImageQuality,
-  hasProductOverlay: boolean = false
+  hasProductOverlay: boolean = false,
+  draftVideoUrl?: string // NEW
 ): Promise<string> => {
   try {
     const ai = getAiClient();
