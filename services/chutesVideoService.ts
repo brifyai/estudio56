@@ -138,17 +138,18 @@ export async function generateVideoFromImage(
     
     onProgress?.('Generando video con Chutes API (Wan-2.2-I2V-14B-Fast)...');
     
-    // Construir payload según la documentación de Chutes
+    // Construir payload según la documentación oficial de Chutes
+    // Endpoint: /generate con parámetros específicos
     const payload = {
       prompt: prompt,
-      image_b64: imageBase64,
+      image: imageBase64,  // 'image' no 'image_b64'
       steps: steps,
       fps: fps,
       frames: frames,
       seed: seed,
       guidance_scale: guidanceScale,
-      single_frame: CHUTES_VIDEO_CONFIG.defaultParams.singleFrame,
-      negative_prompt: CHUTES_VIDEO_CONFIG.negativePrompt
+      fast: true,  // Parámetro requerido
+      resolution: fps === 24 ? '720p' : '480p'  // Resolución según fps
     };
 
     // Obtener configuración de API
