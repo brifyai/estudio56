@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
   // URLs separadas para draft y HD (VIDEOS)
   const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
   const [hdVideoUrl, setHdVideoUrl] = useState<string | null>(null);
-  const [draftVideoSeed, setDraftVideoSeed] = useState<number>(0); // Seed del video draft para mantener consistencia en HD
+  const [draftVideoImageUrl, setDraftVideoImageUrl] = useState<string | null>(null); // Imagen draft usada para generar video
   
   // NEW: Estado para el ID de generación actual
   const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
@@ -840,14 +840,29 @@ const handleGenerate = async () => {
             message: imageQuality === 'draft' ? ':: SIMULANDO_FISICAS_RAPIDAS ::' : ':: PRODUCIENDO_VIDEO_CINEMATICO ::'
           });
         console.log('🎬 Generating video with aspectRatio:', aspectRatio);
-        const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay, newSeed);
+        // Generar imagen base para el video
+        const videoSeed = Math.floor(Math.random() * 2000000000);
+        const imageResult = await generateFlyerImage(
+          enhancedPrompt,
+          effectiveStyleKey,
+          aspectRatio,
+          'draft', // Siempre usar draft para la imagen base del video
+          videoSeed,
+          undefined, // customStylePrompt
+          hasProductOverlay,
+          false, // enableIntelligentTextStyles
+          undefined, // autoExtractedText
+          undefined // autoTextStyle
+        );
+        
+        const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay, imageResult.imageDataUrl);
         console.log('✅ Video generated:', url?.substring(0, 50) + '...');
         setImageUrl(url);
         
-        // Guardar video en estados correspondientes
+        // Guardar video e imagen en estados correspondientes
         if (imageQuality === 'draft') {
           setDraftVideoUrl(url);
-          setDraftVideoSeed(newSeed); // Guardar seed para usar en HD
+          setDraftVideoImageUrl(imageResult.imageDataUrl); // Guardar imagen para usar en HD
           // Limpiar video HD anterior
           setHdVideoUrl(null);
         } else {
@@ -927,14 +942,14 @@ const handleGenerate = async () => {
       } else {
           // Regenerar prompt en inglés para video HD
             const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
-            // Usar video draft y su seed como referencia para mejorar a HD
+            // Usar imagen draft como referencia para mantener consistencia
             url = await generateFlyerVideo(
               enhancedPrompt,
               styleKey,
               aspectRatio,
               'hd',
               hasProductOverlay,
-              draftVideoSeed || 0 // Usar el seed del draft para mantener consistencia
+              draftVideoImageUrl || undefined // Usar imagen draft para mantener consistencia
             );
       }
         setImageUrl(url);
@@ -990,7 +1005,19 @@ const handleGenerate = async () => {
          setAutoTextValidation(result.autoTextValidation);
          setEnhancedStyles(result.enhancedStyles);
       } else {
-         url = await generateFlyerVideo(newPrompt, styleKey, aspectRatio, qualityToUse, hasProductOverlay, seed);
+         // Para refine de video, generar nueva imagen base
+         const refineSeed = Math.floor(Math.random() * 2000000000);
+         const refineImageResult = await generateFlyerImage(
+           newPrompt,
+           styleKey,
+           aspectRatio,
+           'draft',
+           refineSeed,
+           undefined,
+           hasProductOverlay,
+           false
+         );
+         url = await generateFlyerVideo(newPrompt, styleKey, aspectRatio, qualityToUse, hasProductOverlay, refineImageResult.imageDataUrl);
       }
       setImageUrl(url);
       setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });

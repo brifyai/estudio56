@@ -1364,7 +1364,8 @@ export const generateFlyerImage = async (
 /**
  * Step 2 (Video): Generate Video using Chutes API (Wan-2.2-I2V-14B-Fast)
  * This function first generates an image, then converts it to video using Chutes
- * NEW: draftSeed parameter allows using the same seed as draft for HD generation (maintains consistency)
+ * NEW: draftImageUrl parameter allows using the draft image directly for HD video generation
+ * This ensures the HD video is based on the EXACT same image as the draft
  */
 export const generateFlyerVideo = async (
   enhancedDescription: string,
@@ -1372,36 +1373,26 @@ export const generateFlyerVideo = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   hasProductOverlay: boolean = false,
-  draftSeed?: number // NEW: Draft seed to use for HD generation (maintains consistency)
+  draftImageUrl?: string // NEW: Use draft image directly for HD to ensure consistency
 ): Promise<string> => {
     try {
       console.log('🎬 [generateFlyerVideo] Iniciando generación con Chutes API...');
-      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft seed:', !!draftSeed);
+      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft image:', !!draftImageUrl);
       
-      // Si tenemos un seed del draft, usarlo para mantener consistencia; si no, generar nuevo
-      const seed = draftSeed || Math.floor(Math.random() * 2000000000);
+      // Step 1: Obtener la imagen base
+      let imageDataUrl: string;
+      let seed: number;
       
-      // Step 1: Generar imagen primero (necesaria para Chutes image-to-video)
-      // Si tenemos draftSeed, usar el mismo seed para mantener consistencia
-      let imageResult;
-      
-      if (draftSeed && quality === 'hd') {
-        // Usar el mismo seed del draft para HD
-        console.log('📸 [generateFlyerVideo] Usando seed del draft para mantener consistencia:', seed);
-        imageResult = await generateFlyerImage(
-          enhancedDescription,
-          styleKey,
-          aspectRatio,
-          'hd', // Usar HD directamente para mejor calidad
-          seed,
-          undefined,
-          hasProductOverlay,
-          false
-        );
+      if (draftImageUrl && quality === 'hd') {
+        // USAR LA IMAGEN DEL DRAFT DIRECTAMENTE para garantizar consistencia
+        console.log('📸 [generateFlyerVideo] Usando imagen del draft directamente para HD:', draftImageUrl.substring(0, 50) + '...');
+        imageDataUrl = draftImageUrl;
+        seed = Math.floor(Math.random() * 2000000000);
       } else {
-        // Generar nueva imagen (caso normal)
+        // Generar nueva imagen (caso normal: draft o HD sin draft previo)
+        seed = Math.floor(Math.random() * 2000000000);
         console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
-        imageResult = await generateFlyerImage(
+        const imageResult = await generateFlyerImage(
           enhancedDescription,
           styleKey,
           aspectRatio,
@@ -1413,13 +1404,14 @@ export const generateFlyerVideo = async (
           undefined, // autoExtractedText
           undefined // autoTextStyle
         );
+        
+        if (!imageResult.imageDataUrl) {
+          throw new Error("No se pudo generar la imagen base para el video");
+        }
+        
+        imageDataUrl = imageResult.imageDataUrl;
+        console.log('✅ [generateFlyerVideo] Imagen base generada:', imageDataUrl.substring(0, 50) + '...');
       }
-      
-      if (!imageResult.imageDataUrl) {
-        throw new Error("No se pudo generar la imagen base para el video");
-      }
-      
-      console.log('✅ [generateFlyerVideo] Imagen base generada:', imageResult.imageDataUrl.substring(0, 50) + '...');
       
       // Step 2: Convertir imagen a video usando Chutes API
       console.log('🎬 [generateFlyerVideo] Paso 2: Convirtiendo a video con Chutes (Wan-2.2-I2V-14B-Fast)...');
@@ -1438,7 +1430,7 @@ export const generateFlyerVideo = async (
       
       // Usar Chutes API para convertir imagen a video
       const chutesResult: ChutesVideoResponse = await generateVideoFromImage(
-        imageResult.imageDataUrl,
+        imageDataUrl,
         motionPrompt || enhancedDescription,
         {
           steps: quality === 'draft' ? 20 : 25,
@@ -1469,7 +1461,7 @@ export const generateFlyerVideo = async (
         aspectRatio,
         quality,
         hasProductOverlay,
-        draftSeed
+        undefined // draftSeed no disponible en nuevo enfoque
       );
     }
   };
