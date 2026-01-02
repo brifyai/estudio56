@@ -16,6 +16,7 @@ import { CommercialCalendar } from './components/CommercialCalendar';
 import { CalendarNotifications } from './components/CalendarNotifications';
 import { BrandPanel } from './components/BrandPanel';
 import { BrandNotifications } from './components/BrandNotifications';
+import { MobileMenu } from './components/MobileMenu';
 import { supabase } from './services/supabaseService';
 import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
 import { enhancePrompt, generateFlyerImage, generateFlyerVideo, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
@@ -29,6 +30,7 @@ const Dashboard: React.FC = () => {
   const [showPricing, setShowPricing] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [showBrandPanel, setShowBrandPanel] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
@@ -1194,15 +1196,25 @@ const handleGenerate = async () => {
       {/* CENTER: CANVAS */}
       <main className="flex-1 flex flex-col relative z-10 p-4 pl-0">
          <div className="w-full h-full rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
-            
-            {/* Top Bar */}
-            <header className="h-14 flex items-center justify-between px-6 border-b border-white/5">
-                <div className="flex items-center gap-4 text-xs font-medium text-white/50">
-                    <span className={!imageUrl ? "text-white" : ""}>Diseño</span>
-                    <span>/</span>
-                    <span className={imageUrl ? "text-white" : ""}>Previsualización</span>
-                </div>
-                <div className="flex items-center gap-2">
+             
+             {/* Top Bar */}
+             <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
+                 <div className="flex items-center gap-3 md:gap-4 text-xs font-medium text-white/50">
+                     {/* Mobile Menu Button */}
+                     <button
+                       onClick={() => setShowMobileMenu(true)}
+                       className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                     >
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                       </svg>
+                     </button>
+                     
+                     <span className={!imageUrl ? "text-white" : ""}>Diseño</span>
+                     <span>/</span>
+                     <span className={imageUrl ? "text-white" : ""}>Previsualización</span>
+                 </div>
+                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => window.location.href = '/perfil'}
                         className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
@@ -1287,18 +1299,42 @@ const handleGenerate = async () => {
       />
 
      {/* MODALS */}
-      <PricingModal 
-        isOpen={showPricing} 
-        onClose={() => setShowPricing(false)} 
-        onSelectPlan={setActivePlan}
-      />
-      <StyleGallery 
-        isOpen={showGallery} 
-        onClose={() => setShowGallery(false)} 
-        onSelect={handleStyleSelect} 
-      />
-    </div>
-  );
+     <PricingModal
+       isOpen={showPricing}
+       onClose={() => setShowPricing(false)}
+       onSelectPlan={setActivePlan}
+     />
+     <StyleGallery
+       isOpen={showGallery}
+       onClose={() => setShowGallery(false)}
+       onSelect={handleStyleSelect}
+     />
+     
+     {/* MOBILE MENU */}
+     <MobileMenu
+       isOpen={showMobileMenu}
+       onClose={() => setShowMobileMenu(false)}
+       onNavigate={(route) => {
+         window.location.href = route;
+       }}
+       activePlan={activePlan}
+       onOpenPricing={() => {
+         setShowMobileMenu(false);
+         setShowPricing(true);
+       }}
+       onOpenBrandPanel={() => {
+         setShowMobileMenu(false);
+         setShowBrandPanel(true);
+       }}
+       selectedBrandName={selectedBrand?.name}
+       onLogout={async () => {
+         await supabase.auth.signOut();
+         setHasKey(false);
+         window.location.href = '/';
+       }}
+     />
+   </div>
+ );
 };
 
 // Main App Component with Routing

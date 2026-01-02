@@ -80,3 +80,16 @@ body {
 .animate-slide-in-left {
   animation: slideInLeft 0.3s ease-out;
 }
+
+/* Mobile Menu Responsive Styles */
+@media (min-width: 768px) {
+  .mobile-menu-button {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
