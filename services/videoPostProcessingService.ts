@@ -153,22 +153,20 @@ export async function processVideoWithOverlays(
     await ffmpeg!.writeFile('input.mp4', videoData);
 
     // Escribir logo si existe
-    let logoFilter = '';
+    let hasLogo = false;
     if (logoUrl) {
       onProgress?.(25, 'Cargando logo...');
       try {
         const logoData = await downloadFile(logoUrl);
         await ffmpeg!.writeFile('logo.png', logoData);
-        
-        // Redimensionar logo a 180px de ancho, posición superior derecha con 30px margen
-        logoFilter = '[1:v]scale=180:-1,format=rgba,colorchannelmixer=aa=0.9[logo];';
+        hasLogo = true;
       } catch (logoError) {
         console.warn('No se pudo cargar el logo, continuando sin él:', logoError);
       }
     }
 
     // Construir filter_complex para texto
-    let textFilter = '';
+    let textDrawFilter = '';
     if (overlayText) {
       onProgress?.(35, 'Preparando texto...');
       
@@ -183,8 +181,8 @@ export async function processVideoWithOverlays(
       const xPos = `${textPosition.x}%`;
       const yPos = `${textPosition.y}%`;
       
-      // Añadir texto centrado en la parte inferior
-      textFilter = `,drawtext=text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=10:enable='between(t,0,999999)'`;
+      // Añadir texto centrado
+      textDrawFilter = `drawtext=text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=10`;
     }
 
     // Construir comando FFmpeg
@@ -192,21 +190,26 @@ export async function processVideoWithOverlays(
     
     const threads = getHardwareConcurrency();
     
-    // Filter complex: superponer logo y texto
+    // Filter complex: superponer logo y texto correctamente
     let filterComplex = '';
-    if (logoFilter || textFilter) {
-      // Entrada 0 = video, Entrada 1 = logo (si existe)
-      const logoInput = logoUrl ? '[1:v]' : '';
-      const logoScale = logoUrl ? '[logo]' : '';
-      
-      filterComplex = `${logoFilter}[0:v]${textFilter}`;
+    
+    if (hasLogo && overlayText) {
+      // Logo + Texto: overlay del logo, luego drawtext
+      // Logo redimensionado a 180px, posicionado en esquina superior derecha (main_w - 180 - 30, 30)
+      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=main_w-180-30:30,${textDrawFilter}[out]`;
+    } else if (hasLogo) {
+      // Solo logo
+      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=main_w-180-30:30[out]`;
+    } else if (overlayText) {
+      // Solo texto
+      filterComplex = `[0:v]${textDrawFilter}[out]`;
     }
 
     const args = [
       '-i', 'input.mp4',
-      ...(logoUrl ? ['-i', 'logo.png'] : []),
+      ...(hasLogo ? ['-i', 'logo.png'] : []),
       ...(filterComplex ? ['-filter_complex', filterComplex] : []),
-      '-map', '[out]',
+      ...(filterComplex ? ['-map', '[out]'] : []),
       '-map', '0:a?',
       '-c:v', 'libx264',
       '-preset', 'superfast',
@@ -217,7 +220,7 @@ export async function processVideoWithOverlays(
     ];
 
     // Si no hay overlays, usar comando simple
-    if (!logoUrl && !overlayText) {
+    if (!hasLogo && !overlayText) {
       args.splice(2); // Remover filtros
       args.push('output.mp4');
     }
@@ -240,7 +243,7 @@ export async function processVideoWithOverlays(
     try {
       await ffmpeg!.deleteFile('input.mp4');
       await ffmpeg!.deleteFile('output.mp4');
-      if (logoUrl) {
+      if (hasLogo) {
         await ffmpeg!.deleteFile('logo.png');
       }
     } catch (cleanupError) {
