@@ -1016,27 +1016,19 @@ const handleGenerate = async () => {
         <div className="glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
             
             {/* Header */}
-            <div className="h-16 flex items-center justify-between px-6 border-b border-white/5">
-                <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                    <span className="font-bold text-lg tracking-tight">Estudio 56</span>
+            <div className="h-14 flex items-center justify-between px-4 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                    <span className="font-bold text-base tracking-tight">Estudio 56</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    {/* Home Button */}
-                    <button
-                      onClick={() => window.location.href = '/'}
-                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg text-white/70 transition-all hover:border-white/30 flex items-center gap-1.5"
-                    >
-                        🏠
-                    </button>
-                    
-                    {/* Brand Selector - Mejorado */}
+                <div className="flex items-center gap-1">
+                    {/* Brand Selector - Más compacto */}
                     <button
                       onClick={() => setShowBrandPanel(true)}
-                      className="flex items-center gap-1.5 text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg text-white/70 transition-all hover:border-white/30 group"
+                      className="flex items-center gap-1.5 h-7 px-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 group"
                     >
                       <div
-                        className="w-4 h-4 rounded flex items-center justify-center text-xs"
+                        className="w-4 h-4 rounded flex items-center justify-center text-[10px]"
                         style={{
                           backgroundColor: selectedBrand?.primary_color || '#333',
                           color: selectedBrand?.primary_color === '#FFFFFF' ? '#000' : '#fff'
@@ -1044,34 +1036,18 @@ const handleGenerate = async () => {
                       >
                         {selectedBrand?.name ? selectedBrand.name.charAt(0).toUpperCase() : '🏪'}
                       </div>
-                      <span className="max-w-[80px] truncate font-medium">
+                      <span className="max-w-[60px] truncate text-[10px] font-medium">
                         {selectedBrand?.name || 'Marca'}
                       </span>
-                      <svg className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
                     </button>
                     
-                    {/* Notifications Bell */}
-                    <BrandNotifications
-                      brand={selectedBrand}
-                      onGenerateForEvent={async (event, brand) => {
-                        const prompt = await generateEventPrompt(brand, event.name, event.date);
-                        setDescription(prompt);
-                        if (brand.industry) {
-                          setStyleKey(brand.industry as FlyerStyleKey);
-                        }
-                        console.log('🎯 Generando para evento:', event.name, 'con marca:', brand.name);
-                      }}
-                    />
-                    
-                    {/* Plan Button */}
+                    {/* Plan Button - Más compacto */}
                     <button
                       onClick={() => setShowPricing(true)}
-                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg text-white/70 transition-all hover:border-white/30 flex items-center gap-1.5"
+                      className="flex items-center gap-1 h-7 px-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30"
                     >
                         <span className={`w-1.5 h-1.5 rounded-full ${activePlan === 'GRATIS' ? 'bg-gray-500' : 'bg-yellow-400 animate-pulse'}`}></span>
-                        <span className="hidden sm:inline">{activePlan}</span>
+                        <span className="text-[10px]">{activePlan}</span>
                     </button>
                 </div>
             </div>
