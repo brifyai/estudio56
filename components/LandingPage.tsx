@@ -297,13 +297,13 @@ export const LandingPage: React.FC = () => {
                     ></textarea>
                 </div>
 
-                <button 
+                <button
                     disabled={formState !== 'idle'}
-                    type="submit" 
+                    type="submit"
                     className="w-full bg-white text-black font-black text-xl py-4 rounded-xl hover:bg-gray-200 transition-colors uppercase tracking-tight flex items-center justify-center gap-2"
                 >
                     {formState === 'idle' && (
-                        <><span>📩</span> ENVIAR MENSAJE</>
+                        <>ENVIAR MENSAJE</>
                     )}
                     {formState === 'submitting' && (
                         <><span>⏳</span> ENVIANDO...</>
