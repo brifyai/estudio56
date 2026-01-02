@@ -11,6 +11,7 @@ export const RegisterPage: React.FC = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +123,37 @@ Serás redirigido al login.`);
     }
   };
 
+  const handleGoogleSignup = async () => {
+    setLoadingGoogle(true);
+    setError(null);
+
+    try {
+      console.log('🔄 Iniciando registro con Google...');
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+
+      if (error) {
+        console.error('❌ Error con Google:', error);
+        setError('Error al registrarse con Google: ' + error.message);
+      }
+      // Note: On success, the user will be redirected to /auth/callback
+    } catch (err: any) {
+      console.error('❌ Error general con Google:', err);
+      setError(err.message || 'Error inesperado con Google');
+    } finally {
+      setLoadingGoogle(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-black flex items-center justify-center relative overflow-hidden font-sans">
       
@@ -215,6 +247,33 @@ Serás redirigido al login.`);
                     )}
                 </button>
             </form>
+
+            <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-[#0e0e0e] px-2 text-white/30 font-mono">O regístrate con</span>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                onClick={handleGoogleSignup}
+                disabled={loadingGoogle}
+                className="w-full bg-white/5 border border-white/10 text-white font-medium py-3 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 group disabled:opacity-50"
+            >
+                {loadingGoogle ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                    <>
+                        <svg className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+                        </svg>
+                        <span>Continuar con Google</span>
+                    </>
+                )}
+            </button>
 
             <div className="mt-6 pt-6 border-t border-white/10 text-center">
                 <p className="text-white/40 text-xs mb-2">¿Ya eres parte del estudio?</p>

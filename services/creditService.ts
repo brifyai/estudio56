@@ -126,7 +126,7 @@ export const creditService = {
       const { data, error } = await supabase
         .rpc('can_use_credit', {
           user_uuid: session.user.id,
-          credit_type: creditType,
+          p_credit_type: creditType,
           amount_needed: amount
         });
 
@@ -158,7 +158,7 @@ export const creditService = {
       const { data, error } = await supabase
         .rpc('deduct_credit', {
           user_uuid: session.user.id,
-          credit_type: creditType,
+          p_credit_type: creditType,
           amount: amount,
           description: description || null,
           reference_id: referenceId || null
@@ -218,7 +218,7 @@ export const creditService = {
       const { error } = await supabase
         .rpc('add_credits', {
           user_uuid: session.user.id,
-          credit_type: creditType,
+          p_credit_type: creditType,
           amount: amount,
           transaction_type: transactionType,
           description: description || null

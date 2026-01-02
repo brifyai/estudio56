@@ -12,9 +12,15 @@ import { RegisterPage } from './components/RegisterPage';
 import { AuthCallback } from './components/AuthCallback';
 import { DiagnosticPage } from './components/DiagnosticPage';
 import { ProfilePage } from './components/ProfilePage';
+import { CommercialCalendar } from './components/CommercialCalendar';
+import { CalendarNotifications } from './components/CalendarNotifications';
+import { BrandPanel } from './components/BrandPanel';
+import { BrandNotifications } from './components/BrandNotifications';
 import { supabase } from './services/supabaseService';
+import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
 import { enhancePrompt, generateFlyerImage, generateFlyerVideo, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
 import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
+import creditService from './services/creditService';
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
@@ -22,6 +28,7 @@ const Dashboard: React.FC = () => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showPricing, setShowPricing] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [showBrandPanel, setShowBrandPanel] = useState(false);
   
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
@@ -49,7 +56,14 @@ const Dashboard: React.FC = () => {
     setDescription('');
     setCustomStylePrompt(undefined);
     setOverlayText('');
+    setCurrentSpanishPrompt(''); // NEW: Limpiar también el prompt en español
     console.log('🧹 Entrada limpiada - análisis automático removido');
+  };
+  
+  // NEW: Handler para actualizar el prompt en español desde análisis de URL
+  const handleSpanishPromptUpdate = (prompt: string) => {
+    setCurrentSpanishPrompt(prompt);
+    console.log('📝 Prompt en español actualizado desde análisis de URL:', prompt.substring(0, 50) + '...');
   };
   
   const [imageQuality, setImageQuality] = useState<ImageQuality>('draft');
@@ -80,7 +94,8 @@ const Dashboard: React.FC = () => {
   const [overlayText, setOverlayText] = useState<string>('');
   const [overlayStyle, setOverlayStyle] = useState<OverlayStyle>('modern');
 
-  const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState<string>('');
+  // ELIMINADO: currentEnhancedPrompt ya no se muestra en UI, solo usamos spanishPrompt
+  const [currentSpanishPrompt, setCurrentSpanishPrompt] = useState<string>(''); // Prompt en español para mostrar al usuario
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   
   // NEW: Estados para análisis inteligente
@@ -125,6 +140,24 @@ const Dashboard: React.FC = () => {
     step: 'idle',
     message: ''
   });
+
+  // Brand state
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
+
+  // Load brands on mount
+  useEffect(() => {
+    const loadBrands = async () => {
+      const userBrands = await getUserBrands();
+      setBrands(userBrands);
+      if (userBrands.length > 0) {
+        // Try to get default brand, otherwise use first
+        const defaultBrand = userBrands.find(b => b.is_default) || userBrands[0];
+        setSelectedBrand(defaultBrand);
+      }
+    };
+    loadBrands();
+  }, []);
 
   useEffect(() => {
     // Enhanced auth check with better error handling
@@ -661,7 +694,7 @@ const handleGenerate = async () => {
     }
     setImageUrl(null);
     setHdImageUrl(null);
-    setCurrentEnhancedPrompt('');
+    setCurrentSpanishPrompt(''); // Limpiar prompt en español
     const newSeed = Math.floor(Math.random() * 2000000000);
     setSeed(newSeed);
     const hasProductOverlay = !!productUrl;
@@ -693,13 +726,42 @@ const handleGenerate = async () => {
     }
 
     try {
-      setStatus({ isLoading: true, step: 'translating', message: ':: ANALIZANDO_CONTEXTO ::' });
-      console.log('🔄 Enhancing prompt...');
-      const enhancedPrompt = await enhancePrompt(description, effectiveStyleKey);
-      console.log('✅ Enhanced prompt:', enhancedPrompt.substring(0, 100) + '...');
-      setCurrentEnhancedPrompt(enhancedPrompt);
-      
+      // 💰 DEDUCIR CRÉDITOS ANTES DE GENERAR
+      // NOTA: product_study NO descuenta créditos porque usa la imagen subida por el usuario
+      let creditDeducted = false;
       if (mediaType === 'image') {
+        const creditType = imageQuality === 'draft' ? 'draft' : 'final_image';
+        creditDeducted = await creditService.deductCredit(
+          creditType,
+          1,
+          `Generación de ${imageQuality === 'draft' ? 'borrador' : 'imagen HD'}`,
+          null
+        );
+        console.log(`💰 Crédito ${creditType} ${creditDeducted ? 'descontado' : 'NO descontado (sin créditos o error)'}`);
+      } else if (mediaType === 'video') {
+        creditDeducted = await creditService.deductCredit(
+          'video',
+          1,
+          'Generación de video',
+          null
+        );
+        console.log(`💰 Crédito video ${creditDeducted ? 'descontado' : 'NO descontado (sin créditos o error)'}`);
+      } else {
+        console.log(`💰 product_study - No se descuenta crédito (usa imagen subida por usuario)`);
+      }
+
+      setStatus({ isLoading: true, step: 'translating', message: ':: ANALIZANDO_CONTEXTO ::' });
+      // Obtenemos ambos prompts: inglés para la IA, español para mostrar al usuario
+      const { english: enhancedPrompt, spanish: spanishPrompt } = await enhancePrompt(description, effectiveStyleKey);
+      setCurrentSpanishPrompt(spanishPrompt);
+      
+      // Si es product_study, usar la imagen subida directamente (ya mejorada)
+      if (mediaType === 'product_study') {
+        // La imagen ya está en productUrl (mejorada con IA)
+        setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
+        console.log('📸 product_study - Usando imagen subida por el usuario');
+        return;
+      } else if (mediaType === 'image') {
         setStatus({
           isLoading: true,
           step: 'rendering',
@@ -745,7 +807,7 @@ const handleGenerate = async () => {
           const generation = await createGeneration({
             userId: (await supabase.auth.getSession()).data.session?.user.id || '',
             draftImageUrl: result.imageDataUrl,
-            prompt: enhancedPrompt,
+            prompt: enhancedPrompt, // Guardar el prompt en inglés para la IA
             styleKey: effectiveStyleKey,
             aspectRatio,
             seed: newSeed
@@ -787,19 +849,31 @@ const handleGenerate = async () => {
   };
 
   const handleUpgradeToHD = async () => {
-    if (!currentEnhancedPrompt) return;
+    if (!currentSpanishPrompt) return;
     const hasProductOverlay = !!productUrl;
     try {
+        // 💰 DEDUCIR CRÉDITO PARA HD
+        const creditDeducted = await creditService.deductCredit(
+          'final_image',
+          1,
+          'Mejora a imagen HD',
+          currentGenerationId || null
+        );
+        console.log(`💰 Crédito final_image ${creditDeducted ? 'descontado' : 'NO descontado (sin créditos o error)'}`);
+
         setStatus({ isLoading: true, step: 'rendering', message: ':: ESCALANDO_A_PRODUCCION ::' });
         let url;
         if (mediaType === 'image') {
+            // Regenerar prompt en inglés para HD
+            const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
+            
             // NEW: Pasar texto automático también en upgrade
             const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
             const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
             
             // NEW: Pasar imagen de borrador como referencia para mantener consistencia
             const result = await generateFlyerImage(
-              currentEnhancedPrompt,
+              enhancedPrompt,
               styleKey,
               aspectRatio,
               'hd',
@@ -834,9 +908,11 @@ const handleGenerate = async () => {
                 console.log('✅ Generación HD actualizada con ID:', currentGenerationId);
               }
             }
-        } else {
-            url = await generateFlyerVideo(currentEnhancedPrompt, styleKey, aspectRatio, 'hd', hasProductOverlay);
-        }
+      } else {
+          // Regenerar prompt en inglés para video HD
+          const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
+          url = await generateFlyerVideo(enhancedPrompt, styleKey, aspectRatio, 'hd', hasProductOverlay);
+      }
         setImageUrl(url);
         setHdImageUrl(url);
         setIsDraft(false);
@@ -847,12 +923,13 @@ const handleGenerate = async () => {
   };
 
   const handleRefine = async (instruction: string) => {
-    if (!currentEnhancedPrompt || !imageUrl) return;
+    if (!currentSpanishPrompt || !imageUrl) return;
     const hasProductOverlay = !!productUrl;
     try {
       setStatus({ isLoading: true, step: 'translating', message: ':: REFINANDO_LOGICA_PROMPT ::' });
-      const newPrompt = await refineDescription(currentEnhancedPrompt, instruction);
-      setCurrentEnhancedPrompt(newPrompt);
+      // Para refinar necesitamos el prompt en inglés original, lo regeneramos
+      const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
+      const newPrompt = await refineDescription(enhancedPrompt, instruction);
       const qualityToUse = isDraft ? 'draft' : 'hd';
       
       setStatus({ 
@@ -944,19 +1021,57 @@ const handleGenerate = async () => {
                     <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                     <span className="font-bold text-lg tracking-tight">Estudio 56</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                    {/* Home Button */}
                     <button
                       onClick={() => window.location.href = '/'}
-                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-white/70 transition-all uppercase hover:border-white/30 flex items-center gap-2"
+                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg text-white/70 transition-all hover:border-white/30 flex items-center gap-1.5"
                     >
-                        🏠 Inicio
+                        🏠
                     </button>
+                    
+                    {/* Brand Selector - Mejorado */}
+                    <button
+                      onClick={() => setShowBrandPanel(true)}
+                      className="flex items-center gap-1.5 text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg text-white/70 transition-all hover:border-white/30 group"
+                    >
+                      <div
+                        className="w-4 h-4 rounded flex items-center justify-center text-xs"
+                        style={{
+                          backgroundColor: selectedBrand?.primary_color || '#333',
+                          color: selectedBrand?.primary_color === '#FFFFFF' ? '#000' : '#fff'
+                        }}
+                      >
+                        {selectedBrand?.name ? selectedBrand.name.charAt(0).toUpperCase() : '🏪'}
+                      </div>
+                      <span className="max-w-[80px] truncate font-medium">
+                        {selectedBrand?.name || 'Marca'}
+                      </span>
+                      <svg className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {/* Notifications Bell */}
+                    <BrandNotifications
+                      brand={selectedBrand}
+                      onGenerateForEvent={async (event, brand) => {
+                        const prompt = await generateEventPrompt(brand, event.name, event.date);
+                        setDescription(prompt);
+                        if (brand.industry) {
+                          setStyleKey(brand.industry as FlyerStyleKey);
+                        }
+                        console.log('🎯 Generando para evento:', event.name, 'con marca:', brand.name);
+                      }}
+                    />
+                    
+                    {/* Plan Button */}
                     <button
                       onClick={() => setShowPricing(true)}
-                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded text-white/70 transition-all uppercase hover:border-white/30 flex items-center gap-2"
+                      className="text-[10px] font-mono bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg text-white/70 transition-all hover:border-white/30 flex items-center gap-1.5"
                     >
                         <span className={`w-1.5 h-1.5 rounded-full ${activePlan === 'GRATIS' ? 'bg-gray-500' : 'bg-yellow-400 animate-pulse'}`}></span>
-                        {activePlan}
+                        <span className="hidden sm:inline">{activePlan}</span>
                     </button>
                 </div>
             </div>
@@ -1004,6 +1119,10 @@ const handleGenerate = async () => {
                     manualTextStyles={manualTextStyles}
                     onManualTextStylesChange={setManualTextStyles}
                     onClearInput={handleClearInput}
+                    // NEW: Pasar prompt en español para mostrar al usuario
+                    currentSpanishPrompt={currentSpanishPrompt}
+                    // NEW: Callback para actualizar prompt desde análisis de URL
+                    onSpanishPromptUpdate={handleSpanishPromptUpdate}
                 />
                 
                 {/* Panel de Editor de Texto */}
@@ -1045,7 +1164,7 @@ const handleGenerate = async () => {
         </div>
       </aside>
 
-      {/* RIGHT AREA: CANVAS */}
+      {/* CENTER: CANVAS */}
       <main className="flex-1 flex flex-col relative z-10 p-4 pl-0">
          <div className="w-full h-full rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
             
@@ -1104,7 +1223,40 @@ const handleGenerate = async () => {
          </div>
       </main>
 
-      {/* MODALS */}
+      {/* RIGHT PANEL: CALENDAR - Más angosto */}
+      <aside className="w-[280px] flex-shrink-0 flex flex-col z-20 h-full py-4 pr-4">
+        <div className="glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
+          <CommercialCalendar
+            onGenerateForEvent={(event) => {
+              // Pre-llenar la descripción con el evento comercial
+              setDescription(`Oferta especial para ${event.name} - ${event.date}`);
+              console.log('🎯 Generando para evento:', event.name);
+            }}
+          />
+        </div>
+      </aside>
+
+      {/* NOTIFICACIONES DEL CALENDARIO */}
+      <CalendarNotifications
+        onGenerateForEvent={(event) => {
+          // Pre-llenar la descripción con el evento comercial
+          setDescription(`Oferta especial para ${event.name} - ${event.date}`);
+          console.log('🎯 Generando para evento:', event.name);
+        }}
+      />
+
+      {/* BRAND PANEL */}
+      <BrandPanel
+        isOpen={showBrandPanel}
+        onClose={() => setShowBrandPanel(false)}
+        onBrandSelect={(brand) => {
+          setSelectedBrand(brand);
+          setShowBrandPanel(false);
+        }}
+        selectedBrand={selectedBrand}
+      />
+
+     {/* MODALS */}
       <PricingModal 
         isOpen={showPricing} 
         onClose={() => setShowPricing(false)} 

@@ -574,6 +574,51 @@ export const STYLE_TEMPLATES: Record<FlyerStyleKey, StyleTemplate> = {
     }
   },
 
+  pilates: {
+    id: 'pilates',
+    name: 'Pilates / Core',
+    textPosition: { x: 50, y: 60, alignment: 'center' },
+    visualStyle: 'simple',
+    typography: {
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontSize: 'clamp(16px, 4.5vw, 28px)',
+      fontWeight: '400',
+      letterSpacing: '0.08em',
+      textTransform: 'none'
+    },
+    effects: {
+      scrim: {
+        enabled: true,
+        gradient: 'linear-gradient(135deg, rgba(85,107,47,0.6) 0%, rgba(107,142,35,0.3) 100%)',
+        intensity: 'light'
+      },
+      textShadow: {
+        enabled: true,
+        shadow: '0 1px 2px rgba(0,0,0,0.3)',
+        color: '#2F4F4F'
+      },
+      textStroke: {
+        enabled: false,
+        width: '0px',
+        color: '#FFFFFF'
+      },
+      glow: {
+        enabled: false,
+        color: '#8FBC8F',
+        blur: '0px'
+      }
+    },
+    colors: {
+      primary: '#8FBC8F',
+      secondary: '#2F4F4F',
+      background: 'transparent'
+    },
+    animations: {
+      entrance: 'fadeInUp 0.8s ease-out',
+      hover: 'none'
+    }
+  },
+
   summer_beach: {
     id: 'summer_beach',
     name: 'Verano',
@@ -942,7 +987,7 @@ export const STYLE_TEMPLATES: Record<FlyerStyleKey, StyleTemplate> = {
     textPosition: { x: 50, y: 45, alignment: 'center' }, // FASE 1: Mejorado de 50 a 45
     visualStyle: 'simple',
     typography: {
-      fontFamily: 'Comic Sans MS, cursive',
+      fontFamily: 'Fredoka One, "Balsamiq Sans", "Comic Neue", cursive',
       fontSize: 'clamp(24px, 8vw, 48px)',
       fontWeight: '900',
       letterSpacing: '0.02em',
@@ -1248,6 +1293,52 @@ export const STYLE_TEMPLATES: Record<FlyerStyleKey, StyleTemplate> = {
     },
     animations: {
       entrance: 'fadeIn 0.6s ease-out',
+      hover: 'none'
+    }
+  },
+
+  // === FERIA LIBRE / MERCADO CHILENO ===
+  market_handwritten: {
+    id: 'market_handwritten',
+    name: 'Feria / Mercado',
+    textPosition: { x: 50, y: 80, alignment: 'center' },
+    visualStyle: 'bottom-bar',
+    typography: {
+      fontFamily: '"Permanent Marker", "Patrick Hand", cursive',
+      fontSize: 'clamp(18px, 5vw, 32px)',
+      fontWeight: '400',
+      letterSpacing: '0.01em',
+      textTransform: 'uppercase'
+    },
+    effects: {
+      scrim: {
+        enabled: true,
+        gradient: 'linear-gradient(to top, rgba(255,255,0,0.9) 0%, rgba(255,220,0,0.7) 70%, transparent 100%)',
+        intensity: 'medium'
+      },
+      textShadow: {
+        enabled: false,
+        shadow: 'none',
+        color: '#000000'
+      },
+      textStroke: {
+        enabled: false,
+        width: '0px',
+        color: '#FFFFFF'
+      },
+      glow: {
+        enabled: false,
+        color: '#FFD700',
+        blur: '0px'
+      }
+    },
+    colors: {
+      primary: '#000000',
+      secondary: '#000080', // Azul plumón
+      background: '#FFFF00' // Resaltador amarillo
+    },
+    animations: {
+      entrance: 'fadeInUp 0.5s ease-out',
       hover: 'none'
     }
   }

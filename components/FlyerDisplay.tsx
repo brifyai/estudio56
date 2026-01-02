@@ -1365,7 +1365,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 'w-[320px] h-[569px]'}`}
           >
             <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-              <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+              {imageUrl && imageUrl.startsWith('blob:') ? (
+                <video
+                  src={imageUrl}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+              )}
               {renderLogo()}
               {renderProduct()}
               {renderText()}
@@ -1381,7 +1392,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 'w-[420px] h-[747px]'}`}
           >
             <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-              <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+              {imageUrl && imageUrl.startsWith('blob:') ? (
+                <video
+                  src={imageUrl}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+              )}
               {renderLogo()}
               {renderProduct()}
               {renderText()}
@@ -1404,7 +1426,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                             'w-[280px] h-[498px]'}`}
                       >
                         <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-                          <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+                          {imageUrl && imageUrl.startsWith('blob:') ? (
+                            <video
+                              src={imageUrl}
+                              className="w-full h-full object-cover"
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                            />
+                          ) : (
+                            <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+                          )}
                           {renderLogo()}
                           {renderProduct()}
                           {renderText()}
@@ -1435,7 +1468,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 'h-[50%] w-auto aspect-[9/16] max-w-[50vw]'}`}
           >
             <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-              <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+              {imageUrl && imageUrl.startsWith('blob:') ? (
+                <video
+                  src={imageUrl}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+              )}
               {renderLogo()}
               {renderProduct()}
               {renderText()}

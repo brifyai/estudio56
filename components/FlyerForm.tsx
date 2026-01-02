@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { FlyerStyleKey, AspectRatio, MediaType, ImageQuality, OverlayStyle } from '../types';
-import { FLYER_STYLES, ASPECT_RATIO_LABELS } from '../constants';
-import { analyzeUrlContent, generatePersuasiveText } from '../services/geminiService';
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle } from '../types';
+import { FLYER_STYLES, VIDEO_STYLES, ASPECT_RATIO_LABELS } from '../constants';
+import { analyzeUrlContent, generatePersuasiveText, INDUSTRY_TEXT_TEMPLATES, detectIndustryFromDescription, enhanceUserImage } from '../services/geminiService';
+import { REALITY_MODE_LABELS, type RealityMode } from '../src/constants/promptModifiers';
 import { ImageAnalysisResult } from '../services/imageAnalysisService';
-import { processMagicMode, MagicModeResult, STYLE_NAMES_ES } from '../services/magicModeService';
+import { processMagicMode, MagicModeResult, STYLE_NAMES_ES, detectVideoStyleFromInput, VIDEO_STYLE_NAMES_ES, getVideoStyleFromImageStyle } from '../services/magicModeService';
 
 interface FlyerFormProps {
   styleKey: FlyerStyleKey;
@@ -47,6 +48,8 @@ interface FlyerFormProps {
   manualTextStyles?: any; // NEW: Estilos manuales actuales
   onManualTextStylesChange?: (styles: any) => void; // NEW: Callback para estilos manuales
   onClearInput?: () => void; // NEW: Callback para limpiar entrada y análisis
+  currentSpanishPrompt?: string; // NEW: Prompt en español para mostrar al usuario
+  onSpanishPromptUpdate?: (prompt: string) => void; // NEW: Callback para actualizar prompt en español desde análisis de URL
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -85,7 +88,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   resetTextPosition,
   manualTextStyles,
   onManualTextStylesChange,
-  onClearInput
+  onClearInput,
+  currentSpanishPrompt = '',
+  onSpanishPromptUpdate // NEW: Callback para actualizar prompt en español desde análisis de URL
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -102,6 +107,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // NUEVO: Estados para Modo Magia
   const [magicModeResult, setMagicModeResult] = useState<MagicModeResult | null>(null);
   const [isMagicModeActive, setIsMagicModeActive] = useState(false);
+  
+  // NUEVO: Estados para detección de video
+  const [videoMagicModeResult, setVideoMagicModeResult] = useState<{styleKey: FlyerStyleKeyVideo, confidence: number, detectedIndustry: string} | null>(null);
+  
+  // NUEVO: Estados para imagen subida por usuario
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isImprovingImage, setIsImprovingImage] = useState(false);
+  const [improvedImageUrl, setImprovedImageUrl] = useState<string | null>(null);
+  
+  // NUEVO: Estados para el switch de modo de realismo
+  const [realityMode, setRealityMode] = useState<RealityMode>('realist');
   
   // Editor de texto states - TAMAÑO REDUCIDO POR DEFECTO
   const [fontSize, setFontSize] = useState(24); // Reducido de 48px a 24px
@@ -187,18 +203,52 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     else setOverlayStyle('modern');
   }, [styleKey, setOverlayStyle]);
   
-  // NUEVO: Activar Modo Magia cuando cambie la descripción
+  // NUEVO: Activar Modo Magia cuando cambie la descripción (IMÁGENES)
+  // EXCLUIMOS product_study ya que ese modo es para subir fotos propias, no generar con IA
   useEffect(() => {
-    if (description.length >= 3) {
+    if (description.length >= 3 && mediaType === 'image') {
       const timeoutId = setTimeout(() => {
         activateMagicMode(description);
       }, 800); // Esperar 800ms después del último cambio
       
       return () => clearTimeout(timeoutId);
-    } else {
+    } else if (mediaType === 'image') {
       setMagicModeResult(null);
     }
-  }, [description]);
+  }, [description, mediaType]);
+
+  // NUEVO: Activar Modo Magia para VIDEOS cuando cambie la descripción
+  useEffect(() => {
+    if (description.length >= 3 && mediaType === 'video') {
+      const timeoutId = setTimeout(() => {
+        console.log('🎬 Activando Modo Magia para VIDEO:', description);
+        const videoDetection = detectVideoStyleFromInput(description);
+        setVideoMagicModeResult({
+          styleKey: videoDetection.styleKey,
+          confidence: videoDetection.confidence,
+          detectedIndustry: videoDetection.industry
+        });
+        
+        // Auto-seleccionar el estilo de video detectado
+        setStyleKey(videoDetection.styleKey as FlyerStyleKey);
+        console.log('✅ Estilo de video detectado:', videoDetection.styleKey, 'Confianza:', videoDetection.confidence);
+      }, 800);
+      
+      return () => clearTimeout(timeoutId);
+    } else if (mediaType === 'video') {
+      setVideoMagicModeResult(null);
+    }
+  }, [description, mediaType, setStyleKey]);
+
+  // NUEVO: Convertir estilo de imagen a video cuando se cambia de imagen a video
+  useEffect(() => {
+    if (mediaType === 'video' && description.length < 3) {
+      // Si hay un estilo de imagen seleccionado, convertirlo a video
+      const videoStyle = getVideoStyleFromImageStyle(styleKey as FlyerStyleKey);
+      setStyleKey(videoStyle as FlyerStyleKey);
+      console.log('🎬 Estilo convertido de imagen a video:', videoStyle);
+    }
+  }, [mediaType, styleKey, setStyleKey]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {
@@ -206,6 +256,62 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       reader.onload = (ev) => setter(ev.target?.result as string);
       reader.readAsDataURL(e.target.files[0]);
     }
+  };
+  
+  // NUEVO: Manejar carga de imagen del usuario para mejorar
+  const handleUploadUserImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const result = ev.target?.result as string;
+        setUploadedImage(result);
+        setImprovedImageUrl(null);
+        // Limpiar descripción si el usuario sube su imagen
+        setDescription('');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  // NUEVO: Mejorar imagen subida con IA (usando enhanceUserImage del Paso 3)
+  const handleImproveUploadedImage = async () => {
+    if (!uploadedImage) return;
+    
+    setIsImprovingImage(true);
+    try {
+      // Usar la nueva función enhanceUserImage con reconstrucción semántica
+      const result = await enhanceUserImage(
+        uploadedImage,
+        realityMode,
+        aspectRatio
+      );
+      
+      setImprovedImageUrl(result);
+      await Swal.fire({
+        title: '¡Imagen mejorada!',
+        text: `Tu imagen ha sido mejorada con el modo: ${REALITY_MODE_LABELS[realityMode]}`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error: any) {
+      console.error('Error mejorando imagen:', error);
+      await Swal.fire({
+        title: 'Error',
+        text: error.message || 'Error al mejorar la imagen. Verifica tu conexión a internet.',
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
+    } finally {
+      setIsImprovingImage(false);
+    }
+  };
+  
+  // NUEVO: Limpiar imagen subida
+  const clearUploadedImage = () => {
+    setUploadedImage(null);
+    setImprovedImageUrl(null);
   };
 
   const handleAnalyzeUrl = async () => {
@@ -238,13 +344,32 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             showConfirmButton: false
         });
         
-        setDescription(analysis.description);
-        // En modo AUTO, el estilo se detecta automáticamente, NO se usa la selección manual
-        if (analysis.visualStyle) {
-            // NEW: Pasar también el texto extraído automáticamente
+        // Si hay englishDescription (para IA), usarla para la generación
+        // La description (español) se muestra al usuario
+        if ((analysis as any).englishDescription) {
+          // Guardar la descripción en español para mostrar al usuario
+          setDescription(analysis.description);
+          // El englishDescription se pasa al padre para que lo use en la generación
+          // Esto se hace a través de onStyleDetected con un flag especial
+          onStyleDetected(analysis.visualStyle || '', analysis.overlayText, analysis.textStyle);
+          
+          // IMPORTANTE: Generar el prompt en español para mostrar
+          // Usar la descripción completa en español del análisis
+          const spanishPrompt = analysis.description || analysis.overlayText || '';
+          if (onSpanishPromptUpdate) {
+            onSpanishPromptUpdate(spanishPrompt);
+          }
+        } else {
+          // Fallback normal
+          setDescription(analysis.description);
+          if (analysis.visualStyle) {
             onStyleDetected(analysis.visualStyle, analysis.overlayText, analysis.textStyle);
-            // IMPORTANTE: En modo auto, no interferir con la selección manual del usuario
-            // El estilo detectado se usa solo para la generación, no cambia la UI
+          }
+          // También pasar el prompt en español en fallback
+          const spanishPrompt = analysis.description || analysis.overlayText || '';
+          if (onSpanishPromptUpdate) {
+            onSpanishPromptUpdate(spanishPrompt);
+          }
         }
         setInputMode('text');
         
@@ -267,60 +392,55 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   };
 
   // NEW: Función OPTIMIZADA para generar múltiples opciones de texto
-  // OPTIMIZACIÓN: Reducido de 10 llamadas API a solo 3 llamadas (una por objetivo)
+  // SOLO genera opciones para el objetivo seleccionado (branding O leads, nunca ambos)
   const handleGenerateTextOptions = async (objective: 'branding' | 'leads') => {
     if (!description.trim()) return;
     
     setIsGeneratingText(true);
     try {
-      console.log(`🎯 Generando opciones de texto para objetivo: ${objective}`);
+      console.log(`🎯 Generando opciones de texto SOLO para objetivo: ${objective}`);
       
-      // OPTIMIZACIÓN: Generar solo 3 opciones por objetivo en lugar de 5
-      // Esto reduce el tiempo de 10 llamadas API a solo 3 llamadas
+      // Generar array vacío SOLO para el objetivo seleccionado
       const options = {
-        branding: [] as string[],
-        leads: [] as string[]
+        branding: objective === 'branding' ? [] as string[] : [],
+        leads: objective === 'leads' ? [] as string[] : []
       };
       
-      // Generar 3 opciones para el objetivo seleccionado (mucho más rápido)
+      // Generar 3 opciones para el objetivo seleccionado
       const promises = [];
       for (let i = 0; i < 3; i++) {
         promises.push(
           generatePersuasiveText(description, objective)
             .then(text => {
-              if (text && !options[objective].includes(text)) {
-                options[objective].push(text);
+              // Limpiar el texto antes de guardarlo (quitar prefijos como "Leads:", "Branding:", etc.)
+              const cleanedText = cleanText(text);
+              if (cleanedText && !options[objective].includes(cleanedText)) {
+                options[objective].push(cleanedText);
               }
             })
             .catch(error => console.warn(`Error generando opción ${i}:`, error))
         );
       }
       
-      // Ejecutar todas las llamadas en paralelo en lugar de secuencial
+      // Ejecutar todas las llamadas en paralelo
       await Promise.all(promises);
       
-      // Fallbacks para completar si no se generaron suficientes opciones
-      const fallbackBranding = ['Calidad Premium', 'Experiencia Confiable', 'Profesionales Expertos', 'Marca de Confianza', 'Excelencia Garantizada'];
-      const fallbackLeads = ['¡Contáctanos Ya!', 'Agenda Tu Cita', 'Consulta Gratuita', 'Oferta Especial', 'Llama Ahora'];
+      // Fallbacks específicos SOLO para el objetivo seleccionado
+      const industryKey = detectIndustryFromDescription(description);
+      const industryTexts = INDUSTRY_TEXT_TEMPLATES[industryKey] || INDUSTRY_TEXT_TEMPLATES.default;
+      const fallbackTexts = objective === 'branding' ? industryTexts.branding : industryTexts.leads;
       
-      while (options.branding.length < 3) {
-        const fallback = fallbackBranding[options.branding.length % fallbackBranding.length];
-        if (!options.branding.includes(fallback)) {
-          options.branding.push(fallback);
-        }
-      }
-      
-      while (options.leads.length < 3) {
-        const fallback = fallbackLeads[options.leads.length % fallbackLeads.length];
-        if (!options.leads.includes(fallback)) {
-          options.leads.push(fallback);
+      // Rellenar solo el objetivo seleccionado (limpiar fallbacks también)
+      while (options[objective].length < 3) {
+        const fallback = cleanText(fallbackTexts[options[objective].length % fallbackTexts.length]);
+        if (fallback && !options[objective].includes(fallback)) {
+          options[objective].push(fallback);
         }
       }
       
       setTextOptions(options);
       
-      // IMPORTANTE: Establecer automáticamente la primera opción como overlayText
-      // para que el texto se muestre inmediatamente en el flyer
+      // Establecer automáticamente la primera opción como overlayText
       if (options[objective].length > 0) {
         const firstOption = options[objective][0];
         setOverlayText(firstOption);
@@ -332,28 +452,44 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       
     } catch (error) {
       console.error('❌ Error generando opciones de texto:', error);
-      // Fallback texts mejorados
-      const fallbackBranding = ['Calidad Premium', 'Experiencia Confiable', 'Profesionales Expertos', 'Marca de Confianza', 'Excelencia Garantizada'];
-      const fallbackLeads = ['¡Contáctanos Ya!', 'Agenda Tu Cita', 'Consulta Gratuita', 'Oferta Especial', 'Llama Ahora'];
+      // Fallback texts específicos SOLO para el objetivo seleccionado
+      const industryKey = detectIndustryFromDescription(description);
+      const industryTexts = INDUSTRY_TEXT_TEMPLATES[industryKey] || INDUSTRY_TEXT_TEMPLATES.default;
+      
+      // Inicializar ambos arrays pero con fallbacks SOLO del objetivo seleccionado (limpios)
+      const fallbackTexts = objective === 'branding' ? industryTexts.branding : industryTexts.leads;
+      const cleanedFallbacks = fallbackTexts.map(text => cleanText(text));
       
       setTextOptions({
-        branding: fallbackBranding,
-        leads: fallbackLeads
+        branding: objective === 'branding' ? cleanedFallbacks : [],
+        leads: objective === 'leads' ? cleanedFallbacks : []
       });
       
-      // También establecer fallback como overlayText
-      const firstFallback = objective === 'branding' ? fallbackBranding[0] : fallbackLeads[0];
-      setOverlayText(firstFallback);
-      setSelectedTextOption(firstFallback);
+      // Establecer fallback como overlayText (limpios)
+      setOverlayText(cleanedFallbacks[0]);
+      setSelectedTextOption(cleanedFallbacks[0]);
     } finally {
       setIsGeneratingText(false);
     }
   };
   
+  // Función para limpiar texto - elimina prefijos como "Branding:", "Leads:", etc.
+  const cleanText = (text: string): string => {
+    return text
+      .replace(/^(Branding|Leads|Texto|Opción|Opcion|Option|Text)[:\s]*/i, '')
+      .replace(/\s*(Leads|Branding)[:]\s*/gi, '. ')
+      .replace(/\s*\.\s*\./g, '.')
+      .replace(/^(•|-|\*|\d+\.)\s*/g, '')
+      .replace(/\s*(•|-|\*|\d+\.)\s*/g, '. ')
+      .replace(/\s+\./g, '.')
+      .trim();
+  };
+
   // Función para seleccionar una opción de texto
   const handleSelectTextOption = (text: string) => {
-    setSelectedTextOption(text);
-    setOverlayText(text);
+    const cleanedText = cleanText(text);
+    setSelectedTextOption(cleanedText);
+    setOverlayText(cleanedText);
   };
   return (
     <>
@@ -362,7 +498,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       {/* 1. ENTRADA UNIFICADA - MODO MAGIA */}
       <div className="space-y-4">
          <div className="text-center">
-             <h2 className="text-xl font-bold text-white mb-2">✨ Crea tu Flyer</h2>
+             <h2 className="text-xl font-bold text-white mb-2">✨ Crea tu Diseño</h2>
              <p className="text-sm text-white/70">Pega una URL o describe tu negocio</p>
          </div>
          
@@ -405,8 +541,26 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
              )}
          </div>
          
-         {/* BOTÓN ANALIZAR URL - FUERA DE LA CAJA */}
-         {(urlInput.includes('http') || description.includes('http')) && (
+         {/* OCULTO: Indicador de Modo Magia - ahora solo se muestra en consola, no en UI */}
+         {/* El análisis de URL ya no muestra este indicador para evitar duplicados */}
+         
+         {/* CONTENEDOR ÚNICO: Prompt en español para análisis de URL */}
+         {currentSpanishPrompt && (
+           <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-lg p-3">
+             <div className="flex items-start gap-3">
+               <div className="text-2xl mt-1">📝</div>
+               <div>
+                 <div className="text-[10px] font-mono text-blue-400 mb-1">ANÁLISIS DE URL</div>
+                 <div className="text-white text-sm leading-relaxed">
+                   {currentSpanishPrompt}
+                 </div>
+               </div>
+             </div>
+           </div>
+         )}
+         
+         {/* BOTÓN ANALIZAR URL - OCULTO cuando hay análisis completado */}
+         {(urlInput.includes('http') || description.includes('http')) && !currentSpanishPrompt && (
            <div className="flex justify-center">
              <button
                onClick={handleAnalyzeUrl}
@@ -415,38 +569,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
              >
                {isAnalyzing ? '🔄 Analizando...' : '🔍 Analizar URL'}
              </button>
-           </div>
-         )}
-         
-         {/* NUEVO: Indicador de Modo Magia */}
-         {isMagicModeActive && (
-           <div className="bg-purple-500/20 border border-purple-500/30 rounded-lg p-3">
-             <div className="flex items-center">
-               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400 mr-2"></div>
-               <span className="text-purple-300 text-sm">🔮 Analizando con Modo Magia...</span>
-             </div>
-           </div>
-         )}
-         
-         {/* NUEVO: Resultado del Modo Magia */}
-         {magicModeResult && (
-           <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3">
-             <div className="text-green-300 text-sm">
-               <div className="font-medium mb-1">✅ Modo Magia Activado</div>
-               <div>Estilo: <span className="font-mono">{STYLE_NAMES_ES[magicModeResult.styleKey] || magicModeResult.styleKey}</span></div>
-               <div>Texto: <span className="font-medium">"{magicModeResult.persuasiveText}"</span></div>
-               <div>Confianza: {(magicModeResult.confidence * 100).toFixed(0)}%</div>
-               {workMode === 'manual' && (
-                 <button
-                   onClick={() => {
-                     setOverlayText(magicModeResult.persuasiveText);
-                   }}
-                   className="mt-2 text-xs bg-green-600 hover:bg-green-500 text-white px-2 py-1 rounded transition-colors"
-                 >
-                   Usar texto generado
-                 </button>
-               )}
-             </div>
            </div>
          )}
          
@@ -513,19 +635,22 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
              ) : textOptions ? (
                <div className="space-y-2">
                  <div className="grid grid-cols-1 gap-2">
-                   {textOptions[marketingObjective].map((text, index) => (
-                     <button
-                       key={index}
-                       onClick={() => handleSelectTextOption(text)}
-                       className={`p-3 rounded-lg border text-left transition-all ${
-                         selectedTextOption === text
-                           ? 'border-green-500 bg-green-500/20 text-green-300'
-                           : 'border-white/20 bg-white/5 text-white hover:border-white/40'
-                       }`}
-                     >
-                       <div className="font-medium text-sm">{text}</div>
-                     </button>
-                   ))}
+                   {textOptions[marketingObjective].map((text, index) => {
+                     const cleanedText = cleanText(text);
+                     return (
+                       <button
+                         key={index}
+                         onClick={() => handleSelectTextOption(text)}
+                         className={`p-3 rounded-lg border text-left transition-all ${
+                           selectedTextOption === cleanedText
+                             ? 'border-green-500 bg-green-500/20 text-green-300'
+                             : 'border-white/20 bg-white/5 text-white hover:border-white/40'
+                         }`}
+                       >
+                         <div className="font-medium text-sm">{cleanedText}</div>
+                       </button>
+                     );
+                   })}
                  </div>
                  
                  {selectedTextOption && (
@@ -607,6 +732,258 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             </div>
         </div>
 
+        {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO O IMAGEN PROPIA */}
+        <div className="space-y-3">
+          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Tipo de contenido</label>
+          <div className="grid grid-cols-3 gap-3">
+            {/* IMAGEN IA */}
+            <button
+              onClick={() => {
+                setMediaType('image');
+                clearUploadedImage();
+              }}
+              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+                ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study'
+                  ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white shadow-lg'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-2xl">✨</div>
+                <div className="text-sm font-bold">Imágenes</div>
+                <div className="text-[10px] text-white/60">Generar diseño</div>
+              </div>
+              {mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && (
+                <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              )}
+            </button>
+
+            {/* VIDEO */}
+            <button
+              onClick={() => {
+                setMediaType('video');
+                clearUploadedImage();
+              }}
+              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+                ${mediaType === 'video'
+                  ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-2xl">🎬</div>
+                <div className="text-sm font-bold">Video</div>
+                <div className="text-[10px] text-white/60">Motion graphics</div>
+              </div>
+              {mediaType === 'video' && (
+                <div className="absolute top-2 right-2 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+              )}
+            </button>
+
+            {/* ESTUDIO DE PRODUCTO (antes "Mi Imagen") */}
+            <button
+              onClick={() => {
+                setMediaType('product_study');
+                // Limpiar imagen anterior y mostrar área de carga
+                setUploadedImage(null);
+                setImprovedImageUrl(null);
+              }}
+              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+                ${mediaType === 'product_study'
+                  ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50 text-white shadow-lg'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-2xl">📸</div>
+                <div className="text-sm font-bold">Estudio de Producto</div>
+                <div className="text-[10px] text-white/60">Mejora tu foto</div>
+              </div>
+              {mediaType === 'product_study' && (
+                <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
+        {mediaType === 'product_study' && !uploadedImage && (
+          <div className="space-y-3">
+            {/* SWITCH DE MODO DE REALISMO */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Modo de Estilo</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setRealityMode('realist')}
+                  className={`p-2 rounded-lg border text-xs transition-all ${
+                    realityMode === 'realist'
+                      ? 'bg-blue-500/30 border-blue-400 text-white'
+                      : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
+                  }`}
+                >
+                  🏪 Local / Realista
+                </button>
+                <button
+                  onClick={() => setRealityMode('aspirational')}
+                  className={`p-2 rounded-lg border text-xs transition-all ${
+                    realityMode === 'aspirational'
+                      ? 'bg-purple-500/30 border-purple-400 text-white'
+                      : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
+                  }`}
+                >
+                  ✨ Premium / Lujo
+                </button>
+              </div>
+              <div className="text-[10px] text-white/50">
+                {realityMode === 'realist'
+                  ? 'Imágenes con luz natural y fondos sencillos para tu negocio local'
+                  : 'Imágenes de alta gama con iluminación dramática y atmósfera lujosa'}
+              </div>
+            </div>
+            
+            {/* Área de carga de imagen */}
+            <div className="border-2 border-dashed border-green-400/40 rounded-xl p-6 text-center hover:border-green-400/60 transition-colors bg-green-500/5">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUploadUserImage}
+                className="hidden"
+                id="upload-image-input"
+              />
+              <label
+                htmlFor="upload-image-input"
+                className="cursor-pointer flex flex-col items-center gap-3"
+              >
+                <div className="text-4xl">📷</div>
+                <div className="text-white text-sm">Sube tu imagen de producto</div>
+                <div className="text-white/50 text-xs">JPG, PNG - Máx 10MB</div>
+                <div className="text-green-400 text-xs mt-2">✨ La mejoraremos con IA</div>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Vista previa de imagen subida y botón mejorar */}
+        {uploadedImage && (
+          <div className="space-y-3">
+            {/* SWITCH DE MODO DE REALISMO */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Modo de Estilo</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setRealityMode('realist')}
+                  className={`p-2 rounded-lg border text-xs transition-all ${
+                    realityMode === 'realist'
+                      ? 'bg-blue-500/30 border-blue-400 text-white'
+                      : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
+                  }`}
+                >
+                  🏪 Local / Realista
+                </button>
+                <button
+                  onClick={() => setRealityMode('aspirational')}
+                  className={`p-2 rounded-lg border text-xs transition-all ${
+                    realityMode === 'aspirational'
+                      ? 'bg-purple-500/30 border-purple-400 text-white'
+                      : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
+                  }`}
+                >
+                  ✨ Premium / Lujo
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">📸 Tu Foto</label>
+              <button
+                onClick={clearUploadedImage}
+                className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+              >
+                ✕ Eliminar
+              </button>
+            </div>
+            
+            {/* Vista previa de imagen subida */}
+            <div className="relative rounded-xl overflow-hidden border border-white/20">
+              <img
+                src={uploadedImage}
+                alt="Imagen subida"
+                className="w-full h-48 object-contain bg-black/40"
+              />
+              {improvedImageUrl && (
+                <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded">
+                  ✓ Mejorada
+                </div>
+              )}
+            </div>
+            
+            {/* Botón para mejorar */}
+            <button
+              onClick={handleImproveUploadedImage}
+              disabled={isImprovingImage}
+              className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2
+                ${isImprovingImage
+                  ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-400 hover:to-emerald-400'}`}
+            >
+              {isImprovingImage ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Mejorando...</span>
+                </>
+              ) : (
+                <>
+                  <span>✨</span>
+                  <span>Mejorar con IA</span>
+                </>
+              )}
+            </button>
+            
+            {improvedImageUrl && (
+              <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+                <div className="text-green-300 text-sm text-center">
+                  ✓ Tu imagen ha sido mejorada con IA
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {/* 6.5 ESTILO DE VIDEO - AUTOMÁTICO (Solo indicador, sin selección) */}
+        {mediaType === 'video' && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Estilo de Video</label>
+              <span className="text-[10px] text-purple-400">✨ Auto-detectado</span>
+            </div>
+            
+            {/* Indicador simple del estilo detectado */}
+            {videoMagicModeResult ? (
+              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">🎬</div>
+                  <div>
+                    <div className="text-white font-medium text-sm">
+                      {VIDEO_STYLE_NAMES_ES[videoMagicModeResult.styleKey] || videoMagicModeResult.styleKey}
+                    </div>
+                    <div className="text-purple-300 text-xs">
+                      Confianza: {(videoMagicModeResult.confidence * 100).toFixed(0)}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : description.length >= 3 ? (
+              <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">🎬</div>
+                  <div className="text-white/60 text-sm">
+                    Escribe una descripción para detectar el estilo automáticamente
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
+
+
         {/* 7. TEXTO SIMPLE - SOLO EN MODO MANUAL */}
         {workMode === 'manual' && (
           <div className="space-y-3">
@@ -654,7 +1031,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               ) : (
                   <>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                      <span>✨ GENERAR {mediaType === 'video' ? 'VIDEO' : 'IMAGEN'}</span>
+                      <span>✨ GENERAR {mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
                   </>
               )}
           </button>
