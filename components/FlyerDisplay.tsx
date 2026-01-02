@@ -1502,93 +1502,120 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </button>
         ) : (
           <button
-            onClick={async () => {
-              // Obtener el elemento a capturar - buscar en orden de prioridad
-              let captureTarget: HTMLElement | null = null;
-              
-              // 1. Si comparación está activa, capturar el contenedor HD de la comparación
-              if (showComparison) {
-                const hdContainer = document.querySelector('[class*="border-emerald"]') as HTMLElement;
-                if (hdContainer) {
-                  captureTarget = hdContainer.querySelector('.w-full.h-full.relative') as HTMLElement;
-                  console.log('📸 Usando contenedor de comparación HD');
+              onClick={async () => {
+                // Verificar si es un video (blob URL)
+                const isVideo = imageUrl && imageUrl.startsWith('blob:');
+                
+                if (isVideo && imageUrl) {
+                  // Descargar video directamente
+                  console.log('🎬 Descargando video directamente:', imageUrl);
+                  try {
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+                    const videoUrl = URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = videoUrl;
+                    link.download = `estudio56-video-${Date.now()}.mp4`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(videoUrl);
+                    
+                    console.log('✅ Video descargado exitosamente');
+                  } catch (error) {
+                    console.error('❌ Error descargando video:', error);
+                  }
+                  return;
                 }
-              }
-              
-              // 2. Buscar flyer-capture-target
-              if (!captureTarget) {
-                captureTarget = document.querySelector('.flyer-capture-target') as HTMLElement;
-                console.log('📸 Usando flyer-capture-target');
-              }
-              
-              // 3. Buscar cualquier contenedor con clase flyer-download-container
-              if (!captureTarget) {
-                const containers = document.querySelectorAll('.flyer-download-container');
-                if (containers.length > 0) {
-                  // Usar el último contenedor visible
-                  for (let i = containers.length - 1; i >= 0; i--) {
-                    const container = containers[i] as HTMLElement;
-                    if (container.offsetParent !== null) {
-                      captureTarget = container;
-                      console.log('📸 Usando flyer-download-container');
+                
+                // Si es imagen, usar el método original de captura DOM
+                // Obtener el elemento a capturar - buscar en orden de prioridad
+                let captureTarget: HTMLElement | null = null;
+                
+                // 1. Si comparación está activa, capturar el contenedor HD de la comparación
+                if (showComparison) {
+                  const hdContainer = document.querySelector('[class*="border-emerald"]') as HTMLElement;
+                  if (hdContainer) {
+                    captureTarget = hdContainer.querySelector('.w-full.h-full.relative') as HTMLElement;
+                    console.log('📸 Usando contenedor de comparación HD');
+                  }
+                }
+                
+                // 2. Buscar flyer-capture-target
+                if (!captureTarget) {
+                  captureTarget = document.querySelector('.flyer-capture-target') as HTMLElement;
+                  console.log('📸 Usando flyer-capture-target');
+                }
+                
+                // 3. Buscar cualquier contenedor con clase flyer-download-container
+                if (!captureTarget) {
+                  const containers = document.querySelectorAll('.flyer-download-container');
+                  if (containers.length > 0) {
+                    // Usar el último contenedor visible
+                    for (let i = containers.length - 1; i >= 0; i--) {
+                      const container = containers[i] as HTMLElement;
+                      if (container.offsetParent !== null) {
+                        captureTarget = container;
+                        console.log('📸 Usando flyer-download-container');
+                        break;
+                      }
+                    }
+                  }
+                }
+                
+                // 4. Último recurso: buscar cualquier contenedor con imagen
+                if (!captureTarget) {
+                  const allContainers = document.querySelectorAll('[class*="rounded"]');
+                  for (const container of allContainers) {
+                    const htmlContainer = container as HTMLElement;
+                    if (htmlContainer.offsetParent !== null && htmlContainer.querySelector('img')) {
+                      captureTarget = htmlContainer;
+                      console.log('📸 Usando contenedor con imagen encontrado');
                       break;
                     }
                   }
                 }
-              }
-              
-              // 4. Último recurso: buscar cualquier contenedor con imagen
-              if (!captureTarget) {
-                const allContainers = document.querySelectorAll('[class*="rounded"]');
-                for (const container of allContainers) {
-                  const htmlContainer = container as HTMLElement;
-                  if (htmlContainer.offsetParent !== null && htmlContainer.querySelector('img')) {
-                    captureTarget = htmlContainer;
-                    console.log('📸 Usando contenedor con imagen encontrado');
-                    break;
-                  }
-                }
-              }
-              
-              if (!captureTarget) {
-                console.error('❌ No se encontró ningún elemento para capturar');
-                console.log('📋 Elementos en página:', document.querySelectorAll('div[class*="relative"]').length);
-                return;
-              }
-              
-              console.log('📸 Capturando elemento:', captureTarget.className);
-              
-              if (draftImageUrl && hdImageUrl && !showComparison) {
-                // Mostrar comparación automáticamente ANTES de descargar
-                setShowComparison(true);
                 
-                // Descargar después de 1.5 segundos
-                setTimeout(async () => {
+                if (!captureTarget) {
+                  console.error('❌ No se encontró ningún elemento para capturar');
+                  console.log('📋 Elementos en página:', document.querySelectorAll('div[class*="relative"]').length);
+                  return;
+                }
+                
+                console.log('📸 Capturando elemento:', captureTarget.className);
+                
+                if (draftImageUrl && hdImageUrl && !showComparison) {
+                  // Mostrar comparación automáticamente ANTES de descargar
+                  setShowComparison(true);
+                  
+                  // Descargar después de 1.5 segundos
+                  setTimeout(async () => {
+                    try {
+                      await downloadElementAsImage(
+                        captureTarget!,
+                        `estudio56-hd-${Date.now()}.png`,
+                        { scale: 2 }
+                      );
+                      console.log('✅ Descarga HD completada');
+                    } catch (error) {
+                      console.error('❌ Error en descarga HD:', error);
+                    }
+                  }, 1500);
+                } else {
+                  // Descargar directamente
                   try {
                     await downloadElementAsImage(
                       captureTarget!,
-                      `estudio56-hd-${Date.now()}.png`,
+                      `estudio56-${Date.now()}.png`,
                       { scale: 2 }
                     );
-                    console.log('✅ Descarga HD completada');
+                    console.log('✅ Descarga completada');
                   } catch (error) {
-                    console.error('❌ Error en descarga HD:', error);
+                    console.error('❌ Error en descarga:', error);
                   }
-                }, 1500);
-              } else {
-                // Descargar directamente
-                try {
-                  await downloadElementAsImage(
-                    captureTarget!,
-                    `estudio56-${Date.now()}.png`,
-                    { scale: 2 }
-                  );
-                  console.log('✅ Descarga completada');
-                } catch (error) {
-                  console.error('❌ Error en descarga:', error);
                 }
-              }
-            }}
+              }}
             className="bg-white text-black font-bold py-2 px-4 rounded-xl hover:bg-gray-200 transition-all text-xs flex items-center gap-2 shadow-lg whitespace-nowrap"
           >
             DESCARGAR ({getDimensionsForAspectRatio(aspectRatio, 'hd').width}x{getDimensionsForAspectRatio(aspectRatio, 'hd').height})
