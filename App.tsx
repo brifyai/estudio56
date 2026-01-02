@@ -1216,7 +1216,7 @@ const handleGenerate = async () => {
              
              {/* Top Bar */}
              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
-                 <div className="flex items-center gap-3 md:gap-4 text-xs font-medium text-white/50">
+                 <div className="flex items-center gap-2">
                      {/* Mobile Menu Button */}
                      <button
                        onClick={() => setShowMobileMenu(true)}
@@ -1227,9 +1227,20 @@ const handleGenerate = async () => {
                        </svg>
                      </button>
                      
-                     <span className={!imageUrl ? "text-white" : ""}>Diseño</span>
-                     <span>/</span>
-                     <span className={imageUrl ? "text-white" : ""}>Previsualización</span>
+                     {/* Calendar Toggle Button - Mobile */}
+                     <button
+                       onClick={() => setShowCalendar(!showCalendar)}
+                       className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                       title={showCalendar ? "Ocultar calendario" : "Mostrar calendario"}
+                     >
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                       </svg>
+                     </button>
+                     
+                     <span className={`text-xs font-medium ${!imageUrl ? "text-white" : "text-white/50"}`}>Diseño</span>
+                     <span className="text-white/30">/</span>
+                     <span className={`text-xs font-medium ${imageUrl ? "text-white" : "text-white/50"}`}>Previsualización</span>
                  </div>
                  <div className="flex items-center gap-2">
                     <button
@@ -1282,14 +1293,30 @@ const handleGenerate = async () => {
          </div>
       </main>
 
-      {/* RIGHT PANEL: CALENDAR - Más angosto */}
-      <aside className={`${showCalendar ? 'w-0 md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-20 h-full py-2 md:py-4 pr-2 md:pr-4 transition-all duration-300 overflow-hidden`}>
-        <div className={`glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
+      {/* RIGHT PANEL: CALENDAR - Full height on mobile, sidebar on desktop */}
+      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-20 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300 overflow-hidden`}>
+        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
+          {/* Mobile Header */}
+          <div className="md:hidden flex items-center justify-between p-3 border-b border-white/10">
+            <span className="text-xs font-bold">Calendario</span>
+            <button
+              onClick={() => setShowCalendar(false)}
+              className="w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <CommercialCalendar
             onGenerateForEvent={(event) => {
               // Pre-llenar la descripción con el evento comercial
               setDescription(`Oferta especial para ${event.name} - ${event.date}`);
               console.log('🎯 Generando para evento:', event.name);
+              // Close calendar on mobile after selection
+              if (window.innerWidth < 768) {
+                setShowCalendar(false);
+              }
             }}
           />
         </div>

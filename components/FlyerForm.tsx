@@ -324,7 +324,15 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     timeoutHandle = setTimeout(() => {
         console.log("⏰ Timeout alcanzado, cerrando análisis");
         setIsAnalyzing(false);
-        alert('El análisis tomó demasiado tiempo. Por favor, intenta con una URL diferente o describe manualmente el negocio.');
+        Swal.fire({
+            title: '⏱️ Análisis lento',
+            text: 'El análisis de la URL está tomando mucho tiempo. Te recomendamos describir tu negocio manualmente para una experiencia más rápida.',
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3b82f6',
+            background: '#1a1a1a',
+            color: '#ffffff'
+        });
     }, 15000);
     
     try {
@@ -383,8 +391,16 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             errorMessage = 'Instagram puede requerir análisis manual. Por favor, describe el negocio manualmente.';
         }
         
-        // Usar alert simple en lugar de SweetAlert2 para errores
-        alert(errorMessage);
+        // Usar SweetAlert2 para errores
+        Swal.fire({
+            title: '⚠️ Error en análisis',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#ef4444',
+            background: '#1a1a1a',
+            color: '#ffffff'
+        });
         
     } finally {
         setIsAnalyzing(false);
