@@ -31,6 +31,7 @@ const Dashboard: React.FC = () => {
   const [showGallery, setShowGallery] = useState(false);
   const [showBrandPanel, setShowBrandPanel] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(true);
   
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
@@ -1266,8 +1267,8 @@ const handleGenerate = async () => {
       </main>
 
       {/* RIGHT PANEL: CALENDAR - Más angosto */}
-      <aside className="w-[280px] flex-shrink-0 flex flex-col z-20 h-full py-4 pr-4">
-        <div className="glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
+      <aside className={`${showCalendar ? 'w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-20 h-full py-4 pr-4 transition-all duration-300 overflow-hidden`}>
+        <div className={`glass-panel rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
           <CommercialCalendar
             onGenerateForEvent={(event) => {
               // Pre-llenar la descripción con el evento comercial
@@ -1326,6 +1327,11 @@ const handleGenerate = async () => {
          setShowMobileMenu(false);
          setShowBrandPanel(true);
        }}
+       onToggleCalendar={() => {
+         setShowMobileMenu(false);
+         setShowCalendar(!showCalendar);
+       }}
+       isCalendarOpen={showCalendar}
        selectedBrandName={selectedBrand?.name}
        onLogout={async () => {
          await supabase.auth.signOut();

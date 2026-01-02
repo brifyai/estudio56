@@ -7,6 +7,8 @@ interface MobileMenuProps {
   activePlan: string;
   onOpenPricing: () => void;
   onOpenBrandPanel: () => void;
+  onToggleCalendar: () => void;
+  isCalendarOpen: boolean;
   selectedBrandName?: string;
   onLogout: () => void;
 }
@@ -18,6 +20,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   activePlan,
   onOpenPricing,
   onOpenBrandPanel,
+  onToggleCalendar,
+  isCalendarOpen,
   selectedBrandName,
   onLogout,
 }) => {
@@ -34,9 +38,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     },
     {
       icon: '📅',
-      label: 'Calendario',
+      label: isCalendarOpen ? 'Ocultar Calendario' : 'Ver Calendario',
       onClick: () => {
-        onNavigate('/panel');
+        onToggleCalendar();
         onClose();
       },
     },
