@@ -760,9 +760,9 @@ export const VEO_VIDEO_CONFIG: VideoPlanConfig = {
 // https://chutes-wan-2-2-i2v-14b-fast.chutes.ai/
 // ============================================
 
-// Obtener URL de API desde variable de entorno o usar默认值
-const getChutesApiUrl = (): string => {
-  return import.meta.env.VITE_CHUTES_API_URL || 'https://chutes-wan-2-2-i2v-14b-fast.chutes.ai/image2video';
+// Obtener URL base de API desde variable de entorno (sin endpoint)
+const getChutesBaseUrl = (): string => {
+  return import.meta.env.VITE_CHUTES_API_URL || 'https://chutes-wan-2-2-i2v-14b-fast.chutes.ai';
 };
 
 // Configuración de video: 6 segundos (96 frames × 16 fps)
@@ -771,8 +771,8 @@ const VIDEO_DEFAULT_FPS = 16;
 const VIDEO_DEFAULT_FRAMES = VIDEO_DURATION_SECONDS * VIDEO_DEFAULT_FPS; // 96 frames
 
 export const CHUTES_VIDEO_CONFIG = {
-  // URL del endpoint de Chutes para image-to-video (desde variable de entorno)
-  apiUrl: getChutesApiUrl(),
+  // URL base del endpoint de Chutes (sin endpoint específico)
+  apiUrl: getChutesBaseUrl(),
   
   // Obtener API key desde variable de entorno
   getApiKey: () => import.meta.env.VITE_CHUTES_API_KEY || '',
