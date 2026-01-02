@@ -544,20 +544,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          {/* OCULTO: Indicador de Modo Magia - ahora solo se muestra en consola, no en UI */}
          {/* El análisis de URL ya no muestra este indicador para evitar duplicados */}
          
-         {/* CONTENEDOR ÚNICO: Prompt en español para análisis de URL */}
-         {currentSpanishPrompt && (
-           <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-lg p-3">
-             <div className="flex items-start gap-3">
-               <div className="text-2xl mt-1">📝</div>
-               <div>
-                 <div className="text-[10px] font-mono text-blue-400 mb-1">ANÁLISIS DE URL</div>
-                 <div className="text-white text-sm leading-relaxed">
-                   {currentSpanishPrompt}
-                 </div>
-               </div>
-             </div>
-           </div>
-         )}
+         {/* CONTENEDOR DE ANÁLISIS DE URL - OCULTO PARA EVITAR DUPLICADOS */}
+         {/* El análisis ya se muestra en el panel central, no necesitamos duplicarlo aquí */}
          
          {/* BOTÓN ANALIZAR URL - OCULTO cuando hay análisis completado */}
          {(urlInput.includes('http') || description.includes('http')) && !currentSpanishPrompt?.trim() && (
