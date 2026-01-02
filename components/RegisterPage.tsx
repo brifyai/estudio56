@@ -169,7 +169,7 @@ Serás redirigido al login.`);
             <button onClick={() => navigate('/')} className="absolute top-0 left-0 text-white/30 hover:text-white transition-colors text-sm">
                 ← Volver
             </button>
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 mb-6 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
                 <span className="text-2xl">🇨🇱</span>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Crea tu Cuenta</h1>
