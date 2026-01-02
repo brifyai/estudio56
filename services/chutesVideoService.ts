@@ -11,16 +11,51 @@ const getChutesApiKey = (): string => {
   return import.meta.env.VITE_CHUTES_API_KEY || '';
 };
 
-// Obtener URL del endpoint de Chutes
+// Obtener URL base del endpoint de Chutes
+const getChutesBaseUrl = (): string => {
+  return import.meta.env.VITE_CHUTES_API_URL || 'https://chutes-wan-2-2-i2v-14b-fast.chutes.ai';
+};
+
+// Obtener URL del endpoint de Chutes (image-to-video)
+// Prueba múltiples endpoints posibles
 const getChutesApiUrl = (): string => {
-  return import.meta.env.VITE_CHUTES_API_URL || CHUTES_VIDEO_CONFIG.apiUrl;
+  const baseUrl = getChutesBaseUrl();
+  const envEndpoint = import.meta.env.VITE_CHUTES_I2V_ENDPOINT;
+  
+  if (envEndpoint) {
+    return envEndpoint.startsWith('http') ? envEndpoint : `${baseUrl}${envEndpoint}`;
+  }
+  
+  // Probar endpoints comunes de Chutes
+  return `${baseUrl}/generate`;
 };
 
 // Obtener URL para text-to-video
 const getChutesText2VideoUrl = (): string => {
-  const baseUrl = import.meta.env.VITE_CHUTES_API_URL || 'https://chutes-wan-2-2-i2v-14b-fast.chutes.ai';
-  return `${baseUrl}/text2video`;
+  const baseUrl = getChutesBaseUrl();
+  const envEndpoint = import.meta.env.VITE_CHUTES_T2V_ENDPOINT;
+  if (envEndpoint) return envEndpoint.startsWith('http') ? envEndpoint : `${baseUrl}${envEndpoint}`;
+  return `${baseUrl}/generate`;
 };
+
+// Verificar disponibilidad de la API
+export async function checkChutesApiHealth(): Promise<{available: boolean; endpoints: string[]}> {
+  const baseUrl = getChutesBaseUrl();
+  const endpoints = ['/image2video', '/text2video', '/health', '/'];
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}`, { method: 'HEAD' });
+      if (response.ok) {
+        return { available: true, endpoints: [endpoint] };
+      }
+    } catch {
+      // Continuar con el siguiente endpoint
+    }
+  }
+  
+  return { available: false, endpoints };
+}
 
 /**
  * Convierte una URL de imagen a base64
@@ -131,6 +166,9 @@ export async function generateVideoFromImage(
     }
 
     // Realizar la petición a Chutes API
+    console.log(`[Chutes API] Endpoint: ${apiUrl}`);
+    console.log(`[Chutes API] Payload:`, { ...payload, image_b64: '[IMAGEN_BASE64]' });
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers,
@@ -139,6 +177,13 @@ export async function generateVideoFromImage(
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`[Chutes API] Error ${response.status}:`, errorText);
+      
+      // Error específico para "No matching cord found"
+      if (errorText.includes('No matching cord') || response.status === 404) {
+        throw new Error(`Chutes API Error: 404 - "No matching cord found". Verifica que el chute esté configurado correctamente en https://chutes.ai`);
+      }
+      
       throw new Error(`Chutes API Error: ${response.status} - ${errorText}`);
     }
 
