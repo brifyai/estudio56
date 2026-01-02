@@ -1364,7 +1364,7 @@ export const generateFlyerImage = async (
 /**
  * Step 2 (Video): Generate Video using Chutes API (Wan-2.2-I2V-14B-Fast)
  * This function first generates an image, then converts it to video using Chutes
- * NEW: draftVideoUrl parameter allows using a draft video as reference for HD generation
+ * NEW: draftSeed parameter allows using the same seed as draft for HD generation (maintains consistency)
  */
 export const generateFlyerVideo = async (
   enhancedDescription: string,
@@ -1372,29 +1372,27 @@ export const generateFlyerVideo = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   hasProductOverlay: boolean = false,
-  draftVideoUrl?: string // NEW: Draft video URL to use as reference for HD
+  draftSeed?: number // NEW: Draft seed to use for HD generation (maintains consistency)
 ): Promise<string> => {
     try {
       console.log('🎬 [generateFlyerVideo] Iniciando generación con Chutes API...');
-      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft:', !!draftVideoUrl);
+      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft seed:', !!draftSeed);
       
-      // Si tenemos un video draft y estamos generando HD, usar el mismo seed para mantener consistencia
-      const seed = draftVideoUrl ? 0 : Math.floor(Math.random() * 2000000000);
+      // Si tenemos un seed del draft, usarlo para mantener consistencia; si no, generar nuevo
+      const seed = draftSeed || Math.floor(Math.random() * 2000000000);
       
       // Step 1: Generar imagen primero (necesaria para Chutes image-to-video)
-      // Si tenemos draftVideoUrl, usar la imagen del draft para mantener consistencia
+      // Si tenemos draftSeed, usar el mismo seed para mantener consistencia
       let imageResult;
       
-      if (draftVideoUrl && quality === 'hd') {
-        // Usar la imagen del draft como referencia para HD
-        console.log('📸 [generateFlyerVideo] Usando imagen del draft como referencia para HD...');
-        // El draft video ya tiene una imagen asociada, usar la misma imagen base
-        // Como no tenemos acceso directo a la imagen del draft, regeneramos con el mismo seed
+      if (draftSeed && quality === 'hd') {
+        // Usar el mismo seed del draft para HD
+        console.log('📸 [generateFlyerVideo] Usando seed del draft para mantener consistencia:', seed);
         imageResult = await generateFlyerImage(
           enhancedDescription,
           styleKey,
           aspectRatio,
-          'draft', // Usar draft para mantener consistencia
+          'hd', // Usar HD directamente para mejor calidad
           seed,
           undefined,
           hasProductOverlay,
@@ -1471,14 +1469,14 @@ export const generateFlyerVideo = async (
         aspectRatio,
         quality,
         hasProductOverlay,
-        draftVideoUrl
+        draftSeed
       );
     }
   };
 
 /**
  * Fallback: Generar video usando Google VEO (original implementation)
- * NEW: draftVideoUrl parameter allows using a draft video as reference for HD generation
+ * NEW: draftSeed parameter allows using the same seed as draft for HD generation
  */
 const generateFlyerVideoVEO = async (
   enhancedDescription: string,
@@ -1486,7 +1484,7 @@ const generateFlyerVideoVEO = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   hasProductOverlay: boolean = false,
-  draftVideoUrl?: string // NEW
+  draftSeed?: number // NEW: Draft seed for consistency
 ): Promise<string> => {
   try {
     const ai = getAiClient();

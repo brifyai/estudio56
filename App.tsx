@@ -78,6 +78,7 @@ const Dashboard: React.FC = () => {
   // URLs separadas para draft y HD (VIDEOS)
   const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
   const [hdVideoUrl, setHdVideoUrl] = useState<string | null>(null);
+  const [draftVideoSeed, setDraftVideoSeed] = useState<number>(0); // Seed del video draft para mantener consistencia en HD
   
   // NEW: Estado para el ID de generación actual
   const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
@@ -839,13 +840,14 @@ const handleGenerate = async () => {
             message: imageQuality === 'draft' ? ':: SIMULANDO_FISICAS_RAPIDAS ::' : ':: PRODUCIENDO_VIDEO_CINEMATICO ::'
           });
         console.log('🎬 Generating video with aspectRatio:', aspectRatio);
-        const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay);
+        const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay, newSeed);
         console.log('✅ Video generated:', url?.substring(0, 50) + '...');
         setImageUrl(url);
         
         // Guardar video en estados correspondientes
         if (imageQuality === 'draft') {
           setDraftVideoUrl(url);
+          setDraftVideoSeed(newSeed); // Guardar seed para usar en HD
           // Limpiar video HD anterior
           setHdVideoUrl(null);
         } else {
@@ -924,16 +926,16 @@ const handleGenerate = async () => {
             }
       } else {
           // Regenerar prompt en inglés para video HD
-          const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
-          // Usar video draft como referencia para mejorar a HD
-          url = await generateFlyerVideo(
-            enhancedPrompt,
-            styleKey,
-            aspectRatio,
-            'hd',
-            hasProductOverlay,
-            draftVideoUrl || undefined
-          );
+            const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
+            // Usar video draft y su seed como referencia para mejorar a HD
+            url = await generateFlyerVideo(
+              enhancedPrompt,
+              styleKey,
+              aspectRatio,
+              'hd',
+              hasProductOverlay,
+              draftVideoSeed || 0 // Usar el seed del draft para mantener consistencia
+            );
       }
         setImageUrl(url);
         setHdImageUrl(url);
@@ -988,7 +990,7 @@ const handleGenerate = async () => {
          setAutoTextValidation(result.autoTextValidation);
          setEnhancedStyles(result.enhancedStyles);
       } else {
-         url = await generateFlyerVideo(newPrompt, styleKey, aspectRatio, qualityToUse, hasProductOverlay);
+         url = await generateFlyerVideo(newPrompt, styleKey, aspectRatio, qualityToUse, hasProductOverlay, seed);
       }
       setImageUrl(url);
       setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
