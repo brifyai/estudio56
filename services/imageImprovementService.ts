@@ -5,7 +5,7 @@ import { diagnoseAndFixBlackImage } from "./geminiService";
 
 // Helper to get client instance
 const getAiClient = () => new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCMXM-e632BNF3IwnKDX1qKXpj6qrpsYfM"
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
 });
 
 // Modelos disponibles para mejora de imagen (ordenados por preferencia)

@@ -106,7 +106,7 @@ export const diagnoseAndFixBlackImage = async (imageDataUrl: string): Promise<st
 
 // Helper to get client instance with latest key
 const getAiClient = () => new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCMXM-e632BNF3IwnKDX1qKXpj6qrpsYfM"
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
 });
 
 // Define which styles allow landscapes. 
@@ -1449,7 +1449,7 @@ export const generateFlyerVideo = async (
       // CRITICAL FIX: Fetch the video bytes and create a Blob.
       // Direct access to the URI fails in <video> tags due to CORS/Auth issues.
       // Use same API key pattern as getAiClient
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCMXM-e632BNF3IwnKDX1qKXpj6qrpsYfM";
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
       const videoUrl = `${uri}&key=${apiKey}`;
       console.log("Downloading video bytes...");
 

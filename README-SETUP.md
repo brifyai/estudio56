@@ -39,12 +39,12 @@ Deberías ver 3 planes: GRATIS, BASICO, PROFESIONAL.
 ## 🔑 Credenciales Configuradas
 
 ### Gemini AI
-- API Key: `AIzaSyCMXM-e632BNF3IwnKDX1qKXpj6qrpsYfM`
+- API Key: `TU_GEMINI_API_KEY` (configurada en variables de entorno)
 - Estado: ✅ Configurada
 
 ### Supabase
-- URL: `https://zskunemvffyqyxtfqyzm.supabase.co`
-- Anon Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpza3VuZW12ZmZ5cXl4dGZxeXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5ODI0MjcsImV4cCI6MjA4MjU1ODQyN30.fnBdIUv--_UhIg_843aSAKEHSdVtRCcAKdLGawRGTaw`
+- URL: `https://TU_PROYECTO.supabase.co`
+- Anon Key: `TU_ANON_KEY` (configurada en variables de entorno)
 - Estado: ✅ Configurada
 
 ## 🧪 Probar la Aplicación

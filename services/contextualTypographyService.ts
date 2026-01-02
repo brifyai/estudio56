@@ -27,7 +27,7 @@ export interface ContextualTypographyResult {
 }
 
 const getAiClient = () => new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSyCMXM-e632BNF3IwnKDX1qKXpj6qrpsYfM"
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
 });
 
 /**

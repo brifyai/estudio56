@@ -11,20 +11,20 @@ Agrega las siguientes variables:
 ## Supabase
 | Variable | Valor |
 |----------|-------|
-| `VITE_SUPABASE_URL` | `https://zskunemvffyqyxtfqyzm.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | `sb_publishable_84vvQOL-JXB-abcAu95FFQ_mvzewpPK` |
+| `VITE_SUPABASE_URL` | `https://TU_PROYECTO.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | `TU_ANON_KEY` |
 
 ## Google Gemini API
 | Variable | Valor |
 |----------|-------|
-| `VITE_GEMINI_API_KEY` | `AIzaSyCjYfdiXyAJHHhpNn2FnSiZSA-xn5oqeLU` |
+| `VITE_GEMINI_API_KEY` | `TU_GEMINI_API_KEY` |
 
 ## Compatibilidad con React Create App
 | Variable | Valor |
 |----------|-------|
-| `REACT_APP_SUPABASE_URL` | `https://zskunemvffyqyxtfqyzm.supabase.co` |
-| `REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | `sb_publishable_84vvQOL-JXB-abcAu95FFQ_mvzewpPK` |
-| `GEMINI_API_KEY` | `AIzaSyCjYfdiXyAJHHhpNn2FnSiZSA-xn5oqeLU` |
+| `REACT_APP_SUPABASE_URL` | `https://TU_PROYECTO.supabase.co` |
+| `REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | `TU_ANON_KEY` |
+| `GEMINI_API_KEY` | `TU_GEMINI_API_KEY` |
 
 ## Notas
 
@@ -36,4 +36,4 @@ Agrega las siguientes variables:
 
 4. **Node version:** 18 o superior (configurar en Netlify)
 
-5. **Importante:** No expongas estas claves públicamente. Netlify las maneja de forma segura.
+5. **Importante:** Las claves reales están en el archivo `.env` local. NO expongas estas claves públicamente. Netlify las maneja de forma segura a través de las variables de entorno.
