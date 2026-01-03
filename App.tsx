@@ -1471,7 +1471,7 @@ const handleGenerate = async () => {
             <span className="text-xs font-bold">Calendario</span>
             <button
               onClick={() => setShowCalendar(false)}
-              className="w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10"
+              className="w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10 lg:hidden"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
