@@ -2438,4 +2438,4 @@ export const CONFLICT_DETECTION_RULES: Array<{
     styleKeys: ['tattoo_studio'],
     conflictCode: 'TATTOO_CLINIC'
   }
-};
+];
