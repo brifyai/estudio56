@@ -1662,7 +1662,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-black/80 backdrop-blur-xl p-2 sm:p-2 pr-2 sm:pr-4 pl-4 sm:pl-4 rounded-2xl shadow-2xl border border-white/10 z-50 w-[calc(100%-2rem)] sm:w-auto max-w-sm sm:max-w-none">
         <div className="flex items-center w-full sm:w-48">
           <span className="text-white/30 text-[10px] sm:text-xs mr-1 sm:mr-2 hidden xs:inline">Usando</span>
-          <input value={refineText} onChange={(e) => setRefineText(e.target.value)} placeholder="Refinar..." className="bg-transparent text-xs sm:text-sm outline-none text-white w-full placeholder-white/20 font-light" />
+          <input value={refineText} onChange={(e) => setRefineText(e.target.value)} placeholder="Escribe aqui los cambios" className="bg-transparent text-xs sm:text-sm outline-none text-white w-full placeholder-white/20 font-light" />
           <button onClick={() => {onRefine(refineText); setRefineText('')}} disabled={!refineText.trim()} className="text-white/40 hover:text-white transition-colors ml-1">→</button>
         </div>
         <div className="h-px sm:h-6 w-full sm:w-px bg-white/10"></div>
