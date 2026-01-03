@@ -1383,39 +1383,36 @@ const handleGenerate = async () => {
           <div className={`
             hidden lg:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col overflow-hidden shadow-2xl relative
           `}>
-            {/* CONTENEDOR CON MÁS ESPACIO VERTICAL PARA LOS BOTONES DEBAJO */}
-            <div className="flex-1 flex flex-col items-center justify-start pt-8 pb-6 overflow-y-auto">
-             
-             {/* Top Bar */}
-             <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
-                 <div className="flex items-center gap-2">
-                     {/* Mobile Menu Button */}
+              
+              {/* Top Bar */}
+              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                      {/* Mobile Menu Button */}
+                      <button
+                        onClick={() => setShowMobileMenu(true)}
+                        className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                      </button>
+                      
+                      
+                      <span className={`text-xs font-medium ${!imageUrl ? "text-white" : "text-white/50"}`}>Diseño</span>
+                      <span className="text-white/30">/</span>
+                      <span className={`text-xs font-medium ${imageUrl ? "text-white" : "text-white/50"}`}>Previsualización</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                      <button
-                       onClick={() => setShowMobileMenu(true)}
-                       className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                         onClick={() => window.location.href = '/perfil'}
+                         className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
+                         title="Ver perfil de cuenta"
                      >
-                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                       </svg>
+                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                      </button>
-                     
-                     
-                     <span className={`text-xs font-medium ${!imageUrl ? "text-white" : "text-white/50"}`}>Diseño</span>
-                     <span className="text-white/30">/</span>
-                     <span className={`text-xs font-medium ${imageUrl ? "text-white" : "text-white/50"}`}>Previsualización</span>
                  </div>
-                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => window.location.href = '/perfil'}
-                        className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
-                        title="Ver perfil de cuenta"
-                    >
-                        <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                    </button>
-                </div>
-            </header>
-            </div>
+             </header>
 
             {/* Viewport */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 w-full">

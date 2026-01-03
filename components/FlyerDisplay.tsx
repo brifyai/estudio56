@@ -1981,9 +1981,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
-      {/* SPACER - Empuja los controles hacia abajo para que no tapen la imagen */}
-      <div className="flex-1 min-h-[20px]" />
-      
       {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto */}
       <div className="w-full max-w-[280px] flex flex-col gap-2 mt-3">
         {/* Campo de refinamiento */}
@@ -2027,8 +2024,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </button>
       )}
       
-      {/* SPACER ADICIONAL PARA DESKTOP - Más espacio en pantallas grandes */}
-      <div className="hidden lg:block min-h-[60px]" />
     </div>
   );
 };
