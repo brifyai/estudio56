@@ -1582,10 +1582,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <div
           id="flyer-container-mobile"
           className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container
-            ${aspectRatio === '9:16' ? 'w-[280px] h-[540px]' :
-              aspectRatio === '1:1' ? 'w-[280px] h-[320px]' :
-              aspectRatio === '4:5' ? 'w-[280px] h-[390px]' :
-              'w-[280px] h-[540px]'}`}
+            ${aspectRatio === '9:16' ? 'w-[280px] h-[640px]' :
+              aspectRatio === '1:1' ? 'w-[280px] h-[420px]' :
+              aspectRatio === '4:5' ? 'w-[280px] h-[490px]' :
+              'w-[280px] h-[640px]'}`}
         >
           <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
             {(() => {
