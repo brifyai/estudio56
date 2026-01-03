@@ -132,9 +132,25 @@ export type FlyerStyleKeyVideo =
   | 'video_tech_micro'         // 59. Tech Micro
   | 'video_cake_slicing';      // 60. Cake Slicing
 
-export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | '1.91:1' | '4:5' | '1080x1080' | '1080x1920' | '1080x1350';
+export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | '1.91:1' | '4:5' | '1080x1080' | '1080x1920' | '1080x1350' | '1:1.41'; // 1:1.41 = Formato A3/A4 para posters
 
-export type MediaType = 'image' | 'video' | 'product_study';
+export type MediaType = 'image' | 'video' | 'product_study' | 'poster';
+
+// ============================================
+// TIPOS PARA POSTER PRO
+// ============================================
+export type PosterStyle = 'promotional' | 'informative' | 'branding';
+
+export interface PosterStyleConfig {
+  label: string;
+  description: string;
+  context: string;
+  visualLogic: string;
+  hierarchy: string;
+  videoMotion: string;
+  example: string;
+  previewUrl: string;
+}
 
 export type ImageQuality = 'draft' | 'hd';
 

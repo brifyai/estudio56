@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { FlyerStyleKey, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle } from './types';
+import { FlyerStyleKey, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
+import { POSTER_STYLES, POSTER_INDUSTRY_PROMPTS } from './constants';
 import { FlyerForm } from './components/FlyerForm';
 import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
 import { TextEditorPanel } from './components/TextEditorPanel';
@@ -23,6 +24,7 @@ import { BrandNotifications } from './components/BrandNotifications';
 import { MobileMenu } from './components/MobileMenu';
 import { supabase } from './services/supabaseService';
 import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
+import { detectIndustryFromDescription } from './services/geminiService';
 import { enhancePrompt, generateFlyerImage, generateFlyerVideo, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
 import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
 import creditService from './services/creditService';
@@ -44,6 +46,7 @@ const Dashboard: React.FC = () => {
   const [styleKey, setStyleKey] = useState<FlyerStyleKey>('retail_sale');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
   const [mediaType, setMediaType] = useState<MediaType>('image');
+  const [posterStyle, setPosterStyle] = useState<PosterStyle>('promotional');
   const [description, setDescription] = useState<string>('');
   const [workMode, setWorkMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de trabajo (por defecto AUTO)
   const [textMode, setTextMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de texto (Opción B)
@@ -697,7 +700,8 @@ const handleGenerate = async () => {
       hasProductOverlay: !!productUrl,
       hasLogo: !!logoUrl,
       hasOverlay: !!overlayText,
-      customStylePrompt: customStylePrompt ? 'present' : 'none'
+      customStylePrompt: customStylePrompt ? 'present' : 'none',
+      isPosterMode: mediaType === 'poster'
     });
 
     // NO borrar draftImageUrl si estamos en modo HD - lo necesitamos para comparar
@@ -710,6 +714,77 @@ const handleGenerate = async () => {
     const newSeed = Math.floor(Math.random() * 2000000000);
     setSeed(newSeed);
     const hasProductOverlay = !!productUrl;
+
+    // ============================================
+    // MODO POSTER PRO - GENERACIÓN ESPECIAL
+    // ============================================
+    if (mediaType === 'poster') {
+      try {
+        setStatus({ isLoading: true, step: 'translating', message: ':: GENERANDO_POSTER_PRO ::' });
+        
+        // Detectar industria basada en la descripción
+        const industryKey = detectIndustryFromDescription(description);
+        console.log('📄 Industria detectada para poster:', industryKey);
+        
+        // Obtener prompt específico para la industria y estilo de poster
+        const industryPrompts = POSTER_INDUSTRY_PROMPTS[industryKey] || POSTER_INDUSTRY_PROMPTS['default'];
+        const posterPrompt = industryPrompts[posterStyle];
+        
+        console.log('📄 Estilo de poster:', posterStyle);
+        console.log('📄 Prompt generado:', posterPrompt.substring(0, 100) + '...');
+        
+        // Generar imagen de poster con formato 1:1.41
+        setStatus({
+          isLoading: true,
+          step: 'rendering',
+          message: ':: RENDERIZANDO_POSTER_ALTA_RESOLUCION ::'
+        });
+        
+        // Usar el mismo servicio de generación pero con prompt de poster
+        const result = await generateFlyerImage(
+          posterPrompt,
+          styleKey,
+          '1:1.41', // Forzar formato poster A3/A4
+          imageQuality,
+          newSeed,
+          undefined,
+          hasProductOverlay,
+          true,
+          overlayText || undefined,
+          'modern'
+        );
+        
+        setImageUrl(result.imageDataUrl);
+        setDraftImageUrl(result.imageDataUrl);
+        
+        // Guardar generación
+        if (imageQuality === 'draft') {
+          const generation = await createGeneration({
+            userId: (await supabase.auth.getSession()).data.session?.user.id || '',
+            draftImageUrl: result.imageDataUrl,
+            prompt: posterPrompt,
+            styleKey,
+            aspectRatio: '1:1.41',
+            seed: newSeed
+          });
+          
+          if (generation) {
+            setCurrentGenerationId(generation.id);
+            setCurrentGeneration(generation);
+            console.log('✅ Poster guardado con ID:', generation.id);
+          }
+        }
+        
+        setStatus({ isLoading: false, step: 'complete', message: 'POSTER GENERADO ✓' });
+        console.log('✅ Poster generado exitosamente');
+        return;
+        
+      } catch (error: any) {
+        console.error('❌ Error generando poster:', error);
+        handleError(error);
+        return;
+      }
+    }
 
     // DETERMINE STYLE KEY BASED ON WORK MODE - CAMINOS COMPLETAMENTE SEPARADOS
     let effectiveStyleKey = styleKey;
@@ -1157,6 +1232,9 @@ const handleGenerate = async () => {
                     currentSpanishPrompt={currentSpanishPrompt}
                     // NEW: Callback para actualizar prompt desde análisis de URL
                     onSpanishPromptUpdate={handleSpanishPromptUpdate}
+                    // NEW: Props para Poster Pro
+                    posterStyle={posterStyle}
+                    setPosterStyle={setPosterStyle}
                 />
                 
                 {/* Panel de Editor de Texto */}

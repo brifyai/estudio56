@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle } from '../types';
-import { FLYER_STYLES, VIDEO_STYLES, ASPECT_RATIO_LABELS } from '../constants';
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle, PosterStyle } from '../types';
+import { FLYER_STYLES, VIDEO_STYLES, ASPECT_RATIO_LABELS, POSTER_STYLES } from '../constants';
 import { analyzeUrlContent, generatePersuasiveText, INDUSTRY_TEXT_TEMPLATES, detectIndustryFromDescription, enhanceUserImage } from '../services/geminiService';
 import { REALITY_MODE_LABELS, type RealityMode } from '../src/constants/promptModifiers';
 import { ImageAnalysisResult } from '../services/imageAnalysisService';
@@ -50,6 +50,8 @@ interface FlyerFormProps {
   onClearInput?: () => void; // NEW: Callback para limpiar entrada y análisis
   currentSpanishPrompt?: string; // NEW: Prompt en español para mostrar al usuario
   onSpanishPromptUpdate?: (prompt: string) => void; // NEW: Callback para actualizar prompt en español desde análisis de URL
+  posterStyle?: PosterStyle; // NEW: Estilo de poster seleccionado (desde padre)
+  setPosterStyle?: (style: PosterStyle) => void; // NEW: Setter para estilo de poster
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -90,7 +92,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   onManualTextStylesChange,
   onClearInput,
   currentSpanishPrompt = '',
-  onSpanishPromptUpdate // NEW: Callback para actualizar prompt en español desde análisis de URL
+  onSpanishPromptUpdate, // NEW: Callback para actualizar prompt en español desde análisis de URL
+  posterStyle: posterStyleProp = 'promotional', // NEW: Estilo de poster desde padre
+  setPosterStyle // NEW: Setter para estilo de poster
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -118,6 +122,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   
   // NUEVO: Estados para el switch de modo de realismo
   const [realityMode, setRealityMode] = useState<RealityMode>('realist');
+  
+  // NUEVO: Estados para POSTER PRO - Usar prop del padre si está disponible
+  const [posterStyleLocal, setPosterStyleLocal] = useState<PosterStyle>('promotional');
+  const [isPosterModeActive, setIsPosterModeActive] = useState(false);
+  
+  // Usar prop del padre o estado local
+  const posterStyle = posterStyleProp || posterStyleLocal;
+  const handlePosterStyleChange = setPosterStyle || setPosterStyleLocal;
   
   // Editor de texto states - TAMAÑO REDUCIDO POR DEFECTO
   const [fontSize, setFontSize] = useState(24); // Reducido de 48px a 24px
@@ -696,58 +708,84 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 5. FORMATO SIMPLIFICADO */}
-        <div className="space-y-3">
-            <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Formato</label>
-            <div className="grid grid-cols-2 gap-3">
-                {/* 1:1 - Universal */}
-                <button
-                   onClick={() => setAspectRatio('1:1')}
-                   className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
-                   ${aspectRatio === '1:1'
-                       ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/50 text-white shadow-lg'
-                       : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
-                >
-                   <div className="flex items-center justify-center mb-2">
-                       <div className="w-6 h-6 border-2 border-current rounded-sm flex items-center justify-center">
-                           <div className="w-4 h-4 bg-current rounded-sm"></div>
-                       </div>
-                   </div>
-                   <div className="text-sm font-bold mb-1">1:1</div>
-                   <div className="text-[10px] text-white/80">Instagram/Facebook</div>
-                </button>
+        {/* 5. FORMATO SIMPLIFICADO - OCULTAR EN MODO POSTER */}
+        {!isPosterModeActive && (
+          <div className="space-y-3">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Formato</label>
+              <div className="grid grid-cols-2 gap-3">
+                  {/* 1:1 - Universal */}
+                  <button
+                      onClick={() => setAspectRatio('1:1')}
+                      className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                      ${aspectRatio === '1:1'
+                          ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/50 text-white shadow-lg'
+                          : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+                  >
+                      <div className="flex items-center justify-center mb-2">
+                          <div className="w-6 h-6 border-2 border-current rounded-sm flex items-center justify-center">
+                              <div className="w-4 h-4 bg-current rounded-sm"></div>
+                          </div>
+                      </div>
+                      <div className="text-sm font-bold mb-1">1:1</div>
+                      <div className="text-[10px] text-white/80">Instagram/Facebook</div>
+                  </button>
 
-                {/* 9:16 - Stories */}
-                <button
-                   onClick={() => setAspectRatio('9:16')}
-                   className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
-                   ${aspectRatio === '9:16'
-                       ? 'bg-gradient-to-br from-pink-500/20 to-red-500/20 border-pink-400/50 text-white shadow-lg'
-                       : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
-                >
-                   <div className="flex items-center justify-center mb-2">
-                       <div className="w-4 h-7 border-2 border-current rounded-sm flex items-center justify-center">
-                           <div className="w-2 h-5 bg-current rounded-sm"></div>
-                       </div>
-                   </div>
-                   <div className="text-sm font-bold mb-1">9:16</div>
-                   <div className="text-[10px] text-white/80">Stories/Reels</div>
-                </button>
+                  {/* 9:16 - Stories */}
+                  <button
+                      onClick={() => setAspectRatio('9:16')}
+                      className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                      ${aspectRatio === '9:16'
+                          ? 'bg-gradient-to-br from-pink-500/20 to-red-500/20 border-pink-400/50 text-white shadow-lg'
+                          : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+                  >
+                      <div className="flex items-center justify-center mb-2">
+                          <div className="w-4 h-7 border-2 border-current rounded-sm flex items-center justify-center">
+                              <div className="w-2 h-5 bg-current rounded-sm"></div>
+                          </div>
+                      </div>
+                      <div className="text-sm font-bold mb-1">9:16</div>
+                      <div className="text-[10px] text-white/80">Stories/Reels</div>
+                  </button>
+              </div>
+          </div>
+        )}
+
+        {/* 5.1 FORMATO POSTER PRO - SOLO EN MODO POSTER */}
+        {isPosterModeActive && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex justify-between items-center">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Formato Poster</label>
+              <span className="text-[10px] text-amber-400">📄 1:1.41 (A3/A4)</span>
             </div>
-        </div>
+            
+            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-16 border-2 border-amber-400 rounded flex items-center justify-center">
+                  <div className="w-8 h-11 bg-amber-400/20"></div>
+                </div>
+                <div>
+                  <div className="text-white font-bold text-sm">Formato A3/A4</div>
+                  <div className="text-white/60 text-xs">Alta resolución para impresión</div>
+                  <div className="text-amber-400 text-xs mt-1">✓ Listo para vitrina o muro</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO O IMAGEN PROPIA */}
+        {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Tipo de contenido</label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {/* IMAGEN IA */}
             <button
               onClick={() => {
                 setMediaType('image');
                 clearUploadedImage();
+                setIsPosterModeActive(false);
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study'
+                ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && !isPosterModeActive
                   ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
@@ -756,7 +794,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <div className="text-sm font-bold">Imágenes</div>
                 <div className="text-[10px] text-white/60">Generar diseño</div>
               </div>
-              {mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && (
+              {mediaType === 'image' && !uploadedImage && !isPosterModeActive && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
               )}
             </button>
@@ -766,9 +804,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={() => {
                 setMediaType('video');
                 clearUploadedImage();
+                setIsPosterModeActive(false);
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${mediaType === 'video'
+                ${mediaType === 'video' && !isPosterModeActive
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
@@ -777,35 +816,133 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <div className="text-sm font-bold">Video</div>
                 <div className="text-[10px] text-white/60">Motion graphics</div>
               </div>
-              {mediaType === 'video' && (
+              {mediaType === 'video' && !isPosterModeActive && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
               )}
             </button>
 
-            {/* ESTUDIO DE PRODUCTO (antes "Mi Imagen") */}
+            {/* ESTUDIO DE PRODUCTO */}
             <button
               onClick={() => {
                 setMediaType('product_study');
-                // Limpiar imagen anterior y mostrar área de carga
                 setUploadedImage(null);
                 setImprovedImageUrl(null);
+                setIsPosterModeActive(false);
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${mediaType === 'product_study'
+                ${mediaType === 'product_study' && !isPosterModeActive
                   ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
               <div className="flex flex-col items-center gap-2">
                 <div className="text-2xl">📸</div>
-                <div className="text-sm font-bold">Estudio de Producto</div>
+                <div className="text-sm font-bold">Estudio</div>
                 <div className="text-[10px] text-white/60">Mejora tu foto</div>
               </div>
-              {mediaType === 'product_study' && (
+              {mediaType === 'product_study' && !isPosterModeActive && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              )}
+            </button>
+
+            {/* POSTER PRO - NUEVA TARJETA */}
+            <button
+              onClick={() => {
+                setMediaType('poster');
+                setIsPosterModeActive(true);
+                clearUploadedImage();
+              }}
+              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+                ${isPosterModeActive
+                  ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-400/50 text-white shadow-lg'
+                  : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-2xl">📄</div>
+                <div className="text-sm font-bold">Poster Pro</div>
+                <div className="text-[10px] text-white/60">Listo para imprimir</div>
+              </div>
+              {isPosterModeActive && (
+                <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
               )}
             </button>
           </div>
         </div>
+
+        {/* 6.1 POSTER PRO - SELECTOR DE ESTILO (Solo cuando está activo) */}
+        {isPosterModeActive && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex justify-between items-center">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Estilo de Poster</label>
+              <span className="text-[10px] text-amber-400">✨ Auto-ajustado para impresión</span>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
+              {/* PROMOTIONAL */}
+              <button
+                onClick={() => handlePosterStyleChange('promotional')}
+                className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                  ${posterStyle === 'promotional'
+                    ? 'bg-gradient-to-br from-red-500/20 to-orange-500/20 border-red-400/50 text-white'
+                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <div className="text-xl">🔥</div>
+                  <div className="text-xs font-bold">Promocional</div>
+                  <div className="text-[8px] text-white/60 text-center">Impacto de venta</div>
+                </div>
+                {posterStyle === 'promotional' && (
+                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-400 rounded-full"></div>
+                )}
+              </button>
+
+              {/* INFORMATIVE */}
+              <button
+                onClick={() => handlePosterStyleChange('informative')}
+                className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                  ${posterStyle === 'informative'
+                    ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white'
+                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <div className="text-xl">📋</div>
+                  <div className="text-xs font-bold">Informativo</div>
+                  <div className="text-[8px] text-white/60 text-center">Listado/Menú</div>
+                </div>
+                {posterStyle === 'informative' && (
+                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                )}
+              </button>
+
+              {/* BRANDING */}
+              <button
+                onClick={() => handlePosterStyleChange('branding')}
+                className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                  ${posterStyle === 'branding'
+                    ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white'
+                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
+              >
+                <div className="flex flex-col items-center gap-1">
+                  <div className="text-xl">✨</div>
+                  <div className="text-xs font-bold">Branding</div>
+                  <div className="text-[8px] text-white/60 text-center">Estilo de vida</div>
+                </div>
+                {posterStyle === 'branding' && (
+                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                )}
+              </button>
+            </div>
+
+            {/* Descripción del estilo seleccionado */}
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <div className="text-amber-300 text-xs font-bold mb-1">
+                {POSTER_STYLES[posterStyle].label}
+              </div>
+              <div className="text-white/70 text-xs">
+                {POSTER_STYLES[posterStyle].description}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
         {mediaType === 'product_study' && !uploadedImage && (
@@ -1023,7 +1160,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={onSubmit}
               disabled={isLoading || !description.trim()}
               className={`w-full py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
-              ${mediaType === 'video'
+              ${isPosterModeActive
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-900/40'
+                  : mediaType === 'video'
                   ? 'bg-indigo-600 text-white shadow-indigo-900/40'
                   : 'bg-white text-black shadow-white/20'}`}
           >
@@ -1035,7 +1174,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               ) : (
                   <>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                      <span>✨ GENERAR {mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
+                      <span>✨ GENERAR {isPosterModeActive ? 'POSTER' : mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
                   </>
               )}
           </button>

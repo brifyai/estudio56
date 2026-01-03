@@ -1,4 +1,4 @@
-import { FlyerStyleKey, FlyerStyleKeyVideo, FlyerStyleConfig, VideoStyleConfig, AspectRatio, VideoPlanConfig } from './types';
+import { FlyerStyleKey, FlyerStyleKeyVideo, FlyerStyleConfig, VideoStyleConfig, AspectRatio, VideoPlanConfig, PosterStyle, PosterStyleConfig } from './types';
 
 // A. [MASTER STYLE]
 // HD Version (Complex)
@@ -38,7 +38,10 @@ export const ASPECT_RATIO_LABELS: Record<AspectRatio, string> = {
   // FORMATOS DE ALTA RESOLUCIÓN
   '1080x1080': '🖼️ HD Cuadrado (1080x1080)',
   '1080x1920': '🎬 HD Vertical (1080x1920)',
-  '1080x1350': '📸 HD Instagram (1080x1350)'
+  '1080x1350': '📸 HD Instagram (1080x1350)',
+  
+  // FORMATO POSTER PRO (A3/A4 - 1:1.41)
+  '1:1.41': '📄 Poster Pro (Alta Resolución) - Listo para Imprimir'
 };
 
 // B. [CHILEAN CONTEXT - SPLIT]
@@ -2441,36 +2444,209 @@ export const CONFLICT_DETECTION_RULES: Array<{
 ];
 
 // ============================================
-// INDUSTRY_SUGGESTIONS (41-60)
+// INDUSTRY_SUGGESTIONS (1-60)
 // Términos que gatillan la mejor respuesta visual en Gemini y Veo
 // ============================================
 
 export const INDUSTRY_SUGGESTIONS: Record<string, string[]> = {
-  // --- GASTRONOMÍA ESPECÍFICA ---
-  "41_sushi_nikkei": ["Corte de cuchillo preciso", "Pescado fresco", "Platos de pizarra", "Estilo zen", "Rolls premium"],
-  "42_pizzeria": ["Masa madre", "Horno de piedra", "Bordes tostados", "Queso derretido", "Albahaca fresca"],
-  "43_heladeria": ["Helado cremoso", "Cono de barquillo", "Frutas frescas", "Vapor de frío", "Colores vibrantes"],
-  "60_pasteleria": ["Frosting delicado", "Capas de bizcocho", "Decoración artesanal", "Tonos pastel", "Azúcar flor"],
+  // --- ESTILOS MAESTROS Y RUBROS INICIALES (1-25) ---
+  "retail_sale": ["Etiquetas de oferta", "Bolsas de compra", "Vitrinas iluminadas", "Precios destacados", "Liquidación"],
+  "summer_beach": ["Luz de sol radiante", "Arena fina", "Texturas de agua", "Palmeras", "Ambiente de vacaciones"],
+  "worship_sky": ["Luz divina", "Nubes etéreas", "Atmósfera espiritual", "Paz celestial", "Rayos de sol"],
+  "corporate": ["Oficina moderna", "Arquitectura de cristal", "Gente de negocios profesional", "Luz de día", "Confianza"],
+  "urban_night": ["Luces de neón", "Asfalto mojado", "Reflejos de ciudad", "Vida nocturna", "Energía urbana"],
+  "gastronomy": ["Platillo gourmet", "Emplatado artístico", "Ingredientes frescos", "Vapor sutil", "Mantelería fina"],
+  "sport_gritty": ["Sudor auténtico", "Textura de concreto", "Acción intensa", "Contraste alto", "Esfuerzo físico"],
+  "luxury_gold": ["Detalles dorados", "Textura de mármol", "Negro profundo", "Elegancia minimalista", "Premium"],
+  "aesthetic_min": ["Colores pastel", "Mucho espacio negativo", "Líneas limpias", "Objetos minimalistas", "Moderno"],
+  "retro_vintage": ["Grano de película", "Colores sepia", "Tipografía antigua", "Textura de papel", "Nostalgia"],
+  "gamer_stream": ["Luces RGB", "Setup gamer", "Audífonos pro", "Interfaz digital", "Energía futurista"],
+  "eco_organic": ["Hojas verdes", "Textura de madera", "Luz natural suave", "Sustentabilidad", "Naturaleza"],
+  "indie_grunge": ["Textura de póster pegado", "Grafiti sutil", "Estilo urbano rebelde", "Análogo", "Distorsión visual"],
+  "political_community": ["Gente diversa", "Banderas", "Espacio público", "Liderazgo", "Unidad social"],
+  "kids_fun": ["Colores brillantes", "Juguetes", "Energía alegre", "Ambiente lúdico", "Niños jugando"],
+  "art_double_exp": ["Superposición de imágenes", "Naturaleza y siluetas", "Surrealismo", "Arte conceptual", "Poético"],
+  "medical_clean": ["Estetoscopio", "Uniforme clínico", "Luz blanca fría", "Ambiente estéril", "Cuidado médico"],
+  "tech_saas": ["Tableros digitales", "Código de software", "Interfaz de usuario", "Nube", "Innovación"],
+  "typo_bold": ["Tipografía gigante", "Colores contrastantes", "Mensaje directo", "Impacto visual", "Diseño gráfico"],
+  "realestate_night": ["Casa iluminada", "Arquitectura moderna", "Cielo nocturno estrellado", "Lujo residencial", "Hogar"],
+  "auto_metallic": ["Reflejos en metal", "Carrocería brillante", "Velocidad", "Diseño automotriz", "Llantas pro"],
+  "edu_sketch": ["Pizarra con dibujos", "Libros", "Creatividad", "Lápices", "Ambiente de aprendizaje"],
+  "wellness_zen": ["Piedras calientes", "Aceites esenciales", "Luz suave de vela", "Bambú", "Relajación total"],
+  "pilates": ["Máquina Reformer", "Control muscular", "Piso de madera", "Postura perfecta", "Concentración"],
+  "podcast_mic": ["Micrófono profesional", "Audífonos", "Espuma acústica", "Estudio de grabación", "Ondas de sonido"],
+  "seasonal_holiday": ["Decoración festiva", "Luces cálidas", "Celebración", "Ambiente familiar", "Temporada"],
 
-  // --- BELLEZA Y CUIDADO ---
-  "44_nail_studio": ["Esmalte brillante", "Detalle de pincel", "Luz LED de mesa", "Manos cuidadas", "Arte en uñas"],
-  "45_tattoo_studio": ["Máquina de tatuar", "Tinta intensa", "Guantes de nitrilo", "Diseño artístico", "Luz de estudio"],
-  "46_yoga_studio": ["Incienso sutil", "Postura de loto", "Mat de yoga", "Silencio visual", "Luz natural"],
+  // --- SERVICIOS Y OFICIOS (26-40) ---
+  "mechanic_workshop": ["Elevador de autos", "Herramientas de acero", "Motores", "Grasa auténtica", "Iluminación industrial"],
+  "tire_service": ["Neumáticos apilados", "Gata hidráulica", "Máquina equilibradora", "Caucho", "Servicio en ruta"],
+  "construction_site": ["Cascos de seguridad", "Hormigón", "Grúas", "Planos de obra", "Estructuras de acero"],
+  "logistics_delivery": ["Cajas de cartón", "Furgón de reparto", "Bodega organizada", "Escáner de código", "Rapidez"],
+  "bakery_bread": ["Pan caliente", "Harina esparcida", "Hornos de piedra", "Cestas de mimbre", "Tradición"],
+  "liquor_store": ["Botellas de vidrio", "Coolers con hielo", "Luz de neón comercial", "Pasillos llenos", "Variedad"],
+  "fast_food_street": ["Humo de plancha", "Queso derretido", "Envases de papel", "Salsas", "Comida al paso"],
+  "barber_shop": ["Silla de barbero", "Navaja clásica", "Espejos con luz", "Tijeras de precisión", "Estilo urbano"],
+  "veterinary_clinic": ["Mascota en camilla", "Instrumental veterinario", "Cuidado animal", "Luz clínica", "Amabilidad"],
+  "hvac_plumbing": ["Tuberías de cobre", "Aire acondicionado", "Llaves de presión", "Instalación técnica", "Experto"],
+  "dental_clinic": ["Sillón dental", "Luz blanca potente", "Instrumental dental", "Higiene bucal", "Sonrisa perfecta"],
+  "physiotherapy": ["Camilla de tratamiento", "Bandas elásticas", "Ejercicio guiado", "Músculos", "Recuperación"],
+  "law_accounting": ["Libros de derecho", "Mesa de madera", "Documentos serios", "Maletín", "Prestidigitación"],
+  "gardening_landscaping": ["Cortadora de césped", "Plantas vivas", "Flores de jardín", "Tierra fresca", "Mangueras"],
+  "security_systems": ["Cámaras CCTV", "Panel de control", "Sensores", "Monitores", "Protección 24/7"],
 
-  // --- SERVICIOS TÉCNICOS Y OFICIOS ---
-  "47_car_detailing": ["Sellado cerámico", "Brillo espejo", "Espuma de lavado", "Microfibra", "Focos de inspección"],
-  "48_optica": ["Cristales limpios", "Marcos modernos", "Exhibición minimalista", "Examen visual", "Tecnología óptica"],
-  "49_libreria": ["Lomos de libros", "Papelería fina", "Rincón de lectura", "Cuadernos", "Ambiente tranquilo"],
-  "50_floreria": ["Rocío de agua", "Flores frescas", "Papel Kraft de regalo", "Vibrante natural", "Arreglos florales"],
-  "53_ferreteria": ["Herramientas manuales", "Pinturas", "Materiales de construcción", "Estanterías Pro", "Fierros"],
-  "55_limpieza": ["Superficies brillantes", "Hygiene total", "Uniforme profesional", "Aroma fresco", "Orden impecable"],
-  "57_lavanderia": ["Vapor de planchado", "Ropa colgada", "Máquinas industriales", "Blanco puro", "Textiles suaves"],
-  "59_tech_repair": ["Pinzas de precisión", "Circuitos", "Luz de laboratorio", "Pantallas abiertas", "Soldadura fina"],
+  // --- ESTILOS ADICIONALES (41-60) ---
+  "sushi_nikkei": ["Corte de cuchillo preciso", "Pescado fresco", "Platos de pizarra", "Estilo zen", "Rolls premium"],
+  "pizzeria": ["Masa madre", "Horno de piedra", "Bordes tostados", "Queso derretido", "Albahaca fresca"],
+  "ice_cream": ["Helado cremoso", "Cono de barquillo", "Frutas frescas", "Vapor de frío", "Colores vibrantes"],
+  "nail_studio": ["Esmalte brillante", "Detalle de pincel", "Luz LED de mesa", "Manos cuidadas", "Arte en uñas"],
+  "tattoo_studio": ["Máquina de tatuar", "Tinta intensa", "Guantes de nitrilo", "Diseño artístico", "Luz de estudio"],
+  "yoga_studio": ["Incienso sutil", "Postura de loto", "Mat de yoga", "Silencio visual", "Luz natural"],
+  "car_detailing": ["Sellado cerámico", "Brillo espejo", "Espuma de lavado", "Microfibra", "Focos de inspección"],
+  "optical": ["Cristales limpios", "Marcos modernos", "Exhibición minimalista", "Examen visual", "Tecnología óptica"],
+  "bookstore": ["Lomos de libros", "Papelería fina", "Rincón de lectura", "Cuadernos", "Ambiente tranquilo"],
+  "flower_shop": ["Rocío de agua", "Flores frescas", "Papel Kraft de regalo", "Vibrante natural", "Arreglos florales"],
+  "transport_school": ["Letreros amarillos", "Seguridad vial", "Entorno escolar", "Transporte ordenado", "Confianza"],
+  "hardware_store": ["Herramientas manuales", "Pinturas", "Materiales de construcción", "Estanterías Pro", "Fierros"],
+  "cleaning_service": ["Superficies brillantes", "Higiene total", "Uniforme profesional", "Aroma fresco", "Orden impecable"],
+  "travel_agency": ["Pasaportes", "Tickets de avión", "Mapas", "Destinos de playa", "Maletas modernas"],
+  "laundry": ["Vapor de planchado", "Ropa colgada", "Máquinas industriales", "Blanco puro", "Textiles suaves"],
+  "shoe_store": ["Textura de cuero", "Vitrinas elegantes", "Cajas de zapatos", "Hormas de madera", "Diseño calzado"],
+  "tech_repair": ["Pinzas de precisión", "Circuitos", "Luz de laboratorio", "Pantallas abiertas", "Soldadura fina"],
+  "pastry_shop": ["Frosting delicado", "Capas de bizcocho", "Decoración artesanal", "Tonos pastel", "Azúcar flor"]
+};
 
-  // --- COMERCIO Y TRANSPORTE ---
-  "51_botilleria": ["Coolers empañados", "Hielo", "Estanterías llenas", "Iluminación LED comercial", "Bebidas heladas"],
-  "52_furgon_escolar": ["Letreros amarillos", "Seguridad vial", "Entorno escolar", "Transporte ordenado", "Confianza"],
-  "54_feria_fruteria": ["Cajones de mimbre", "Fruta de estación", "Rocío natural", "Venta al kilo", "Colores de campo"],
-  "56_agencia_viajes": ["Pasaportes", "Tickets de avión", "Mapas", "Destinos de playa", "Maletas modernas"],
-  "58_zapateria": ["Textura de cuero", "Vitrinas elegantes", "Cajas de zapatos", "Hormas de madera", "Diseño calzado"]
+// ============================================
+// CONFIGURACIÓN DE POSTER PRO (3 ESTILOS)
+// ============================================
+
+export const POSTER_STYLES: Record<PosterStyle, PosterStyleConfig> = {
+  // 1. POSTER PROMOCIONAL (Impacto de Venta)
+  promotional: {
+    label: "Promocional",
+    description: "Diseñado para atraer clientes desde la distancia (vitrinas)",
+    context: `POSTER PROMOCIONAL - CONTEXTO DE NEGOCIO CHILENO:
+El asset procesado en el Estudio de Producto ocupa el centro de la escena con iluminación dramática.
+Diseñado para vitrinas de negocios locales: panaderías, restaurants, tiendas retail, locales de comida.
+El producto debe verse irresistible y accesible para el consumidor de barrio.`,
+    visualLogic: "El asset procesado en el Estudio de Producto ocupa el centro de la escena con iluminación dramática. El producto debe ser el protagonista absoluto, capturando la atención desde lejos.",
+    hierarchy: "Título de oferta MASIVO y precio en contraste alto. El precio debe ser lo primero que se lea, seguido del producto y luego los detalles.",
+    videoMotion: "DOLLY_ZOOM constante hacia el producto - movimiento cinematográfico lento que acerca el producto al espectador.",
+    example: "Panadería 'El Trigo': Oferta de pan fresco - 6 unidades por $1.500. Foto del pan dorado en el centro con precio gigante.",
+    previewUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 2. POSTER INFORMATIVO (Listado/Menú)
+  informative: {
+    label: "Informativo",
+    description: "Diseñado para ser leído de cerca (mesas, muros internos)",
+    context: `POSTER INFORMATIVO - CONTEXTO DE NEGOCIO CHILENO:
+Organización en cuadrícula (grid) con el asset en una esquina o como fondo con opacidad reducida.
+Diseñado para ser leído de cerca: menús en mesas, información en muros internos, folletos en mostradores.
+Ideal para restaurants, clínicas, servicios profesionales, ferias.`,
+    visualLogic: "Organización en cuadrícula (grid) con el asset en una esquina o como fondo con opacidad reducida. El contenido textual es protagonista, el producto es secundario.",
+    hierarchy: "Listado de servicios/productos, iconos legibles y un Código QR prominente en la base para más información o pedidos.",
+    videoMotion: "SLOW_PAN vertical (scrolling) para recorrer la información de arriba hacia abajo como si el usuario estuviera leyendo.",
+    example: "Restaurant Sushi: Carta de niguiris - $1.200 c/u. Foto sutil del sushi en esquina, lista de precios clara con QR para ver menú completo.",
+    previewUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 3. POSTER DE BRANDING (Estilo de Vida)
+  branding: {
+    label: "Branding",
+    description: "Diseñado para generar atmósfera y confianza en el local",
+    context: `POSTER DE BRANDING - CONTEXTO DE NEGOCIO CHILENO:
+Fotografía de estilo editorial, mucha luz natural y 'aire' visual (espacio negativo).
+Diseñado para generar atmósfera y confianza: spas, clínicas estéticas, boutiques, agencias.
+El local se ve profesional, limpio y confiable.`,
+    visualLogic: "Fotografía de estilo editorial, mucha luz natural y 'aire' visual (espacio negativo). El ambiente debe sentirse profesional y acogedor.",
+    hierarchy: "Minimalista; solo el logo, un eslogan corto y el contacto. Menos es más - cada elemento tiene propósito.",
+    videoMotion: "CINEMAGRAPH - imagen fija con un elemento sutil moviéndose: vapor, luces, reflejos, humo, o movimiento de tela.",
+    example: "Clínica Dental: 'Tu sonrisa, nuestra pasión'. Foto editorial de la clínica luminosa con logo discreto y teléfono de contacto.",
+    previewUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80"
+  }
+};
+
+// ============================================
+// PROMPTS TÉCNICOS PARA POSTER POR INDUSTRIA
+// ============================================
+
+export const POSTER_INDUSTRY_PROMPTS: Record<string, Record<PosterStyle, string>> = {
+  // PANADERÍA
+  "bakery_bread": {
+    promotional: `Poster promocional de panadería chilena. [PRODUCT_IMAGE] en el centro con iluminación cálida dorada.
+    Texto grande: "PAN FRESCO" y precio "$1.500 x6 unidades".
+    Fondo neutro, enfoque en el producto. Formato vertical 1:1.41. Listo para imprimir en A3/A4.`,
+    
+    informative: `Poster informativo tipo menú. [PRODUCT_IMAGE] en esquina superior izquierda con opacidad 30%.
+    Lista en cuadrícula: "Marraqueta $1.200 | Hallulla $1.000 | Pan integral $1.500".
+    Código QR en la base: "Escanea para ver nuestra carta completa".
+    Diseño limpio y legible para lectura de cerca.`,
+    
+    branding: `Poster de branding editorial. [PRODUCT_IMAGE] con luz natural suave y mucho espacio negativo.
+    Solo logo pequeño: "El Trigo de Oro" y eslogan "Tradición desde 1995".
+    Teléfono discreto: "Llama al 22 3456 7890". Estilo minimalista premium.`
+  },
+
+  // SUSHI
+  "sushi_nikkei": {
+    promotional: `Poster promocional de sushi. [PRODUCT_IMAGE] de nigiri con iluminación dramática lateral.
+    Texto grande: "SASHIMI FRESCO" y precio "$3.990 x10 unidades".
+    Colores vibrantes, producto protagonista. Formato vertical 1:1.41.`,
+    
+    informative: `Poster informativo de carta. [PRODUCT_IMAGE] sutil en esquina como fondo.
+    Cuadrícula con precios: "Nigiri $1.200 | Sashimi $2.500 | Roll $2.000".
+    QR grande: "Pedidos y reservas al escanear".
+    Diseño profesional para leer en mesa.`,
+    
+    branding: `Poster de branding zen. [PRODUCT_IMAGE] con iluminación suave y minimalismo visual.
+    Logo discreto y eslogan "Arte Nikkei, pasión japonesa".
+    Teléfono minimalista. Estilo editorial limpio y sofisticado.`
+  },
+
+  // CLÍNICA DENTAL
+  "dental_clinic": {
+    promotional: `Poster promocional dental. [PRODUCT_IMAGE] de sonrisa radiante en el centro.
+    Texto grande: "SONRISA PERFECTA" y oferta "Primera consulta sin costo".
+    Colores blancos y celestes, ambiente clínico confiable.`,
+    
+    informative: `Poster informativo de servicios. [PRODUCT_IMAGE] sutil de consultorio en fondo.
+    Cuadrícula de servicios: "Blanqueamiento $80.000 | Ortodoncia $1.200.000 | Implantes $400.000".
+    QR prominente: "Agenda tu hora escaneando".
+    Diseño limpio y profesional para sala de espera.`,
+    
+    branding: `Poster de branding editorial. [PRODUCT_IMAGE] de consultorio luminoso con luz natural.
+    Solo logo y eslogan: "Cuidamos tu sonrisa desde 2010".
+    Contacto discreto. Estilo premium y confiable.`
+  },
+
+  // GIMNASIO
+  "sport_gritty": {
+    promotional: `Poster promocional de gym. [PRODUCT_IMAGE] de athlete en acción, iluminación dramática.
+    Texto grande: "TRANSFORMA TU CUERPO" y precio "Matrícula gratis este mes".
+    Energía alta, colores oscuros con acentos en rojo.`,
+    
+    informative: `Poster informativo de planes. [PRODUCT_IMAGE] sutil de equipamiento en fondo.
+    Cuadrícula: "Mensual $35.000 | Trimestral $90.000 | Anual $300.000".
+    QR: "Horarios y clases al escanear".
+    Diseño motivacional pero legible.`,
+    
+    branding: `Poster de branding lifestyle. [PRODUCT_IMAGE] editorial de entrenamiento con luz natural.
+    Solo logo y eslogan: "Fuerza, disciplina, resultados".
+    Contacto minimalista. Estilo aspiracional pero accesible.`
+  },
+
+  // DEFAULT (para industrias no especificadas)
+  "default": {
+    promotional: `Poster promocional. [PRODUCT_IMAGE] en el centro con iluminación profesional.
+    Texto grande: "OFERTA ESPECIAL" y precio destacado.
+    Diseño impactante para vitrina. Formato vertical 1:1.41.`,
+    
+    informative: `Poster informativo. [PRODUCT_IMAGE] sutil en esquina.
+    Lista organizada de productos/servicios con precios.
+    Código QR grande en la base. Diseño legible para lectura de cerca.`,
+    
+    branding: `Poster de branding. [PRODUCT_IMAGE] con luz natural y espacio negativo.
+    Logo discreto, eslogan corto, contacto minimalista.
+    Estilo editorial profesional.`
+  }
 };
