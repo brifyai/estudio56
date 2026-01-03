@@ -113,6 +113,23 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     initialPosY: 0
   });
 
+  // Estado para gestos táctiles con 2 dedos (zoom y rotación)
+  const [textScale, setTextScale] = useState(1);
+  const [textRotation, setTextRotation] = useState(0);
+  const [logoScale, setLogoScale] = useState(1);
+  const [logoRotation, setLogoRotation] = useState(0);
+  const [productScale, setProductScale] = useState(1);
+  const [productRotation, setProductRotation] = useState(0);
+  
+  // Estado para tracking de gestos pinch/rotate
+  const pinchInfo = useRef({
+    isPinching: false,
+    initialDistance: 0,
+    initialRotation: 0,
+    initialScale: 1,
+    initialRotationAngle: 0
+  });
+
   // Estado para resize
   const resizeInfo = useRef({
     isResizing: false,
@@ -683,6 +700,145 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     };
   }, [textDimensions, textPosition]);
 
+  // ========== GESTOS TÁCTILES CON 2 DEDOS ==========
+  // Calcular distancia entre 2 puntos táctiles
+  const getTouchDistance = (touches: TouchList): number => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Calcular ángulo de rotación entre 2 puntos táctiles
+  const getTouchRotation = (touches: TouchList): number => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.atan2(dy, dx) * (180 / Math.PI);
+  };
+
+  // Manejar inicio de gesto pinch/rotate para TEXTO
+  const handleTextTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      pinchInfo.current = {
+        isPinching: true,
+        initialDistance: getTouchDistance(e.touches),
+        initialRotation: textRotation,
+        initialScale: textScale,
+        initialRotationAngle: getTouchRotation(e.touches)
+      };
+    }
+  }, [textRotation, textScale]);
+
+  // Manejar movimiento de gesto pinch/rotate para TEXTO
+  const handleTextTouchMove = useCallback((e: React.TouchEvent) => {
+    if (pinchInfo.current.isPinching && e.touches.length === 2) {
+      e.preventDefault();
+      
+      // Calcular nuevo scale (zoom)
+      const currentDistance = getTouchDistance(e.touches);
+      const scaleFactor = currentDistance / pinchInfo.current.initialDistance;
+      const newScale = Math.max(0.5, Math.min(3, pinchInfo.current.initialScale * scaleFactor));
+      setTextScale(newScale);
+      
+      // Calcular nueva rotación
+      const currentRotation = getTouchRotation(e.touches);
+      const rotationDelta = currentRotation - pinchInfo.current.initialRotationAngle;
+      setTextRotation(pinchInfo.current.initialRotation + rotationDelta);
+    }
+  }, []);
+
+  // Manejar fin de gesto pinch/rotate para TEXTO
+  const handleTextTouchEnd = useCallback(() => {
+    pinchInfo.current.isPinching = false;
+  }, []);
+
+  // Manejar inicio de gesto pinch/rotate para LOGO
+  const handleLogoTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      pinchInfo.current = {
+        isPinching: true,
+        initialDistance: getTouchDistance(e.touches),
+        initialRotation: logoRotation,
+        initialScale: logoScale,
+        initialRotationAngle: getTouchRotation(e.touches)
+      };
+    }
+  }, [logoRotation, logoScale]);
+
+  // Manejar movimiento de gesto pinch/rotate para LOGO
+  const handleLogoTouchMove = useCallback((e: React.TouchEvent) => {
+    if (pinchInfo.current.isPinching && e.touches.length === 2) {
+      e.preventDefault();
+      
+      const currentDistance = getTouchDistance(e.touches);
+      const scaleFactor = currentDistance / pinchInfo.current.initialDistance;
+      const newScale = Math.max(0.5, Math.min(3, pinchInfo.current.initialScale * scaleFactor));
+      setLogoScale(newScale);
+      
+      const currentRotation = getTouchRotation(e.touches);
+      const rotationDelta = currentRotation - pinchInfo.current.initialRotationAngle;
+      setLogoRotation(pinchInfo.current.initialRotation + rotationDelta);
+    }
+  }, []);
+
+  // Manejar fin de gesto pinch/rotate para LOGO
+  const handleLogoTouchEnd = useCallback(() => {
+    pinchInfo.current.isPinching = false;
+  }, []);
+
+  // Manejar inicio de gesto pinch/rotate para PRODUCTO
+  const handleProductTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      pinchInfo.current = {
+        isPinching: true,
+        initialDistance: getTouchDistance(e.touches),
+        initialRotation: productRotation,
+        initialScale: productScale,
+        initialRotationAngle: getTouchRotation(e.touches)
+      };
+    }
+  }, [productRotation, productScale]);
+
+  // Manejar movimiento de gesto pinch/rotate para PRODUCTO
+  const handleProductTouchMove = useCallback((e: React.TouchEvent) => {
+    if (pinchInfo.current.isPinching && e.touches.length === 2) {
+      e.preventDefault();
+      
+      const currentDistance = getTouchDistance(e.touches);
+      const scaleFactor = currentDistance / pinchInfo.current.initialDistance;
+      const newScale = Math.max(0.5, Math.min(3, pinchInfo.current.initialScale * scaleFactor));
+      setProductScale(newScale);
+      
+      const currentRotation = getTouchRotation(e.touches);
+      const rotationDelta = currentRotation - pinchInfo.current.initialRotationAngle;
+      setProductRotation(pinchInfo.current.initialRotation + rotationDelta);
+    }
+  }, []);
+
+  // Manejar fin de gesto pinch/rotate para PRODUCTO
+  const handleProductTouchEnd = useCallback(() => {
+    pinchInfo.current.isPinching = false;
+  }, []);
+
+  // Double tap para editar texto
+  const lastTapRef = useRef<number>(0);
+  const handleTextDoubleTap = useCallback((e: React.TouchEvent) => {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapRef.current;
+    
+    if (tapLength < 300 && tapLength > 0) {
+      // Double tap detectado - activar edición
+      e.preventDefault();
+      setIsEditing(true);
+      setTimeout(() => {
+        textAreaRef.current?.focus();
+      }, 10);
+    }
+    lastTapRef.current = currentTime;
+  }, []);
+
   // Event listener global para ocultar handles al hacer click fuera (solo una vez)
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
@@ -1084,7 +1240,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           position: 'absolute',
           left: `${logoPosition.x}%`,
           top: `${logoPosition.y}%`,
-          transform: 'translate(-50%, -50%)',
+          transform: `translate(-50%, -50%) rotate(${logoRotation}deg) scale(${logoScale})`,
           zIndex: 50,
           cursor: isDraggingLogo ? 'grabbing' : 'grab',
           opacity: 0.9,
@@ -1093,6 +1249,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           // Área de toque aumentada para mobile (padding invisible clickeable)
           padding: '16px',
           margin: '-16px',
+          transition: pinchInfo.current.isPinching ? 'none' : 'transform 0.2s ease',
         }}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -1106,6 +1263,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         onMouseLeave={() => {
           handleLogoMouseUp();
         }}
+        // GESTOS TÁCTILES CON 2 DEDOS
+        onTouchStart={handleLogoTouchStart}
+        onTouchMove={handleLogoTouchMove}
+        onTouchEnd={handleLogoTouchEnd}
       >
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <img
@@ -1150,7 +1311,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           position: 'absolute',
           left: `${productPosition.x}%`,
           top: `${productPosition.y}%`,
-          transform: 'translate(-50%, -50%)',
+          transform: `translate(-50%, -50%) rotate(${productRotation}deg) scale(${productScale})`,
           zIndex: 45,
           cursor: editingProduct ? 'move' : 'grab',
           userSelect: 'none',
@@ -1158,9 +1319,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           // Área de toque aumentada para mobile
           padding: '20px',
           margin: '-20px',
+          transition: pinchInfo.current.isPinching ? 'none' : 'transform 0.2s ease',
         }}
         onMouseDown={handleProductMouseDown}
         onMouseUp={handleProductMouseUp}
+        // GESTOS TÁCTILES CON 2 DEDOS
+        onTouchStart={handleProductTouchStart}
+        onTouchMove={handleProductTouchMove}
+        onTouchEnd={handleProductTouchEnd}
       >
         <img
           src={productUrl}
@@ -1282,7 +1448,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           position: 'absolute',
           left: `${textPosition.x}%`,
           top: `${textPosition.y}%`,
-          transform: 'translate(-50%, -50%)',
+          transform: `translate(-50%, -50%) rotate(${textRotation}deg) scale(${textScale})`,
           width: `${scaledLineWidth}px`,
           minHeight: `${40 * scaleFactor}px`,
           display: 'flex',
@@ -1290,6 +1456,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           justifyContent: 'center',
           touchAction: 'none',
           WebkitUserSelect: 'none',
+          transition: pinchInfo.current.isPinching ? 'none' : 'transform 0.2s ease',
           // EFECTOS DE TEXTO
           textShadow: textShadowValue,
           WebkitTextStroke: displayStyles.effects.stroke ? `${scaledStrokeWidth}px ${displayStyles.textColor}` : undefined,
@@ -1297,15 +1464,22 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
         onTouchStart={isComparisonDraft ? undefined : ((e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          handleMouseDown({
-            clientX: touch.clientX,
-            clientY: touch.clientY,
-            preventDefault: () => {},
-            stopPropagation: () => {},
-          } as any);
+          if (e.touches.length === 1) {
+            // Un dedo: arrastrar
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleMouseDown({
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              preventDefault: () => {},
+              stopPropagation: () => {},
+            } as any);
+          }
+          // Dos dedos: gestos pinch/rotate
+          handleTextTouchStart(e);
         })}
+        onTouchMove={isComparisonDraft ? undefined : handleTextTouchMove}
+        onTouchEnd={isComparisonDraft ? undefined : handleTextTouchEnd}
       >
         {/* Indicador visual de que es editable - solo visible en mobile */}
         <span className="lg:hidden absolute inset-0 -m-3 border-2 border-dashed border-white/40 rounded-lg opacity-60 pointer-events-none" />
