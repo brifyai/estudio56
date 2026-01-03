@@ -4,10 +4,9 @@ import {
   buildArtDirectionPromptByName,
   getArtDirectionConfig,
   hasArtDirection,
-  getAvailableArtDirections,
-  type ArtDirectionInput
-} from '../services/promptBuilder';
-import { getAllArtDirections } from '../src/constants/artDirection';
+  getAvailableArtDirections
+} from '../src/services/promptBuilder';
+import { getAllArtDirections, type ArtDirectionInput } from '../src/constants/artDirection';
 import type { ArtDirectionResult, ContentType } from '../types';
 
 interface StoryArtButtonProps {
@@ -161,7 +160,7 @@ export function StoryArtButton({
             disabled={disabled || !hasArtDirectionForIndustry}
           >
             <span className="btn-icon">📱</span>
-            <span className="btn-text">STORY ART</span>
+            <span className="btn-text">Story Art</span>
             <span className="btn-ratio">9:16</span>
             {!hasArtDirectionForIndustry && (
               <span className="btn-badge">Próximo</span>

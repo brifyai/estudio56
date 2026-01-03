@@ -869,7 +869,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             >
               <div className="flex flex-col items-center gap-2">
                 <div className="text-2xl">🎨</div>
-                <div className="text-sm font-bold">STORY ART</div>
+                <div className="text-sm font-bold">Story Art</div>
                 <div className="text-[10px] text-white/60">Dirección de Arte</div>
               </div>
               {isStoryArtModeActive && (
