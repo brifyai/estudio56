@@ -1383,6 +1383,8 @@ const handleGenerate = async () => {
           <div className={`
             hidden lg:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col overflow-hidden shadow-2xl relative
           `}>
+            {/* CONTENEDOR CON MÁS ESPACIO VERTICAL PARA LOS BOTONES DEBAJO */}
+            <div className="flex-1 flex flex-col items-center justify-start pt-8 pb-6 overflow-y-auto">
              
              {/* Top Bar */}
              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
@@ -1413,9 +1415,10 @@ const handleGenerate = async () => {
                     </button>
                 </div>
             </header>
+            </div>
 
             {/* Viewport */}
-            <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100">
+            <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 w-full">
                 {/* Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
