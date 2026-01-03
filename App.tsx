@@ -1173,8 +1173,8 @@ const handleGenerate = async () => {
        </div>
 
        {/* LEFT PANEL: CONTROLS - En mobile portrait: full width, en lg: sidebar izquierdo */}
-       <aside className="w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-full p-2 lg:p-4">
-         <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative">
+       <aside className="w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-2 lg:p-4">
+          <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
             
             {/* Header */}
             <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5 z-20 relative">
@@ -1228,7 +1228,7 @@ const handleGenerate = async () => {
             </div>
 
             {/* Form Container - Scroll container con padding-bottom para footer */}
-            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto pb-28 lg:pb-6">
+            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto overflow-x-hidden pb-32 lg:pb-6 scroll-smooth">
                 <FlyerForm
                     styleKey={styleKey}
                     aspectRatio={aspectRatio}
@@ -1281,7 +1281,7 @@ const handleGenerate = async () => {
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
                 {imageUrl && (
-                  <div className="lg:hidden p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="lg:hidden p-4 animate-in fade-in slide-in-from-bottom-2 duration-300 flex-shrink-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs font-medium text-green-400">👁️ Vista Previa</span>
                     </div>
@@ -1325,7 +1325,7 @@ const handleGenerate = async () => {
                 
                 {/* Panel de Editor de Texto */}
                 {imageUrl && (
-                  <div className="p-4 border-t border-white/10">
+                  <div className="p-4 border-t border-white/10 flex-shrink-0">
                     <TextEditorPanel
                       overlayText={overlayText}
                       setOverlayText={setOverlayText}
@@ -1346,7 +1346,7 @@ const handleGenerate = async () => {
             </div>
             
             {/* Minimal Footer - Con z-index apropiado y safe-area */}
-            <div className="footer-legal flex-shrink-0 p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono pb-safe">
+            <div className="footer-legal flex-shrink-0 p-3 lg:p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono pb-safe">
                 <div className="flex gap-2">
                     <span>V2.0.0_ESTABLE</span>
                 </div>
