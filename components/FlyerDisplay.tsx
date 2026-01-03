@@ -1578,14 +1578,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         )}
         
-        {/* VISTA MOBILE - Visible siempre en mobile */}
+        {/* VISTA MOBILE - Visible siempre en mobile - Proporcional a iPhone 17 */}
         <div
           id="flyer-container-mobile"
           className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container
-            ${aspectRatio === '9:16' ? 'w-[280px] h-[640px]' :
-              aspectRatio === '1:1' ? 'w-[280px] h-[420px]' :
-              aspectRatio === '4:5' ? 'w-[280px] h-[490px]' :
-              'w-[280px] h-[640px]'}`}
+            ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
+              aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
+              aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
+              'w-[280px] h-[498px]'}`}
         >
           <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
             {(() => {
@@ -1658,241 +1658,36 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
-      {/* BOTTOM ACTION BAR - Ajustado para mobile */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-black/80 backdrop-blur-xl p-2 sm:p-2 pr-2 sm:pr-4 pl-4 sm:pl-4 rounded-2xl shadow-2xl border border-white/10 z-50 w-[calc(100%-2rem)] sm:w-auto max-w-sm sm:max-w-none">
-        <div className="flex items-center w-full sm:w-48">
-          <span className="text-white/30 text-[10px] sm:text-xs mr-1 sm:mr-2 hidden xs:inline">Usando</span>
-          <input value={refineText} onChange={(e) => setRefineText(e.target.value)} placeholder="Escribe aqui los cambios" className="bg-transparent text-xs sm:text-sm outline-none text-white w-full placeholder-white/20 font-light" />
-          <button onClick={() => {onRefine(refineText); setRefineText('')}} disabled={!refineText.trim()} className="text-white/40 hover:text-white transition-colors ml-1">→</button>
-        </div>
-        <div className="h-px sm:h-6 w-full sm:w-px bg-white/10"></div>
-        
-        {/* BOTÓN COMPARAR VIDEOS */}
-        {!isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
-          <>
-            <button
-              onClick={() => setShowVideoComparison(!showVideoComparison)}
-              className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl transition-all text-[10px] sm:text-xs flex items-center gap-1 whitespace-nowrap"
-            >
-              <span>🎬</span> {showVideoComparison ? 'OCULTAR' : 'COMPARAR'}
-            </button>
-            <div className="h-px sm:h-6 w-full sm:w-px bg-white/10"></div>
-          </>
-        )}
-        
-        <div className="h-px sm:h-6 w-full sm:w-px bg-white/10"></div>
-        {isDraft ? (
-          <button onClick={onUpgradeToHD} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all text-[10px] sm:text-xs flex items-center gap-1 whitespace-nowrap">
-            <span>✨</span> ESCALAR HD
-          </button>
-        ) : (
+      {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto */}
+      <div className="w-full max-w-[280px] flex flex-col gap-2 mt-3">
+        {/* Campo de refinamiento */}
+        <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl p-2 pr-2.5 pl-3 rounded-xl border border-white/10">
+          <input
+            value={refineText}
+            onChange={(e) => setRefineText(e.target.value)}
+            placeholder="Escribe aqui los cambios"
+            className="bg-transparent text-xs outline-none text-white w-full placeholder-white/30 font-light"
+          />
           <button
-              onClick={async () => {
-                // Verificar si es un video (blob URL)
-                const isVideo = imageUrl && imageUrl.startsWith('blob:');
-                
-                if (isVideo && imageUrl) {
-                  // Verificar si hay logo o texto para procesar
-                  const hasOverlays = logoUrl || (overlayText && overlayText.trim());
-                  
-                  if (hasOverlays) {
-                    // Usar FFmpeg.wasm para procesar video con overlays
-                    console.log('🎬 Procesando video con overlays...');
-                    setIsProcessingVideo(true);
-                    setProcessingProgress(0);
-                    setProcessingMessage('Inicializando...');
-                    setVideoProcessingError(null);
-                    setFallbackVideoUrl(null);
-                    
-                    try {
-                      // Verificar soporte de SharedArrayBuffer
-                      if (!isSharedArrayBufferSupported()) {
-                        throw new Error('Tu navegador no soporta la edición de video HD. Actualiza Chrome o Edge.');
-                      }
-                      
-                      const result = await processVideoWithOverlays(imageUrl, {
-                        logoUrl: logoUrl || undefined,
-                        overlayText: overlayText || undefined,
-                        textPosition: textPosition,
-                        textStyles: {
-                          fontSize: displayStyles.fontSize,
-                          textColor: displayStyles.textColor,
-                          backgroundColor: displayStyles.backgroundColor !== 'transparent' ? displayStyles.backgroundColor : 'black@0.5',
-                        },
-                        onProgress: (progress, message) => {
-                          setProcessingProgress(progress);
-                          setProcessingMessage(message);
-                        },
-                      });
-                      
-                      if (result.success && result.videoUrl) {
-                        // Descargar video procesado
-                        downloadProcessedVideo(result.videoUrl, `estudio56-video-${Date.now()}.mp4`);
-                        console.log('✅ Video procesado descargado exitosamente');
-                        
-                        await Swal.fire({
-                          title: '¡Video listo!',
-                          text: 'Tu video con logo y texto ha sido descargado.',
-                          icon: 'success',
-                          timer: 2000,
-                          showConfirmButton: false,
-                          background: '#1a1a1a',
-                          color: '#ffffff',
-                        });
-                      } else if (result.fallbackUrl) {
-                        // Mostrar opción de descargar original
-                        setFallbackVideoUrl(result.fallbackUrl);
-                        await Swal.fire({
-                          title: '⚠️ Procesamiento no disponible',
-                          text: result.error || 'No se pudo procesar el video con los overlays.',
-                          icon: 'warning',
-                          showCancelButton: true,
-                          confirmButtonText: 'Descargar video original',
-                          cancelButtonText: 'Cancelar',
-                          background: '#1a1a1a',
-                          color: '#ffffff',
-                          confirmButtonColor: '#3b82f6',
-                        }).then((swalResult) => {
-                          if (swalResult.isConfirmed && fallbackVideoUrl) {
-                            downloadOriginalVideo(fallbackVideoUrl, `estudio56-video-original-${Date.now()}.mp4`);
-                          }
-                        });
-                      }
-                    } catch (error) {
-                      console.error('❌ Error procesando video:', error);
-                      setVideoProcessingError(error instanceof Error ? error.message : 'Error desconocido');
-                      
-                      await Swal.fire({
-                        title: '❌ Error',
-                        text: 'No se pudo procesar el video. Descargando versión original...',
-                        icon: 'error',
-                        confirmButtonText: 'Descargar original',
-                        background: '#1a1a1a',
-                        color: '#ffffff',
-                      }).then(() => {
-                        downloadOriginalVideo(imageUrl, `estudio56-video-${Date.now()}.mp4`);
-                      });
-                    } finally {
-                      setIsProcessingVideo(false);
-                    }
-                  } else {
-                    // Descargar video directamente sin procesar (sin overlays)
-                    console.log('🎬 Descargando video directamente:', imageUrl);
-                    try {
-                      const response = await fetch(imageUrl);
-                      const blob = await response.blob();
-                      const videoUrl = URL.createObjectURL(blob);
-                      
-                      const link = document.createElement('a');
-                      link.href = videoUrl;
-                      link.download = `estudio56-video-${Date.now()}.mp4`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      URL.revokeObjectURL(videoUrl);
-                      
-                      console.log('✅ Video descargado exitosamente');
-                    } catch (error) {
-                      console.error('❌ Error descargando video:', error);
-                    }
-                  }
-                  return;
-                }
-                
-                // Si es imagen, usar el método original de captura DOM
-                // Obtener el elemento a capturar - buscar en orden de prioridad
-                let captureTarget: HTMLElement | null = null;
-                
-                // 1. Si comparación está activa, capturar el contenedor HD de la comparación
-                if (showComparison) {
-                  const hdContainer = document.querySelector('[class*="border-emerald"]') as HTMLElement;
-                  if (hdContainer) {
-                    captureTarget = hdContainer.querySelector('.w-full.h-full.relative') as HTMLElement;
-                    console.log('📸 Usando contenedor de comparación HD');
-                  }
-                }
-                
-                // 2. Buscar flyer-capture-target
-                if (!captureTarget) {
-                  captureTarget = document.querySelector('.flyer-capture-target') as HTMLElement;
-                  console.log('📸 Usando flyer-capture-target');
-                }
-                
-                // 3. Buscar cualquier contenedor con clase flyer-download-container
-                if (!captureTarget) {
-                  const containers = document.querySelectorAll('.flyer-download-container');
-                  if (containers.length > 0) {
-                    // Usar el último contenedor visible
-                    for (let i = containers.length - 1; i >= 0; i--) {
-                      const container = containers[i] as HTMLElement;
-                      if (container.offsetParent !== null) {
-                        captureTarget = container;
-                        console.log('📸 Usando flyer-download-container');
-                        break;
-                      }
-                    }
-                  }
-                }
-                
-                // 4. Último recurso: buscar cualquier contenedor con imagen
-                if (!captureTarget) {
-                  const allContainers = document.querySelectorAll('[class*="rounded"]');
-                  for (const container of allContainers) {
-                    const htmlContainer = container as HTMLElement;
-                    if (htmlContainer.offsetParent !== null && htmlContainer.querySelector('img')) {
-                      captureTarget = htmlContainer;
-                      console.log('📸 Usando contenedor con imagen encontrado');
-                      break;
-                    }
-                  }
-                }
-                
-                if (!captureTarget) {
-                  console.error('❌ No se encontró ningún elemento para capturar');
-                  console.log('📋 Elementos en página:', document.querySelectorAll('div[class*="relative"]').length);
-                  return;
-                }
-                
-                console.log('📸 Capturando elemento:', captureTarget.className);
-                
-                if (draftImageUrl && hdImageUrl && !showComparison) {
-                  // Mostrar comparación automáticamente ANTES de descargar
-                  setShowComparison(true);
-                  
-                  // Descargar después de 1.5 segundos
-                  setTimeout(async () => {
-                    try {
-                      await downloadElementAsImage(
-                        captureTarget!,
-                        `estudio56-hd-${Date.now()}.png`,
-                        { scale: 2 }
-                      );
-                      console.log('✅ Descarga HD completada');
-                    } catch (error) {
-                      console.error('❌ Error en descarga HD:', error);
-                    }
-                  }, 1500);
-                } else {
-                  // Descargar directamente
-                  try {
-                    await downloadElementAsImage(
-                      captureTarget!,
-                      `estudio56-${Date.now()}.png`,
-                      { scale: 2 }
-                    );
-                    console.log('✅ Descarga completada');
-                  } catch (error) {
-                    console.error('❌ Error en descarga:', error);
-                  }
-                }
-              }}
-            className="bg-white text-black font-bold py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl hover:bg-gray-200 transition-all text-[10px] sm:text-xs flex items-center gap-1 shadow-lg whitespace-nowrap"
+            onClick={() => {onRefine(refineText); setRefineText('')}}
+            disabled={!refineText.trim()}
+            className="text-white/40 hover:text-white transition-colors flex-shrink-0"
           >
-            <span className="hidden sm:inline">DESCARGAR</span>
-            <span className="sm:hidden">↓</span>
-            <span className="hidden sm:inline">({getDimensionsForAspectRatio(aspectRatio, 'hd').width}x{getDimensionsForAspectRatio(aspectRatio, 'hd').height})</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
           </button>
-        )}
+        </div>
+        
+        {/* Botón de refinamiento con IA */}
+        <button
+          onClick={() => {onRefine(refineText); setRefineText('')}}
+          disabled={!refineText.trim()}
+          className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-2 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span>✨</span>
+          <span>REFINAR CON IA</span>
+        </button>
       </div>
     </div>
   );
