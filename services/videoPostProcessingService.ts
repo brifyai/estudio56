@@ -11,35 +11,57 @@ let ffmpeg: FFmpeg | null = null;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
 
+// URL de fuente Arial para drawtext
+const FONT_URL = 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf';
+
 /**
  * Verifica si SharedArrayBuffer está disponible (requerido para FFmpeg.wasm)
- * Esta verificación es más robusta: intenta crear un SharedArrayBuffer real
  */
 export function isSharedArrayBufferSupported(): boolean {
-  // Verificación básica de existencia
   if (typeof SharedArrayBuffer === 'undefined') {
-    console.warn('⚠️ SharedArrayBuffer no está definido en este navegador');
+    console.warn('⚠️ SharedArrayBuffer no está definido');
     return false;
   }
-  
-  // Verificación adicional: intentar crear uno real
-  // Esto fallará si los headers COOP/COEP no están configurados correctamente
   try {
     const sab = new SharedArrayBuffer(8);
-    // Si llegamos aquí, SharedArrayBuffer está realmente disponible
-    console.log('✅ SharedArrayBuffer verificado y disponible');
+    console.log('✅ SharedArrayBuffer disponible');
     return true;
   } catch (error) {
-    console.warn('⚠️ SharedArrayBuffer existe pero no está operativo:', error);
+    console.warn('⚠️ SharedArrayBuffer no operativo:', error);
     return false;
   }
 }
 
-/**
- * Obtiene el número de hilos disponibles del procesador
- */
 export function getHardwareConcurrency(): number {
   return navigator.hardwareConcurrency || 4;
+}
+
+/**
+ * Escapar texto para FFmpeg drawtext
+ */
+function escapeTextForFFmpeg(text: string): string {
+  return text
+    .replace(/'/g, "\\'")
+    .replace(/:/g, "\\:")
+    .replace(/,/g, "\\,")
+    .replace(/\[/g, "\\[")
+    .replace(/\]/g, "\\]")
+    .replace(/%/g, "\\%");
+}
+
+/**
+ * Verifica que un archivo existe en el sistema virtual de FFmpeg
+ */
+async function verifyFileExists(ffmpeg: FFmpeg, filename: string): Promise<boolean> {
+  try {
+    const data = await ffmpeg.readFile(filename);
+    const isValid = data && data.length > 0;
+    console.log(`📁 Archivo verificado: ${filename} (${isValid ? data.length + ' bytes' : 'VACÍO'})`);
+    return isValid;
+  } catch (e) {
+    console.error(`❌ Archivo no existe: ${filename}`);
+    return false;
+  }
 }
 
 /**
@@ -48,12 +70,10 @@ export function getHardwareConcurrency(): number {
 export async function loadFFmpeg(
   onProgress?: (progress: number, message: string) => void
 ): Promise<void> {
-  // Si ya está cargado, retornar
   if (ffmpeg && ffmpeg.loaded) {
     return;
   }
 
-  // Si ya está en proceso de carga, esperar
   if (isLoading && loadPromise) {
     await loadPromise;
     return;
@@ -63,33 +83,30 @@ export async function loadFFmpeg(
 
   loadPromise = (async () => {
     try {
-      onProgress?.(0, 'Inicializando motor FFmpeg...');
+      onProgress?.(0, 'Inicializando FFmpeg...');
       
-      // Verificar soporte de SharedArrayBuffer
       if (!isSharedArrayBufferSupported()) {
-        throw new Error('Tu navegador no soporta SharedArrayBuffer. Actualiza a Chrome/Edge最新版.');
+        throw new Error('SharedArrayBuffer no disponible');
       }
 
       ffmpeg = new FFmpeg();
 
-      // Configurar logger con más detalles
+      // Logger detallado
       ffmpeg.on('log', ({ message }) => {
         console.log('[FFmpeg]', message);
-        // Guardar último mensaje de error para debugging
         if (message.toLowerCase().includes('error') || message.toLowerCase().includes('failed')) {
           (ffmpeg as any).lastError = message;
         }
       });
 
-      // Configurar progreso
-      ffmpeg.on('progress', ({ progress, time }) => {
+      // Progreso
+      ffmpeg.on('progress', ({ progress }) => {
         const percent = Math.round(progress * 100);
-        onProgress?.(percent, `Procesando video... ${percent}%`);
+        onProgress?.(percent, `Procesando... ${percent}%`);
       });
 
-      onProgress?.(10, 'Descargando motor FFmpeg...');
+      onProgress?.(10, 'Descargando core FFmpeg...');
 
-      // Cargar el core desde CDN
       const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
       
       await ffmpeg.load({
@@ -97,8 +114,19 @@ export async function loadFFmpeg(
         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
       });
 
+      onProgress?.(60, 'Cargando fuente Arial...');
+      
+      // Cargar fuente Arial
+      try {
+        const fontData = await downloadFile(FONT_URL);
+        await ffmpeg.writeFile('arial.ttf', fontData);
+        console.log('✅ Fuente Arial cargada');
+      } catch (fontError) {
+        console.warn('⚠️ No se pudo cargar fuente Arial:', fontError);
+      }
+
       onProgress?.(100, 'Motor FFmpeg listo');
-      console.log('✅ FFmpeg.wasm cargado exitosamente');
+      console.log('✅ FFmpeg.wasm cargado');
 
     } catch (error) {
       console.error('❌ Error cargando FFmpeg:', error);
@@ -120,7 +148,7 @@ async function downloadFile(url: string): Promise<Uint8Array> {
     credentials: 'omit',
   });
   if (!response.ok) {
-    throw new Error(`Error descargando archivo: ${response.statusText}`);
+    throw new Error(`Error descargando: ${response.statusText}`);
   }
   const blob = await response.blob();
   const arrayBuffer = await blob.arrayBuffer();
@@ -141,8 +169,6 @@ export async function processVideoWithOverlays(
       textColor?: string;
       backgroundColor?: string;
     };
-    videoWidth?: number;
-    videoHeight?: number;
     onProgress?: (progress: number, message: string) => void;
   }
 ): Promise<{ success: boolean; videoUrl?: string; error?: string; fallbackUrl?: string }> {
@@ -151,42 +177,58 @@ export async function processVideoWithOverlays(
     overlayText,
     textPosition = { x: 50, y: 90 },
     textStyles = {},
-    videoWidth = 1280,
-    videoHeight = 720,
     onProgress
   } = options;
 
   try {
-    // Verificar soporte
+    // Verificar SharedArrayBuffer
     if (!isSharedArrayBufferSupported()) {
       return {
         success: false,
-        error: 'Tu navegador no soporta la edición de video HD. Actualiza Chrome o Edge.',
+        error: 'Tu navegador no soporta SharedArrayBuffer. Actualiza Chrome/Edge.',
         fallbackUrl: videoUrl
       };
     }
 
-    // Cargar FFmpeg si no está cargado
+    // Cargar FFmpeg
     await loadFFmpeg(onProgress);
 
     onProgress?.(5, 'Preparando archivos...');
 
-    // Escribir video al sistema de archivos virtual
+    // Descargar y escribir video
     onProgress?.(15, 'Cargando video...');
+    console.log('📥 Descargando video de:', videoUrl);
     const videoData = await downloadFile(videoUrl);
+    console.log(`📥 Video descargado: ${videoData.length} bytes`);
     await ffmpeg!.writeFile('input.mp4', videoData);
 
-    // Escribir logo si existe
+    // Descargar logo si existe
     let hasLogo = false;
     if (logoUrl) {
       onProgress?.(25, 'Cargando logo...');
       try {
+        console.log('📥 Descargando logo de:', logoUrl);
         const logoData = await downloadFile(logoUrl);
+        console.log(`📥 Logo descargado: ${logoData.length} bytes`);
         await ffmpeg!.writeFile('logo.png', logoData);
         hasLogo = true;
       } catch (logoError) {
-        console.warn('No se pudo cargar el logo, continuando sin él:', logoError);
+        console.warn('⚠️ No se pudo cargar el logo:', logoError);
+        hasLogo = false;
       }
+    }
+
+    // Verificar archivos en el sistema virtual
+    onProgress?.(30, 'Verificando archivos...');
+    const videoOk = await verifyFileExists(ffmpeg!, 'input.mp4');
+    const fontOk = await verifyFileExists(ffmpeg!, 'arial.ttf');
+    
+    if (!videoOk) {
+      throw new Error('El video no se descargó correctamente');
+    }
+    
+    if (!fontOk) {
+      console.warn('⚠️ Fuente no disponible, el texto podría no aparecer');
     }
 
     // Construir filter_complex para texto
@@ -198,42 +240,53 @@ export async function processVideoWithOverlays(
       const textColor = textStyles.textColor || 'white';
       const bgColor = textStyles.backgroundColor || 'black@0.5';
       
-      // Escapar texto para FFmpeg
-      const escapedText = overlayText.replace(/'/g, "\\'").replace(/:/g, "\\:");
+      // Escapar texto
+      const escapedText = escapeTextForFFmpeg(overlayText);
       
-      // Posición basada en porcentajes
-      const xPos = `${textPosition.x}%`;
-      const yPos = `${textPosition.y}%`;
+      // Posición dinámica basada en el tamaño del video
+      const xPos = `(${textPosition.x}*iw/100)`;
+      const yPos = `(${textPosition.y}*ih/100)`;
       
-      // Añadir texto centrado
-      textDrawFilter = `drawtext=text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=10`;
+      // Añadir texto con fuente
+      textDrawFilter = `drawtext=fontfile=arial.ttf:text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=10`;
+      
+      console.log('📝 Filter de texto:', textDrawFilter);
     }
 
-    // Construir comando FFmpeg
-    onProgress?.(45, 'Configurando procesamiento...');
+    // Construir filter_complex dinámicamente
+    onProgress?.(45, 'Configurando filtros...');
     
     const threads = getHardwareConcurrency();
-    
-    // Filter complex: superponer logo y texto correctamente
     let filterComplex = '';
+    let hasOverlays = false;
     
     if (hasLogo && overlayText) {
-      // Logo + Texto: overlay del logo, luego drawtext
-      // Logo redimensionado a 180px, posicionado en esquina superior derecha (main_w - 180 - 30, 30)
-      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=main_w-180-30:30,${textDrawFilter}[out]`;
+      // Logo + Texto
+      const logoX = '(main_w-180-30)';
+      const logoY = '30';
+      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=${logoX}:${logoY},${textDrawFilter}[out]`;
+      hasOverlays = true;
+      console.log('🔧 Filter complejo: Logo + Texto');
     } else if (hasLogo) {
       // Solo logo
-      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=main_w-180-30:30[out]`;
+      const logoX = '(main_w-180-30)';
+      const logoY = '30';
+      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=${logoX}:${logoY}[out]`;
+      hasOverlays = true;
+      console.log('🔧 Filter complejo: Solo Logo');
     } else if (overlayText) {
       // Solo texto
       filterComplex = `[0:v]${textDrawFilter}[out]`;
+      hasOverlays = true;
+      console.log('🔧 Filter complejo: Solo Texto');
     }
 
+    // Construir argumentos de FFmpeg
     const args = [
       '-i', 'input.mp4',
       ...(hasLogo ? ['-i', 'logo.png'] : []),
-      ...(filterComplex ? ['-filter_complex', filterComplex] : []),
-      ...(filterComplex ? ['-map', '[out]'] : []),
+      ...(hasOverlays ? ['-filter_complex', filterComplex] : []),
+      ...(hasOverlays ? ['-map', '[out]'] : []),
       '-map', '0:a?',
       '-c:v', 'libx264',
       '-preset', 'superfast',
@@ -243,11 +296,13 @@ export async function processVideoWithOverlays(
       'output.mp4'
     ];
 
-    // Si no hay overlays, usar comando simple
-    if (!hasLogo && !overlayText) {
-      args.splice(2); // Remover filtros
+    // Sin overlays = copia directa
+    if (!hasOverlays) {
+      args.splice(2);
       args.push('output.mp4');
     }
+
+    console.log('🎬 Ejecutando FFmpeg con', args.length, 'argumentos');
 
     onProgress?.(50, 'Procesando video...');
 
@@ -263,58 +318,44 @@ export async function processVideoWithOverlays(
 
     onProgress?.(100, '¡Video procesado exitosamente!');
 
-    // Limpiar archivos temporales
+    // Limpiar
     try {
       await ffmpeg!.deleteFile('input.mp4');
       await ffmpeg!.deleteFile('output.mp4');
-      if (hasLogo) {
-        await ffmpeg!.deleteFile('logo.png');
-      }
+      if (hasLogo) await ffmpeg!.deleteFile('logo.png');
     } catch (cleanupError) {
-      console.warn('Error limpiando archivos temporales:', cleanupError);
+      console.warn('⚠️ Error limpiando:', cleanupError);
     }
 
-    return {
-      success: true,
-      videoUrl: resultUrl
-    };
+    return { success: true, videoUrl: resultUrl };
 
   } catch (error) {
     console.error('❌ Error procesando video:', error);
     
-    // Obtener el último mensaje de error de FFmpeg
     const ffmpegError = (ffmpeg as any).lastError || '';
-    
-    // Verificar tipos de errores comunes
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const isMemoryError = errorMessage.includes('memory') || errorMessage.includes('Memory') || ffmpegError.includes('memory');
-    const isCodecError = ffmpegError.includes('codec') || ffmpegError.includes('encoder');
-    const isFormatError = ffmpegError.includes('format') || ffmpegError.includes('demuxer');
-    const isSharedArrayBufferError = errorMessage.includes('SharedArrayBuffer') || errorMessage.includes('cross-origin');
     
-    if (isMemoryError) {
+    // Errores específicos
+    if (errorMessage.includes('FS error') || ffmpegError.includes('complex filter')) {
+      console.error('🔍 Error de sistema de archivos o filtros complejos');
       return {
         success: false,
-        error: 'Tu dispositivo se ha quedado sin memoria para procesar el video en 1080p. Intenta cerrar otras pestañas.',
+        error: 'Error al procesar el video. Verifica que el video y logo se descargaron correctamente.',
         fallbackUrl: videoUrl
       };
     }
     
-    if (isSharedArrayBufferError) {
+    if (errorMessage.includes('memory') || ffmpegError.includes('memory')) {
       return {
         success: false,
-        error: 'Tu navegador no soporta SharedArrayBuffer. Actualiza Chrome o Edge a la última versión.',
+        error: 'Memoria insuficiente. Cierra otras pestañas e intenta de nuevo.',
         fallbackUrl: videoUrl
       };
     }
 
-    // Mostrar el error real de FFmpeg
-    const detailedError = ffmpegError || errorMessage;
-    console.error('🔍 Error detallado de FFmpeg:', detailedError);
-    
     return {
       success: false,
-      error: `Error: ${detailedError.substring(0, 200)}`,
+      error: `Error: ${ffmpegError || errorMessage.substring(0, 100)}`,
       fallbackUrl: videoUrl
     };
   }

@@ -9,7 +9,6 @@ import { analyzeCompositionForText, generateCompositionBasedStyles, generateComp
 import { validateAutoTextAnalysis, improveAutoTextAnalysis, ValidationResult } from "./autoTextValidationService";
 import { RealTimePreview, PreviewState } from "./realTimePreviewService";
 import { detectIndustryFromInput, processMagicMode } from "./magicModeService";
-import { generateVideoFromImage, generateStyledVideo, ChutesVideoResponse } from "./chutesVideoService";
 
 // Exportar función de diagnóstico para uso en otros servicios
 export const diagnoseAndFixBlackImage = async (imageDataUrl: string): Promise<string> => {
@@ -1368,10 +1367,9 @@ export const generateFlyerImage = async (
 };
 
 /**
- * Step 2 (Video): Generate Video using Chutes API (Wan-2.2-I2V-14B-Fast)
- * This function first generates an image, then converts it to video using Chutes
- * NEW: draftImageUrl parameter allows using the draft image directly for HD video generation
- * This ensures the HD video is based on the EXACT same image as the draft
+ * Step 2 (Video): Generate Video using Google Gemini VEO API
+ * This function generates video directly using Gemini's VEO model
+ * NEW: Uses VEO directly instead of Chutes API for better quality and compatibility
  */
 export const generateFlyerVideo = async (
   enhancedDescription: string,
@@ -1379,10 +1377,10 @@ export const generateFlyerVideo = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   hasProductOverlay: boolean = false,
-  draftImageUrl?: string // NEW: Use draft image directly for HD to ensure consistency
+  draftImageUrl?: string
 ): Promise<string> => {
     try {
-      console.log('🎬 [generateFlyerVideo] Iniciando generación con Chutes API...');
+      console.log('🎬 [generateFlyerVideo] Iniciando generación con Google Gemini VEO...');
       console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft image:', !!draftImageUrl);
       
       // Step 1: Obtener la imagen base
@@ -1419,56 +1417,25 @@ export const generateFlyerVideo = async (
         console.log('✅ [generateFlyerVideo] Imagen base generada:', imageDataUrl.substring(0, 50) + '...');
       }
       
-      // Step 2: Convertir imagen a video usando Chutes API
-      console.log('🎬 [generateFlyerVideo] Paso 2: Convirtiendo a video con Chutes (Wan-2.2-I2V-14B-Fast)...');
+      // Step 2: Generar video directamente con Google VEO
+      console.log('🎬 [generateFlyerVideo] Paso 2: Generando video con Google VEO...');
       
-      // Construir prompt de movimiento basado en el estilo
-      const videoStyleKey = styleKey.startsWith('video_') ? styleKey : `video_${styleKey}`;
-      const videoStyleConfig = VIDEO_STYLES[videoStyleKey];
-      const styleConfig = FLYER_STYLES[styleKey];
-      
-      let motionPrompt = "";
-      if (videoStyleConfig) {
-        motionPrompt = videoStyleConfig.prompt || "";
-      } else if (styleConfig) {
-        motionPrompt = styleConfig.video_motion || "";
-      }
-      
-      // Usar Chutes API para convertir imagen a video
-      const chutesResult: ChutesVideoResponse = await generateVideoFromImage(
-        imageDataUrl,
-        motionPrompt || enhancedDescription,
-        {
-          steps: quality === 'draft' ? 20 : 25,
-          fps: quality === 'draft' ? 16 : 24,
-          seed: seed,
-          guidanceScale: 5.0,
-          onProgress: (status) => {
-            console.log(`📹 [Chutes] ${status}`);
-          }
-        }
-      );
-      
-      if (!chutesResult.success || !chutesResult.videoUrl) {
-        console.error('❌ [generateFlyerVideo] Error con Chutes:', chutesResult.error);
-        throw new Error(chutesResult.error || "Falló la generación del video con Chutes");
-      }
-      
-      console.log('✅ [generateFlyerVideo] Video generado exitosamente:', chutesResult.videoUrl);
-      return chutesResult.videoUrl;
-
-    } catch (error) {
-      console.error("❌ [generateFlyerVideo] Video Error:", error);
-      // Fallback: intentar con VEO si Chutes falla
-      console.log('🔄 [generateFlyerVideo] Intentando fallback con Google VEO...');
-      return await generateFlyerVideoVEO(
+      // Usar VEO directamente (ya no como fallback)
+      const videoUrl = await generateFlyerVideoVEO(
         enhancedDescription,
         styleKey,
         aspectRatio,
         quality,
         hasProductOverlay,
-        undefined // draftSeed no disponible en nuevo enfoque
+        seed
       );
+      
+      console.log('✅ [generateFlyerVideo] Video generado exitosamente:', videoUrl);
+      return videoUrl;
+
+    } catch (error) {
+      console.error("❌ [generateFlyerVideo] Video Error:", error);
+      throw error;
     }
   };
 
