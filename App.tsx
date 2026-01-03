@@ -1145,7 +1145,7 @@ const handleGenerate = async () => {
       </div>
 
       {/* LEFT PANEL: CONTROLS */}
-      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-full p-2 md:p-4">
+      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-full p-2 md:p-4 overflow-hidden">
         <div className="glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
             
             {/* Header */}
