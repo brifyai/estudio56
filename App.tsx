@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
   const [showGallery, setShowGallery] = useState(false);
   const [showBrandPanel, setShowBrandPanel] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
   
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
@@ -1390,12 +1390,21 @@ const handleGenerate = async () => {
          </div>
       </main>
 
-      {/* RIGHT PANEL: CALENDAR - Full height on mobile, sidebar on desktop */}
-      {/* Cambiado de 'invisible' a 'opacity-0 pointer-events-none' para mejor rendimiento en mobile */}
-      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px] opacity-100 pointer-events-auto' : 'w-0 opacity-0 pointer-events-none'} flex-shrink-0 flex flex-col z-50 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300`}>
-        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative`}>
+      {/* RIGHT PANEL: CALENDAR - Overlay en mobile, sidebar en desktop */}
+      <aside className={`
+        ${showCalendar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+        fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300
+        md:relative md:inset-auto md:opacity-100 md:pointer-events-auto
+        md:w-[280px] md:flex-shrink-0 md:flex md:flex-col md:py-4 md:pr-4
+      `}>
+        {/* Overlay background solo en mobile */}
+        <div
+          className="absolute inset-0 bg-black/80 md:hidden"
+          onClick={() => setShowCalendar(false)}
+        />
+        <div className={`glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 ${showCalendar ? 'scale-100' : 'scale-95'} md:scale-100 md:max-h-full md:h-full transition-transform duration-300`}>
           {/* Mobile Header */}
-          <div className="md:hidden flex items-center justify-between p-3 border-b border-white/10">
+          <div className="flex items-center justify-between p-3 border-b border-white/10">
             <span className="text-xs font-bold">Calendario</span>
             <button
               onClick={() => setShowCalendar(false)}
@@ -1406,17 +1415,19 @@ const handleGenerate = async () => {
               </svg>
             </button>
           </div>
-          <CommercialCalendar
-            onGenerateForEvent={(event) => {
-              // Pre-llenar la descripción con el evento comercial
-              setDescription(`Oferta especial para ${event.name} - ${event.date}`);
-              console.log('🎯 Generando para evento:', event.name);
-              // Close calendar on mobile after selection
-              if (window.innerWidth < 768) {
-                setShowCalendar(false);
-              }
-            }}
-          />
+          <div className="flex-1 overflow-y-auto">
+            <CommercialCalendar
+              onGenerateForEvent={(event) => {
+                // Pre-llenar la descripción con el evento comercial
+                setDescription(`Oferta especial para ${event.name} - ${event.date}`);
+                console.log('🎯 Generando para evento:', event.name);
+                // Close calendar on mobile after selection
+                if (window.innerWidth < 768) {
+                  setShowCalendar(false);
+                }
+              }}
+            />
+          </div>
         </div>
       </aside>
 
