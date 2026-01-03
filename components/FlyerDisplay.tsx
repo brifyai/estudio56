@@ -164,28 +164,73 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // Estados para manejo de errores de media (mobile fix)
   const [mediaError, setMediaError] = useState<{type: 'image' | 'video', url: string} | null>(null);
   
+  // Sistema de retry para carga de imágenes en mobile
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  
   // Helper para detectar si es video por extensión de URL
   const isVideoUrl = (url: string): boolean => {
     return /\.(mp4|webm|mov|blob:)(?:\?.*)?$/i.test(url) || url.startsWith('blob:');
   };
   
-  // Handler para errores de media
-  const handleMediaError = (e: React.SyntheticEvent<HTMLImageElement | HTMLVideoElement, Event>, type: 'image' | 'video') => {
+  // Handler para errores de media con retry automático
+  const handleMediaError = useCallback((e: React.SyntheticEvent<HTMLImageElement | HTMLVideoElement, Event>, type: 'image' | 'video') => {
     const target = e.target as HTMLImageElement | HTMLVideoElement;
     const url = target.src;
-    console.error(`❌ Error cargando ${type}:`, url);
-    setMediaError({ type, url });
-  };
+    console.error(`❌ Error cargando ${type}:`, url, 'Intento:', retryCount + 1);
+    
+    // Retry automático: hasta 3 intentos
+    if (retryCount < 3) {
+      console.log(`🔄 Reintentando carga (intento ${retryCount + 1}/3)...`);
+      setIsRetrying(true);
+      setRetryCount(prev => prev + 1);
+      
+      // Forzar re-render después de un delay corto
+      setTimeout(() => {
+        setIsRetrying(false);
+      }, 500);
+    } else {
+      // Después de 3 intentos, mostrar error
+      console.warn('⚠️ Máximo de reintentos alcanzado, mostrando error');
+      setMediaError({ type, url });
+      setRetryCount(0);
+    }
+  }, [retryCount]);
+  
+  // Resetear retry cuando cambia la URL
+  useEffect(() => {
+    setRetryCount(0);
+    setIsRetrying(false);
+    setMediaError(null);
+  }, [imageUrl]);
   
   // Placeholder elegante cuando hay error de media
   const renderMediaPlaceholder = () => (
     <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black">
       <div className="text-4xl mb-2 opacity-50">🖼️</div>
       <div className="text-xs text-white/60 font-mono text-center px-4">
-        Error al cargar medio
+        Error al cargar imagen
         <br />
         <span className="text-white/40 text-[10px]">Intenta regenerar el diseño</span>
       </div>
+      {/* Botón de reintentar manual */}
+      <button
+        onClick={() => {
+          setRetryCount(0);
+          setMediaError(null);
+          // Forzar re-render cambiando la key del componente
+          const flyerContainer = document.getElementById('flyer-container-mobile');
+          if (flyerContainer) {
+            flyerContainer.style.display = 'none';
+            setTimeout(() => {
+              flyerContainer.style.display = '';
+            }, 50);
+          }
+        }}
+        className="mt-4 px-4 py-2 bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 text-xs font-mono rounded-lg border border-blue-500/30 transition-colors"
+      >
+        🔄 Reintentar
+      </button>
     </div>
   );
   
@@ -885,6 +930,26 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden mt-4">
               <div className="h-full bg-blue-500 animate-[shimmer_1s_infinite] w-[60%]"></div>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Loading indicator for retry
+  if (isRetrying) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full font-mono">
+        <div className="w-48 bg-black/50 backdrop-blur border border-yellow-500/30 rounded-lg p-4 shadow-2xl">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></div>
+            <span className="text-[10px] text-yellow-400">REINTENTANDO CARGA...</span>
+          </div>
+          <div className="text-xs text-white/50">
+            Intento {retryCount}/3
+          </div>
+          <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden mt-2">
+            <div className="h-full bg-yellow-500 animate-pulse" style={{ width: `${(retryCount / 3) * 100}%` }}></div>
           </div>
         </div>
       </div>

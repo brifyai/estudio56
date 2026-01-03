@@ -1162,6 +1162,9 @@ const handleGenerate = async () => {
       return <Navigate to="/iniciar-sesion" replace />;
   }
 
+  // NEW: Estado para alternar entre Controles y Vista Previa en mobile
+  const [mobileViewMode, setMobileViewMode] = useState<'controls' | 'preview'>('controls');
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
       
@@ -1329,9 +1332,41 @@ const handleGenerate = async () => {
         </div>
     </aside>
 
-      {/* CENTER: CANVAS - Solo visible en desktop */}
-      <main className="hidden md:flex flex-1 flex-col relative z-10 p-4 pl-0 overflow-hidden">
-          <div className="w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
+      {/* CENTER: CANVAS - Desktop y Mobile con tab toggle */}
+      <main className={`
+        flex-1 flex-col relative z-10 p-4 pl-0 overflow-hidden
+        ${mobileViewMode === 'preview' ? 'md:flex' : 'md:flex'}
+      `}>
+          {/* MOBILE TAB TOGGLE - Solo visible en mobile */}
+          <div className="md:hidden mb-4">
+            <div className="flex gap-2 p-1 bg-white/5 rounded-xl">
+              <button
+                onClick={() => setMobileViewMode('controls')}
+                className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all ${
+                  mobileViewMode === 'controls'
+                    ? 'bg-blue-500 text-white'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                📝 Controles
+              </button>
+              <button
+                onClick={() => setMobileViewMode('preview')}
+                className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all ${
+                  mobileViewMode === 'preview'
+                    ? 'bg-green-500 text-white'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                👁️ Vista Previa
+              </button>
+            </div>
+          </div>
+
+          <div className={`
+            w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
+            ${mobileViewMode === 'preview' ? 'flex' : 'hidden md:flex'}
+          `}>
              
              {/* Top Bar */}
              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
