@@ -1,4 +1,4 @@
-import { CONSISTENCY_CONFLICTS, CONFLICT_DETECTION_RULES } from '../constants';
+import { CONSISTENCY_CONFLICTS, CONFLICT_DETECTION_RULES, INDUSTRY_SUGGESTIONS } from '../constants';
 
 /**
  * Servicio de Detección de Consistencia
@@ -11,12 +11,20 @@ export interface ConflictCheckResult {
   conflictCode?: string;
   conflictData?: typeof CONSISTENCY_CONFLICTS[string];
   suggestedStyles?: string[];
+  sanitizedDescription?: string;
+  powerSuggestions?: string[];
 }
 
 export interface ConflictCheckInput {
   description: string;
   selectedStyle: string;
   styleCategory?: string;
+}
+
+export interface SanitizeResult {
+  sanitizedDescription: string;
+  removedWords: string[];
+  addedSuggestions: string[];
 }
 
 /**
@@ -94,6 +102,98 @@ function getSuggestedStyles(currentStyle: string, conflictCode: string): string[
 }
 
 /**
+ * Limpia la descripción eliminando palabras conflictivas
+ * e inyecta sugerencias de poder del INDUSTRY_SUGGESTIONS
+ */
+export function sanitizeAndSuggest(
+  description: string,
+  selectedStyle: string,
+  conflictCode?: string
+): SanitizeResult {
+  const normalizedStyle = selectedStyle.toLowerCase();
+  const removedWords: string[] = [];
+  let sanitizedDescription = description;
+  
+  // Palabras problemáticas a eliminar
+  const problematicWords: Record<string, string[]> = {
+    'PILATES_SPA': ['vela', 'masaje', 'spa', 'aromaterapia', 'relajante', 'zen', 'esencias', 'sahumerios'],
+    'YOGA_INTENSE': ['crossfit', 'pesas', 'levantamiento', 'intenso', 'cardio', 'sudor', 'entrenamiento pesado'],
+    'KINE_GYM': ['gimnasio', 'maquina', 'pesa', 'entrenamiento', 'musculo', 'bodybuilding'],
+    'DENTAL_HOSPITAL': ['quirófano', 'quirurgico', 'sangre', 'operatorio', 'hospital', 'cirugia'],
+    'VET_STYLING': ['corte de pelo', 'peluqueria', 'peinado', 'coloracion', 'tratamiento capilar'],
+    'NAIL_HAIR': ['corte de pelo', 'peluqueria', 'barberia', 'afeitado'],
+    'TALLER_LUXURY': ['lujo', 'elegante', 'vitrina', 'cristal', 'alfombra', 'oficina', 'ejecutivo'],
+    'FERRE_BOUTIQUE': ['boutique', 'tienda', 'vitrine', 'cristal', 'lujoso', 'exhibicion'],
+    'CONSTR_DECO': ['mueble', 'cortina', 'decoracion', 'interior', 'diseño'],
+    'LOGISTICA_RETAIL': ['tienda', 'mall', 'retail', 'cliente', 'compra', 'carrito'],
+    'DETA_WASH': ['lavado', 'manguera', 'calle', 'exterior', 'barrio'],
+    'TECH_REPAIR_MESS': ['desorden', 'cable', 'piezas', 'suelto', 'roto'],
+    'PAN_GOURMET': ['plato gourmet', 'restaurant', 'fino', 'elegante', 'cena'],
+    'SUSHI_FASTFOOD': ['fritura', 'completos', 'churrasco', 'carne', 'asado'],
+    'PIZZA_ITALIAN': ['mantel', 'vela', 'cena', 'elegante', 'formal'],
+    'PASTEL_BAJON': ['bajón', 'rapido', 'economico', 'carrito', 'calle'],
+    'FERIA_SUPER': ['supermercado', 'empaquetado', 'industrial', 'congelado'],
+    'BOTI_DISCO': ['disco', 'fiesta', 'baile', 'vip', 'noche'],
+    'BARBER_SPA': ['vela', 'spa', 'relajante', 'masaje', 'aroma'],
+    'FURGON_RACING': ['velocidad', 'carrera', 'rapido', 'deportivo', 'ruido'],
+    'TRAVEL_CLINIC': ['frio', 'administrativo', 'oficina', 'papeleo'],
+    'SEGURIDAD_WAR': ['arma', 'pistola', 'bala', 'guerra', 'ataque', 'combate'],
+    'TATTOO_CLINIC': ['clinico', 'esteril', 'blanco', 'medico', 'sangre']
+  };
+  
+  // Eliminar palabras problemáticas
+  const wordsToRemove = conflictCode ? problematicWords[conflictCode] || [] : [];
+  
+  for (const word of wordsToRemove) {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    if (regex.test(sanitizedDescription)) {
+      removedWords.push(word);
+      sanitizedDescription = sanitizedDescription.replace(regex, '').replace(/\s+/g, ' ').trim();
+    }
+  }
+  
+  // Obtener sugerencias de poder del INDUSTRY_SUGGESTIONS
+  const addedSuggestions: string[] = [];
+  
+  // Mapear estilos a keys de INDUSTRY_SUGGESTIONS
+  const styleToSuggestionKey: Record<string, string> = {
+    'sushi_nikkei': '41_sushi_nikkei',
+    'pizzeria': '42_pizzeria',
+    'ice_cream': '43_heladeria',
+    'pastry_shop': '60_pasteleria',
+    'nail_studio': '44_nail_studio',
+    'tattoo_studio': '45_tattoo_studio',
+    'yoga_studio': '46_yoga_studio',
+    'car_detailing': '47_car_detailing',
+    'optical': '48_optica',
+    'bookstore': '49_libreria',
+    'flower_shop': '50_floreria',
+    'liquor_store': '51_botilleria',
+    'transport_school': '52_furgon_escolar',
+    'market_handwritten': '54_feria_fruteria',
+    'travel_agency': '56_agencia_viajes',
+    'laundry': '57_lavanderia',
+    'shoe_store': '58_zapateria',
+    'tech_repair': '59_tech_repair',
+    'hardware_store': '53_ferreteria',
+    'cleaning_service': '55_limpieza'
+  };
+  
+  const suggestionKey = styleToSuggestionKey[normalizedStyle] ||
+                        styleToSuggestionKey[selectedStyle.toLowerCase()];
+  
+  if (suggestionKey && INDUSTRY_SUGGESTIONS[suggestionKey]) {
+    addedSuggestions.push(...INDUSTRY_SUGGESTIONS[suggestionKey].slice(0, 3));
+  }
+  
+  return {
+    sanitizedDescription: sanitizedDescription || description, // Si quedó vacía, usar original
+    removedWords,
+    addedSuggestions
+  };
+}
+
+/**
  * Genera un resumen de conflictos para debugging
  */
 export function getConflictSummary(result: ConflictCheckResult): string {
@@ -111,7 +211,7 @@ export function validateStyleForCategory(styleKey: string, category: string): bo
   const categoryStyles: Record<string, string[]> = {
     'SALUD': ['medical_clean', 'physiotherapy', 'dental_clinic', 'veterinary_clinic', 'optical', 'nail_studio'],
     'LIFESTYLE': ['wellness_zen', 'pilates', 'yoga_studio', 'aesthetic_min', 'sport_gritty'],
-    'SERVICIOS': ['mechanic_workshop', 'tire_service', 'construction_site', 'logistics_delivery', 
+    'SERVICIOS': ['mechanic_workshop', 'tire_service', 'construction_site', 'logistics_delivery',
                   'barber_shop', 'hvac_plumbing', 'gardening_landscaping', 'security_systems',
                   'car_detailing', 'tech_repair', 'cleaning_service', 'laundry', 'transport_school'],
     'COMERCIO': ['retail_sale', 'gastronomy', 'bakery_bread', 'liquor_store', 'fast_food_street',
@@ -129,5 +229,6 @@ export function validateStyleForCategory(styleKey: string, category: string): bo
 export default {
   checkConsistency,
   getConflictSummary,
-  validateStyleForCategory
+  validateStyleForCategory,
+  sanitizeAndSuggest
 };

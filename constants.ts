@@ -2439,3 +2439,38 @@ export const CONFLICT_DETECTION_RULES: Array<{
     conflictCode: 'TATTOO_CLINIC'
   }
 ];
+
+// ============================================
+// INDUSTRY_SUGGESTIONS (41-60)
+// Términos que gatillan la mejor respuesta visual en Gemini y Veo
+// ============================================
+
+export const INDUSTRY_SUGGESTIONS: Record<string, string[]> = {
+  // --- GASTRONOMÍA ESPECÍFICA ---
+  "41_sushi_nikkei": ["Corte de cuchillo preciso", "Pescado fresco", "Platos de pizarra", "Estilo zen", "Rolls premium"],
+  "42_pizzeria": ["Masa madre", "Horno de piedra", "Bordes tostados", "Queso derretido", "Albahaca fresca"],
+  "43_heladeria": ["Helado cremoso", "Cono de barquillo", "Frutas frescas", "Vapor de frío", "Colores vibrantes"],
+  "60_pasteleria": ["Frosting delicado", "Capas de bizcocho", "Decoración artesanal", "Tonos pastel", "Azúcar flor"],
+
+  // --- BELLEZA Y CUIDADO ---
+  "44_nail_studio": ["Esmalte brillante", "Detalle de pincel", "Luz LED de mesa", "Manos cuidadas", "Arte en uñas"],
+  "45_tattoo_studio": ["Máquina de tatuar", "Tinta intensa", "Guantes de nitrilo", "Diseño artístico", "Luz de estudio"],
+  "46_yoga_studio": ["Incienso sutil", "Postura de loto", "Mat de yoga", "Silencio visual", "Luz natural"],
+
+  // --- SERVICIOS TÉCNICOS Y OFICIOS ---
+  "47_car_detailing": ["Sellado cerámico", "Brillo espejo", "Espuma de lavado", "Microfibra", "Focos de inspección"],
+  "48_optica": ["Cristales limpios", "Marcos modernos", "Exhibición minimalista", "Examen visual", "Tecnología óptica"],
+  "49_libreria": ["Lomos de libros", "Papelería fina", "Rincón de lectura", "Cuadernos", "Ambiente tranquilo"],
+  "50_floreria": ["Rocío de agua", "Flores frescas", "Papel Kraft de regalo", "Vibrante natural", "Arreglos florales"],
+  "53_ferreteria": ["Herramientas manuales", "Pinturas", "Materiales de construcción", "Estanterías Pro", "Fierros"],
+  "55_limpieza": ["Superficies brillantes", "Hygiene total", "Uniforme profesional", "Aroma fresco", "Orden impecable"],
+  "57_lavanderia": ["Vapor de planchado", "Ropa colgada", "Máquinas industriales", "Blanco puro", "Textiles suaves"],
+  "59_tech_repair": ["Pinzas de precisión", "Circuitos", "Luz de laboratorio", "Pantallas abiertas", "Soldadura fina"],
+
+  // --- COMERCIO Y TRANSPORTE ---
+  "51_botilleria": ["Coolers empañados", "Hielo", "Estanterías llenas", "Iluminación LED comercial", "Bebidas heladas"],
+  "52_furgon_escolar": ["Letreros amarillos", "Seguridad vial", "Entorno escolar", "Transporte ordenado", "Confianza"],
+  "54_feria_fruteria": ["Cajones de mimbre", "Fruta de estación", "Rocío natural", "Venta al kilo", "Colores de campo"],
+  "56_agencia_viajes": ["Pasaportes", "Tickets de avión", "Mapas", "Destinos de playa", "Maletas modernas"],
+  "58_zapateria": ["Textura de cuero", "Vitrinas elegantes", "Cajas de zapatos", "Hormas de madera", "Diseño calzado"]
+};
