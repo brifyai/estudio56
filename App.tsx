@@ -1278,6 +1278,50 @@ const handleGenerate = async () => {
                     setPosterStyle={setPosterStyle}
                 />
                 
+                {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
+                {imageUrl && (
+                  <div className="lg:hidden p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-green-400">👁️ Vista Previa</span>
+                    </div>
+                    <div className={`
+                      w-full rounded-[1.5rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
+                    `}>
+                      <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 p-2">
+                          <FlyerDisplay
+                              imageUrl={imageUrl}
+                              draftImageUrl={draftImageUrl}
+                              hdImageUrl={hdImageUrl}
+                              draftVideoUrl={draftVideoUrl}
+                              hdVideoUrl={hdVideoUrl}
+                              status={status}
+                              aspectRatio={aspectRatio}
+                              logoUrl={logoUrl}
+                              logoColor={logoColor}
+                              logoFilters={logoFilters}
+                              productUrl={productUrl}
+                              onRefine={handleRefine}
+                              isDraft={isDraft}
+                              onUpgradeToHD={handleUpgradeToHD}
+                              initialOverlayText={overlayText}
+                              textPosition={textPosition}
+                              setTextPosition={setTextPosition}
+                              workMode={workMode}
+                              styleKey={styleKey}
+                              overlayText={overlayText}
+                              setOverlayText={setOverlayText}
+                              textStyles={manualTextStyles}
+                              setTextStyles={setManualTextStyles}
+                              logoPosition={logoPosition}
+                              setLogoPosition={setLogoPosition}
+                              productPosition={productPosition}
+                              setProductPosition={setProductPosition}
+                          />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Panel de Editor de Texto */}
                 {imageUrl && (
                   <div className="p-4 border-t border-white/10">
@@ -1329,55 +1373,11 @@ const handleGenerate = async () => {
         </div>
     </aside>
 
-      {/* CENTER: CANVAS - En mobile portrait: debajo del panel de controles, en lg: centro */}
+      {/* CENTER: CANVAS - Solo visible en landscape (lg) */}
       <main className={`
         flex-1 flex-col relative z-10 p-2 lg:p-4 pl-0 overflow-hidden
-        w-full
+        w-full hidden lg:flex
       `}>
-          {/* MOBILE PREVIEW - Visible en portrait cuando hay imagen generada, debajo del panel de controles */}
-          {imageUrl && (
-            <div className="lg:hidden mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-green-400">👁️ Vista Previa</span>
-              </div>
-              <div className={`
-                w-full rounded-[1.5rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
-              `}>
-                <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 p-2">
-                    <FlyerDisplay
-                        imageUrl={imageUrl}
-                        draftImageUrl={draftImageUrl}
-                        hdImageUrl={hdImageUrl}
-                        draftVideoUrl={draftVideoUrl}
-                        hdVideoUrl={hdVideoUrl}
-                        status={status}
-                        aspectRatio={aspectRatio}
-                        logoUrl={logoUrl}
-                        logoColor={logoColor}
-                        logoFilters={logoFilters}
-                        productUrl={productUrl}
-                        onRefine={handleRefine}
-                        isDraft={isDraft}
-                        onUpgradeToHD={handleUpgradeToHD}
-                        initialOverlayText={overlayText}
-                        textPosition={textPosition}
-                        setTextPosition={setTextPosition}
-                        workMode={workMode}
-                        styleKey={styleKey}
-                        overlayText={overlayText}
-                        setOverlayText={setOverlayText}
-                        textStyles={manualTextStyles}
-                        setTextStyles={setManualTextStyles}
-                        logoPosition={logoPosition}
-                        setLogoPosition={setLogoPosition}
-                        productPosition={productPosition}
-                        setProductPosition={setProductPosition}
-                    />
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
           <div className={`
             hidden lg:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col overflow-hidden shadow-2xl relative
