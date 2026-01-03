@@ -1090,6 +1090,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           opacity: 0.9,
           userSelect: 'none',
           pointerEvents: 'auto',
+          // Área de toque aumentada para mobile (padding invisible clickeable)
+          padding: '16px',
+          margin: '-16px',
         }}
         onMouseDown={(e) => {
           e.preventDefault();
@@ -1126,9 +1129,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             </div>
           )}
         </div>
+        {/* Indicador visual de que es editable - solo visible en mobile */}
+        <div className="lg:hidden absolute inset-0 -m-3 border-2 border-dashed border-white/30 rounded-lg opacity-50 pointer-events-none" />
         {showLogoHandles && (
-          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-[8px] px-2 py-1 rounded whitespace-nowrap">
-            Arrastra para mover • Esquina para redimensionar
+          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-[10px] px-3 py-1.5 rounded-lg whitespace-nowrap z-50">
+            🎯 Arrastra para mover
           </div>
         )}
       </div>
@@ -1150,6 +1155,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           cursor: editingProduct ? 'move' : 'grab',
           userSelect: 'none',
           pointerEvents: 'auto',
+          // Área de toque aumentada para mobile
+          padding: '20px',
+          margin: '-20px',
         }}
         onMouseDown={handleProductMouseDown}
         onMouseUp={handleProductMouseUp}
@@ -1168,11 +1176,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             backgroundColor: 'rgba(255,255,255,0.1)',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             pointerEvents: 'none',
+            border: editingProduct ? '2px solid #22c55e' : '2px solid transparent',
           }}
         />
+        {/* Indicador visual de que es editable - solo visible en mobile */}
+        <div className="lg:hidden absolute inset-0 -m-2 border-2 border-dashed border-white/30 rounded-lg opacity-50 pointer-events-none" />
         {editingProduct && (
-          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-[8px] px-2 py-1 rounded whitespace-nowrap">
-            Click fuera para guardar
+          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-[10px] px-3 py-1.5 rounded-lg whitespace-nowrap z-50">
+            🎯 Arrastra para mover
           </div>
         )}
       </div>
@@ -1256,7 +1267,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           letterSpacing: `${scaledLetterSpacing}px`,
           textTransform: displayStyles.textTransform,
           backgroundColor: displayStyles.backgroundColor !== 'transparent' ? displayStyles.backgroundColor : undefined,
-          padding: displayStyles.backgroundColor !== 'transparent' ? `${8 * scaleFactor}px ${16 * scaleFactor}px` : undefined,
+          padding: displayStyles.backgroundColor !== 'transparent'
+            ? `${8 * scaleFactor + 16}px ${16 * scaleFactor + 16}px`
+            : '16px',
           borderRadius: displayStyles.backgroundColor !== 'transparent' ? `${8 * scaleFactor}px` : undefined,
           cursor: isComparisonDraft ? 'default' : 'grab',
           zIndex: 100,
@@ -1294,6 +1307,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           } as any);
         })}
       >
+        {/* Indicador visual de que es editable - solo visible en mobile */}
+        <span className="lg:hidden absolute inset-0 -m-3 border-2 border-dashed border-white/40 rounded-lg opacity-60 pointer-events-none" />
         {displayText}
       </div>
     );
