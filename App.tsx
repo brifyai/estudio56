@@ -1216,7 +1216,7 @@ const handleGenerate = async () => {
                         e.stopPropagation();
                         setShowCalendar(!showCalendar);
                       }}
-                      className="flex items-center justify-center h-7 w-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 cursor-pointer touch-manipulation z-[60] relative min-h-[44px] min-w-[44px]"
+                      className="flex items-center justify-center h-7 w-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 cursor-pointer touch-manipulation z-[60] relative"
                       title="Ver calendario"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
