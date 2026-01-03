@@ -123,13 +123,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // NUEVO: Estados para el switch de modo de realismo
   const [realityMode, setRealityMode] = useState<RealityMode>('realist');
   
-  // NUEVO: Estados para POSTER PRO - Usar prop del padre si está disponible
-  const [posterStyleLocal, setPosterStyleLocal] = useState<PosterStyle>('promotional');
-  const [isPosterModeActive, setIsPosterModeActive] = useState(false);
-  
-  // Usar prop del padre o estado local
-  const posterStyle = posterStyleProp || posterStyleLocal;
-  const handlePosterStyleChange = setPosterStyle || setPosterStyleLocal;
+  // NUEVO: Estados para STORY ART - DIRECCIÓN DE ARTE PROFESIONAL
+  const [isStoryArtModeActive, setIsStoryArtModeActive] = useState(false);
+  const [artDirectionApplied, setArtDirectionApplied] = useState(false);
+  const [artDirectionFeedback, setArtDirectionFeedback] = useState<string | null>(null);
   
   // Editor de texto states - TAMAÑO REDUCIDO POR DEFECTO
   const [fontSize, setFontSize] = useState(24); // Reducido de 48px a 24px
@@ -708,8 +705,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 5. FORMATO SIMPLIFICADO - OCULTAR EN MODO POSTER */}
-        {!isPosterModeActive && (
+        {/* 5. FORMATO SIMPLIFICADO - OCULTAR EN MODO STORY ART */}
+        {!isStoryArtModeActive && (
           <div className="space-y-3">
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Formato</label>
               <div className="grid grid-cols-2 gap-3">
@@ -750,26 +747,39 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 5.1 FORMATO POSTER PRO - SOLO EN MODO POSTER */}
-        {isPosterModeActive && (
+        {/* 5.1 FORMATO STORY ART - DIRECCIÓN DE ARTE 9:16 */}
+        {isStoryArtModeActive && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Formato Poster</label>
-              <span className="text-[10px] text-amber-400">📄 1:1.41 (A3/A4)</span>
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">🎨 Dirección de Arte</label>
+              <span className="text-[10px] text-purple-400">📱 9:16 Vertical</span>
             </div>
             
-            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-16 border-2 border-amber-400 rounded flex items-center justify-center">
-                  <div className="w-8 h-11 bg-amber-400/20"></div>
-                </div>
-                <div>
-                  <div className="text-white font-bold text-sm">Formato A3/A4</div>
-                  <div className="text-white/60 text-xs">Alta resolución para impresión</div>
-                  <div className="text-amber-400 text-xs mt-1">✓ Listo para vitrina o muro</div>
+            {/* Feedback de Dirección de Arte Aplicada */}
+            {artDirectionApplied ? (
+              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/30">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">✓</div>
+                  <div>
+                    <div className="text-white font-bold text-sm">Dirección de Arte Aplicada</div>
+                    <div className="text-purple-300 text-xs mt-1">✓ {artDirectionFeedback || 'Tu diseño tendrá calidad de agencia'}</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 border-2 border-purple-400 rounded-full flex items-center justify-center">
+                    <div className="text-purple-400">🎨</div>
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-sm">Modo Agencia Activado</div>
+                    <div className="text-white/60 text-xs">Prompt de profesional aplicado automáticamente</div>
+                    <div className="text-purple-400 text-xs mt-1">📱 Formato forzado: 9:16 Stories</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -782,10 +792,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={() => {
                 setMediaType('image');
                 clearUploadedImage();
-                setIsPosterModeActive(false);
+                setIsStoryArtModeActive(false);
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && !isPosterModeActive
+                ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
@@ -794,7 +804,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <div className="text-sm font-bold">Imágenes</div>
                 <div className="text-[10px] text-white/60">Generar diseño</div>
               </div>
-              {mediaType === 'image' && !uploadedImage && !isPosterModeActive && (
+              {mediaType === 'image' && !uploadedImage && !isStoryArtModeActive && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
               )}
             </button>
@@ -804,10 +814,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={() => {
                 setMediaType('video');
                 clearUploadedImage();
-                setIsPosterModeActive(false);
+                setIsStoryArtModeActive(false);
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${mediaType === 'video' && !isPosterModeActive
+                ${mediaType === 'video' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
@@ -816,7 +826,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <div className="text-sm font-bold">Video</div>
                 <div className="text-[10px] text-white/60">Motion graphics</div>
               </div>
-              {mediaType === 'video' && !isPosterModeActive && (
+              {mediaType === 'video' && !isStoryArtModeActive && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
               )}
             </button>
@@ -827,10 +837,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 setMediaType('product_study');
                 setUploadedImage(null);
                 setImprovedImageUrl(null);
-                setIsPosterModeActive(false);
+                setIsStoryArtModeActive(false);
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${mediaType === 'product_study' && !isPosterModeActive
+                ${mediaType === 'product_study' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
@@ -839,107 +849,53 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <div className="text-sm font-bold">Estudio</div>
                 <div className="text-[10px] text-white/60">Mejora tu foto</div>
               </div>
-              {mediaType === 'product_study' && !isPosterModeActive && (
+              {mediaType === 'product_study' && !isStoryArtModeActive && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               )}
             </button>
 
-            {/* POSTER PRO - NUEVA TARJETA */}
+            {/* STORY ART (9:16) - NUEVA TARJETA: DIRECCIÓN DE ARTE PROFESIONAL */}
             <button
               onClick={() => {
-                setMediaType('poster');
-                setIsPosterModeActive(true);
+                setMediaType('story_art');
+                setIsStoryArtModeActive(true);
+                setAspectRatio('9:16'); // Forzar 9:16
                 clearUploadedImage();
               }}
               className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
-                ${isPosterModeActive
-                  ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-400/50 text-white shadow-lg'
+                ${isStoryArtModeActive
+                  ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className="text-2xl">📄</div>
-                <div className="text-sm font-bold">Poster Pro</div>
-                <div className="text-[10px] text-white/60">Listo para imprimir</div>
+                <div className="text-2xl">🎨</div>
+                <div className="text-sm font-bold">STORY ART</div>
+                <div className="text-[10px] text-white/60">Dirección de Arte</div>
               </div>
-              {isPosterModeActive && (
-                <div className="absolute top-2 right-2 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+              {isStoryArtModeActive && (
+                <div className="absolute top-2 right-2 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
               )}
             </button>
           </div>
         </div>
 
-        {/* 6.1 POSTER PRO - SELECTOR DE ESTILO (Solo cuando está activo) */}
-        {isPosterModeActive && (
+        {/* 6.1 STORY ART - FEEDBACK DE DIRECCIÓN DE ARTE (Solo cuando está activo) */}
+        {isStoryArtModeActive && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Estilo de Poster</label>
-              <span className="text-[10px] text-amber-400">✨ Auto-ajustado para impresión</span>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3">
-              {/* PROMOTIONAL */}
-              <button
-                onClick={() => handlePosterStyleChange('promotional')}
-                className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
-                  ${posterStyle === 'promotional'
-                    ? 'bg-gradient-to-br from-red-500/20 to-orange-500/20 border-red-400/50 text-white'
-                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="text-xl">🔥</div>
-                  <div className="text-xs font-bold">Promocional</div>
-                  <div className="text-[8px] text-white/60 text-center">Impacto de venta</div>
-                </div>
-                {posterStyle === 'promotional' && (
-                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-400 rounded-full"></div>
-                )}
-              </button>
-
-              {/* INFORMATIVE */}
-              <button
-                onClick={() => handlePosterStyleChange('informative')}
-                className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
-                  ${posterStyle === 'informative'
-                    ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white'
-                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="text-xl">📋</div>
-                  <div className="text-xs font-bold">Informativo</div>
-                  <div className="text-[8px] text-white/60 text-center">Listado/Menú</div>
-                </div>
-                {posterStyle === 'informative' && (
-                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                )}
-              </button>
-
-              {/* BRANDING */}
-              <button
-                onClick={() => handlePosterStyleChange('branding')}
-                className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
-                  ${posterStyle === 'branding'
-                    ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white'
-                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="text-xl">✨</div>
-                  <div className="text-xs font-bold">Branding</div>
-                  <div className="text-[8px] text-white/60 text-center">Estilo de vida</div>
-                </div>
-                {posterStyle === 'branding' && (
-                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-                )}
-              </button>
-            </div>
-
-            {/* Descripción del estilo seleccionado */}
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <div className="text-amber-300 text-xs font-bold mb-1">
-                {POSTER_STYLES[posterStyle].label}
+            <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-purple-400">✨</span>
+                <span className="text-purple-300 text-xs font-bold">DIRECCIÓN DE ARTE PROFESIONAL</span>
               </div>
               <div className="text-white/70 text-xs">
-                {POSTER_STYLES[posterStyle].description}
+                Tu diseño será generado con calidad de agencia. El sistema ha seleccionado automáticamente el prompt de dirección de arte correspondiente a tu rubro.
               </div>
+            </div>
+            
+            {/* Indicador de que se aplicará dirección de arte */}
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <span className="text-green-400">✓</span>
+              <span className="text-green-300 text-xs">Dirección de arte automática aplicada</span>
             </div>
           </div>
         )}
@@ -1160,8 +1116,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={onSubmit}
               disabled={isLoading || !description.trim()}
               className={`w-full py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
-              ${isPosterModeActive
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-900/40'
+              ${isStoryArtModeActive
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/40'
                   : mediaType === 'video'
                   ? 'bg-indigo-600 text-white shadow-indigo-900/40'
                   : 'bg-white text-black shadow-white/20'}`}
@@ -1174,7 +1130,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               ) : (
                   <>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                      <span>✨ GENERAR {isPosterModeActive ? 'POSTER' : mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
+                      <span>✨ GENERAR {isStoryArtModeActive ? 'STORY ART' : mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
                   </>
               )}
           </button>

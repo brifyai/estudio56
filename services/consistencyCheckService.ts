@@ -155,32 +155,79 @@ export function sanitizeAndSuggest(
   // Obtener sugerencias de poder del INDUSTRY_SUGGESTIONS
   const addedSuggestions: string[] = [];
   
-  // Mapear estilos a keys de INDUSTRY_SUGGESTIONS
+  // Mapear estilos a keys de INDUSTRY_SUGGESTIONS (ahora usa el nombre directo del estilo)
   const styleToSuggestionKey: Record<string, string> = {
-    'sushi_nikkei': '41_sushi_nikkei',
-    'pizzeria': '42_pizzeria',
-    'ice_cream': '43_heladeria',
-    'pastry_shop': '60_pasteleria',
-    'nail_studio': '44_nail_studio',
-    'tattoo_studio': '45_tattoo_studio',
-    'yoga_studio': '46_yoga_studio',
-    'car_detailing': '47_car_detailing',
-    'optical': '48_optica',
-    'bookstore': '49_libreria',
-    'flower_shop': '50_floreria',
-    'liquor_store': '51_botilleria',
-    'transport_school': '52_furgon_escolar',
-    'market_handwritten': '54_feria_fruteria',
-    'travel_agency': '56_agencia_viajes',
-    'laundry': '57_lavanderia',
-    'shoe_store': '58_zapateria',
-    'tech_repair': '59_tech_repair',
-    'hardware_store': '53_ferreteria',
-    'cleaning_service': '55_limpieza'
+    // Estilos 1-25
+    'retail_sale': 'retail_sale',
+    'summer_beach': 'summer_beach',
+    'worship_sky': 'worship_sky',
+    'corporate': 'corporate',
+    'urban_night': 'urban_night',
+    'gastronomy': 'gastronomy',
+    'sport_gritty': 'sport_gritty',
+    'luxury_gold': 'luxury_gold',
+    'aesthetic_min': 'aesthetic_min',
+    'retro_vintage': 'retro_vintage',
+    'gamer_stream': 'gamer_stream',
+    'eco_organic': 'eco_organic',
+    'indie_grunge': 'indie_grunge',
+    'political_community': 'political_community',
+    'kids_fun': 'kids_fun',
+    'art_double_exp': 'art_double_exp',
+    'medical_clean': 'medical_clean',
+    'tech_saas': 'tech_saas',
+    'typo_bold': 'typo_bold',
+    'realestate_night': 'realestate_night',
+    'auto_metallic': 'auto_metallic',
+    'edu_sketch': 'edu_sketch',
+    'wellness_zen': 'wellness_zen',
+    'pilates': 'pilates',
+    'podcast_mic': 'podcast_mic',
+    'seasonal_holiday': 'seasonal_holiday',
+    
+    // Estilos 26-40
+    'mechanic_workshop': 'mechanic_workshop',
+    'tire_service': 'tire_service',
+    'construction_site': 'construction_site',
+    'logistics_delivery': 'logistics_delivery',
+    'bakery_bread': 'bakery_bread',
+    'liquor_store': 'liquor_store',
+    'fast_food_street': 'fast_food_street',
+    'barber_shop': 'barber_shop',
+    'veterinary_clinic': 'veterinary_clinic',
+    'hvac_plumbing': 'hvac_plumbing',
+    'dental_clinic': 'dental_clinic',
+    'physiotherapy': 'physiotherapy',
+    'law_accounting': 'law_accounting',
+    'gardening_landscaping': 'gardening_landscaping',
+    'security_systems': 'security_systems',
+    
+    // Estilos 41-60
+    'sushi_nikkei': 'sushi_nikkei',
+    'pizzeria': 'pizzeria',
+    'ice_cream': 'ice_cream',
+    'nail_studio': 'nail_studio',
+    'tattoo_studio': 'tattoo_studio',
+    'yoga_studio': 'yoga_studio',
+    'car_detailing': 'car_detailing',
+    'optical': 'optical',
+    'bookstore': 'bookstore',
+    'flower_shop': 'flower_shop',
+    'transport_school': 'transport_school',
+    'hardware_store': 'hardware_store',
+    'cleaning_service': 'cleaning_service',
+    'travel_agency': 'travel_agency',
+    'laundry': 'laundry',
+    'shoe_store': 'shoe_store',
+    'tech_repair': 'tech_repair',
+    'pastry_shop': 'pastry_shop',
+    'market_handwritten': 'market_handwritten'
   };
   
+  // Buscar coincidencia directa o por nombre normalizado
   const suggestionKey = styleToSuggestionKey[normalizedStyle] ||
-                        styleToSuggestionKey[selectedStyle.toLowerCase()];
+                        styleToSuggestionKey[selectedStyle.toLowerCase()] ||
+                        styleToSuggestionKey[selectedStyle];
   
   if (suggestionKey && INDUSTRY_SUGGESTIONS[suggestionKey]) {
     addedSuggestions.push(...INDUSTRY_SUGGESTIONS[suggestionKey].slice(0, 3));

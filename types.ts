@@ -134,7 +134,7 @@ export type FlyerStyleKeyVideo =
 
 export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | '1.91:1' | '4:5' | '1080x1080' | '1080x1920' | '1080x1350' | '1:1.41'; // 1:1.41 = Formato A3/A4 para posters
 
-export type MediaType = 'image' | 'video' | 'product_study' | 'poster';
+export type MediaType = 'image' | 'video' | 'product_study' | 'story_art';
 
 // ============================================
 // TIPOS PARA POSTER PRO
@@ -215,4 +215,71 @@ export interface VideoPlanConfig {
     description: string;
     quality: string;
   };
+}
+
+// ============================================
+// TIPOS PARA DIRECCIÓN DE ARTE PROFESIONAL
+// ============================================
+
+export type ContentType =
+  | 'flyer'           // Flyer tradicional (1:1 o 4:5)
+  | 'story_art'       // STORY ART (9:16) - Nueva opción con Dirección de Arte
+  | 'reel_cover'      // Cover para Reels/Shorts
+  | 'poster';         // Poster/A3
+
+export interface ArtDirectionState {
+  /** Tipo de contenido seleccionado */
+  contentType: ContentType;
+  /** ID del rubro seleccionado para dirección de arte */
+  artDirectionId: number | null;
+  /** Si la dirección de arte fue aplicada automáticamente */
+  artDirectionApplied: boolean;
+  /** Mensaje de feedback para el usuario */
+  feedbackMessage: string | null;
+}
+
+export interface ArtDirectionResult {
+  /** Prompt completo de dirección de arte */
+  prompt: string;
+  /** Configuración del rubro */
+  config: {
+    id: number;
+    rubro: string;
+    style: string;
+    aspectRatio: string;
+  };
+  /** Si fue exitoso */
+  success: boolean;
+  /** Error si falló */
+  error?: string;
+}
+
+// ============================================
+// INTERFAZ PARA DIRECCIÓN DE ARTE POR RUBRO
+// ============================================
+
+export interface ArtDirectionPrompt {
+  /** Nombre del rubro */
+  rubro: string;
+  /** Prompt principal de dirección de arte */
+  artDirection: string;
+  /** Configuración de composición para Social Media 9:16 */
+  socialMediaComposition: string;
+  /** Negative prompt para evitar resultados no deseados */
+  negativePrompt: string;
+}
+
+// ============================================
+// INTERFAZ PARA CATÁLOGO COMPLETO DE DIRECCIÓN DE ARTE
+// ============================================
+
+export interface ArtDirectionCatalog {
+  /** Versión de la fase del catálogo */
+  phase: number;
+  /** Total de rubros en el catálogo */
+  totalPrompts: number;
+  /** Rubros disponibles */
+  rubros: string[];
+  /** Prompts por ID */
+  prompts: Record<number, ArtDirectionPrompt>;
 }
