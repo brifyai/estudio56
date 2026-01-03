@@ -1164,7 +1164,7 @@ const handleGenerate = async () => {
         <div className="glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
             
             {/* Header */}
-            <div className="h-14 flex items-center justify-between px-4 border-b border-white/5">
+            <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5 z-20 relative">
                 <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
                     <span className="font-bold text-base tracking-tight">Estudio 56</span>
@@ -1200,9 +1200,13 @@ const handleGenerate = async () => {
                     
                     {/* Calendar Button - Solo visible en mobile */}
                     <button
-                      onClick={() => setShowCalendar(!showCalendar)}
-                      className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 z-30 relative"
+                      onClick={() => {
+                        console.log('📅 Calendario toggle clicked, current state:', showCalendar);
+                        setShowCalendar(!showCalendar);
+                      }}
+                      className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 touch-manipulation"
                       title="Ver calendario"
+                      type="button"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1211,8 +1215,8 @@ const handleGenerate = async () => {
                 </div>
             </div>
 
-            {/* Form Container */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {/* Form Container - Solo este contenedor debe hacer scroll */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0">
                 <FlyerForm
                     styleKey={styleKey}
                     aspectRatio={aspectRatio}
@@ -1285,8 +1289,8 @@ const handleGenerate = async () => {
                 )}
             </div>
             
-            {/* Minimal Footer */}
-            <div className="p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono">
+            {/* Minimal Footer - Siempre visible */}
+            <div className="flex-shrink-0 p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono">
                 <div className="flex gap-2">
                     <span>V2.0.0_ESTABLE</span>
                 </div>
@@ -1388,8 +1392,8 @@ const handleGenerate = async () => {
       </main>
 
       {/* RIGHT PANEL: CALENDAR - Full height on mobile, sidebar on desktop */}
-      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-20 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300 overflow-hidden`}>
-        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
+      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-30 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300`}>
+        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-3 border-b border-white/10">
             <span className="text-xs font-bold">Calendario</span>

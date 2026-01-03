@@ -8,13 +8,13 @@
     overflow: hidden; /* Prevenir scroll del body */
     overscroll-behavior: none; /* Prevenir rebote en iOS */
     touch-action: manipulation; /* Permitir taps, prevenir zoom de doble tap */
+    height: 100%; /* Usar 100% en lugar de 100dvh para evitar scroll doble */
   }
   
-  /* Solución para mobile: usar dvh (dynamic viewport height) */
-  @supports (height: 100dvh) {
-    html, body {
-      height: 100dvh;
-    }
+  /* Forzar altura correcta en mobile */
+  #root {
+    height: 100%;
+    overflow: hidden;
   }
 }
 
