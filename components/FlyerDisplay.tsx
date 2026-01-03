@@ -1686,7 +1686,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-2 px-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span>✨</span>
-          <span>REFINAR CON IA</span>
+          <span>APLICAR CAMBIOS</span>
         </button>
       </div>
     </div>
