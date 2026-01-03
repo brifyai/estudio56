@@ -1791,10 +1791,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         )}
         
-        {/* VISTA MOBILE - Visible siempre en mobile - Proporcional a iPhone 17 */}
+        {/* VISTA MOBILE - Solo visible en mobile (oculta en lg y superior) */}
         <div
           id="flyer-container-mobile"
-          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container
+          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden
             ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
               aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
               aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
@@ -1957,6 +1957,64 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         </div>
       </div>
+
+      {/* VISTA DESKTOP/TABLET/CRUDO - Visible solo en lg y superior */}
+      {(viewMode === 'desktop' || viewMode === 'tablet' || viewMode === 'clean') && (
+        <div
+          id="flyer-container-desktop"
+          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container hidden lg:block
+            ${viewMode === 'tablet'
+              ? (aspectRatio === '9:16' ? 'w-[400px] h-[711px]' :
+                 aspectRatio === '1:1' ? 'w-[400px] h-[400px]' :
+                 aspectRatio === '4:5' ? 'w-[400px] h-[500px]' : 'w-[400px] h-[711px]')
+              : (aspectRatio === '9:16' ? 'w-[450px] h-[800px]' :
+                 aspectRatio === '1:1' ? 'w-[450px] h-[450px]' :
+                 aspectRatio === '4:5' ? 'w-[450px] h-[562px]' : 'w-[450px] h-[800px]')
+            }`}
+        >
+          <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
+            {(() => {
+              const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+              const videoSrc = imageUrl && isVideoUrl(imageUrl);
+              
+              if (videoSrc) {
+                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
+                  return renderMediaPlaceholder();
+                }
+                return (
+                  <video
+                    src={imageUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    crossOrigin={needsCors ? "anonymous" : undefined}
+                    onError={(e) => handleMediaError(e, 'video')}
+                  />
+                );
+              }
+              
+              if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
+                return renderMediaPlaceholder();
+              }
+              
+              return (
+                <img
+                  src={imageUrl}
+                  alt="Generated Content"
+                  className="w-full h-full object-cover"
+                  crossOrigin={needsCors ? "anonymous" : undefined}
+                  onError={(e) => handleMediaError(e, 'image')}
+                />
+              );
+            })()}
+            {viewMode !== 'clean' && renderLogo()}
+            {viewMode !== 'clean' && renderProduct()}
+            {viewMode !== 'clean' && renderText()}
+          </div>
+        </div>
+      )}
 
       {/* UI DE PROGRESO DE PROCESAMIENTO DE VIDEO */}
       {isProcessingVideo && (
