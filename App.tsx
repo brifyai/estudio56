@@ -1151,7 +1151,7 @@ const handleGenerate = async () => {
   }
 
   return (
-    <div className="flex h-screen w-full bg-[#030303] text-white overflow-hidden font-sans selection:bg-blue-500/30 relative">
+    <div className="flex h-[100dvh] w-full bg-[#030303] text-white overflow-hidden font-sans selection:bg-blue-500/30 relative">
       
       {/* BACKGROUND AMBIENCE */}
       <div className="fixed inset-0 pointer-events-none z-0">
