@@ -2012,6 +2012,17 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <span>APLICAR CAMBIOS</span>
         </button>
       </div>
+
+      {/* BOTÓN GENERAR IMAGEN HD - Solo visible en mobile cuando hay borrador */}
+      {isDraft && imageUrl && !showComparison && (
+        <button
+          onClick={onUpgradeToHD}
+          className="w-full max-w-[280px] bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-xs flex items-center justify-center gap-2 mt-2 animate-pulse"
+        >
+          <span>✨</span>
+          <span>Generar imagen HD</span>
+        </button>
+      )}
     </div>
   );
 };

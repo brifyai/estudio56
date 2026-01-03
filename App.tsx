@@ -843,7 +843,7 @@ const handleGenerate = async () => {
       // 💰 DEDUCIR CRÉDITOS ANTES DE GENERAR
       // NOTA: product_study NO descuenta créditos porque usa la imagen subida por el usuario
       let creditDeducted = false;
-      if (mediaType === 'image') {
+      if (mediaType === 'image' || mediaType === 'story_art') {
         const creditType = imageQuality === 'draft' ? 'draft' : 'final_image';
         creditDeducted = await creditService.deductCredit(
           creditType,
@@ -875,7 +875,7 @@ const handleGenerate = async () => {
         setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
         console.log('📸 product_study - Usando imagen subida por el usuario');
         return;
-      } else if (mediaType === 'image') {
+      } else if (mediaType === 'image' || mediaType === 'story_art') {
         setStatus({
           isLoading: true,
           step: 'rendering',
@@ -916,8 +916,8 @@ const handleGenerate = async () => {
         setImageUrl(result.imageDataUrl);
         setDraftImageUrl(result.imageDataUrl);
         
-        // NEW: Guardar generación en base de datos
-        if (imageQuality === 'draft') {
+        // NEW: Guardar generación en base de datos (image y story_art)
+        if (imageQuality === 'draft' && (mediaType === 'image' || mediaType === 'story_art')) {
           const generation = await createGeneration({
             userId: (await supabase.auth.getSession()).data.session?.user.id || '',
             draftImageUrl: result.imageDataUrl,
@@ -1003,7 +1003,8 @@ const handleGenerate = async () => {
 
         setStatus({ isLoading: true, step: 'rendering', message: ':: ESCALANDO_A_PRODUCCION ::' });
         let url;
-        if (mediaType === 'image') {
+        // story_art se maneja igual que image para el upgrade HD
+        if (mediaType === 'image' || mediaType === 'story_art') {
             // Regenerar prompt en inglés para HD
             const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
             
@@ -1087,7 +1088,7 @@ const handleGenerate = async () => {
       });
 
       let url;
-      if (mediaType === 'image') {
+      if (mediaType === 'image' || mediaType === 'story_art') {
          // NEW: Pasar texto automático también en refine
          const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
          const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
