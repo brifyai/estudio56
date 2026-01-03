@@ -23,6 +23,14 @@ export const AgencyPackReveal: React.FC<AgencyPackRevealProps> = ({
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+  
   // Efecto para transición suave del video
   useEffect(() => {
     if (result.videoUrl) {
