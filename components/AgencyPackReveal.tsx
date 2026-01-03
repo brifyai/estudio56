@@ -26,7 +26,6 @@ export const AgencyPackReveal: React.FC<AgencyPackRevealProps> = ({
   // Efecto para transición suave del video
   useEffect(() => {
     if (result.videoUrl) {
-      // Simular carga progresiva del video
       const timer = setTimeout(() => {
         setVideoLoaded(true);
       }, 1500);
@@ -100,7 +99,6 @@ export const AgencyPackReveal: React.FC<AgencyPackRevealProps> = ({
       'Retail General': 'Aplicada Dirección de Arte "Commercial Clean" con iluminación de estudio y alto contraste',
     };
     
-    // Buscar coincidencia parcial
     for (const [key, value] of Object.entries(contexts)) {
       if (rubro.toLowerCase().includes(key.toLowerCase())) {
         return value;
@@ -113,162 +111,160 @@ export const AgencyPackReveal: React.FC<AgencyPackRevealProps> = ({
   const valueContext = artDirectionInfo ? getValueContext(artDirectionInfo.rubro) : '';
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-2xl max-w-7xl w-full overflow-hidden shadow-2xl border border-gray-700 animate-fade-in">
-        
-        {/* Header del Kit de Agencia */}
-        <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-orange-500/10 px-6 py-4 border-b border-amber-500/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <span className="text-4xl filter drop-shadow-lg">🏆</span>
-                <div className="absolute -inset-2 bg-amber-500/20 blur-lg rounded-full"></div>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                  Tu Kit de Agencia está listo
-                </h2>
-                {artDirectionInfo && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full">
-                      ✓ {artDirectionInfo.rubro}
-                    </span>
-                    <span className="text-amber-400/80 text-sm">
-                      {valueContext}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-full"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Contenido Dividido con Transiciones */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+    <div 
+      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="min-h-full flex items-center justify-center p-4">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 rounded-2xl max-w-7xl w-full overflow-hidden shadow-2xl border border-gray-700 animate-fade-in">
           
-          {/* Imagen - Carga Instantánea con Fade-in */}
-          <div className="relative group overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-            <img
-              src={result.imageUrl}
-              alt="Imagen Story Art"
-              className="w-full h-[500px] object-cover animate-fade-in-up"
-              style={{ animationDelay: '0ms' }}
-            />
-            {/* Overlay con gradiente */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500" />
-            
-            {/* Badge de Calidad */}
-            <div className="absolute top-4 left-4">
-              <span className="bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                IMAGEN HD
-              </span>
-            </div>
-
-            {/* Contenido del Hover */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-              <span className="text-white text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full inline-flex items-center gap-2 mb-2">
-                <span>📸</span> Imagen Estática
-              </span>
-              <button
-                onClick={onDownloadImage}
-                className="block w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-center py-2.5 rounded-lg transition-colors shadow-lg"
-              >
-                Descargar Imagen
-              </button>
-            </div>
-          </div>
-
-          {/* Video - Transición Suave */}
-          <div className="relative group overflow-hidden">
-            {/* Video con transición cross-fade */}
-            <div className={`relative w-full h-[500px] transition-all duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}>
-              <video
-                src={result.videoUrl}
-                controls
-                className="w-full h-full object-cover"
-                onLoadedData={() => setShowVideo(true)}
-              />
-            </div>
-            
-            {/* Loading State mientras carga el video */}
-            {!showVideo && (
-              <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="relative w-16 h-16 mx-auto mb-4">
-                    <div className="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-orange-500 rounded-full animate-spin border-t-transparent"></div>
-                  </div>
-                  <p className="text-gray-400 text-sm">Preparando tu video...</p>
-                  <p className="text-orange-500 text-xs mt-1">Cinematografía profesional</p>
+          {/* Header del Kit de Agencia */}
+          <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-orange-500/10 px-6 py-4 border-b border-amber-500/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <span className="text-4xl filter drop-shadow-lg">🏆</span>
+                  <div className="absolute -inset-2 bg-amber-500/20 blur-lg rounded-full"></div>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                    Tu Kit de Agencia está listo
+                  </h2>
+                  {artDirectionInfo && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                        ✓ {artDirectionInfo.rubro}
+                      </span>
+                      <span className="text-amber-400/80 text-sm">
+                        {valueContext}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-            
-            {/* Overlay con gradiente */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500" />
-            
-            {/* Badge de Calidad Video */}
-            <div className="absolute top-4 left-4">
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 transition-all duration-500 ${showVideo ? 'bg-orange-500 text-black' : 'bg-gray-700 text-gray-400'}`}>
-                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${showVideo ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></span>
-                {showVideo ? 'VIDEO HD' : 'CARGANDO...'}
-              </span>
-            </div>
-
-            {/* Contenido del Hover */}
-            <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-500 ${showVideo ? 'translate-y-4 group-hover:translate-y-0' : 'opacity-0'}`}>
-              <span className="text-white text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full inline-flex items-center gap-2 mb-2">
-                <span>🎬</span> Video Motion
-              </span>
               <button
-                onClick={onDownloadVideo}
-                className="block w-full bg-orange-500 hover:bg-orange-400 text-black font-semibold text-center py-2.5 rounded-lg transition-colors shadow-lg"
+                onClick={onClose}
+                className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-full"
               >
-                Descargar Video
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           </div>
 
-        </div>
+          {/* Contenido Dividido con Transiciones */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+            
+            {/* Imagen - Carga Instantánea con Fade-in */}
+            <div className="relative group overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+              <img
+                src={result.imageUrl}
+                alt="Imagen Story Art"
+                className="w-full h-[500px] object-cover animate-fade-in-up"
+                style={{ animationDelay: '0ms' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500" />
+              
+              <div className="absolute top-4 left-4">
+                <span className="bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  IMAGEN HD
+                </span>
+              </div>
 
-        {/* Footer con Info del Rubro */}
-        <div className="bg-gray-900/80 px-6 py-4 border-t border-gray-700">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {artDirectionInfo && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-sm">Rubro:</span>
-                    <span className="text-white font-medium">{artDirectionInfo.rubro}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-sm">ID:</span>
-                    <span className="text-amber-400 font-mono">#{artDirectionInfo.id}</span>
-                  </div>
-                </>
-              )}
+              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <span className="text-white text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full inline-flex items-center gap-2 mb-2">
+                  <span>📸</span> Imagen Estática
+                </span>
+                <button
+                  onClick={onDownloadImage}
+                  className="block w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-center py-2.5 rounded-lg transition-colors shadow-lg"
+                >
+                  Descargar Imagen
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-500 text-sm">Pack Dual</span>
-              <span className="text-amber-500">✨</span>
-              <span className="text-gray-400 text-xs">Estudio 56 Agency</span>
+
+            {/* Video - Transición Suave */}
+            <div className="relative group overflow-hidden">
+              <div className={`relative w-full h-[500px] transition-all duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}>
+                <video
+                  src={result.videoUrl}
+                  controls
+                  className="w-full h-full object-cover"
+                  onLoadedData={() => setShowVideo(true)}
+                />
+              </div>
+              
+              {!showVideo && (
+                <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="relative w-16 h-16 mx-auto mb-4">
+                      <div className="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
+                      <div className="absolute inset-0 border-4 border-orange-500 rounded-full animate-spin border-t-transparent"></div>
+                    </div>
+                    <p className="text-gray-400 text-sm">Preparando tu video...</p>
+                    <p className="text-orange-500 text-xs mt-1">Cinematografía profesional</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-all duration-500" />
+              
+              <div className="absolute top-4 left-4">
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 transition-all duration-500 ${showVideo ? 'bg-orange-500 text-black' : 'bg-gray-700 text-gray-400'}`}>
+                  <span className={`w-2 h-2 rounded-full transition-all duration-500 ${showVideo ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></span>
+                  {showVideo ? 'VIDEO HD' : 'CARGANDO...'}
+                </span>
+              </div>
+
+              <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-500 ${showVideo ? 'translate-y-4 group-hover:translate-y-0' : 'opacity-0'}`}>
+                <span className="text-white text-sm font-medium bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full inline-flex items-center gap-2 mb-2">
+                  <span>🎬</span> Video Motion
+                </span>
+                <button
+                  onClick={onDownloadVideo}
+                  className="block w-full bg-orange-500 hover:bg-orange-400 text-black font-semibold text-center py-2.5 rounded-lg transition-colors shadow-lg"
+                >
+                  Descargar Video
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Footer con Info del Rubro */}
+          <div className="bg-gray-900/80 px-6 py-4 border-t border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                {artDirectionInfo && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-sm">Rubro:</span>
+                      <span className="text-white font-medium">{artDirectionInfo.rubro}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-sm">ID:</span>
+                      <span className="text-amber-400 font-mono">#{artDirectionInfo.id}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-500 text-sm">Pack Dual</span>
+                <span className="text-amber-500">✨</span>
+                <span className="text-gray-400 text-xs">Estudio 56 Agency</span>
+              </div>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
 
-      {/* Animaciones CSS */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
