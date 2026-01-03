@@ -73,12 +73,12 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in overflow-hidden"
         onClick={onClose}
       />
 
       {/* Menu Panel */}
-      <div className="fixed inset-y-0 left-0 w-[280px] bg-[#0A0A0A] border-r border-white/10 z-50 animate-slide-in-left flex flex-col">
+      <div className="fixed inset-y-0 left-0 w-[280px] bg-[#0A0A0A] border-r border-white/10 z-50 animate-slide-in-left flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between">
@@ -98,7 +98,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         </div>
 
         {/* Menu Items */}
-        <div className="flex-1 py-4">
+        <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
           {menuItems.map((item, index) => (
             <button
               key={index}
@@ -112,7 +112,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-white/10 space-y-2">
+        <div className="p-4 border-t border-white/10 space-y-2 flex-shrink-0">
           {/* Brand Selector */}
           <button
             onClick={onOpenBrandPanel}

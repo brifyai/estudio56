@@ -518,7 +518,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   };
   return (
     <>
-      <div className="p-4 md:p-6 space-y-6 pb-20 md:pb-32">
+      <div className="p-4 md:p-6 space-y-6 pb-6">
       
       {/* 1. ENTRADA UNIFICADA - MODO MAGIA */}
       <div className="space-y-4">
