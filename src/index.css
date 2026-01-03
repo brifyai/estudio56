@@ -5,16 +5,19 @@
     font-family: 'Inter', sans-serif;
     background-color: #030303;
     color: #ffffff;
-    overflow: hidden; /* Prevenir scroll del body */
-    overscroll-behavior: none; /* Prevenir rebote en iOS */
-    touch-action: manipulation; /* Permitir taps, prevenir zoom de doble tap */
-    height: 100%; /* Usar 100% en lugar de 100dvh para evitar scroll doble */
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    height: 100%;
+    position: fixed; /* Fijo para prevenir scroll */
+    width: 100%;
   }
   
-  /* Forzar altura correcta en mobile */
   #root {
     height: 100%;
     overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 }
 
