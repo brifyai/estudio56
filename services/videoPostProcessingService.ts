@@ -112,10 +112,13 @@ export async function loadFFmpeg(
 }
 
 /**
- * Descarga un archivo desde una URL
+ * Descarga un archivo desde una URL con soporte CORS
  */
 async function downloadFile(url: string): Promise<Uint8Array> {
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    mode: 'cors',
+    credentials: 'omit',
+  });
   if (!response.ok) {
     throw new Error(`Error descargando archivo: ${response.statusText}`);
   }
