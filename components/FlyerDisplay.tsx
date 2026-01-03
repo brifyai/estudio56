@@ -1595,7 +1595,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center animate-fade-in">
+    <div className="relative w-full h-full flex flex-col items-center justify-start animate-fade-in">
       {/* CONTROLS - Solo visible en pantallas grandes (lg), oculto en mobile */}
       {!showComparison && (
         <div className="hidden lg:block absolute top-0 left-1/2 -translate-x-1/2 z-50">
@@ -1981,8 +1981,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
+      {/* SPACER PEQUEÑO - Empuja los controles hacia abajo de la imagen */}
+      <div className="h-4" />
+      
       {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto */}
-      <div className="w-full max-w-[280px] flex flex-col gap-2 mt-3">
+      <div className="w-full max-w-[280px] flex flex-col gap-2">
         {/* Campo de refinamiento */}
         <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl p-2 pr-2.5 pl-3 rounded-xl border border-white/10">
           <input
