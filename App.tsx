@@ -1151,7 +1151,7 @@ const handleGenerate = async () => {
   }
 
   return (
-    <div className="flex h-[100dvh] md:h-screen w-full bg-[#030303] text-white overflow-hidden md:overflow-auto font-sans selection:bg-blue-500/30 relative">
+    <div className="flex flex-col md:flex-row h-auto md:h-screen w-full bg-[#030303] text-white overflow-visible md:overflow-hidden font-sans selection:bg-blue-500/30 relative min-h-screen">
       
       {/* BACKGROUND AMBIENCE */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -1160,8 +1160,8 @@ const handleGenerate = async () => {
       </div>
 
       {/* LEFT PANEL: CONTROLS */}
-      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-full p-2 md:p-4 overflow-hidden">
-        <div className="glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
+      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-auto md:h-full p-2 md:p-4 overflow-visible">
+        <div className="glass-panel rounded-xl md:rounded-[2rem] h-auto md:h-full flex flex-col shadow-2xl overflow-visible relative">
             
             {/* Header */}
             <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5 z-20 relative">
@@ -1317,9 +1317,9 @@ const handleGenerate = async () => {
         </div>
     </aside>
 
-      {/* CENTER: CANVAS */}
-      <main className="flex-1 flex flex-col relative z-10 p-2 md:p-4 pl-0 overflow-hidden">
-          <div className="w-full h-full min-h-0 rounded-xl md:rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
+      {/* CENTER: CANVAS - Solo visible en desktop */}
+      <main className="hidden md:flex flex-1 flex-col relative z-10 p-4 pl-0 overflow-hidden">
+          <div className="w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
              
              {/* Top Bar */}
              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
