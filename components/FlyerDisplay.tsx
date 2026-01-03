@@ -161,6 +161,34 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [videoProcessingError, setVideoProcessingError] = useState<string | null>(null);
   const [fallbackVideoUrl, setFallbackVideoUrl] = useState<string | null>(null);
   
+  // Estados para manejo de errores de media (mobile fix)
+  const [mediaError, setMediaError] = useState<{type: 'image' | 'video', url: string} | null>(null);
+  
+  // Helper para detectar si es video por extensión de URL
+  const isVideoUrl = (url: string): boolean => {
+    return /\.(mp4|webm|mov|blob:)(?:\?.*)?$/i.test(url) || url.startsWith('blob:');
+  };
+  
+  // Handler para errores de media
+  const handleMediaError = (e: React.SyntheticEvent<HTMLImageElement | HTMLVideoElement, Event>, type: 'image' | 'video') => {
+    const target = e.target as HTMLImageElement | HTMLVideoElement;
+    const url = target.src;
+    console.error(`❌ Error cargando ${type}:`, url);
+    setMediaError({ type, url });
+  };
+  
+  // Placeholder elegante cuando hay error de media
+  const renderMediaPlaceholder = () => (
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+      <div className="text-4xl mb-2 opacity-50">🖼️</div>
+      <div className="text-xs text-white/60 font-mono text-center px-4">
+        Error al cargar medio
+        <br />
+        <span className="text-white/40 text-[10px]">Intenta regenerar el diseño</span>
+      </div>
+    </div>
+  );
+  
   // Efecto para recolorar el logo cuando cambia el color
   useEffect(() => {
     if (!logoUrl || !logoColor) {
@@ -1381,6 +1409,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       muted
                       loop
                       playsInline
+                      crossOrigin="anonymous"
                     />
                     {/* OVERLAYS PARA BORRADOR */}
                     {renderLogoComparison(true)}
@@ -1415,6 +1444,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       muted
                       loop
                       playsInline
+                      crossOrigin="anonymous"
                     />
                     {/* OVERLAYS PARA HD */}
                     {renderLogoComparison(false)}
@@ -1445,7 +1475,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       'w-[200px] h-[356px]'}`}
                 >
                   <div className="w-full h-full relative">
-                    <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" />
+                    <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" crossOrigin="anonymous" />
                     {renderLogoComparison(true)}
                     {renderProductComparison(true)}
                     {renderText(true)}
@@ -1471,7 +1501,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       'w-[320px] h-[569px]'}`}
                 >
                   <div className="w-full h-full relative">
-                    <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" />
+                    <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" crossOrigin="anonymous" />
                     {renderLogoComparison(false)}
                     {renderProductComparison(false)}
                     {renderText(false)}
@@ -1493,17 +1523,31 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 'w-[280px] h-[498px] sm:w-[320px] sm:h-[569px]'}`}
           >
             <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-              {imageUrl && imageUrl.startsWith('blob:') ? (
-                <video
-                  src={imageUrl}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
+              {imageUrl && isVideoUrl(imageUrl) ? (
+                mediaError?.type === 'video' && mediaError.url === imageUrl ? (
+                  renderMediaPlaceholder()
+                ) : (
+                  <video
+                    src={imageUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    crossOrigin="anonymous"
+                    onError={(e) => handleMediaError(e, 'video')}
+                  />
+                )
+              ) : mediaError?.type === 'image' && mediaError.url === imageUrl ? (
+                renderMediaPlaceholder()
               ) : (
-                <img src={imageUrl} alt="Generated Content" className="w-full h-full object-cover" />
+                <img
+                  src={imageUrl}
+                  alt="Generated Content"
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                  onError={(e) => handleMediaError(e, 'image')}
+                />
               )}
               {renderLogo()}
               {renderProduct()}

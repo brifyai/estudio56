@@ -1200,8 +1200,11 @@ const handleGenerate = async () => {
                     
                     {/* Calendar Button - Solo visible en mobile */}
                     <button
-                      onClick={() => setShowCalendar(!showCalendar)}
-                      className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 cursor-pointer touch-manipulation z-40 relative"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCalendar(!showCalendar);
+                      }}
+                      className="flex items-center justify-center h-9 w-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 cursor-pointer touch-manipulation z-[60] relative min-h-[44px] min-w-[44px]"
                       title="Ver calendario"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1212,7 +1215,7 @@ const handleGenerate = async () => {
             </div>
 
             {/* Form Container - Solo este contenedor debe hacer scroll */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar min-h-0">
+            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0">
                 <FlyerForm
                     styleKey={styleKey}
                     aspectRatio={aspectRatio}
@@ -1388,8 +1391,8 @@ const handleGenerate = async () => {
       </main>
 
       {/* RIGHT PANEL: CALENDAR - Full height on mobile, sidebar on desktop */}
-      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-30 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300`}>
-        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-50 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300 ${showCalendar ? 'visible' : 'invisible'}`}>
+        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-3 border-b border-white/10">
             <span className="text-xs font-bold">Calendario</span>
