@@ -201,7 +201,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   useEffect(() => {
     setRetryCount(0);
     setIsRetrying(false);
-    setMediaError(null);
+    setMediaError(null);  // ← IMPORTANTE: Resetear también mediaError
   }, [imageUrl]);
   
   // Placeholder elegante cuando hay error de media
