@@ -1448,8 +1448,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
-      {/* CANVAS */}
-      <div className="flex-1 w-full flex items-center justify-center px-2 md:px-0 py-4 md:py-12 relative z-0">
+      {/* CANVAS - Padding aumentado arriba para que los botones no tapen la imagen */}
+      <div className="flex-1 w-full flex flex-col items-center justify-start px-2 md:px-0 py-20 md:py-12 relative z-0">
         {/* VIDEO COMPARISON MODE - SIDE BY SIDE */}
         {showVideoComparison && !isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
           <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
