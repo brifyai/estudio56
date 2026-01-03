@@ -7,7 +7,7 @@
     color: #ffffff;
     overflow: hidden; /* Prevenir scroll del body */
     overscroll-behavior: none; /* Prevenir rebote en iOS */
-    touch-action: pan-x pan-y; /* Prevenir zoom y scroll nativo */
+    touch-action: manipulation; /* Permitir taps, prevenir zoom de doble tap */
   }
   
   /* Solución para mobile: usar dvh (dynamic viewport height) */

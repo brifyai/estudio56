@@ -1201,7 +1201,7 @@ const handleGenerate = async () => {
                     {/* Calendar Button - Solo visible en mobile */}
                     <button
                       onClick={() => setShowCalendar(!showCalendar)}
-                      className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30"
+                      className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 z-30 relative"
                       title="Ver calendario"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
