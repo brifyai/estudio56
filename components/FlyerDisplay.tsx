@@ -1123,7 +1123,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   if (!imageUrl) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-white w-full">
-        <div className="text-5xl md:text-6xl mb-4 opacity-30">✨</div>
         <p className="text-sm md:text-base font-mono tracking-wider text-center px-4">
           Bienvenido a Estudio 56
         </p>
