@@ -1640,7 +1640,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
       {/* DRAFT BADGE */}
       {isDraft && !showComparison && (
-        <div className="absolute top-36 left-1/2 -translate-x-1/2 z-[60] bg-yellow-500/90 backdrop-blur text-black text-[10px] font-mono font-bold px-3 py-1 rounded-sm">⚡ MODO_BORRADOR</div>
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] bg-yellow-500/90 backdrop-blur text-black text-[10px] font-mono font-bold px-3 py-1 rounded-sm">⚡ MODO_BORRADOR</div>
       )}
       
       {/* COMPARISON BADGE - IMÁGENES */}
