@@ -104,6 +104,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [showTextControls, setShowTextControls] = useState(false);
   const [isDraggingText, setIsDraggingText] = useState(false);
   
+  // Estado para tracking de touch en texto (declarado a nivel del componente, no dentro de renderText)
+  const [isTextTouching, setIsTextTouching] = useState(false);
+  
   const flyerContainerRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -1427,20 +1430,21 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     }
     const textShadowValue = shadows.length > 0 ? shadows.join(', ') : undefined;
 
-    // Estado para tracking de touch y haptic feedback
-    const [isTouching, setIsTouching] = useState(false);
-
-    // Función para haptic feedback
-    const triggerHaptic = useCallback(() => {
-      if (navigator.vibrate) {
-        navigator.vibrate(10); // Vibración corta de 10ms
+    // Función para haptic feedback segura
+    const triggerHaptic = useCallback((duration: number = 10) => {
+      try {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate(duration);
+        }
+      } catch (e) {
+        // Silenciar errores de vibrate en mobile
       }
     }, []);
 
     // Manejar touch start con haptic feedback
     const handleTextTouchStartWithHaptic = useCallback((e: React.TouchEvent) => {
-      setIsTouching(true);
-      triggerHaptic();
+      setIsTextTouching(true);
+      triggerHaptic(10);
       
       if (isComparisonDraft) return;
       
@@ -1461,7 +1465,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
     // Manejar touch end
     const handleTextTouchEndWithHaptic = useCallback(() => {
-      setIsTouching(false);
+      setIsTextTouching(false);
       handleTextTouchEnd();
     }, [handleTextTouchEnd]);
 
@@ -1506,9 +1510,15 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
         onMouseEnter={() => {
-          // Haptic feedback en hover para desktop
-          if (!isComparisonDraft && navigator.vibrate) {
-            navigator.vibrate(5);
+          // Haptic feedback en hover para desktop (con protección)
+          if (!isComparisonDraft) {
+            try {
+              if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                navigator.vibrate(5);
+              }
+            } catch (e) {
+              // Silenciar errores
+            }
           }
         }}
         onTouchStart={handleTextTouchStartWithHaptic}
@@ -1519,7 +1529,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <span
           className={`
             lg:hidden absolute inset-0 -m-4 border-2 border-dashed rounded-lg pointer-events-none transition-all duration-150
-            ${isTouching
+            ${isTextTouching
               ? 'border-blue-400 bg-blue-400/10 opacity-80 scale-105'
               : 'border-white/40 opacity-50'
             }
@@ -1527,7 +1537,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           style={{ margin: '-16px' }}
         />
         {/* Handle visual de arrastre cuando se toca */}
-        {isTouching && (
+        {isTextTouching && (
           <span className="lg:hidden absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap pointer-events-none animate-bounce">
             👆 Arrastra aquí
           </span>
