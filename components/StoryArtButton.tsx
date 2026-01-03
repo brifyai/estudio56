@@ -8,6 +8,12 @@ import {
 } from '../src/services/promptBuilder';
 import { getAllArtDirections, type ArtDirectionInput } from '../src/constants/artDirection';
 import type { ArtDirectionResult, ContentType } from '../types';
+import {
+  generatePackDual,
+  quickPackDual,
+  type PackDualResult
+} from '../services/geminiService';
+import { AgencyPackReveal } from './AgencyPackReveal';
 
 interface StoryArtButtonProps {
   /** Rubro del negocio (ID numérico) */
@@ -43,6 +49,9 @@ export function StoryArtButton({
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showRubros, setShowRubros] = useState(false);
+  const [showAgencyPack, setShowAgencyPack] = useState(false);
+  const [packDualResult, setPackDualResult] = useState<PackDualResult | null>(null);
+  const [isGeneratingPack, setIsGeneratingPack] = useState(false);
 
   // Verificar si el rubro tiene dirección de arte disponible
   const hasArtDirectionForIndustry = hasArtDirection(industryId);
@@ -131,8 +140,71 @@ export function StoryArtButton({
     }
   }, [feedbackMessage]);
 
+  // ============================================
+  // GENERACIÓN DE PACK DUAL (Imagen + Video)
+  // ============================================
+  
+  const handleGeneratePackDual = async () => {
+    if (!subject.trim()) {
+      setFeedbackMessage('Ingresa una descripción del producto/servicio');
+      return;
+    }
+
+    setIsGeneratingPack(true);
+    setFeedbackMessage('🎬 Generando tu Kit de Agencia...');
+
+    try {
+      // Usar quickPackDual para generación rápida
+      const result = await quickPackDual(
+        `${subject} ${details || ''}`.trim(),
+        industryId
+      );
+
+      if (result.success && result.imageUrl && result.videoUrl) {
+        setPackDualResult(result);
+        setShowAgencyPack(true);
+        setFeedbackMessage('✅ Kit de Agencia generado exitosamente');
+      } else {
+        setFeedbackMessage(`❌ ${result.error || 'Error generando pack dual'}`);
+      }
+    } catch (error) {
+      console.error('Error generando pack dual:', error);
+      setFeedbackMessage('❌ Error al generar imagen y video');
+    } finally {
+      setIsGeneratingPack(false);
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (packDualResult?.imageUrl) {
+      const link = document.createElement('a');
+      link.href = packDualResult.imageUrl;
+      link.download = `story-art-${packDualResult.artDirection?.rubro || 'agency'}-image.jpg`;
+      link.click();
+    }
+  };
+
+  const handleDownloadVideo = () => {
+    if (packDualResult?.videoUrl) {
+      const link = document.createElement('a');
+      link.href = packDualResult.videoUrl;
+      link.download = `story-art-${packDualResult.artDirection?.rubro || 'agency'}-video.mp4`;
+      link.click();
+    }
+  };
+
   return (
     <div className={`story-art-button-container ${className}`}>
+      
+      {/* Agency Pack Reveal Modal */}
+      {showAgencyPack && packDualResult && (
+        <AgencyPackReveal
+          result={packDualResult}
+          onClose={() => setShowAgencyPack(false)}
+          onDownloadImage={handleDownloadImage}
+          onDownloadVideo={handleDownloadVideo}
+        />
+      )}
       {/* Selector de Tipo de Contenido */}
       <div className="content-type-selector">
         <label className="content-type-label">
@@ -164,6 +236,23 @@ export function StoryArtButton({
             <span className="btn-ratio">9:16</span>
             {!hasArtDirectionForIndustry && (
               <span className="btn-badge">Próximo</span>
+            )}
+          </button>
+
+          {/* Botón Generar Pack Dual (NUEVO) */}
+          <button
+            type="button"
+            className={`content-type-btn pack-dual-btn ${isGeneratingPack ? 'generating' : ''}`}
+            onClick={handleGeneratePackDual}
+            disabled={disabled || isGeneratingPack || !hasArtDirectionForIndustry}
+          >
+            <span className="btn-icon">✨</span>
+            <span className="btn-text">Pack Dual</span>
+            <span className="btn-ratio">Img + Video</span>
+            {isGeneratingPack && (
+              <span className="btn-loading">
+                <span className="spinner"></span>
+              </span>
             )}
           </button>
 
@@ -309,6 +398,32 @@ export function StoryArtButton({
         .story-art-btn.active {
           border-color: #8b5cf6;
           background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+        }
+
+        .pack-dual-btn {
+          border-color: #f59e0b;
+          background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+
+        .pack-dual-btn:hover:not(:disabled) {
+          border-color: #d97706;
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+
+        .pack-dual-btn.generating {
+          border-color: #f59e0b;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .pack-dual-btn.active {
+          border-color: #f59e0b;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .btn-loading {
+          position: absolute;
+          top: 8px;
+          right: 8px;
         }
 
         .btn-icon {

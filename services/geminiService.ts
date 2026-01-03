@@ -21,6 +21,12 @@ import { analyzeCompositionForText, generateCompositionBasedStyles, generateComp
 import { validateAutoTextAnalysis, improveAutoTextAnalysis, ValidationResult } from "./autoTextValidationService";
 import { RealTimePreview, PreviewState } from "./realTimePreviewService";
 import { detectIndustryFromInput, processMagicMode } from "./magicModeService";
+import {
+  buildAgencyPrompt,
+  buildArtDirectionPrompt,
+  getArtDirectionById,
+  ART_DIRECTION_SYSTEM
+} from "../src/constants/artDirectionIndex";
 
 // Exportar función de diagnóstico para uso en otros servicios
 export const diagnoseAndFixBlackImage = async (imageDataUrl: string): Promise<string> => {
@@ -979,6 +985,7 @@ export interface SimpleImageResult {
 
 /**
  * Función simplificada para generar imágenes (compatibilidad con frontend)
+ * OPCIONAL: mode = 'story_art' para usar Dirección de Arte Profesional
  */
 export const generateImage = async (
   prompt: string,
@@ -987,6 +994,7 @@ export const generateImage = async (
     styleKey?: FlyerStyleKey;
     quality?: ImageQuality;
     seed?: number;
+    artDirectionId?: number; // ID del rubro (1-60) para Story Art
   }
 ): Promise<SimpleImageResult> => {
   try {
@@ -995,12 +1003,28 @@ export const generateImage = async (
     const styleKey = options?.styleKey || 'brand_identity';
     const quality = options?.quality || 'draft';
     const seed = options?.seed || Math.floor(Math.random() * 1000000);
+    const artDirectionId = options?.artDirectionId;
     
-    // Mejorar el prompt para mejor generación
-    const enhancedPrompt = await enhancePrompt(prompt, styleKey);
+    let finalPrompt: string;
+    
+    // ============================================
+    // MODO STORY ART: Usar Dirección de Arte Profesional
+    // ============================================
+    if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
+      console.log(`🎬 [Story Art] Usando Dirección de Arte Profesional - Rubro ID: ${artDirectionId}`);
+      
+      // Usar el motor de Dirección de Arte Profesional
+      finalPrompt = buildAgencyPrompt(prompt, artDirectionId);
+      
+      console.log('🎯 [Story Art] Prompt de agencia generado:', finalPrompt.substring(0, 150) + '...');
+    } else {
+      // Modo estándar: Mejorar el prompt genérico
+      const enhancedPrompt = await enhancePrompt(prompt, styleKey);
+      finalPrompt = enhancedPrompt.english;
+    }
     
     const result = await generateFlyerImage(
-      enhancedPrompt.english,
+      finalPrompt,
       styleKey,
       aspectRatio,
       quality,
@@ -1397,6 +1421,7 @@ export const generateFlyerImage = async (
  * Step 2 (Video): Generate Video using Google Gemini VEO API
  * This function generates video directly using Gemini's VEO model
  * NEW: Uses VEO directly instead of Chutes API for better quality and compatibility
+ * OPCIONAL: artDirectionId para usar Dirección de Arte Profesional en Story Art
  */
 export const generateFlyerVideo = async (
   enhancedDescription: string,
@@ -1404,15 +1429,30 @@ export const generateFlyerVideo = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   hasProductOverlay: boolean = false,
-  draftImageUrl?: string
+  draftImageUrl?: string,
+  artDirectionId?: number // ID del rubro (1-60) para Story Art
 ): Promise<string> => {
     try {
       console.log('🎬 [generateFlyerVideo] Iniciando generación con Google Gemini VEO...');
-      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft image:', !!draftImageUrl);
+      console.log('📋 [generateFlyerVideo] Quality:', quality, '| Has draft image:', !!draftImageUrl, '| ArtDirection ID:', artDirectionId);
       
       // Step 1: Obtener la imagen base
       let imageDataUrl: string;
       let seed: number;
+      
+      // ============================================
+      // MODO STORY ART: Usar Dirección de Arte Profesional
+      // ============================================
+      let finalDescription = enhancedDescription;
+      
+      if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
+        console.log(`🎬 [Story Art Video] Usando Dirección de Arte Profesional - Rubro ID: ${artDirectionId}`);
+        
+        // Usar el motor de Dirección de Arte Profesional para video
+        finalDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
+        
+        console.log('🎯 [Story Art Video] Prompt de agencia generado:', finalDescription.substring(0, 150) + '...');
+      }
       
       if (draftImageUrl && quality === 'hd') {
         // USAR LA IMAGEN DEL DRAFT DIRECTAMENTE para garantizar consistencia
@@ -1424,7 +1464,7 @@ export const generateFlyerVideo = async (
         seed = Math.floor(Math.random() * 2000000000);
         console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
         const imageResult = await generateFlyerImage(
-          enhancedDescription,
+          finalDescription,
           styleKey,
           aspectRatio,
           quality === 'draft' ? 'draft' : 'hd',
@@ -1449,7 +1489,7 @@ export const generateFlyerVideo = async (
       
       // Usar VEO directamente (ya no como fallback)
       const videoUrl = await generateFlyerVideoVEO(
-        enhancedDescription,
+        finalDescription,
         styleKey,
         aspectRatio,
         quality,
@@ -1793,4 +1833,108 @@ export const quickEnhanceImage = async (
   } catch (error: any) {
     return { success: false, error: error.message };
   }
+};
+
+// ============================================
+// PACK DUAL: Imagen + Video Simultáneos
+// Story Art Level Agency Feature
+// ============================================
+
+export interface PackDualResult {
+  success: boolean;
+  imageUrl?: string;
+  videoUrl?: string;
+  artDirection?: {
+    id: number;
+    rubro: string;
+    prompt: string;
+  };
+  error?: string;
+}
+
+/**
+ * Genera simultáneamente imagen y video usando Dirección de Arte Profesional
+ * Esta función implementa el "Pack Dual" para Story Art a nivel agencia
+ *
+ * @param prompt - Descripción del producto/servicio
+ * @param artDirectionId - ID del rubro (1-60) para Dirección de Arte
+ * @param aspectRatio - Proporción de la imagen (recomendado: 9:16)
+ * @param quality - Calidad ('draft' o 'hd')
+ * @returns PackDualResult con imagen y video generados
+ */
+export const generatePackDual = async (
+  prompt: string,
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16',
+  quality: ImageQuality = 'draft'
+): Promise<PackDualResult> => {
+  console.log('🎬 [Pack Dual] Iniciando generación simultánea de imagen y video...');
+  console.log('📋 [Pack Dual] ArtDirection ID:', artDirectionId, '| Quality:', quality);
+  
+  try {
+    // Obtener información del rubro para el resultado
+    const artDirectionConfig = getArtDirectionById(artDirectionId);
+    
+    if (!artDirectionConfig) {
+      throw new Error(`No se encontró configuración para el rubro ID: ${artDirectionId}`);
+    }
+    
+    console.log('✅ [Pack Dual] Rubro:', artDirectionConfig.rubro);
+    
+    // ============================================
+    // GENERACIÓN SIMULTÁNEA CON Promise.all()
+    // ============================================
+    const [imageResult, videoUrl] = await Promise.all([
+      // Generar imagen estática con Dirección de Arte
+      generateImage(prompt, aspectRatio, {
+        styleKey: 'brand_identity',
+        quality,
+        artDirectionId
+      }),
+      
+      // Generar video con Dirección de Arte
+      generateFlyerVideo(prompt, 'brand_identity', aspectRatio, quality, false, undefined, artDirectionId)
+    ]);
+    
+    // Verificar resultados
+    if (!imageResult.success || !imageResult.imageUrl) {
+      throw new Error(imageResult.error || 'Error generando imagen del pack dual');
+    }
+    
+    if (!videoUrl) {
+      throw new Error('Error generando video del pack dual');
+    }
+    
+    console.log('✅ [Pack Dual] Generación completada exitosamente');
+    console.log('📸 [Pack Dual] Imagen:', imageResult.imageUrl.substring(0, 50) + '...');
+    console.log('🎬 [Pack Dual] Video:', videoUrl.substring(0, 50) + '...');
+    
+    return {
+      success: true,
+      imageUrl: imageResult.imageUrl,
+      videoUrl: videoUrl,
+      artDirection: {
+        id: artDirectionId,
+        rubro: artDirectionConfig.rubro,
+        prompt: artDirectionConfig.prompt
+      }
+    };
+    
+  } catch (error: any) {
+    console.error('❌ [Pack Dual] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido en pack dual'
+    };
+  }
+};
+
+/**
+ * Versión simplificada de generatePackDual para uso rápido
+ */
+export const quickPackDual = async (
+  prompt: string,
+  artDirectionId: number
+): Promise<PackDualResult> => {
+  return generatePackDual(prompt, artDirectionId, '9:16', 'draft');
 };
