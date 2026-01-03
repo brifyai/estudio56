@@ -1569,8 +1569,8 @@ const generateFlyerVideoVEO = async (
     return localBlobUrl;
 
   } catch (error) {
-    console.error("❌ Video Error (VEO fallback):", error);
-    throw new Error("Falló la generación del video con ambos proveedores (Chutes y VEO).");
+    console.error("❌ Video Error (VEO):", error);
+    throw new Error("Cuota de Google Gemini VEO agotada (429). Verifica tu plan en https://ai.dev/usage");
   }
 };
 
