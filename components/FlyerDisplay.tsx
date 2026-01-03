@@ -1430,21 +1430,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     }
     const textShadowValue = shadows.length > 0 ? shadows.join(', ') : undefined;
 
-    // Función para haptic feedback segura
-    const triggerHaptic = useCallback((duration: number = 10) => {
-      try {
-        if (typeof navigator !== 'undefined' && navigator.vibrate) {
-          navigator.vibrate(duration);
-        }
-      } catch (e) {
-        // Silenciar errores de vibrate en mobile
-      }
-    }, []);
-
-    // Manejar touch start con haptic feedback
+    // Manejar touch start - SIN haptic feedback para evitar crashes
     const handleTextTouchStartWithHaptic = useCallback((e: React.TouchEvent) => {
       setIsTextTouching(true);
-      triggerHaptic(10);
       
       if (isComparisonDraft) return;
       
@@ -1461,7 +1449,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       }
       // Dos dedos: gestos pinch/rotate
       handleTextTouchStart(e);
-    }, [isComparisonDraft, handleMouseDown, handleTextTouchStart, triggerHaptic]);
+    }, [isComparisonDraft, handleMouseDown, handleTextTouchStart]);
 
     // Manejar touch end
     const handleTextTouchEndWithHaptic = useCallback(() => {
@@ -1509,18 +1497,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           filter: displayStyles.effects.glow ? `drop-shadow(0 0 ${scaledGlowBlur}px ${displayStyles.textColor})` : undefined,
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
-        onMouseEnter={() => {
-          // Haptic feedback en hover para desktop (con protección)
-          if (!isComparisonDraft) {
-            try {
-              if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                navigator.vibrate(5);
-              }
-            } catch (e) {
-              // Silenciar errores
-            }
-          }
-        }}
         onTouchStart={handleTextTouchStartWithHaptic}
         onTouchMove={isComparisonDraft ? undefined : handleTextTouchMove}
         onTouchEnd={handleTextTouchEndWithHaptic}
@@ -1536,12 +1512,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           `}
           style={{ margin: '-16px' }}
         />
-        {/* Handle visual de arrastre cuando se toca */}
-        {isTextTouching && (
-          <span className="lg:hidden absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap pointer-events-none animate-bounce">
-            👆 Arrastra aquí
-          </span>
-        )}
         {displayText}
       </div>
     );
