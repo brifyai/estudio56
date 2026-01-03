@@ -1,4 +1,4 @@
-import { FlyerStyleKey, FlyerStyleConfig, VideoStyleConfig, AspectRatio, VideoPlanConfig } from './types';
+import { FlyerStyleKey, FlyerStyleKeyVideo, FlyerStyleConfig, VideoStyleConfig, AspectRatio, VideoPlanConfig } from './types';
 
 // A. [MASTER STYLE]
 // HD Version (Complex)
@@ -399,6 +399,188 @@ export const FLYER_STYLES: Record<FlyerStyleKey, FlyerStyleConfig> = {
     video_motion: "Slow circular dolly track around the microphone, digital audio waveform bars pulsing to the rhythm.",
     example: "Radio 'Futuro': Entrevista exclusiva a emprendedores locales sobre innovación.",
     previewUrl: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // --- NUEVOS ESTILOS 26-40 (2026) ---
+  
+  // 26. Taller Mecánico
+  mechanic_workshop: {
+    label: "Taller Mecánico",
+    category: "SERVICIOS",
+    tags: ["Auto", "Mecánico", "Industrial"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Professional Automotive Workshop. Background: [CAR_MODEL] on hydraulic lift, mechanic tools in foreground, industrial lighting. Details: Realistic grease and metal textures, concrete floor, garage atmosphere. Vibe: Professional service, trustworthy mechanical work.",
+    visualDescription: "Taller mecánico profesional con auto en elevador y herramientas.",
+    video_motion: "Slow camera orbit around the vehicle, mechanic hands working on engine in close-up.",
+    example: "Taller 'AutoPro': Cambio de aceite y revisión completa para tu vehículo.",
+    previewUrl: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 27. Vulcanización
+  tire_service: {
+    label: "Vulcanización",
+    category: "SERVICIOS",
+    tags: ["Neumáticos", "Taller", "Autos"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Tire Service Center. Background: Professional tire changing equipment, stacks of new tires, hydraulic jacks. Details: High contrast, focus on rubber textures and tools, roadside service aesthetic. Vibe: Fast, reliable tire service.",
+    visualDescription: "Centro de servicios de neumáticos con equipamiento profesional.",
+    video_motion: "High-speed tire rotation on balancing machine, water droplets flying off.",
+    example: "Vulcanización 'GomaSecure': Cambio de neumáticos y alineación exprés.",
+    previewUrl: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 28. Construcción
+  construction_site: {
+    label: "Construcción",
+    category: "SERVICIOS",
+    tags: ["Obra", "Edificación", "Profesional"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Construction Site Professional. Background: Construction site in progress, workers with safety gear, blueprints on site. Details: Steel and concrete structures, daylight, wide angle. Vibe: Professional building company, high scale project, reliable construction.",
+    visualDescription: "Obra de construcción en progreso con trabajadores y equipos.",
+    video_motion: "Drone flyover of construction site, workers moving, crane rotation.",
+    example: "Constructora 'Edifica': Proyectos residenciales y comerciales de alta calidad.",
+    previewUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 29. Logística
+  logistics_delivery: {
+    label: "Logística / Delivery",
+    category: "SERVICIOS",
+    tags: ["Paquetes", "Envíos", "Rápido"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Modern Logistics Warehouse. Background: [BRAND_NAME] delivery van, organized packages and cardboard boxes. Details: Professional courier service, fast-paced atmosphere, bright industrial lighting. Vibe: Efficient, reliable, fast delivery.",
+    visualDescription: "Almacén logístico moderno con van de reparto y paquetes organizados.",
+    video_motion: "Fast-paced warehouse activity, packages moving on conveyor, delivery van driving away.",
+    example: "Logística 'ExpressChile': Delivery same-day en Santiago y regiones.",
+    previewUrl: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 30. Panadería
+  bakery_bread: {
+    label: "Panadería / Horneado",
+    category: "COMERCIO",
+    tags: ["Pan", "Fresco", "Tradicional"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Artisanal Bakery. Background: Fresh [BREAD_TYPE] in wicker baskets, flour dust in the air, warm industrial ovens. Details: Golden crust textures, morning sunlight, cozy traditional shop vibe. Vibe: Fresh, warm, traditional bakery.",
+    visualDescription: "Panadería artesanal con panes frescos en canastas de mimbre.",
+    video_motion: "Time-lapse of bread rising in oven, steam rising from fresh loaf.",
+    example: "Panadería 'El Trigo de Oro': Pan fresco horneado cada mañana.",
+    previewUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 31. Botillería
+  liquor_store: {
+    label: "Botillería / Licores",
+    category: "COMERCIO",
+    tags: ["Bebidas", "Retail", "Variedad"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Organized Liquor Store. Background: Shelves with organized bottles, cold beverage coolers with condensation. Details: Professional commercial lighting, variety of bottles, retail display. Vibe: Neighborhood market, wide selection, convenient.",
+    visualDescription: "Botillería organizada con estantes de bebidas y coolers.",
+    video_motion: "Hand reaching into a cold cooler, condensation on glass, refreshing atmosphere.",
+    example: "Botillería 'Don Vino': La mejor selección de vinos y cervezas del mercado.",
+    previewUrl: "https://images.unsplash.com/photo-1574935971562-45a6e5d1e2eb?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 32. Comida Rápida
+  fast_food_street: {
+    label: "Comida Rápida / Street Food",
+    category: "COMERCIO",
+    tags: ["Comida callejera", "Fusión", "Rápido"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Street Fast Food. Background: Delicious [FOOD_ITEM] close-up, sizzling griddle, melting cheese. Details: Professional food styling, neon signage background, vibrant colors. Vibe: Appetizing, energetic, affordable street food.",
+    visualDescription: "Comida rápida callejera appetitosa con iluminación neón.",
+    video_motion: "Close-up of food sizzling on hot griddle, steam rising, spatula flipping.",
+    example: "Street Food 'Sabores': Las mejores empanadas y completos de la zona.",
+    previewUrl: "https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 33. Peluquería / Barbería
+  barber_shop: {
+    label: "Peluquería / Barbería",
+    category: "SERVICIOS",
+    tags: ["Cabello", "Estilo", "Profesional"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Modern Barber Shop. Background: Classic leather barber chair, mirrors with LED backlight, grooming tools. Details: Scissors and combs, stylish and clean aesthetic. Vibe: High-end grooming, trendy, professional.",
+    visualDescription: "Barbería moderna con silla de cuero y espejos con LED.",
+    video_motion: "Slow motion of hair clippers or scissors in action, professional lighting.",
+    example: "Barbería 'Corte VIP': Estilo y distinción para el hombre moderno.",
+    previewUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 34. Veterinaria
+  veterinary_clinic: {
+    label: "Veterinaria / Mascotas",
+    category: "SALUD",
+    tags: ["Mascotas", "Cuidado", "Amor"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Clean Veterinary Clinic. Background: [PET_TYPE] on exam table, medical stethoscope. Details: Friendly and professional medical environment, bright clinical lighting. Vibe: Trustworthy pet care, compassionate veterinary service.",
+    visualDescription: "Clínica veterinaria limpia con mascota en mesa de examen.",
+    video_motion: "Caring vet examining a happy pet, warm natural lighting, emotional connection.",
+    example: "Veterinaria 'Patitas': Cuidado integral para tus mascotas las 24 horas.",
+    previewUrl: "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 35. Gasfitería / Climatización
+  hvac_plumbing: {
+    label: "Gasfitería / Climatización",
+    category: "SERVICIOS",
+    tags: ["Plomería", "Técnico", "Hogar"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Technical HVAC and Plumbing. Background: Plumbing and air conditioning service, technical tools, copper pipes. Details: HVAC unit installation, professional blue-collar expertise. Vibe: Hands-on technical service, precision, reliability.",
+    visualDescription: "Servicio técnico de gasfitería y climatización con herramientas.",
+    video_motion: "Close-up of wrench tightening pipe, water pressure test, focused technical movement.",
+    example: "Servicios 'Técnico Pro': Gasfitería, calefacción y aire acondicionado a domicilio.",
+    previewUrl: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 36. Centro Dental
+  dental_clinic: {
+    label: "Centro Dental",
+    category: "SALUD",
+    tags: ["Dientes", "Sonrisa", "Limpio"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: High-Tech Dental Office. Background: Professional dentist chair, bright clinical lamp, sterile environment. Details: White and blue color palette, precision medical tools. Vibe: Clean, trustworthy, modern dental care.",
+    visualDescription: "Consultorio dental moderno con equipamiento de alta tecnología.",
+    video_motion: "Smooth pan over modern dental equipment, blue LED lights, sterile environment.",
+    example: "Clínica Dental 'Sonrisa Perfecta': Ortodoncia, implantes y blanqueamiento dental.",
+    previewUrl: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 37. Kinesiología
+  physiotherapy: {
+    label: "Kinesiología / Rehab",
+    category: "SALUD",
+    tags: ["Rehabilitación", "Movimiento", "Deporte"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Physiotherapy Studio. Background: Rehabilitation equipment, elastic bands, treatment table. Details: Movement and recovery focus, bright airy room. Vibe: Sports medicine aesthetic, professional care, health focus.",
+    visualDescription: "Estudio de kinesiología con equipamiento de rehabilitación.",
+    video_motion: "Patient performing elastic band exercise, kinesiólogo guiding movement, slow controlled action.",
+    example: "Kinesiología 'Movimiento': Rehabilitación deportiva y terapia física especializada.",
+    previewUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 38. Estudio Jurídico
+  law_accounting: {
+    label: "Estudio Jurídico / Contable",
+    category: "PROFESIONAL",
+    tags: ["Legal", "Corporativo", "Serio"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Professional Law Firm Office. Background: Wooden bookshelves with books, leather chairs, organized desk. Details: Sophisticated corporate atmosphere, serious and trustworthy aesthetic. Vibe: Legal expertise, professional consulting, reliable service.",
+    visualDescription: "Oficina de estudio jurídico profesional con libreros de madera.",
+    video_motion: "Professional handshake in office, slow pan over legal documents, serious atmosphere.",
+    example: "Estudio 'LexChile': Asesoría legal y contable para empresas y personas.",
+    previewUrl: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 39. Jardinería
+  gardening_landscaping: {
+    label: "Jardinería / Paisajismo",
+    category: "SERVICIOS",
+    tags: ["Jardín", "Naturaleza", "Verde"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Professional Gardening. Background: Beautiful [GARDEN_TYPE], lawn mower in action, garden tools. Details: Vibrant green grass and flowers, outdoor daylight. Vibe: Landscape transformation, fresh and natural aesthetic, garden care.",
+    visualDescription: "Jardinería profesional con herramientas y pasto verde.",
+    video_motion: "Lawn mower moving through green grass, grass clippings flying, satisfying transformation.",
+    example: "Jardinería 'VerdePro': Diseño y mantención de jardines residenciales.",
+    previewUrl: "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 40. Seguridad
+  security_systems: {
+    label: "Seguridad / Alarmas",
+    category: "SERVICIOS",
+    tags: ["Protección", "Tech", "Vigilancia"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Security Systems. Background: CCTV security camera installation, digital monitoring interface. Details: Protection and safety feeling, high-tech security devices. Vibe: Professional surveillance, modern tech, peace of mind.",
+    visualDescription: "Sistema de seguridad con cámaras CCTV y monitoreo digital.",
+    video_motion: "Security camera panning slowly, digital HUD overlay, night vision transition.",
+    example: "Seguridad 'ProtecHome': Sistemas de alarma y cámaras de seguridad 24/7.",
+    previewUrl: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80"
   }
 };
 
@@ -730,6 +912,203 @@ export const VIDEO_STYLES: Record<string, VideoStyleConfig> = {
     aspectRatio: ['1:1', '9:16', '16:9'],
     example: "Navidad: Regalos con nieve cayendo suavemente.",
     previewUrl: "https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // --- NUEVOS VIDEO STYLES 26-40 (2026) ---
+
+  // 26. Mechanic Action (Acción Mecánica)
+  video_mechanic_action: {
+    label: "Taller Mecánico / Acción",
+    category: "SERVICIOS",
+    tags: ["Mecánico", "Herramientas", "Taller"],
+    prompt: "Close-up of mechanic hands working on an engine, sparks flying from welding or tool movement, dramatic workshop lighting, smooth camera orbit, industrial atmosphere, professional auto service.",
+    motionStyle: "Hands working, sparks flying, camera orbit around engine",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Taller: Manos de mecánico trabajando en motor con chispas.",
+    previewUrl: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 27. Tire Spin (Giro de Neumático)
+  video_tire_spin: {
+    label: "Vulcanización / Neumático",
+    category: "SERVICIOS",
+    tags: ["Neumático", "Giro", "Taller"],
+    prompt: "High-speed tire rotation on a balancing machine, water droplets flying off the tire, sharp focus on rubber texture, slow motion transition, industrial service action, professional tire work.",
+    motionStyle: "Tire spinning fast, water droplets flying, slow motion",
+    duration: "5-8 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Vulcanización: Neumático girando a alta velocidad con gotas de agua.",
+    previewUrl: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 28. Construction Drone (Dron de Obra)
+  video_construction_drone: {
+    label: "Construcción / Dron",
+    category: "SERVICIOS",
+    tags: ["Obra", "Dron", "Aéreo"],
+    prompt: "Drone flyover of a construction site, workers in safety gear moving, crane rotating, cinematic scale showing architectural progress, daylight, wide aerial perspective of building project.",
+    motionStyle: "Drone flyover, crane rotation, workers moving on site",
+    duration: "10-15 seg",
+    aspectRatio: ['16:9', '1.91:1', '9:16'],
+    example: "Construcción: Dron sobre obra en progreso con trabajadores.",
+    previewUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 29. Logistic Flow (Flujo Logístico)
+  video_logistic_flow: {
+    label: "Logística / Flujo",
+    category: "SERVICIOS",
+    tags: ["Paquetes", "Almacén", "Rápido"],
+    prompt: "Fast-paced warehouse activity, packages moving on conveyor belts, delivery van driving away from warehouse, motion blur on fast objects, efficient logistics energy, professional courier service.",
+    motionStyle: "Packages on conveyor, delivery van driving, fast motion",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Logística: Actividad rápida en almacén con paquetes en movimiento.",
+    previewUrl: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 30. Baking Rise (Crecimiento de Pan)
+  video_baking_rise: {
+    label: "Panadería / Horneado",
+    category: "COMERCIO",
+    tags: ["Pan", "Horno", "Steam"],
+    prompt: "Time-lapse of bread rising in oven, steam rising from fresh golden loaf, crust forming slowly, warm appetizing glow, close-up of baking process, traditional bakery atmosphere.",
+    motionStyle: "Bread rising, steam rising, crust forming in time-lapse",
+    duration: "8-12 seg",
+    aspectRatio: ['1:1', '9:16', '4:5'],
+    example: "Panadería: Pan horneándose con vapor y proceso en time-lapse.",
+    previewUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 31. Cooler Refresh (Refresco en Cooler)
+  video_cooler_refresh: {
+    label: "Botillería / Cooler",
+    category: "COMERCIO",
+    tags: ["Bebidas", "Frío", "Refrescante"],
+    prompt: "Hand reaching into a cold beverage cooler, condensation droplets on glass, bright retail lighting, refreshing cold atmosphere, close-up of cold drinks, commercial retail energy.",
+    motionStyle: "Hand reaching in cooler, condensation droplets, refreshing feel",
+    duration: "5-8 seg",
+    aspectRatio: ['1:1', '9:16', '4:5'],
+    example: "Botillería: Mano llegando al cooler frío con condensación.",
+    previewUrl: "https://images.unsplash.com/photo-1574935971562-45a6e5d1e2eb?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 32. Griddle Sizzle (Sabor a la Plancha)
+  video_griddle_sizzle: {
+    label: "Comida Rápida / Plancha",
+    category: "COMERCIO",
+    tags: ["Comida", "Plancha", "Sabor"],
+    prompt: "Close-up of food sizzling on a hot griddle, steam rising dramatically, spatula flipping food, vibrant appetizing colors, high-energy food commercial style, street food cooking action.",
+    motionStyle: "Food sizzling, steam rising, spatula flipping",
+    duration: "5-8 seg",
+    aspectRatio: ['1:1', '4:5', '9:16'],
+    example: "Comida rápida: Comida chisporroteando en plancha caliente.",
+    previewUrl: "https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 33. Barber Precision (Precisión de Barbero)
+  video_barber_precision: {
+    label: "Barbería / Precisión",
+    category: "SERVICIOS",
+    tags: ["Corte", "Barbero", "Precisión"],
+    prompt: "Slow motion close-up of hair clippers or scissors in action, hair falling, professional bright lighting, stylish barber movements, focus on precision cutting, modern grooming aesthetic.",
+    motionStyle: "Clippers cutting hair, slow motion, precise movements",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '16:9'],
+    example: "Barbería: Tijeras y máquinas cortando cabello en slow motion.",
+    previewUrl: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 34. Pet Interaction (Interacción Mascota)
+  video_pet_interaction: {
+    label: "Veterinaria / Mascota",
+    category: "SALUD",
+    tags: ["Mascota", "Vet", "Cuidado"],
+    prompt: "Caring veterinarian examining a happy dog, handheld camera following movement, warm natural lighting, emotional human-animal connection, professional pet care atmosphere, trustworthy veterinary service.",
+    motionStyle: "Vet examining pet, warm lighting, emotional connection",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Veterinaria: Veterinario cuidando mascot feliz con cariño.",
+    previewUrl: "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 35. Technical Fix (Reparación Técnica)
+  video_technical_fix: {
+    label: "Gasfitería / Técnica",
+    category: "SERVICIOS",
+    tags: ["Reparación", "Herramientas", "Técnico"],
+    prompt: "Close-up of wrench tightening a pipe, water pressure test showing no leaks, focused technical movement, professional blue-collar hands at work, precise plumbing repair action.",
+    motionStyle: "Wrench tightening pipe, water test, technical precision",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Gasfitería: Llave ajustando tubería con prueba de presión.",
+    previewUrl: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 36. Dental Tech (Tecnología Dental)
+  video_dental_tech: {
+    label: "Dental / Tecnología",
+    category: "SALUD",
+    tags: ["Dental", "Tech", "Limpio"],
+    prompt: "Smooth cinematic pan over modern dental equipment, blue LED clinical lights, sterile environment, futuristic medical feel, precision focus on dental tools, clean professional dentistry.",
+    motionStyle: "Smooth pan over equipment, blue LED lights, sterile environment",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Dental: Equipamiento moderno con luces LED azules clínicas.",
+    previewUrl: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 37. Rehab Movement (Movimiento de Rehab)
+  video_rehab_movement: {
+    label: "Kinesiología / Rehab",
+    category: "SALUD",
+    tags: ["Rehabilitación", "Movimiento", "Salud"],
+    prompt: "Patient performing elastic band exercise with kinesiologist guiding movement, slow controlled action showing proper form, bright studio lighting, health and recovery focus, professional rehabilitation environment.",
+    motionStyle: "Elastic band exercise, guided movement, slow controlled action",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Kinesiología: Paciente haciendo ejercicio con bandas elásticas.",
+    previewUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 38. Corporate Handshake (Acuerdo Corporativo)
+  video_corporate_handshake: {
+    label: "Estudio Jurídico / Corporativo",
+    category: "PROFESIONAL",
+    tags: ["Acuerdo", "Legal", "Serio"],
+    prompt: "Professional handshake in a law or accounting office, slow pan over legal documents and books, serious and prestigious atmosphere, soft office lighting, corporate trust and professionalism.",
+    motionStyle: "Handshake, document pan, professional corporate atmosphere",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1.91:1', '1:1'],
+    example: "Estudio jurídico: Apretón de manos profesional en oficina.",
+    previewUrl: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 39. Lawn Transformation (Corte de Pasto)
+  video_lawn_transformation: {
+    label: "Jardinería / Pasto",
+    category: "SERVICIOS",
+    tags: ["Jardín", "Corte", "Verde"],
+    prompt: "Lawn mower moving through vibrant green grass, grass clippings flying in the air, outdoor sunlight, satisfying nature transformation, fresh cut grass look, professional landscaping action.",
+    motionStyle: "Lawn mower moving, grass clippings flying, transformation",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Jardinería: Cortadora de pasto en acción con pasto verde.",
+    previewUrl: "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 40. Surveillance Scan (Escaneo de Seguridad)
+  video_surveillance_scan: {
+    label: "Seguridad / Vigilancia",
+    category: "SERVICIOS",
+    tags: ["Cámara", "Seguridad", "Tech"],
+    prompt: "Security camera panning slowly across a space, digital HUD interface overlay showing monitoring data, night vision transition effect, safety and protection focus, modern tech security aesthetic.",
+    motionStyle: "Camera panning, HUD overlay, night vision transition",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Seguridad: Cámara de vigilancia escaneando con interfaz digital.",
+    previewUrl: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80"
   }
 };
 
@@ -799,4 +1178,311 @@ export const CHUTES_VIDEO_CONFIG = {
   
   // Prompt negativo por defecto
   negativePrompt: "Vibrant colors, overexposed, static, blurry details, subtitles, style, artwork, painting, picture, still, overall grayish, worst quality, low quality, JPEG compression artifacts, ugly, incomplete, extra fingers, poorly drawn hands, poorly drawn face, deformed, disfigured, malformed limbs, fused fingers, motionless image, cluttered background, three legs, many people in the background, walking backwards, slow motion"
+};
+
+// ============================================
+// MATRIZ MAESTRA DE GUARDRAILS DE SEGURIDAD
+// Negative Prompts por Estilo de Imagen
+// ============================================
+
+export const IMAGE_GUARDRAILS: Record<FlyerStyleKey, string> = {
+  // --- ESTILOS ORIGINALES 1-25 ---
+  brand_identity: "blur, low resolution, messy, organic chaos, vintage filters, watermark, text overlay, logo visible",
+  
+  retail_sale: "messy store, empty shelves, broken products, dark lighting, sad faces, outdated products, dust, cobwebs",
+  
+  summer_beach: "rain, storm, dark clouds, cold weather, winter scene, snow, indoor pool, dirty water, seaweed, trash",
+  
+  worship_sky: "dark clouds, thunderstorm, evil imagery, scary faces, hell fire, demons, blood, violence, sad ceremony",
+  
+  corporate: "casual friday, jeans, sneakers, coffee cup in hand, messy desk, unfinished presentation, error screens",
+  
+  urban_night: "daylight, bright sun, family friendly, quiet street, empty parking lot, closed businesses, peaceful scene",
+  
+  gastronomy: "burnt food, raw meat, dirty plates, empty restaurant, sad presentation, mold, expired food, insects",
+  
+  sport_gritty: "towels, candles, zen stones, massage tables, spa robes, oils, meditation, peaceful yoga, relaxation",
+  
+  luxury_gold: "cheap plastic, tarnished gold, broken champagne, empty venue, poor lighting, tacky decorations, fake items",
+  
+  aesthetic_min: "cluttered desk, bright colors, loud patterns, mess, chaos, multiple fonts, busy background, noise",
+  
+  retro_vintage: "modern technology, smartphones, laptops, contemporary clothing, modern cars, digital screens",
+  
+  gamer_stream: "realistic office, nature documentary, calm meditation, educational content, sports broadcast",
+  
+  eco_organic: "plastic packaging, industrial factory, pollution, trash, dead plants, synthetic materials, chemicals",
+  
+  indie_grunge: "clean polished studio, corporate meeting, business suits, pristine condition, organized neatness",
+  
+  political_community: "controversial symbols, protest signs, angry crowd, violence, negative campaign, mudslinging",
+  
+  kids_fun: "adult content, scary imagery, dark colors, violence, inappropriate themes, realistic war toys, weapons",
+  
+  art_double_exp: "sharp focus, clear image, simple composition, modern design, digital clean, minimal art",
+  
+  medical_clean: "blood, surgery, needles, dental tools, hospital bed, sick patient, dark shadows, emergency room",
+  
+  tech_saas: "pen and paper, manual process, outdated computer, broken keyboard, analog device, rotary phone",
+  
+  typo_bold: "complex image, detailed illustration, photo-realistic, busy background, multiple elements, clutter",
+  
+  realestate_night: "daylight, construction debris, unfinished walls, messy interiors, low ceilings, abandoned building",
+  
+  auto_metallic: "dirty cars, workshops, tools, grease, pedestrian streets, bicycles, motorcycles, traffic jam",
+  
+  edu_sketch: "party, gaming, toys, alcohol, unprofessional behavior, dark clubs, nightclub, bar scene",
+  
+  wellness_zen: "gym weights, heavy machines, sweat, dark moody lighting, surgery, medical equipment, clinical",
+  
+  pilates: "weightlifting, CrossFit, heavy deadlifts, combat sports, extreme sports, high intensity interval",
+  
+  podcast_mic: "silent studio, empty chair, turned off lights, broken equipment, analog tape, outdated technology",
+  
+  seasonal_holiday: "summer beach, spring flowers, autumn leaves, regular birthday, non-holiday celebration",
+  
+  market_handwritten: "digital signage, neon signs, LED screens, modern supermarket, corporate chain store, polished",
+
+  // --- NUEVOS ESTILOS 26-40 ---
+  mechanic_workshop: "business suits, luxury showroom, polished glass floors, ties, executives, office meeting, clean carpet",
+  
+  tire_service: "car wash, waxing, luxury lounge, interior detailing, soft furniture, waiting area, coffee bar, comfortable seating",
+  
+  construction_site: "finished luxury decor, curtains, indoor furniture, tidy gardens, completed building, move-in ready, polished interior",
+  
+  logistics_delivery: "shopping mall, retail customers, shopping carts, open products, display shelves, checkout counter, cashier",
+  
+  bakery_bread: "sushi, raw meat, wine bottles, dinner tables, soup, formal dining, restaurant setting, silver cutlery",
+  
+  liquor_store: "restaurant tables, cooked food, coffee machines, gym equipment, fresh produce, organic section, bakery items",
+  
+  fast_food_street: "fine dining, silver cutlery, white tablecloths, expensive wine, formal waiters, tasting menu, gourmet plating",
+  
+  barber_shop: "massage candles, aromatherapy, spa robes, surgery tools, water, wet shave, facial treatment, beauty salon",
+  
+  veterinary_clinic: "human patients, wild animals, taxidermy, dark lighting, kitchen, slaughterhouse, meat products, blood",
+  
+  hvac_plumbing: "interior design, computers, clean hands, office suits, soft fabrics, luxury furniture, executive desk, polished floor",
+  
+  dental_clinic: "hospital beds, surgical rooms, blood, dark shadows, massage oils, spa music, candles, relaxation chair",
+  
+  physiotherapy: "heavy gym weights, bodybuilders, powerlifting, spa candles, massage oils, aromatherapy, zen music, meditation",
+  
+  law_accounting: "casual clothing, workshop, outdoor nature, loud neon colors, party scene, casual Friday, jeans and t-shirt",
+  
+  gardening_landscaping: "indoor office, computers, desert, dry dead plants, industrial, construction zone, concrete jungle, pollution",
+  
+  security_systems: "police officers, guns, dark alleys, messy wiring, chaos, armed guards, violence, emergency vehicles, sirens"
+};
+
+// ============================================
+// GUARDRAILS DE MOVIMIENTO PARA VIDEO
+// Motion Physics & Composition Rules
+// ============================================
+
+export const VIDEO_MOTION_GUARDRAILS: Record<FlyerStyleKeyVideo, {
+  prohibited: string;
+  forced: string;
+}> = {
+  // --- ESTILOS ORIGINALES 1-25 ---
+  video_retail_sale: {
+    prohibited: "static image, no movement, frozen products, dead scene, still life, no energy",
+    forced: "dynamic explosion, floating products, confetti falling, camera push-in, vibrant energy"
+  },
+  
+  video_summer_beach: {
+    prohibited: "indoor pool, dark water, storm waves, cold atmosphere, winter scene, empty beach",
+    forced: "crystal clear water, warm sunlight, gentle waves, tropical vibe, inviting atmosphere"
+  },
+  
+  video_worship_sky: {
+    prohibited: "dark clouds, thunderstorm, evil imagery, scary faces, negative energy, sad ceremony",
+    forced: "god rays, divine light, hopeful atmosphere, spiritual elevation, peaceful transcendence"
+  },
+  
+  video_corporate: {
+    prohibited: "casual friday, messy desk, unfinished work, error screens, casual clothing, coffee cup dominant",
+    forced: "professional environment, clean workspace, polished presentation, business attire, success vibe"
+  },
+  
+  video_urban_night: {
+    prohibited: "daylight, bright sun, family friendly, quiet street, peaceful scene, empty venue",
+    forced: "neon lights, laser beams, smoke atmosphere, dynamic energy, crowd excitement, club vibe"
+  },
+  
+  video_gastronomy: {
+    prohibited: "burnt food, raw meat, dirty plates, empty restaurant, sad presentation, slow motion drooping",
+    forced: "appetizing steam, perfect lighting, delicious presentation, fresh ingredients, mouth-watering close-up"
+  },
+  
+  video_sport_gritty: {
+    prohibited: "towels, candles, zen stones, massage tables, spa robes, oils, meditation, peaceful yoga",
+    forced: "intense effort, sweat droplets, muscle tension, heavy breathing, dynamic movement, power"
+  },
+  
+  video_luxury_gold: {
+    prohibited: "cheap plastic, tarnished gold, broken champagne, empty venue, poor lighting, tacky decorations",
+    forced: "elegant champagne bubbles, gold sparkles, smooth camera glide, sophisticated atmosphere, premium feel"
+  },
+  
+  video_aesthetic_min: {
+    prohibited: "cluttered desk, bright colors, loud patterns, mess, chaos, multiple fonts, busy background",
+    forced: "soft window light, leaf shadows swaying, slow camera movement, calming atmosphere, minimal beauty"
+  },
+  
+  video_retro_vintage: {
+    prohibited: "modern technology, smartphones, laptops, contemporary clothing, modern cars, digital screens",
+    forced: "stop-motion jitter, film grain flicker, glitch effects, 90s aesthetic, nostalgic movement"
+  },
+  
+  video_gamer_stream: {
+    prohibited: "realistic office, nature documentary, calm meditation, educational content, sports broadcast",
+    forced: "digital distortion, glitch artifacts, neon lightning, glowing eyes pulsating, cyber atmosphere"
+  },
+  
+  video_eco_organic: {
+    prohibited: "plastic packaging, industrial factory, pollution, trash, dead plants, synthetic materials",
+    forced: "leaves blowing gently, dappled sunlight, butterfly flying, natural breeze, organic movement"
+  },
+  
+  video_indie_grunge: {
+    prohibited: "clean polished studio, corporate meeting, business suits, pristine condition, organized neatness",
+    forced: "smoke rolling, shaky cam, dust in spotlight, raw documentary feel, authentic stage atmosphere"
+  },
+  
+  video_political: {
+    prohibited: "controversial symbols, protest signs, angry crowd, violence, negative campaign, mudslinging",
+    forced: "confident walking, smiling at people, tracking shot, natural background movement, positive energy"
+  },
+  
+  video_kids_fun: {
+    prohibited: "adult content, scary imagery, dark colors, violence, inappropriate themes, realistic war toys",
+    forced: "balloons bobbing, confetti raining, cake spinning, bouncy animation, cheerful movement"
+  },
+  
+  video_art_double_exp: {
+    prohibited: "sharp focus, clear image, simple composition, modern design, digital clean, minimal art",
+    forced: "fog moving inside silhouette, birds flying, trees swaying, surreal dreamlike motion, double exposure"
+  },
+  
+  video_medical_clean: {
+    prohibited: "blood, surgery, needles, dental tools, hospital bed, sick patient, dark shadows, emergency",
+    forced: "DNA rotating, smooth panning, stable sterile flow, clean professional atmosphere, futuristic tech"
+  },
+  
+  video_tech_saas: {
+    prohibited: "pen and paper, manual process, outdated computer, broken keyboard, analog device, rotary phone",
+    forced: "data flowing, brain rotating, light pulses, network connections, digital transformation, innovation"
+  },
+  
+  video_typo_bold: {
+    prohibited: "complex image, detailed illustration, photo-realistic, busy background, multiple elements",
+    forced: "liquid gradients morphing, geometric shapes rotating, perfect loop, clean text overlay support"
+  },
+  
+  video_realestate_night: {
+    prohibited: "daylight, construction debris, unfinished walls, messy interiors, low ceilings, abandoned",
+    forced: "stars time-lapse, pool reflection, interior lights, luxury atmosphere, serene night beauty"
+  },
+  
+  video_auto_metallic: {
+    prohibited: "dirty cars, workshops, tools, grease, pedestrian streets, bicycles, traffic jam, urban chaos",
+    forced: "wheel spinning fast, smoke billowing, sparks flying, high-octane action, automotive excellence"
+  },
+  
+  video_edu_sketch: {
+    prohibited: "party, gaming, toys, alcohol, unprofessional behavior, dark clubs, nightclub, bar scene",
+    forced: "chalk drawing itself, dust motes dancing, write-on effect, academic atmosphere, learning focus"
+  },
+  
+  video_wellness_zen: {
+    prohibited: "gym weights, heavy machines, sweat, dark moody lighting, surgery, medical equipment, clinical",
+    forced: "water drop falling, perfect ripples, candle flickering, steam rising, peaceful tranquility"
+  },
+  
+  video_podcast_mic: {
+    prohibited: "silent studio, empty chair, turned off lights, broken equipment, analog tape, outdated tech",
+    forced: "soundwaves jumping, ON AIR pulsing, camera orbit, studio energy, broadcast professional"
+  },
+  
+  video_seasonal_holiday: {
+    prohibited: "summer beach, spring flowers, autumn leaves, regular birthday, non-holiday celebration",
+    forced: "snow falling, hearts floating, lights twinkling, magical atmosphere, festive joy"
+  },
+
+  // --- NUEVOS VIDEO STYLES 26-40 ---
+  video_mechanic_action: {
+    prohibited: "dreamy lighting, slow-mo fashion, elegant poses, studio lighting, clean hands, business attire",
+    forced: "industrial grit, sharp focus, sparks flying, hands working, mechanical precision, workshop atmosphere"
+  },
+  
+  video_tire_spin: {
+    prohibited: "slow motion beauty, elegant rotation, smooth gliding, calm atmosphere, luxury showroom",
+    forced: "high-speed rotation, water droplets flying, industrial action, rubber texture focus, service efficiency"
+  },
+  
+  video_construction_drone: {
+    prohibited: "completed building, move-in ready, furnished interior, polished finish, empty site without workers",
+    forced: "drone flyover, crane rotation, workers in action, architectural progress, construction energy"
+  },
+  
+  video_logistic_flow: {
+    prohibited: "shopping mall, retail customers, shopping carts, display shelves, checkout counter, casual browsing",
+    forced: "packages on conveyor, delivery van driving, fast motion, efficiency focus, professional logistics"
+  },
+  
+  video_baking_rise: {
+    prohibited: "fast chaotic cuts, burnt food, raw dough, dark oven, cold kitchen, industrial factory",
+    forced: "steady macro, slow growth, warm glow, golden crust forming, appetizing time-lapse, traditional bakery"
+  },
+  
+  video_cooler_refresh: {
+    prohibited: "warm drinks, hot food, restaurant setting, formal dining, slow service, empty shelves",
+    forced: "hand reaching in cooler, condensation droplets, refreshing cold, bright retail lighting, convenient service"
+  },
+  
+  video_griddle_sizzle: {
+    prohibited: "fine dining, silver cutlery, white tablecloths, expensive wine, formal plating, gourmet presentation",
+    forced: "food sizzling, steam rising, spatula flipping, vibrant colors, high-energy street food, appetizing action"
+  },
+  
+  video_barber_precision: {
+    prohibited: "wide landscape shots, spa atmosphere, massage candles, aromatherapy, relaxation focus, beauty salon",
+    forced: "macro close-ups, sharp transitions, clippers cutting hair, precise movements, professional grooming"
+  },
+  
+  video_pet_interaction: {
+    prohibited: "human hospital, wild animals, taxidermy, dark lighting, kitchen, meat products, clinical cold",
+    forced: "vet examining pet, warm natural lighting, emotional connection, trust and care, professional pet health"
+  },
+  
+  video_technical_fix: {
+    prohibited: "interior design, computers, clean hands, office suits, soft fabrics, luxury furniture, executive setting",
+    forced: "wrench tightening pipe, water pressure test, focused technical movement, blue-collar expertise, precision"
+  },
+  
+  video_dental_tech: {
+    prohibited: "hospital beds, surgical rooms, blood, dark shadows, massage oils, spa music, relaxation chair",
+    forced: "smooth equipment pan, blue LED lights, sterile environment, futuristic medical, clean precision"
+  },
+  
+  video_rehab_movement: {
+    prohibited: "high speed action, aggressive blur, extreme sports, heavy gym weights, bodybuilders, powerlifting",
+    forced: "stable tripod, clear form, elastic band exercise, guided movement, slow controlled action, health focus"
+  },
+  
+  video_corporate_handshake: {
+    prohibited: "casual clothing, workshop, outdoor nature, loud neon colors, party scene, casual Friday vibe",
+    forced: "professional handshake, document pan, serious atmosphere, corporate trust, soft office lighting, success"
+  },
+  
+  video_lawn_transformation: {
+    prohibited: "indoor office, computers, desert, dry dead plants, industrial, construction zone, concrete jungle",
+    forced: "lawn mower moving, grass clippings flying, satisfying transformation, fresh cut look, outdoor professional"
+  },
+  
+  video_surveillance_scan: {
+    prohibited: "handheld shaky cam, action movie shake, dramatic camera movement, dynamic cinematography",
+    forced: "mechanical smooth pan, CCTV jitter effect, digital HUD overlay, night vision transition, security focus"
+  }
 };

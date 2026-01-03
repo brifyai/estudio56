@@ -27,7 +27,23 @@ export type FlyerStyleKey =
   | 'pilates'
   | 'podcast_mic'
   | 'seasonal_holiday'
-  | 'market_handwritten'; // NEW: Feria Libre / Mercado Chileno
+  | 'market_handwritten' // NEW: Feria Libre / Mercado Chileno
+  // --- NUEVOS ESTILOS 26-40 (2026) ---
+  | 'mechanic_workshop'        // 26. Taller Mecánico
+  | 'tire_service'             // 27. Vulcanización
+  | 'construction_site'        // 28. Construcción
+  | 'logistics_delivery'       // 29. Logística
+  | 'bakery_bread'             // 30. Panadería
+  | 'liquor_store'             // 31. Botillería
+  | 'fast_food_street'         // 32. Comida Rápida
+  | 'barber_shop'              // 33. Peluquería/Barbería
+  | 'veterinary_clinic'        // 34. Veterinaria
+  | 'hvac_plumbing'            // 35. Gasfitería/Climatización
+  | 'dental_clinic'            // 36. Centro Dental
+  | 'physiotherapy'            // 37. Kinesiología
+  | 'law_accounting'           // 38. Estudio Jurídico
+  | 'gardening_landscaping'    // 39. Jardinería
+  | 'security_systems';        // 40. Seguridad
 
 // ============================================
 // FÓRMULA MAESTRA PARA VIDEO (25 estilos)
@@ -58,7 +74,23 @@ export type FlyerStyleKeyVideo =
   | 'video_edu_sketch'         // 22. EDUCACIÓN / SKETCH (Dibujo Animado)
   | 'video_wellness_zen'       // 23. SPA / ZEN (Gota de Agua)
   | 'video_podcast_mic'        // 24. PODCAST / MEDIA (Ondas de Audio)
-  | 'video_seasonal_holiday';  // 25. FESTIVIDADES (Nieve/Confetti)
+  | 'video_seasonal_holiday'   // 25. FESTIVIDADES (Nieve/Confetti)
+  // --- NUEVOS VIDEO STYLES 26-40 (2026) ---
+  | 'video_mechanic_action'    // 26. Taller Mecánico / Acción
+  | 'video_tire_spin'          // 27. Vulcanización / Neumático
+  | 'video_construction_drone' // 28. Construcción / Dron
+  | 'video_logistic_flow'      // 29. Logística / Flujo
+  | 'video_baking_rise'        // 30. Panadería / Horneado
+  | 'video_cooler_refresh'     // 31. Botillería / Cooler
+  | 'video_griddle_sizzle'     // 32. Comida Rápida / Plancha
+  | 'video_barber_precision'   // 33. Barbería / Precisión
+  | 'video_pet_interaction'    // 34. Veterinaria / Mascota
+  | 'video_technical_fix'      // 35. Gasfitería / Técnica
+  | 'video_dental_tech'        // 36. Dental / Tecnología
+  | 'video_rehab_movement'     // 37. Kinesiología / Rehab
+  | 'video_corporate_handshake' // 38. Estudio Jurídico / Corporativo
+  | 'video_lawn_transformation' // 39. Jardinería / Pasto
+  | 'video_surveillance_scan'; // 40. Seguridad / Vigilancia
 
 export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | '1.91:1' | '4:5' | '1080x1080' | '1080x1920' | '1080x1350';
 
@@ -70,7 +102,7 @@ export type ImageQuality = 'draft' | 'hd';
 export type OverlayStyle = 'modern' | 'sale' | 'neon' | 'elegant';
 export type OverlayPosition = 'top' | 'middle' | 'bottom';
 
-export type StyleCategory = 'TODOS' | 'VENTAS' | 'CORPORATIVO' | 'LIFESTYLE' | 'NOCHE' | 'EVENTOS';
+export type StyleCategory = 'TODOS' | 'VENTAS' | 'CORPORATIVO' | 'LIFESTYLE' | 'NOCHE' | 'EVENTOS' | 'SERVICIOS' | 'COMERCIO' | 'SALUD' | 'PROFESIONAL';
 
 export interface FlyerStyleConfig {
   label: string;

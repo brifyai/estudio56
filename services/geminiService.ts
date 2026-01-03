@@ -1,6 +1,18 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, AspectRatio, ImageQuality } from "../types";
-import { MASTER_STYLE, MASTER_STYLE_DRAFT, CHILEAN_BASE_CONTEXT, CHILEAN_OUTDOOR_CONTEXT, CHILEAN_STUDIO_CONTEXT, CHILEAN_CONTEXT_LITE, FLYER_STYLES, VIDEO_PHYSICS_GUARDRAIL, VIDEO_STYLES } from "../constants";
+import {
+  MASTER_STYLE,
+  MASTER_STYLE_DRAFT,
+  CHILEAN_BASE_CONTEXT,
+  CHILEAN_OUTDOOR_CONTEXT,
+  CHILEAN_STUDIO_CONTEXT,
+  CHILEAN_CONTEXT_LITE,
+  FLYER_STYLES,
+  VIDEO_PHYSICS_GUARDRAIL,
+  VIDEO_STYLES,
+  IMAGE_GUARDRAILS,
+  VIDEO_MOTION_GUARDRAILS
+} from "../constants";
 import { analyzeImageForTextStyle, generateTextStylesFromAnalysis, generateDynamicTextClasses, ImageAnalysisResult } from "./imageAnalysisService";
 import { analyzeContextualTypography, generateContextualStyles, generateContextualClasses, ContextualTypographyResult } from "./contextualTypographyService";
 import { analyzeImageContrast, generateContrastOptimizedStyles, ContrastAnalysis } from "./contrastAnalysisService";
@@ -1210,19 +1222,32 @@ export const generateFlyerImage = async (
     The image must be 100% TEXT-FREE. Any image containing text will be considered a failure.
   `.replace(/\n/g, ' ').trim();
 
+  // ============================================
+  // APLICAR GUARDRAILS DE SEGURIDAD (Negative Prompts)
+  // ============================================
+  const industryGuardrail = IMAGE_GUARDRAILS[styleKey] || "";
+  const baseNegativePrompt = "blur, low resolution, messy, watermark, text overlay, logo visible, deformed, disfigured, ugly, incomplete, extra fingers, poorly drawn hands";
+  const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}`.replace(/\s+/g, ' ').trim();
+  
+  console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
+
   if (quality === 'draft') {
     // Use same model family as HD for consistency
     const model = 'gemini-2.5-flash-image';
     
     try {
         // Use same seed, same prompt structure, just different model variant
-        imageDataUrl = await executeImageGeneration(ai, model, unifiedPrompt, consistencySeed, aspectRatio, false);
+        // NOTE: Gemini 2.5 Flash doesn't support negative_prompt directly,
+        // but we include it in the prompt for better results
+        const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
+        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, false);
     } catch (error: any) {
         console.warn("Draft generation failed. Retrying with same parameters...", error.message);
         
         // Retry with same seed for consistency
         try {
-            imageDataUrl = await executeImageGeneration(ai, model, unifiedPrompt, consistencySeed, aspectRatio, false);
+            const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
+            imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, false);
         } catch (retryError) {
              console.error("Draft retry failed.", retryError);
              throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
@@ -1247,7 +1272,9 @@ export const generateFlyerImage = async (
     
     try {
         // Same seed, same prompt structure - only quality settings differ
-        imageDataUrl = await executeImageGeneration(ai, model, unifiedPrompt, consistencySeed, aspectRatio, true);
+        // Include guardrails in prompt for better semantic control
+        const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
+        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, true);
     } catch (error: any) {
         if (error.message.includes('SAFETY_BLOCK')) {
              throw new Error("⚠️ La imagen fue bloqueada por filtros de seguridad. Evita mencionar personas reales, celebridades o marcas registradas.");
@@ -1494,12 +1521,24 @@ const generateFlyerVideoVEO = async (
       productPromptSuffix = " EMPTY CENTER. BACKGROUND ONLY. No main subject. Focus on environment texture and lighting.";
     }
 
+    // ============================================
+    // APLICAR GUARDRAILS DE MOVIMIENTO PARA VIDEO
+    // ============================================
+    const motionGuardrailKey = styleKey.startsWith('video_') ? styleKey : `video_${styleKey}`;
+    const motionGuardrail = VIDEO_MOTION_GUARDRAILS[motionGuardrailKey as keyof typeof VIDEO_MOTION_GUARDRAILS];
+    
+    let motionGuardrailText = "";
+    if (motionGuardrail) {
+      motionGuardrailText = ` MOTION GUARDRAIL - PROHIBITED: ${motionGuardrail.prohibited}. FORCED: ${motionGuardrail.forced}.`;
+      console.log('🛡️ [Video Guardrails] Aplicando para:', motionGuardrailKey);
+    }
+
     // Simplify prompt for Draft Video too
     let finalPrompt = "";
     if (quality === 'draft') {
-       finalPrompt = `HIGH FIDELITY PHYSICS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.`;
+       finalPrompt = `HIGH FIDELITY PHYSICS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
     } else {
-       finalPrompt = `HIGH FIDELITY PHYSICS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.`;
+       finalPrompt = `HIGH FIDELITY PHYSICS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
     }
 
     let operation = await ai.models.generateVideos({

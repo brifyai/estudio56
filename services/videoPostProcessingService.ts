@@ -1,6 +1,7 @@
 /**
  * Servicio de Post-Procesamiento de Video con FFmpeg.wasm
  * Añade marca de agua (logo) y texto dinámico a videos generados
+ * VERSIÓN MEJORADA - Con fuente confiable y mejor posicionamiento
  */
 
 import { FFmpeg } from '@ffmpeg/ffmpeg';
@@ -11,8 +12,12 @@ let ffmpeg: FFmpeg | null = null;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
 
-// URL de fuente Arial para drawtext
-const FONT_URL = 'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf';
+// Fuentes alternativas para drawtext ( Arial y fallback)
+const FONT_URLS = [
+  'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf',
+  'https://github.com/ffmpegwasm/testdata/raw/master/arial.ttf',
+  'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/arial.ttf'
+];
 
 /**
  * Verifica si SharedArrayBuffer está disponible (requerido para FFmpeg.wasm)
@@ -46,7 +51,9 @@ function escapeTextForFFmpeg(text: string): string {
     .replace(/,/g, "\\,")
     .replace(/\[/g, "\\[")
     .replace(/\]/g, "\\]")
-    .replace(/%/g, "\\%");
+    .replace(/%/g, "\\%")
+    .replace(/\n/g, " ")  // Eliminar saltos de línea
+    .replace(/\s+/g, " "); // Normalizar espacios
 }
 
 /**
@@ -62,6 +69,41 @@ async function verifyFileExists(ffmpeg: FFmpeg, filename: string): Promise<boole
     console.error(`❌ Archivo no existe: ${filename}`);
     return false;
   }
+}
+
+/**
+ * Descarga un archivo desde una URL con soporte CORS
+ */
+async function downloadFile(url: string): Promise<Uint8Array> {
+  const response = await fetch(url, {
+    mode: 'cors',
+    credentials: 'omit',
+  });
+  if (!response.ok) {
+    throw new Error(`Error descargando: ${response.statusText}`);
+  }
+  const blob = await response.blob();
+  const arrayBuffer = await blob.arrayBuffer();
+  return new Uint8Array(arrayBuffer);
+}
+
+/**
+ * Intenta descargar una fuente desde múltiples URLs
+ */
+async function downloadFont(): Promise<Uint8Array | null> {
+  for (const url of FONT_URLS) {
+    try {
+      console.log(`🔄 Intentando descargar fuente desde: ${url}`);
+      const fontData = await downloadFile(url);
+      if (fontData && fontData.length > 1000) {
+        console.log(`✅ Fuente descargada exitosamente: ${fontData.length} bytes`);
+        return fontData;
+      }
+    } catch (error) {
+      console.warn(`⚠️ Error descargando desde ${url}:`, error);
+    }
+  }
+  return null;
 }
 
 /**
@@ -114,15 +156,21 @@ export async function loadFFmpeg(
         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
       });
 
-      onProgress?.(60, 'Cargando fuente Arial...');
+      onProgress?.(60, 'Cargando fuente...');
       
-      // Cargar fuente Arial
+      // Cargar fuente con fallback
       try {
-        const fontData = await downloadFile(FONT_URL);
-        await ffmpeg.writeFile('arial.ttf', fontData);
-        console.log('✅ Fuente Arial cargada');
+        const fontData = await downloadFont();
+        if (fontData) {
+          await ffmpeg.writeFile('arial.ttf', fontData);
+          console.log('✅ Fuente cargada en FFmpeg');
+        } else {
+          // Si no se puede descargar, crear una fuente mínima
+          console.warn('⚠️ No se pudo descargar fuente, intentando crear fuente mínima...');
+          await createMinimalFont(ffmpeg);
+        }
       } catch (fontError) {
-        console.warn('⚠️ No se pudo cargar fuente Arial:', fontError);
+        console.warn('⚠️ Error con fuente, continuando sin texto:', fontError);
       }
 
       onProgress?.(100, 'Motor FFmpeg listo');
@@ -140,23 +188,38 @@ export async function loadFFmpeg(
 }
 
 /**
- * Descarga un archivo desde una URL con soporte CORS
+ * Crea una fuente mínima como fallback
  */
-async function downloadFile(url: string): Promise<Uint8Array> {
-  const response = await fetch(url, {
-    mode: 'cors',
-    credentials: 'omit',
-  });
-  if (!response.ok) {
-    throw new Error(`Error descargando: ${response.statusText}`);
+async function createMinimalFont(ffmpeg: FFmpeg): Promise<void> {
+  try {
+    // Intentar descargar desde otra fuente
+    const fallbackFonts = [
+      'https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Bold.ttf',
+      'https://raw.githubusercontent.com/googlefonts/noto/main/unhinted/ttf/NotoSans/NotoSans-Regular.ttf'
+    ];
+    
+    for (const url of fallbackFonts) {
+      try {
+        const fontData = await downloadFile(url);
+        if (fontData && fontData.length > 1000) {
+          await ffmpeg.writeFile('arial.ttf', fontData);
+          console.log('✅ Fuente fallback cargada');
+          return;
+        }
+      } catch (e) {
+        console.warn(`⚠️ Fallback font ${url} falló:`, e);
+      }
+    }
+    
+    console.warn('⚠️ No se pudo cargar ninguna fuente');
+  } catch (error) {
+    console.error('❌ Error creando fuente mínima:', error);
   }
-  const blob = await response.blob();
-  const arrayBuffer = await blob.arrayBuffer();
-  return new Uint8Array(arrayBuffer);
 }
 
 /**
  * Procesa un video añadiendo logo y texto
+ * VERSIÓN MEJORADA con mejor manejo de posición y errores
  */
 export async function processVideoWithOverlays(
   videoUrl: string,
@@ -210,8 +273,11 @@ export async function processVideoWithOverlays(
         console.log('📥 Descargando logo de:', logoUrl);
         const logoData = await downloadFile(logoUrl);
         console.log(`📥 Logo descargado: ${logoData.length} bytes`);
-        await ffmpeg!.writeFile('logo.png', logoData);
-        hasLogo = true;
+        
+        if (logoData.length > 100) {
+          await ffmpeg!.writeFile('logo.png', logoData);
+          hasLogo = true;
+        }
       } catch (logoError) {
         console.warn('⚠️ No se pudo cargar el logo:', logoError);
         hasLogo = false;
@@ -226,30 +292,35 @@ export async function processVideoWithOverlays(
     if (!videoOk) {
       throw new Error('El video no se descargó correctamente');
     }
-    
-    if (!fontOk) {
-      console.warn('⚠️ Fuente no disponible, el texto podría no aparecer');
-    }
 
     // Construir filter_complex para texto
     let textDrawFilter = '';
-    if (overlayText) {
+    let hasText = false;
+    
+    if (overlayText && overlayText.trim()) {
       onProgress?.(35, 'Preparando texto...');
       
-      const fontSize = textStyles.fontSize || 44;
+      const fontSize = textStyles.fontSize || 48;
       const textColor = textStyles.textColor || 'white';
       const bgColor = textStyles.backgroundColor || 'black@0.5';
       
       // Escapar texto
-      const escapedText = escapeTextForFFmpeg(overlayText);
+      const escapedText = escapeTextForFFmpeg(overlayText.trim());
       
-      // Posición dinámica basada en el tamaño del video
-      const xPos = `(${textPosition.x}*iw/100)`;
-      const yPos = `(${textPosition.y}*ih/100)`;
+      // Posición dinámica - CENTRAR EL TEXTO
+      // Usar (iw-text_w)/2 para centrar horizontalmente
+      const xPos = `(iw-text_w)/2`;  // Centrado horizontal
+      const yPos = `(${textPosition.y}*ih/100)`;  // Posición Y configurable
       
-      // Añadir texto con fuente
-      textDrawFilter = `drawtext=fontfile=arial.ttf:text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=10`;
+      // Añadir texto con fuente (solo si la fuente está disponible)
+      if (fontOk) {
+        textDrawFilter = `drawtext=fontfile=arial.ttf:text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=8`;
+      } else {
+        // Si no hay fuente, intentar sin fuente (usará fuente por defecto)
+        textDrawFilter = `drawtext=text='${escapedText}':fontsize=${fontSize}:fontcolor=${textColor}:x=${xPos}:y=${yPos}:box=1:boxcolor=${bgColor}:boxborderw=8`;
+      }
       
+      hasText = true;
       console.log('📝 Filter de texto:', textDrawFilter);
     }
 
@@ -260,21 +331,24 @@ export async function processVideoWithOverlays(
     let filterComplex = '';
     let hasOverlays = false;
     
-    if (hasLogo && overlayText) {
+    if (hasLogo && hasText) {
       // Logo + Texto
-      const logoX = '(main_w-180-30)';
-      const logoY = '30';
-      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=${logoX}:${logoY},${textDrawFilter}[out]`;
+      // Logo en esquina superior derecha
+      const logoX = '(main_w-200-20)';  // 20px desde el borde derecho
+      const logoY = '20';
+      
+      // Texto centrado horizontalmente
+      filterComplex = `[1:v]scale=200:-1[logo];[0:v][logo]overlay=${logoX}:${logoY},${textDrawFilter}[out]`;
       hasOverlays = true;
       console.log('🔧 Filter complejo: Logo + Texto');
     } else if (hasLogo) {
       // Solo logo
-      const logoX = '(main_w-180-30)';
-      const logoY = '30';
-      filterComplex = `[1:v]scale=180:-1[logo];[0:v][logo]overlay=${logoX}:${logoY}[out]`;
+      const logoX = '(main_w-200-20)';
+      const logoY = '20';
+      filterComplex = `[1:v]scale=200:-1[logo];[0:v][logo]overlay=${logoX}:${logoY}[out]`;
       hasOverlays = true;
       console.log('🔧 Filter complejo: Solo Logo');
-    } else if (overlayText) {
+    } else if (hasText) {
       // Solo texto
       filterComplex = `[0:v]${textDrawFilter}[out]`;
       hasOverlays = true;
@@ -289,10 +363,11 @@ export async function processVideoWithOverlays(
       ...(hasOverlays ? ['-map', '[out]'] : []),
       '-map', '0:a?',
       '-c:v', 'libx264',
-      '-preset', 'superfast',
+      '-preset', 'ultrafast',  // Más rápido que superfast
       '-crf', '23',
       '-threads', threads.toString(),
       '-c:a', 'copy',
+      '-movflags', '+faststart',  // Optimizado para web
       'output.mp4'
     ];
 
@@ -303,6 +378,7 @@ export async function processVideoWithOverlays(
     }
 
     console.log('🎬 Ejecutando FFmpeg con', args.length, 'argumentos');
+    console.log('🎬 Args:', args.join(' '));
 
     onProgress?.(50, 'Procesando video...');
 
@@ -311,12 +387,25 @@ export async function processVideoWithOverlays(
 
     onProgress?.(95, 'Finalizando...');
 
+    // Verificar que el output existe
+    const outputOk = await verifyFileExists(ffmpeg!, 'output.mp4');
+    if (!outputOk) {
+      throw new Error('El procesamiento no generó salida');
+    }
+
     // Leer resultado
     const data = await ffmpeg!.readFile('output.mp4');
     const blob = new Blob([data], { type: 'video/mp4' });
+    
+    // Verificar que el blob tiene contenido
+    if (blob.size < 1000) {
+      throw new Error('El video procesado está vacío');
+    }
+    
     const resultUrl = URL.createObjectURL(blob);
 
     onProgress?.(100, '¡Video procesado exitosamente!');
+    console.log('✅ Video procesado:', blob.size, 'bytes');
 
     // Limpiar
     try {
