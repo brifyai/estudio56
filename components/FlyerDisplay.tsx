@@ -1430,33 +1430,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     }
     const textShadowValue = shadows.length > 0 ? shadows.join(', ') : undefined;
 
-    // Manejar touch start - SIN haptic feedback para evitar crashes
-    const handleTextTouchStartWithHaptic = useCallback((e: React.TouchEvent) => {
-      setIsTextTouching(true);
-      
-      if (isComparisonDraft) return;
-      
-      if (e.touches.length === 1) {
-        // Un dedo: arrastrar
-        e.preventDefault();
-        const touch = e.touches[0];
-        handleMouseDown({
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          preventDefault: () => {},
-          stopPropagation: () => {},
-        } as any);
-      }
-      // Dos dedos: gestos pinch/rotate
-      handleTextTouchStart(e);
-    }, [isComparisonDraft, handleMouseDown, handleTextTouchStart]);
-
-    // Manejar touch end
-    const handleTextTouchEndWithHaptic = useCallback(() => {
-      setIsTextTouching(false);
-      handleTextTouchEnd();
-    }, [handleTextTouchEnd]);
-
     return (
       <div
         style={{
@@ -1497,9 +1470,27 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           filter: displayStyles.effects.glow ? `drop-shadow(0 0 ${scaledGlowBlur}px ${displayStyles.textColor})` : undefined,
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
-        onTouchStart={handleTextTouchStartWithHaptic}
+        onTouchStart={(e) => {
+          setIsTextTouching(true);
+          if (!isComparisonDraft) {
+            if (e.touches.length === 1) {
+              e.preventDefault();
+              const touch = e.touches[0];
+              handleMouseDown({
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                preventDefault: () => {},
+                stopPropagation: () => {},
+              } as any);
+            }
+            handleTextTouchStart(e);
+          }
+        }}
         onTouchMove={isComparisonDraft ? undefined : handleTextTouchMove}
-        onTouchEnd={handleTextTouchEndWithHaptic}
+        onTouchEnd={() => {
+          setIsTextTouching(false);
+          handleTextTouchEnd();
+        }}
       >
         {/* Indicador visual de que es editable - visible en mobile y cuando se toca */}
         <span
