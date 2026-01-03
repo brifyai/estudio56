@@ -1365,7 +1365,8 @@ const handleGenerate = async () => {
 
           <div className={`
             w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
-            ${mobileViewMode === 'preview' ? 'flex' : 'hidden md:flex'}
+            ${mobileViewMode === 'preview' ? 'flex' : 'hidden'}
+            md:flex
           `}>
              
              {/* Top Bar */}
