@@ -39,6 +39,18 @@ const Dashboard: React.FC = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   
+  // Block body scroll when calendar overlay is open on mobile
+  useEffect(() => {
+    if (showCalendar && window.innerWidth < 768) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showCalendar]);
+  
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
   
@@ -1399,7 +1411,7 @@ const handleGenerate = async () => {
       `}>
         {/* Overlay background solo en mobile */}
         <div
-          className="absolute inset-0 bg-black/80 md:hidden"
+          className="absolute inset-0 bg-black/80 md:hidden touch-none"
           onClick={() => setShowCalendar(false)}
         />
         <div className={`glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 ${showCalendar ? 'scale-100' : 'scale-95'} md:scale-100 md:max-h-full md:h-full transition-transform duration-300`}>
