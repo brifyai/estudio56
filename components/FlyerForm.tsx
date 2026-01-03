@@ -776,7 +776,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Tipo de contenido</label>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {/* IMAGEN IA */}
             <button
               onClick={() => {
