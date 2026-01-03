@@ -1321,9 +1321,11 @@ export const generateFlyerImage = async (
   let autoTextValidation: ValidationResult | undefined;
   let enhancedStyles: any;
 
-  if (enableIntelligentTextStyles) {
+  // OPTIMIZACIÓN: Solo hacer análisis inteligentes para HD, no para borradores
+  // Los análisis añaden ~30-40 segundos innecesarios para un borrador
+  if (enableIntelligentTextStyles && quality === 'hd') {
     try {
-      console.log("🎨 Iniciando análisis completo de imagen...");
+      console.log("🎨 [HD] Iniciando análisis completo de imagen...");
       
       // 1. Análisis básico de imagen (usar imagen corregida si es necesario)
       imageAnalysis = await analyzeImageForTextStyle(correctedImageUrl);
@@ -1375,7 +1377,7 @@ export const generateFlyerImage = async (
           ].join(' ')
         };
         
-        console.log("✅ Análisis completo finalizado:", {
+        console.log("✅ [HD] Análisis completo finalizado:", {
           imageAnalysis,
           contextualTypography,
           contrastAnalysis,
@@ -1386,7 +1388,7 @@ export const generateFlyerImage = async (
         });
       }
     } catch (analysisError) {
-      console.warn("⚠️ Error en análisis inteligente, continuando con análisis básico:", analysisError);
+      console.warn("⚠️ [HD] Error en análisis inteligente, continuando con análisis básico:", analysisError);
       
       // Fallback a análisis básico
       try {
@@ -1398,9 +1400,11 @@ export const generateFlyerImage = async (
           };
         }
       } catch (basicError) {
-        console.warn("⚠️ Error en análisis básico también:", basicError);
+        console.warn("⚠️ [HD] Error en análisis básico también:", basicError);
       }
     }
+  } else if (quality === 'draft') {
+    console.log("⚡ [Draft] Saltando análisis inteligente para generación rápida de borrador");
   }
 
   return {
