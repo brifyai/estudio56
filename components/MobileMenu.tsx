@@ -27,6 +27,21 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  // Helper function to format plan name
+  const formatPlanName = (plan: string): string => {
+    const planMap: Record<string, string> = {
+      'GRATIS': 'Gratis',
+      'AGENCIA': 'Agencia',
+      'PRO': 'Pro',
+      'BASICO': 'Básico',
+      'EMPRESA': 'Empresa',
+      'CORPORATIVO': 'Corporativo',
+      'STARTUP': 'Startup',
+      'UNIVERSITY': 'University'
+    };
+    return planMap[plan] || plan.charAt(0).toUpperCase() + plan.slice(1).toLowerCase();
+  };
+
   const menuItems = [
     {
       icon: '🎨',
@@ -125,7 +140,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           >
             <div className={`w-2 h-2 rounded-full ${activePlan === 'GRATIS' ? 'bg-gray-500' : 'bg-yellow-400 animate-pulse'}`}></div>
             <div className="flex-1 text-left">
-              <div className="text-sm font-medium">{activePlan}</div>
+              <div className="text-sm font-medium">{formatPlanName(activePlan)}</div>
               <div className="text-xs text-white/50">Tu plan</div>
             </div>
             <svg className="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">

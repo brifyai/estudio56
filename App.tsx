@@ -42,6 +42,21 @@ const Dashboard: React.FC = () => {
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
   
+  // Helper function to format plan name
+  const formatPlanName = (plan: string): string => {
+    const planMap: Record<string, string> = {
+      'GRATIS': 'Gratis',
+      'AGENCIA': 'Agencia',
+      'PRO': 'Pro',
+      'BASICO': 'Básico',
+      'EMPRESA': 'Empresa',
+      'CORPORATIVO': 'Corporativo',
+      'STARTUP': 'Startup',
+      'UNIVERSITY': 'University'
+    };
+    return planMap[plan] || plan.charAt(0).toUpperCase() + plan.slice(1).toLowerCase();
+  };
+  
   // App State
   const [styleKey, setStyleKey] = useState<FlyerStyleKey>('retail_sale');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
@@ -1180,7 +1195,7 @@ const handleGenerate = async () => {
                       className="flex items-center gap-1 h-7 px-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30"
                     >
                         <span className={`w-1.5 h-1.5 rounded-full ${activePlan === 'GRATIS' ? 'bg-gray-500' : 'bg-yellow-400 animate-pulse'}`}></span>
-                        <span className="text-[10px]">{activePlan}</span>
+                        <span className="text-[10px]">{formatPlanName(activePlan)}</span>
                     </button>
                 </div>
             </div>
