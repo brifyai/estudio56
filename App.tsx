@@ -1163,7 +1163,7 @@ const handleGenerate = async () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-auto md:h-screen w-full bg-[#030303] text-white overflow-visible md:overflow-hidden font-sans selection:bg-blue-500/30 relative min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen w-full bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
       
       {/* BACKGROUND AMBIENCE */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -1172,8 +1172,8 @@ const handleGenerate = async () => {
       </div>
 
       {/* LEFT PANEL: CONTROLS */}
-      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-auto md:h-full p-2 md:p-4 overflow-visible">
-        <div className="glass-panel rounded-xl md:rounded-[2rem] h-auto md:h-full flex flex-col shadow-2xl overflow-visible relative">
+      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-screen md:h-full p-2 md:p-4 overflow-hidden">
+        <div className="glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
             
             {/* Header */}
             <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5 z-20 relative">
@@ -1227,7 +1227,7 @@ const handleGenerate = async () => {
             </div>
 
             {/* Form Container - Scroll container con padding-bottom para footer */}
-            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 pb-24 md:pb-6">
+            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto pb-24 md:pb-6">
                 <FlyerForm
                     styleKey={styleKey}
                     aspectRatio={aspectRatio}
