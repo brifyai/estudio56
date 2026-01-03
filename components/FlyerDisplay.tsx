@@ -1578,58 +1578,217 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         )}
         
-        {/* CONTENEDOR UNIFICADO - Mismo tamaño para todas las vistas en mobile */}
-        <div
-          id="flyer-container-unified"
-          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container
-            ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
-              aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
-              aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
-              'w-[280px] h-[498px]'}`}
-        >
-          <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-            {/* Determinar si necesita CORS - blob URLs no lo necesitan */}
-            {(() => {
-              const needsCors = imageUrl && !imageUrl.startsWith('blob:');
-              const videoSrc = imageUrl && isVideoUrl(imageUrl);
-              
-              if (videoSrc) {
-                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
+        {/* VISTA MOBILE - Proporciones originales de mobile */}
+        {viewMode === 'mobile' && !showComparison && (
+          <div
+            id="flyer-container-mobile"
+            className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container
+              ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
+                aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
+                aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
+                'w-[280px] h-[498px]'}`}
+          >
+            <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
+              {(() => {
+                const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+                const videoSrc = imageUrl && isVideoUrl(imageUrl);
+                
+                if (videoSrc) {
+                  if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
+                    return renderMediaPlaceholder();
+                  }
+                  return (
+                    <video
+                      src={imageUrl}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      crossOrigin={needsCors ? "anonymous" : undefined}
+                      onError={(e) => handleMediaError(e, 'video')}
+                    />
+                  );
+                }
+                
+                if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
                   return renderMediaPlaceholder();
                 }
+                
                 return (
-                  <video
+                  <img
                     src={imageUrl}
+                    alt="Generated Content"
                     className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
                     crossOrigin={needsCors ? "anonymous" : undefined}
-                    onError={(e) => handleMediaError(e, 'video')}
+                    onError={(e) => handleMediaError(e, 'image')}
                   />
                 );
-              }
-              
-              if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
-                return renderMediaPlaceholder();
-              }
-              
-              return (
-                <img
-                  src={imageUrl}
-                  alt="Generated Content"
-                  className="w-full h-full object-cover"
-                  crossOrigin={needsCors ? "anonymous" : undefined}
-                  onError={(e) => handleMediaError(e, 'image')}
-                />
-              );
-            })()}
-            {renderLogo()}
-            {renderProduct()}
-            {renderText()}
+              })()}
+              {renderLogo()}
+              {renderProduct()}
+              {renderText()}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* VISTA TABLET - Proporciones de tablet escaladas al contenedor de 280px */}
+        {viewMode === 'tablet' && !showComparison && (
+          <div
+            className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container
+              ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
+                aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
+                'w-[280px] h-[498px]'}`}
+          >
+            <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target flex items-center justify-center">
+              {/* Contenedor interno con proporciones de tablet (420px) escalado a 280px */}
+              <div
+                className="relative bg-black overflow-hidden"
+                style={{
+                  width: aspectRatio === '9:16' ? '280px' : aspectRatio === '1:1' ? '280px' : '280px',
+                  height: aspectRatio === '9:16' ? '498px' : aspectRatio === '1:1' ? '280px' : '350px',
+                }}
+              >
+                {(() => {
+                  const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+                  const videoSrc = imageUrl && isVideoUrl(imageUrl);
+                  
+                  if (videoSrc) {
+                    return (
+                      <video
+                        src={imageUrl}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        crossOrigin={needsCors ? "anonymous" : undefined}
+                      />
+                    );
+                  }
+                  
+                  return (
+                    <img
+                      src={imageUrl}
+                      alt="Generated Content"
+                      className="w-full h-full object-cover"
+                      crossOrigin={needsCors ? "anonymous" : undefined}
+                    />
+                  );
+                })()}
+                {/* Logo y texto escalados proporcionalmente */}
+                {renderLogo()}
+                {renderProduct()}
+                {renderText()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VISTA DESKTOP - Proporciones de desktop escaladas al contenedor de 280px */}
+        {viewMode === 'desktop' && (
+          <div className="flex justify-center items-center w-full">
+            <div className="relative">
+              <div className="absolute inset-0 bg-black/20 rounded-2xl blur-xl transform translate-y-4 scale-105"></div>
+              <div className="relative">
+                {/* MacBook frame */}
+                <div className="relative rounded-t-2xl border-4 border-gray-700 shadow-2xl overflow-hidden w-[280px] h-[200px]">
+                  <div className="absolute inset-0 rounded-t-2xl overflow-hidden bg-black">
+                    <div className="w-full h-full flex items-center justify-center">
+                      {/* Contenedor interno con proporciones de desktop escalado */}
+                      <div
+                        className="relative rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden"
+                        style={{
+                          width: aspectRatio === '9:16' ? '140px' : aspectRatio === '1:1' ? '140px' : '140px',
+                          height: aspectRatio === '9:16' ? '249px' : aspectRatio === '1:1' ? '140px' : '175px',
+                        }}
+                      >
+                        <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
+                          {(() => {
+                            const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+                            const videoSrc = imageUrl && isVideoUrl(imageUrl);
+                            
+                            if (videoSrc) {
+                              return (
+                                <video
+                                  src={imageUrl}
+                                  className="w-full h-full object-cover"
+                                  autoPlay
+                                  muted
+                                  loop
+                                  playsInline
+                                  crossOrigin={needsCors ? "anonymous" : undefined}
+                                />
+                              );
+                            }
+                            
+                            return (
+                              <img
+                                src={imageUrl}
+                                alt="Generated Content"
+                                className="w-full h-full object-cover"
+                                crossOrigin={needsCors ? "anonymous" : undefined}
+                              />
+                            );
+                          })()}
+                          {renderLogo()}
+                          {renderProduct()}
+                          {renderText()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* MacBook base */}
+                <div className="w-[180px] h-4 bg-gradient-to-b from-gray-600 to-gray-800 rounded-b-xl border-x-4 border-b-4 border-gray-700 relative mx-auto"></div>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-[6px] text-gray-500 font-mono">Estudio 56</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VISTA CRUDO - Proporciones originales sin marco */}
+        {viewMode === 'clean' && (
+          <div
+            className={`relative shadow-2xl rounded-sm overflow-hidden border border-white/5 flex items-center justify-center bg-black flyer-download-container
+              ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
+                aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
+                'w-[280px] h-[498px]'}`}
+          >
+            <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
+              {(() => {
+                const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+                const videoSrc = imageUrl && isVideoUrl(imageUrl);
+                
+                if (videoSrc) {
+                  return (
+                    <video
+                      src={imageUrl}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      crossOrigin={needsCors ? "anonymous" : undefined}
+                    />
+                  );
+                }
+                
+                return (
+                  <img
+                    src={imageUrl}
+                    alt="Generated Content"
+                    className="w-full h-full object-cover"
+                    crossOrigin={needsCors ? "anonymous" : undefined}
+                  />
+                );
+              })()}
+              {renderLogo()}
+              {renderProduct()}
+              {renderText()}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* UI DE PROGRESO DE PROCESAMIENTO DE VIDEO */}
