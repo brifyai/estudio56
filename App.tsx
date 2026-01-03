@@ -1304,8 +1304,8 @@ const handleGenerate = async () => {
       </aside>
 
       {/* CENTER: CANVAS */}
-      <main className="flex-1 flex flex-col relative z-10 p-2 md:p-4 pl-0">
-         <div className="w-full h-full rounded-xl md:rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
+      <main className="flex-1 flex flex-col relative z-10 p-2 md:p-4 pl-0 overflow-hidden">
+          <div className="w-full h-full rounded-xl md:rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative">
              
              {/* Top Bar */}
              <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-white/5">
