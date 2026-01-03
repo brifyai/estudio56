@@ -1415,7 +1415,7 @@ const handleGenerate = async () => {
              </header>
 
             {/* Viewport */}
-            <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 w-full">
+            <div className="flex-1 overflow-hidden relative flex items-start justify-start bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 w-full pt-4">
                 {/* Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
