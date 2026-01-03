@@ -1,6 +1,5 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Cross-Origin-Opener-Policy = "same-origin"
-    Cross-Origin-Embedder-Policy = "require-corp"
-    Content-Security-Policy = "default-src 'self' https://api.chutes.ai; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.chutes.ai https://api.supabase.co wss:; media-src 'self' blob: https:; frame-src 'self' https:;"
+    Cross-Origin-Opener-Policy: same-origin
+    Cross-Origin-Embedder-Policy: require-corp
