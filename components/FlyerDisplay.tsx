@@ -100,6 +100,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   
+  // Estado para mostrar/ocultar controles de texto en mobile
+  const [showTextControls, setShowTextControls] = useState(false);
+  const [isDraggingText, setIsDraggingText] = useState(false);
+  
   const flyerContainerRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -1423,6 +1427,44 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     }
     const textShadowValue = shadows.length > 0 ? shadows.join(', ') : undefined;
 
+    // Estado para tracking de touch y haptic feedback
+    const [isTouching, setIsTouching] = useState(false);
+
+    // Función para haptic feedback
+    const triggerHaptic = useCallback(() => {
+      if (navigator.vibrate) {
+        navigator.vibrate(10); // Vibración corta de 10ms
+      }
+    }, []);
+
+    // Manejar touch start con haptic feedback
+    const handleTextTouchStartWithHaptic = useCallback((e: React.TouchEvent) => {
+      setIsTouching(true);
+      triggerHaptic();
+      
+      if (isComparisonDraft) return;
+      
+      if (e.touches.length === 1) {
+        // Un dedo: arrastrar
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleMouseDown({
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          preventDefault: () => {},
+          stopPropagation: () => {},
+        } as any);
+      }
+      // Dos dedos: gestos pinch/rotate
+      handleTextTouchStart(e);
+    }, [isComparisonDraft, handleMouseDown, handleTextTouchStart, triggerHaptic]);
+
+    // Manejar touch end
+    const handleTextTouchEndWithHaptic = useCallback(() => {
+      setIsTouching(false);
+      handleTextTouchEnd();
+    }, [handleTextTouchEnd]);
+
     return (
       <div
         style={{
@@ -1463,26 +1505,33 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           filter: displayStyles.effects.glow ? `drop-shadow(0 0 ${scaledGlowBlur}px ${displayStyles.textColor})` : undefined,
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
-        onTouchStart={isComparisonDraft ? undefined : ((e) => {
-          if (e.touches.length === 1) {
-            // Un dedo: arrastrar
-            e.preventDefault();
-            const touch = e.touches[0];
-            handleMouseDown({
-              clientX: touch.clientX,
-              clientY: touch.clientY,
-              preventDefault: () => {},
-              stopPropagation: () => {},
-            } as any);
+        onMouseEnter={() => {
+          // Haptic feedback en hover para desktop
+          if (!isComparisonDraft && navigator.vibrate) {
+            navigator.vibrate(5);
           }
-          // Dos dedos: gestos pinch/rotate
-          handleTextTouchStart(e);
-        })}
+        }}
+        onTouchStart={handleTextTouchStartWithHaptic}
         onTouchMove={isComparisonDraft ? undefined : handleTextTouchMove}
-        onTouchEnd={isComparisonDraft ? undefined : handleTextTouchEnd}
+        onTouchEnd={handleTextTouchEndWithHaptic}
       >
-        {/* Indicador visual de que es editable - solo visible en mobile */}
-        <span className="lg:hidden absolute inset-0 -m-3 border-2 border-dashed border-white/40 rounded-lg opacity-60 pointer-events-none" />
+        {/* Indicador visual de que es editable - visible en mobile y cuando se toca */}
+        <span
+          className={`
+            lg:hidden absolute inset-0 -m-4 border-2 border-dashed rounded-lg pointer-events-none transition-all duration-150
+            ${isTouching
+              ? 'border-blue-400 bg-blue-400/10 opacity-80 scale-105'
+              : 'border-white/40 opacity-50'
+            }
+          `}
+          style={{ margin: '-16px' }}
+        />
+        {/* Handle visual de arrastre cuando se toca */}
+        {isTouching && (
+          <span className="lg:hidden absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap pointer-events-none animate-bounce">
+            👆 Arrastra aquí
+          </span>
+        )}
         {displayText}
       </div>
     );
@@ -1638,7 +1687,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       )}
 
       {/* CANVAS - Padding aumentado arriba para que los botones no tapen la imagen */}
-      <div className="flex-1 w-full flex flex-col items-center justify-start px-2 md:px-0 pt-8 md:py-12 relative z-0">
+      <div className="flex-1 w-full flex flex-col items-center justify-start px-2 md:px-0 pt-2 md:py-12 relative z-0">
         {/* VIDEO COMPARISON MODE - SIDE BY SIDE */}
         {showVideoComparison && !isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
           <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
@@ -1816,6 +1865,120 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             {renderLogo()}
             {renderProduct()}
             {renderText()}
+            
+            {/* BOTÓN FLOTANTE PARA MOVER TEXTO - Solo visible en mobile */}
+            <div className="lg:hidden absolute bottom-4 right-4 z-[150]">
+              <button
+                onClick={() => setShowTextControls(!showTextControls)}
+                className={`
+                  w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200
+                  ${showTextControls
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/10 backdrop-blur text-white border border-white/20'
+                  }
+                `}
+                aria-label="Controles de texto"
+              >
+                <span className="text-xl">✏️</span>
+              </button>
+              
+              {/* Menú desplegable de controles de texto */}
+              {showTextControls && (
+                <div className="absolute bottom-14 right-0 bg-black/90 backdrop-blur-xl rounded-xl p-3 border border-white/20 shadow-xl min-w-[160px]">
+                  <div className="text-[10px] text-white/50 mb-2 font-mono uppercase tracking-wider">Texto</div>
+                  
+                  {/* Botón para activar edición de texto */}
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setTimeout(() => textAreaRef.current?.focus(), 100);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 text-white text-xs transition-colors"
+                  >
+                    <span>📝</span>
+                    <span>Editar texto</span>
+                  </button>
+                  
+                  {/* Botón para mover texto con modo dedicado */}
+                  <button
+                    onClick={() => {
+                      setIsDraggingText(true);
+                      setShowTextControls(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 text-white text-xs transition-colors"
+                  >
+                    <span>👆</span>
+                    <span>Mover texto</span>
+                  </button>
+                  
+                  {/* Indicador de posición actual */}
+                  <div className="mt-2 pt-2 border-t border-white/10">
+                    <div className="text-[10px] text-white/40 font-mono">
+                      Pos: {Math.round(textPosition.x)}%, {Math.round(textPosition.y)}%
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* MODO DEDICADO PARA MOVER TEXTO - Overlay que cubre toda la imagen */}
+            {isDraggingText && (
+              <div
+                className="absolute inset-0 z-[140] bg-black/50 backdrop-blur-sm flex items-center justify-center"
+                onClick={() => setIsDraggingText(false)}
+                onTouchMove={(e) => {
+                  // Manejar arrastre del texto mientras está activo el modo
+                  const touch = e.touches[0];
+                  const container = flyerContainerRef.current;
+                  if (container) {
+                    const rect = container.getBoundingClientRect();
+                    const newX = ((touch.clientX - rect.left) / rect.width) * 100;
+                    const newY = ((touch.clientY - rect.top) / rect.height) * 100;
+                    const clampedX = Math.max(5, Math.min(95, newX));
+                    const clampedY = Math.max(5, Math.min(95, newY));
+                    if (setTextPosition) {
+                      setTextPosition({ x: clampedX, y: clampedY });
+                    }
+                  }
+                }}
+                onTouchEnd={() => setIsDraggingText(false)}
+              >
+                {/* Instrucciones */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500/90 backdrop-blur text-white text-xs px-4 py-2 rounded-xl font-mono animate-pulse">
+                  👆 Toca donde quieres el texto
+                </div>
+                
+                {/* Preview del texto en la posición actual */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${textPosition.x}%`,
+                    top: `${textPosition.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    fontFamily: displayStyles.fontFamily,
+                    fontSize: `${displayStyles.fontSize}px`,
+                    fontWeight: displayStyles.fontWeight,
+                    color: displayStyles.textColor,
+                    textShadow: displayStyles.effects.shadow ? '2px 2px 4px rgba(0,0,0,0.8)' : undefined,
+                    pointerEvents: 'none',
+                    zIndex: 150,
+                  }}
+                >
+                  {localText || overlayText || initialOverlayText || 'Texto'}
+                </div>
+                
+                {/* Botón de cerrar */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDraggingText(false);
+                  }}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500/80 backdrop-blur text-white text-xs px-6 py-3 rounded-xl font-mono"
+                >
+                  ✕ Listo
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
