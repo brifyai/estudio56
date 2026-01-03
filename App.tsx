@@ -1214,8 +1214,8 @@ const handleGenerate = async () => {
                 </div>
             </div>
 
-            {/* Form Container - Solo este contenedor debe hacer scroll */}
-            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0">
+            {/* Form Container - Scroll container con padding-bottom para footer */}
+            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 pb-6">
                 <FlyerForm
                     styleKey={styleKey}
                     aspectRatio={aspectRatio}
@@ -1288,8 +1288,8 @@ const handleGenerate = async () => {
                 )}
             </div>
             
-            {/* Minimal Footer - Siempre visible */}
-            <div className="flex-shrink-0 p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono">
+            {/* Minimal Footer - Con z-index apropiado y safe-area */}
+            <div className="footer-legal flex-shrink-0 p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono pb-safe">
                 <div className="flex gap-2">
                     <span>V2.0.0_ESTABLE</span>
                 </div>
@@ -1315,7 +1315,7 @@ const handleGenerate = async () => {
                 </div>
             </div>
         </div>
-      </aside>
+    </aside>
 
       {/* CENTER: CANVAS */}
       <main className="flex-1 flex flex-col relative z-10 p-2 md:p-4 pl-0 overflow-hidden">
@@ -1391,8 +1391,9 @@ const handleGenerate = async () => {
       </main>
 
       {/* RIGHT PANEL: CALENDAR - Full height on mobile, sidebar on desktop */}
-      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px]' : 'w-0'} flex-shrink-0 flex flex-col z-50 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300 ${showCalendar ? 'visible' : 'invisible'}`}>
-        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative ${showCalendar ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Cambiado de 'invisible' a 'opacity-0 pointer-events-none' para mejor rendimiento en mobile */}
+      <aside className={`${showCalendar ? 'w-[280px] md:w-[280px] opacity-100 pointer-events-auto' : 'w-0 opacity-0 pointer-events-none'} flex-shrink-0 flex flex-col z-50 h-full py-2 pr-2 md:py-4 md:pr-4 transition-all duration-300`}>
+        <div className={`glass-panel rounded-xl h-full flex flex-col shadow-2xl overflow-hidden relative`}>
           {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-3 border-b border-white/10">
             <span className="text-xs font-bold">Calendario</span>

@@ -11,6 +11,8 @@
     height: 100%;
     width: 100%;
     -webkit-overflow-scrolling: touch;
+    /* Safe area para iOS */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   
   #root {
@@ -28,6 +30,8 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     touch-action: pan-y;
+    /* Safe area para iOS */
+    padding-bottom: env(safe-area-inset-bottom, 20px);
   }
   
   /* Panel scroll con containment */
@@ -36,6 +40,24 @@
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  
+  /* Footer con z-index apropiado */
+  .footer-legal {
+    z-index: 10;
+    position: relative;
+    flex-shrink: 0;
+  }
+  
+  /* Padding bottom seguro para mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  
+  /* Padding bottom generoso para evitar overflow */
+  .pb-24 {
+    padding-bottom: 6rem;
   }
 }
 

@@ -1523,32 +1523,43 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 'w-[280px] h-[498px] sm:w-[320px] sm:h-[569px]'}`}
           >
             <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-              {imageUrl && isVideoUrl(imageUrl) ? (
-                mediaError?.type === 'video' && mediaError.url === imageUrl ? (
-                  renderMediaPlaceholder()
-                ) : (
-                  <video
+              {/* Determinar si necesita CORS - blob URLs no lo necesitan */}
+              {(() => {
+                const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+                const videoSrc = imageUrl && isVideoUrl(imageUrl);
+                
+                if (videoSrc) {
+                  if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
+                    return renderMediaPlaceholder();
+                  }
+                  return (
+                    <video
+                      src={imageUrl}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      crossOrigin={needsCors ? "anonymous" : undefined}
+                      onError={(e) => handleMediaError(e, 'video')}
+                    />
+                  );
+                }
+                
+                if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
+                  return renderMediaPlaceholder();
+                }
+                
+                return (
+                  <img
                     src={imageUrl}
+                    alt="Generated Content"
                     className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    crossOrigin="anonymous"
-                    onError={(e) => handleMediaError(e, 'video')}
+                    crossOrigin={needsCors ? "anonymous" : undefined}
+                    onError={(e) => handleMediaError(e, 'image')}
                   />
-                )
-              ) : mediaError?.type === 'image' && mediaError.url === imageUrl ? (
-                renderMediaPlaceholder()
-              ) : (
-                <img
-                  src={imageUrl}
-                  alt="Generated Content"
-                  className="w-full h-full object-cover"
-                  crossOrigin="anonymous"
-                  onError={(e) => handleMediaError(e, 'image')}
-                />
-              )}
+                );
+              })()}
               {renderLogo()}
               {renderProduct()}
               {renderText()}
