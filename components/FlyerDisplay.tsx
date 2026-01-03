@@ -1389,7 +1389,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     <div className="relative w-full h-full flex flex-col items-center justify-center animate-fade-in">
       {/* CONTROLS - Ocultar durante comparación, posicionado arriba sin tapar imagen */}
       {!showComparison && (
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute -top-12 sm:-top-16 left-1/2 -translate-x-1/2 z-50">
           <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-1">
             <div className="flex items-center gap-1">
               <button onClick={() => setViewMode('mobile')} className={`px-4 py-2 rounded-xl text-[12px] font-bold ${viewMode === 'mobile' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>📱 MÓVIL</button>
