@@ -581,6 +581,224 @@ export const FLYER_STYLES: Record<FlyerStyleKey, FlyerStyleConfig> = {
     video_motion: "Security camera panning slowly, digital HUD overlay, night vision transition.",
     example: "Seguridad 'ProtecHome': Sistemas de alarma y cámaras de seguridad 24/7.",
     previewUrl: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // --- NUEVOS ESTILOS 41-60 (2026) ---
+
+  // 41. Sushi & Nikkei
+  sushi_nikkei: {
+    label: "Sushi & Nikkei",
+    category: "COMERCIO",
+    tags: ["Sushi", "Japanese", "Minimalist"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Minimalist zen plating. Background: Fresh salmon textures, slate plates, chopsticks, Japanese aesthetic. Details: Clean presentation, artistic arrangement, fresh ingredients. Vibe: Minimalist, elegant, authentic Japanese cuisine.",
+    visualDescription: "Presentación minimalista zen de sushi con platos de pizarra.",
+    video_motion: "Precise knife cutting fish, smooth presentation movement.",
+    example: "Sushi Bar 'Zen': Salmón fresco y nigiri artesanal.",
+    previewUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 42. Pizzería
+  pizzeria: {
+    label: "Pizzería",
+    category: "COMERCIO",
+    tags: ["Pizza", "Italian", "Warm"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Pizza coming out of stone oven. Background: Melting mozzarella, charred crust, warm rustic atmosphere. Details: Golden cheese stretch, wood-fired oven, authentic Italian. Vibe: Warm, rustic, appetizing traditional pizzeria.",
+    visualDescription: "Pizza saliendo del horno de piedra con mozzarella derritiéndose.",
+    video_motion: "Cheese stretching when pulling pizza slice, oven heat glow.",
+    example: "Pizzaría 'Napoli': Pizza napolitana horneada en leña.",
+    previewUrl: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 43. Heladería
+  ice_cream: {
+    label: "Heladería",
+    category: "COMERCIO",
+    tags: ["Ice Cream", "Summer", "Creamy"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Creamy ice cream scoops. Background: Waffle cones, cold vapor, macro food photography, summer vibe. Details: Smooth texture, vibrant colors, cold refreshment. Vibe: Fun, refreshing, summer treat.",
+    visualDescription: "Bolas de helado cremoso en cono de wafla con vapor frío.",
+    video_motion: "Creamy ice cream dripping slowly, cold vapor rising.",
+    example: "Heladería 'Sweet Cream': Helados artesanales con toppings ilimitados.",
+    previewUrl: "https://images.unsplash.com/photo-1560008581-09826d1de69e?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 44. Nail Studio
+  nail_studio: {
+    label: "Nail Studio",
+    category: "SALUD",
+    tags: ["Nails", "Beauty", "Clean"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Close-up of manicured hands. Background: Nail art, vibrant polish, modern salon desk, clean aesthetic. Details: Perfect cuticles, glossy finish, creative designs. Vibe: Clean, professional, beauty focused.",
+    visualDescription: "Manos con uñas manicuradas y arte de uñas en estudio moderno.",
+    video_motion: "Light reflection sliding over polished nail, precise brush movement.",
+    example: "Nail Studio 'Glamour': Manicure profesional y diseños personalizados.",
+    previewUrl: "https://images.unsplash.com/photo-1632345031635-7b80009a6401?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 45. Tattoo Studio
+  tattoo_studio: {
+    label: "Tattoo Studio",
+    category: "SERVICIOS",
+    tags: ["Tattoo", "Art", "Urban"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Tattoo artist working. Background: Sterile equipment, ink bottles, dramatic lighting, urban edgy vibe. Details: Precision work, clean needles, artistic process. Vibe: Edgy, artistic, professional tattooing.",
+    visualDescription: "Artista de tatuajes trabajando con equipamiento estéril.",
+    video_motion: "Tattoo needle with ink detail macro, precise machine movement.",
+    example: "Tattoo Studio 'Ink Art': Tatuajes personalizados con artistas profesionales.",
+    previewUrl: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 46. Yoga Studio
+  yoga_studio: {
+    label: "Yoga Studio",
+    category: "LIFESTYLE",
+    tags: ["Yoga", "Wellness", "Peaceful"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Person in yoga pose. Background: Yoga mats, zen minimalist studio, soft natural light, peaceful atmosphere. Details: Calm expression, balanced posture, serene environment. Vibe: Peaceful, balanced, wellness focused.",
+    visualDescription: "Persona en pose de yoga en estudio zen minimalista.",
+    video_motion: "Slow fluid stretching movement, controlled breathing rhythm.",
+    example: "Yoga Studio 'Peace': Clases de yoga y meditación para todos los niveles.",
+    previewUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 47. Car Detailing
+  car_detailing: {
+    label: "Car Detailing",
+    category: "SERVICIOS",
+    tags: ["Car", "Luxury", "Clean"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Luxury car detailing. Background: Foam bubbles, high-gloss reflection, microfiber towels, studio light. Details: Spotless finish, mirror-like reflection, premium care. Vibe: Luxury, pristine, professional auto care.",
+    visualDescription: "Detalle de auto de lujo con espuma y reflejos brillantes.",
+    video_motion: "Foam sliding down revealing shiny car surface, smooth reveal.",
+    example: "Car Detailing 'Shine': Pulido y encerado premium para tu vehículo.",
+    previewUrl: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 48. Óptica
+  optical: {
+    label: "Óptica",
+    category: "SALUD",
+    tags: ["Glasses", "Vision", "Modern"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Modern eyeglass frames on display. Background: Eye exam equipment, bright clean retail store, minimalist design. Details: Stylish frames, professional equipment, clear vision focus. Vibe: Modern, professional, clear vision.",
+    visualDescription: "Gafas modernas en exhibición con equipamiento de examen visual.",
+    video_motion: "Focus transition between different frame displays, clean lighting.",
+    example: "Óptica 'ClearView': Armazones de marcas exclusivas y examen de vista.",
+    previewUrl: "https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 49. Librería
+  bookstore: {
+    label: "Librería",
+    category: "COMERCIO",
+    tags: ["Books", "Cozy", "Culture"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Shelves full of books. Background: Organized stationery, notebooks, cozy reading nook, warm lighting. Details: Book spines, paper textures, inviting atmosphere. Vibe: Cozy, intellectual, book lover's paradise.",
+    visualDescription: "Estantes llenos de libros con papelería organizada.",
+    video_motion: "Smooth pan along book spines, gentle shelf movement.",
+    example: "Librería 'El Lector': Los mejores libros y artículos de librería.",
+    previewUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 50. Florería
+  flower_shop: {
+    label: "Florería",
+    category: "COMERCIO",
+    tags: ["Flowers", "Fresh", "Colorful"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Fresh colorful bouquets. Background: Flower shop interior, water mist on petals, natural vibrant colors. Details: Petal textures, fresh blooms, natural beauty. Vibe: Fresh, romantic, natural beauty.",
+    visualDescription: "Ramos de flores frescas con rocío de agua en pétalos.",
+    video_motion: "Water mist droplets falling on flowers in slow motion.",
+    example: "Florería 'Rosas': Arreglos florales para todas las ocasiones.",
+    previewUrl: "https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 51. Transporte Escolar
+  transport_school: {
+    label: "Transporte Escolar",
+    category: "SERVICIOS",
+    tags: ["School", "Transport", "Safety"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Professional yellow school van. Background: Safety signs, clean vehicle, daylight, Chilean transport vibe. Details: Yellow color, safety equipment, reliable transport. Vibe: Safe, reliable, professional school transport.",
+    visualDescription: "Furgón escolar amarillo profesional con señalética de seguridad.",
+    video_motion: "Stable tracking of van driving on route, smooth forward movement.",
+    example: "Transporte 'Escolar Express': Servicio de transporte escolar seguro y puntual.",
+    previewUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ed532?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 52. Ferretería
+  hardware_store: {
+    label: "Ferretería",
+    category: "COMERCIO",
+    tags: ["Hardware", "Tools", "Industrial"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Hardware store interior. Background: Organized tool displays, paint cans, hand tools, industrial retail atmosphere. Details: Metal textures, organized shelves, professional supplies. Vibe: Industrial, reliable, complete hardware solutions.",
+    visualDescription: "Interior de ferretería con herramientas y pinturas organizadas.",
+    video_motion: "Professional hand picking up tool from display, precise grip.",
+    example: "Ferretería 'El Tornillo': Herramientas y materiales de construcción.",
+    previewUrl: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 53. Servicios de Limpieza
+  cleaning_service: {
+    label: "Servicios de Limpieza",
+    category: "SERVICIOS",
+    tags: ["Cleaning", "Hygiene", "Professional"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Sparkling clean home interior. Background: Cleaning equipment, bright surfaces, professional hygiene. Details: Streak-free glass, spotless floors, fresh atmosphere. Vibe: Clean, fresh, professional cleaning service.",
+    visualDescription: "Interior de hogar impecablemente limpio con equipamiento de limpieza.",
+    video_motion: "Cloth wiping glass revealing shine, sparkling clean reveal.",
+    example: "Limpieza 'Brillo': Servicios de limpieza profesional para hogares y oficinas.",
+    previewUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 54. Agencia de Viajes
+  travel_agency: {
+    label: "Agencia de Viajes",
+    category: "SERVICIOS",
+    tags: ["Travel", "Dreams", "Adventure"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Modern travel agency. Background: World maps, vacation posters, bright inviting space, dream vacation atmosphere. Details: Tropical destinations, travel brochures, excitement. Vibe: Exciting, adventurous, travel dreams come true.",
+    visualDescription: "Agencia de viajes moderna con mapas mundiales y posters de destinos.",
+    video_motion: "Globe spinning in bright office, travel dreams atmosphere.",
+    example: "Viajes 'Mundo': Paquetes turísticos a los mejores destinos.",
+    previewUrl: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 55. Lavandería
+  laundry: {
+    label: "Lavandería",
+    category: "SERVICIOS",
+    tags: ["Laundry", "Clean", "Fresh"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Industrial washing machines. Background: Clean folded clothes, steam, bright white light, textile care atmosphere. Details: Fresh linen, organized piles, professional care. Vibe: Fresh, clean, professional laundry service.",
+    visualDescription: "Lavadoras industriales con ropa limpia y vapor.",
+    video_motion: "Steam rising from freshly ironed clothes, fresh linen movement.",
+    example: "Lavandería 'Frescura': Servicio de lavado y planchado profesional.",
+    previewUrl: "https://images.unsplash.com/photo-1582735689369-4fe8d7499698?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 56. Zapatería
+  shoe_store: {
+    label: "Zapatería",
+    category: "COMERCIO",
+    tags: ["Shoes", "Fashion", "Style"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Modern shoe store. Background: Footwear display, clean minimalist design, focus on shoe texture. Details: Leather textures, organized display, stylish footwear. Vibe: Stylish, modern, footwear focused.",
+    visualDescription: "Tienda de zapatos moderna con exhibición de calzados.",
+    video_motion: "Walking steps showing shoes in action, stylish walk.",
+    example: "Zapatería 'Paso': Calzado de las mejores marcas nacionales e importadas.",
+    previewUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 57. Servicio Técnico
+  tech_repair: {
+    label: "Servicio Técnico",
+    category: "SERVICIOS",
+    tags: ["Tech", "Repair", "Precision"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Smartphone repair station. Background: Precision tools, disassembled phone parts, high-tech lab light. Details: Circuit boards, tiny screws, technical expertise. Vibe: Technical, precise, professional repair service.",
+    visualDescription: "Estación de reparación de smartphone con herramientas de precisión.",
+    video_motion: "Tweezers working on phone circuit, micro precision movement.",
+    example: "Tech Repair 'Fix': Reparación de celulares, computadores y más.",
+    previewUrl: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 58. Pastelería
+  pastry_shop: {
+    label: "Pastelería",
+    category: "COMERCIO",
+    tags: ["Pastry", "Cakes", "Sweet"],
+    english_prompt: "Subject: [INSERT SUBJECT HERE]. Style: Custom cakes on display. Background: Pastry styling, soft pastel colors, warm bakery light, frosting details. Details: Decorative frosting, layered cakes, sweet artistry. Vibe: Sweet, elegant, artisanal bakery.",
+    visualDescription: "Pasteles personalizados en exhibición con decoración elegante.",
+    video_motion: "Cake being sliced revealing soft layers, smooth cut.",
+    example: "Pastelería 'Dulce': Tortas y pasteles para celebraciones especiales.",
+    previewUrl: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=400&q=80"
   }
 };
 
@@ -1109,6 +1327,268 @@ export const VIDEO_STYLES: Record<string, VideoStyleConfig> = {
     aspectRatio: ['16:9', '1:1', '9:16'],
     example: "Seguridad: Cámara de vigilancia escaneando con interfaz digital.",
     previewUrl: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // --- NUEVOS VIDEO STYLES 41-60 (2026) ---
+
+  // 41. Sushi Prep (Corte de Sushi)
+  video_sushi_prep: {
+    label: "Sushi / Preparación",
+    category: "COMERCIO",
+    tags: ["Sushi", "Corte", "Precisión"],
+    prompt: "Precise knife cutting fresh salmon, zen minimalist plating, smooth professional movement, Japanese aesthetic, clean workspace, sharp blade detail, culinary precision.",
+    motionStyle: "Precise knife cutting fish, smooth presentation",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '4:5'],
+    example: "Sushi: Corte preciso de pescado fresco.",
+    previewUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 42. Pizza Heat (Calor de Pizza)
+  video_pizza_heat: {
+    label: "Pizza / Horno",
+    category: "COMERCIO",
+    tags: ["Pizza", "Queso", "Horno"],
+    prompt: "Cheese stretching when pulling pizza slice from stone oven, golden crust, melting mozzarella, warm oven glow, rustic Italian atmosphere, appetizing steam rising.",
+    motionStyle: "Cheese stretching, oven heat glow",
+    duration: "5-8 seg",
+    aspectRatio: ['1:1', '4:5', '9:16'],
+    example: "Pizza: Queso derritiéndose al sacar del horno.",
+    previewUrl: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 43. Ice Cream Drip (Goteo de Helado)
+  video_ice_cream_drip: {
+    label: "Helado / Goteo",
+    category: "COMERCIO",
+    tags: ["Helado", "Crema", "Frío"],
+    prompt: "Creamy ice cream scoop forming in machine, cold vapor rising, smooth dripping texture, vibrant colors, summer refreshment, appetizing cold treat.",
+    motionStyle: "Creamy ice cream dripping slowly, cold vapor",
+    duration: "5-8 seg",
+    aspectRatio: ['1:1', '9:16', '4:5'],
+    example: "Helado: Formación cremosa con vapor frío.",
+    previewUrl: "https://images.unsplash.com/photo-1560008581-09826d1de69e?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 44. Nail Shine (Brillo de Uñas)
+  video_nail_shine: {
+    label: "Nails / Brillo",
+    category: "SALUD",
+    tags: ["Uñas", "Brillo", "Belleza"],
+    prompt: "Light reflection sliding over polished nail, smooth glossy surface, vibrant nail art, clean salon desk, professional beauty treatment, precise brush movement.",
+    motionStyle: "Light reflection on nail, precise brush",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '16:9'],
+    example: "Nails: Reflejo de luz en uña pintada.",
+    previewUrl: "https://images.unsplash.com/photo-1632345031635-7b80009a6401?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 45. Tattoo Ink (Tinta de Tatuaje)
+  video_tattoo_ink: {
+    label: "Tattoo / Tinta",
+    category: "SERVICIOS",
+    tags: ["Tattoo", "Tinta", "Arte"],
+    prompt: "Tattoo needle with ink detail macro, precise machine movement, sterile equipment, dramatic lighting, urban edgy vibe, artistic tattoo process.",
+    motionStyle: "Tattoo needle with ink, precise movement",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Tattoo: Aguja de tatuar con detalle de tinta.",
+    previewUrl: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 46. Yoga Flow (Flujo de Yoga)
+  video_yoga_flow: {
+    label: "Yoga / Flujo",
+    category: "LIFESTYLE",
+    tags: ["Yoga", "Movimiento", "Paz"],
+    prompt: "Person in yoga pose with slow fluid stretching movement, controlled breathing rhythm, zen minimalist studio, soft natural light, peaceful atmosphere.",
+    motionStyle: "Slow fluid stretching, controlled breathing",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Yoga: Movimiento fluido de estiramiento.",
+    previewUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 47. Foam Reveal (Revelación de Espuma)
+  video_foam_reveal: {
+    label: "Car Detailing / Espuma",
+    category: "SERVICIOS",
+    tags: ["Auto", "Espuma", "Brillo"],
+    prompt: "Foam sliding down luxury car revealing shiny surface, high-gloss reflection, professional detailing, clean transformation, satisfying reveal effect.",
+    motionStyle: "Foam sliding down revealing shine",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Car Detailing: Espuma revelando brillo del auto.",
+    previewUrl: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 48. Optic Focus (Enfoque Óptico)
+  video_optic_focus: {
+    label: "Óptica / Enfoque",
+    category: "SALUD",
+    tags: ["Lentes", "Enfoque", "Vista"],
+    prompt: "Focus transition between different eyeglass frames displays, clean bright retail lighting, modern optical store, professional eye care atmosphere.",
+    motionStyle: "Focus transition between frames",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '16:9'],
+    example: "Óptica: Cambio de enfoque entre marcos de lentes.",
+    previewUrl: "https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 49. Book Pan (Paneo de Libros)
+  video_book_pan: {
+    label: "Librería / Libros",
+    category: "COMERCIO",
+    tags: ["Libros", "Paneo", "Cultura"],
+    prompt: "Smooth pan along organized book spines, cozy bookstore atmosphere, warm lighting, reading nook, intellectual vibe, book lover's paradise.",
+    motionStyle: "Smooth pan along book spines",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Librería: Paneo suave por lomos de libros.",
+    previewUrl: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 50. Flower Mist (Rocío de Flores)
+  video_flower_mist: {
+    label: "Florería / Rocío",
+    category: "COMERCIO",
+    tags: ["Flores", "Rocío", "Fresco"],
+    prompt: "Water mist droplets falling on colorful flowers in slow motion, fresh bouquet, natural vibrant colors, romantic flower shop atmosphere.",
+    motionStyle: "Water mist on flowers in slow motion",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '4:5'],
+    example: "Florería: Rocío de agua en flores.",
+    previewUrl: "https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 51. Bottle Glow (Brillo de Botellas)
+  video_bottle_glow: {
+    label: "Botillería / Brillo",
+    category: "COMERCIO",
+    tags: ["Bebidas", "Neón", "Brillo"],
+    prompt: "Neon light reflection on premium liquor bottles, cold atmosphere, retail display, professional liquor store, vibrant neon accents.",
+    motionStyle: "Neon glow on bottles",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '16:9'],
+    example: "Botillería: Luz de neón en botellas.",
+    previewUrl: "https://images.unsplash.com/photo-1574935971562-45a6e5d1e2eb?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 52. Van Drive (Conducción de Furgón)
+  video_van_drive: {
+    label: "Transporte / Furgón",
+    category: "SERVICIOS",
+    tags: ["Transporte", "Furgón", "Ruta"],
+    prompt: "Professional yellow school van driving on route, stable tracking shot, daylight, Chilean transport, safety signs visible, reliable transport vibe.",
+    motionStyle: "Stable tracking of van driving",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1.91:1', '9:16'],
+    example: "Transporte: Furgón escolar en ruta.",
+    previewUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ed532?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 53. Tool Pick (Selección de Herramienta)
+  video_tool_pick: {
+    label: "Ferretería / Herramienta",
+    category: "COMERCIO",
+    tags: ["Herramientas", "Ferretería", "Precisión"],
+    prompt: "Professional hand picking up tool from hardware display, precise grip, organized tool wall, industrial retail atmosphere, reliable hardware service.",
+    motionStyle: "Hand picking tool, precise grip",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Ferretería: Tomando herramienta del exhibidor.",
+    previewUrl: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 54. Market Fresh (Frescura de Mercado)
+  video_market_fresh: {
+    label: "Mercado / Frescura",
+    category: "COMERCIO",
+    tags: ["Mercado", "Frutas", "Fresco"],
+    prompt: "Pan across vibrant fruit crates at outdoor market, fresh produce colors, natural daylight, artisanal market feel, fresh and authentic atmosphere.",
+    motionStyle: "Pan across fruit crates",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Mercado: Frutas frescas en cajones.",
+    previewUrl: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 55. Cleaning Shine (Brillo de Limpieza)
+  video_cleaning_shine: {
+    label: "Limpieza / Brillo",
+    category: "SERVICIOS",
+    tags: ["Limpieza", "Brillo", "Higiene"],
+    prompt: "Cloth wiping glass revealing sparkling clean surface, streak-free shine, bright fresh atmosphere, professional cleaning transformation.",
+    motionStyle: "Cloth revealing clean shine",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '16:9'],
+    example: "Limpieza: Paño revelando brillo limpio.",
+    previewUrl: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 56. Globe Spin (Giro de Globo)
+  video_globe_spin: {
+    label: "Viajes / Globo",
+    category: "SERVICIOS",
+    tags: ["Viajes", "Globo", "Mundo"],
+    prompt: "Globe spinning in bright modern travel agency office, world map background, travel dreams atmosphere, bright inviting space, vacation excitement.",
+    motionStyle: "Globe spinning in bright office",
+    duration: "8-12 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Viajes: Globo terráqueo girando.",
+    previewUrl: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 57. Steam Iron (Plancha a Vapor)
+  video_steam_iron: {
+    label: "Lavandería / Vapor",
+    category: "SERVICIOS",
+    tags: ["Lavandería", "Vapor", "Planchado"],
+    prompt: "Steam rising from freshly ironed clothes, smooth fabric, bright white light, professional laundry care, fresh clean linen atmosphere.",
+    motionStyle: "Steam rising from ironed clothes",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '9:16', '16:9'],
+    example: "Lavandería: Vapor de plancha en ropa.",
+    previewUrl: "https://images.unsplash.com/photo-1582735689369-4fe8d7499698?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 58. Shoe Walk (Caminata de Zapatos)
+  video_shoe_walk: {
+    label: "Zapatería / Caminata",
+    category: "COMERCIO",
+    tags: ["Zapatos", "Moda", "Caminata"],
+    prompt: "Stylish walking steps showing quality footwear, modern shoe store background, clean minimalist design, fashion forward movement.",
+    motionStyle: "Walking steps showing shoes",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Zapatería: Pasos caminando con zapatos.",
+    previewUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 59. Tech Micro (Micro Técnico)
+  video_tech_micro: {
+    label: "Técnico / Micro",
+    category: "SERVICIOS",
+    tags: ["Técnico", "Celular", "Precisión"],
+    prompt: "Tweezers working on smartphone circuit board, micro precision movement, technical repair station, high-tech lab light, professional repair service.",
+    motionStyle: "Tweezers on phone circuit",
+    duration: "6-10 seg",
+    aspectRatio: ['16:9', '1:1', '9:16'],
+    example: "Técnico: Pinzas en circuito de celular.",
+    previewUrl: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=400&q=80"
+  },
+
+  // 60. Cake Slicing (Corte de Torta)
+  video_cake_slicing: {
+    label: "Pastelería / Torta",
+    category: "COMERCIO",
+    tags: ["Pastel", "Torta", "Corte"],
+    prompt: "Cake being sliced revealing soft layers, smooth cutting motion, pastel colors, warm bakery light, sweet artisanal presentation.",
+    motionStyle: "Cake being sliced, smooth cut",
+    duration: "6-10 seg",
+    aspectRatio: ['1:1', '4:5', '9:16'],
+    example: "Pastelería: Corte de torta revelando capas.",
+    previewUrl: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=400&q=80"
   }
 };
 
@@ -1272,7 +1752,44 @@ export const IMAGE_GUARDRAILS: Record<FlyerStyleKey, string> = {
   
   gardening_landscaping: "indoor office, computers, desert, dry dead plants, industrial, construction zone, concrete jungle, pollution",
   
-  security_systems: "police officers, guns, dark alleys, messy wiring, chaos, armed guards, violence, emergency vehicles, sirens"
+  security_systems: "police officers, guns, dark alleys, messy wiring, chaos, armed guards, violence, emergency vehicles, sirens",
+
+  // --- NUEVOS ESTILOS 41-60 ---
+  sushi_nikkei: "bread, burgers, wooden rustic tables, steam, pizza, fast food, dark lighting, casual atmosphere",
+  
+  pizzeria: "sushi, fine dining, elegant glassware, cold salads, raw ingredients, dirty oven, burnt crust, cold presentation",
+  
+  ice_cream: "hot food, steam, dark lighting, salty snacks, melted mess, industrial, frozen solid, plain vanilla",
+  
+  nail_studio: "hair cutting, massage beds, feet, medical tools, dirty nails, dark polish, casual setting, spa atmosphere",
+  
+  tattoo_studio: "medical hospital, bright white sterile, makeup, spa candles, clean clinical, relaxation, beauty treatment",
+  
+  yoga_studio: "gym weights, treadmill, heavy sneakers, sweat, intense cardio, loud music, competitive atmosphere, mirrors",
+  
+  car_detailing: "mechanical repairs, engines, greasy tools, rusty cars, dirty garage, oil stains, broken parts, chaos",
+  
+  optical: "dentist tools, surgery, sunglasses on beach, medical equipment, dark room, casual display, messy shop",
+  
+  bookstore: "digital screens, messy office, food, noisy crowds, electronic devices, loud music, fast food, coffee shop",
+  
+  flower_shop: "dry plants, artificial flowers, dark warehouse, wilted blooms, plastic, industrial, cold storage, dusty",
+  
+  transport_school: "racing cars, dark alleys, luxury sedans, construction vehicles, emergency, dirty, damaged, old",
+  
+  hardware_store: "luxury furniture, soft fabrics, food, spa candles, home decor, clothing, toys, beauty products",
+  
+  cleaning_service: "messy rooms, dark shadows, greasy tools, construction dust, dirt, clutter, chaos, industrial",
+  
+  travel_agency: "hospitals, dark offices, industrial warehouses, government building, boring, dull, gray, sterile",
+  
+  laundry: "grease, car parts, messy kitchens, dark colors, industrial, construction, outdoor, dirty environment",
+  
+  shoe_store: "bare feet, messy floors, clothes only, tools, food, drinks, casual display, disorganized",
+  
+  tech_repair: "heavy hammers, water, fire, messy garage, cooking, food, drinks, casual setting, outdoor",
+  
+  pastry_shop: "salty food, raw meat, fast food, beer, dark shadows, industrial, messy, casual, unhealthy"
 };
 
 // ============================================
@@ -1484,5 +2001,106 @@ export const VIDEO_MOTION_GUARDRAILS: Record<FlyerStyleKeyVideo, {
   video_surveillance_scan: {
     prohibited: "handheld shaky cam, action movie shake, dramatic camera movement, dynamic cinematography",
     forced: "mechanical smooth pan, CCTV jitter effect, digital HUD overlay, night vision transition, security focus"
+  },
+
+  // --- NUEVOS VIDEO STYLES 41-60 ---
+  video_sushi_prep: {
+    prohibited: "fast jerky movements, blurry, dark lighting, casual atmosphere, restaurant setting",
+    forced: "precise knife cutting, smooth presentation, zen minimal, professional Japanese technique"
+  },
+  
+  video_pizza_heat: {
+    prohibited: "unstable handheld camera, blurry cheese, cold presentation, dark oven",
+    forced: "cheese stretching smoothly, warm oven glow, rustic Italian, appetizing pull"
+  },
+  
+  video_ice_cream_drip: {
+    prohibited: "warm colors, fire, hot steam, fast chaotic, dark moody",
+    forced: "cold vapor, creamy slow drip, vibrant colors, summer refreshment, smooth formation"
+  },
+  
+  video_nail_shine: {
+    prohibited: "fast zoom, blurry, dark shadows, uneven lighting, casual setting",
+    forced: "light reflection sliding, smooth glossy, precise brush, clean salon, professional"
+  },
+  
+  video_tattoo_ink: {
+    prohibited: "soft dreamy focus, blurry, romantic lighting, spa atmosphere, relaxation",
+    forced: "tattoo needle precision, ink detail macro, sterile equipment, urban edgy, dramatic"
+  },
+  
+  video_yoga_flow: {
+    prohibited: "fast cuts, high energy, intense cardio, loud music, competitive atmosphere",
+    forced: "slow fluid stretching, controlled breathing, zen studio, peaceful, mindful movement"
+  },
+  
+  video_foam_reveal: {
+    prohibited: "war movie shake, action cam, fast cuts, dark gritty, chaotic movement",
+    forced: "foam sliding smooth, reveal shiny surface, professional detailing, clean transformation"
+  },
+  
+  video_optic_focus: {
+    prohibited: "dramatic shadows, flickering lights, blurry transitions, dark moody",
+    forced: "clean focus transition, bright retail, modern optical, professional eye care"
+  },
+  
+  video_book_pan: {
+    prohibited: "chaotic movement, blurry, fast cuts, noisy environment, digital screens",
+    forced: "smooth pan along spines, cozy bookstore, warm lighting, intellectual, calm"
+  },
+  
+  video_flower_mist: {
+    prohibited: "aggressive zoom, digital zoom, harsh lighting, fast motion",
+    forced: "water mist droplets, slow motion flowers, fresh bouquet, romantic, natural"
+  },
+  
+  video_bottle_glow: {
+    prohibited: "bright daylight, natural light, casual display, warm cozy",
+    forced: "neon glow, cold bottles, retail display, professional liquor store, vibrant"
+  },
+  
+  video_van_drive: {
+    prohibited: "motion blur, fast speed, action driving, racing, dangerous stunts",
+    forced: "stable tracking, smooth driving, safe transport, yellow school van, reliable"
+  },
+  
+  video_tool_pick: {
+    prohibited: "dim lighting, romantic atmosphere, casual handling, messy display",
+    forced: "professional hand, precise grip, organized tool wall, industrial, reliable"
+  },
+  
+  video_market_fresh: {
+    prohibited: "deep shadows, LED artificial lights, indoor grocery, polished supermarket",
+    forced: "natural daylight, outdoor market, fresh produce, artisanal, authentic"
+  },
+  
+  video_cleaning_shine: {
+    prohibited: "vintage filters, grainy, dirty before, grunge aesthetic, dark",
+    forced: "sparkling clean, streak-free shine, bright fresh, professional transformation"
+  },
+  
+  video_globe_spin: {
+    prohibited: "static boring shot, dark office, dull atmosphere, gray colors",
+    forced: "globe spinning, bright office, travel dreams, exciting, vacation atmosphere"
+  },
+  
+  video_steam_iron: {
+    prohibited: "dark dirty environment, industrial grime, outdoor, cold atmosphere",
+    forced: "steam rising, fresh clothes, bright white, clean linen, professional care"
+  },
+  
+  video_shoe_walk: {
+    prohibited: "high angle overhead, static display, blurry feet, casual walk",
+    forced: "walking steps, stylish shoes, modern store, fashion forward, clean movement"
+  },
+  
+  video_tech_micro: {
+    prohibited: "wide angle shots, casual handling, outdoor, messy environment",
+    forced: "tweezers precision, micro work, circuit board, technical, professional repair"
+  },
+  
+  video_cake_slicing: {
+    prohibited: "fast aggressive cuts, messy crumbs, dark lighting, casual party",
+    forced: "smooth cake slice, soft layers, pastel colors, warm bakery, sweet presentation"
   }
 };

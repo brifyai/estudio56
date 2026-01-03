@@ -43,7 +43,26 @@ export type FlyerStyleKey =
   | 'physiotherapy'            // 37. Kinesiología
   | 'law_accounting'           // 38. Estudio Jurídico
   | 'gardening_landscaping'    // 39. Jardinería
-  | 'security_systems';        // 40. Seguridad
+  | 'security_systems'         // 40. Seguridad
+  // --- NUEVOS ESTILOS 41-60 (2026) ---
+  | 'sushi_nikkei'             // 41. Sushi & Nikkei
+  | 'pizzeria'                 // 42. Pizzería
+  | 'ice_cream'                // 43. Heladería
+  | 'nail_studio'              // 44. Nail Studio
+  | 'tattoo_studio'            // 45. Tattoo Studio
+  | 'yoga_studio'              // 46. Yoga Studio
+  | 'car_detailing'            // 47. Car Detailing
+  | 'optical'                  // 48. Óptica
+  | 'bookstore'                // 49. Librería
+  | 'flower_shop'              // 50. Florería
+  | 'transport_school'         // 52. Transporte Escolar
+  | 'hardware_store'           // 53. Ferretería
+  | 'cleaning_service'         // 55. Servicios de Limpieza
+  | 'travel_agency'            // 56. Agencia de Viajes
+  | 'laundry'                  // 57. Lavandería
+  | 'shoe_store'               // 58. Zapatería
+  | 'tech_repair'              // 59. Servicio Técnico
+  | 'pastry_shop';             // 60. Pastelería
 
 // ============================================
 // FÓRMULA MAESTRA PARA VIDEO (25 estilos)
@@ -90,7 +109,28 @@ export type FlyerStyleKeyVideo =
   | 'video_rehab_movement'     // 37. Kinesiología / Rehab
   | 'video_corporate_handshake' // 38. Estudio Jurídico / Corporativo
   | 'video_lawn_transformation' // 39. Jardinería / Pasto
-  | 'video_surveillance_scan'; // 40. Seguridad / Vigilancia
+  | 'video_surveillance_scan'  // 40. Seguridad / Vigilancia
+  // --- NUEVOS VIDEO STYLES 41-60 (2026) ---
+  | 'video_sushi_prep'         // 41. Sushi Prep
+  | 'video_pizza_heat'         // 42. Pizza Heat
+  | 'video_ice_cream_drip'     // 43. Ice Cream Drip
+  | 'video_nail_shine'         // 44. Nail Shine
+  | 'video_tattoo_ink'         // 45. Tattoo Ink
+  | 'video_yoga_flow'          // 46. Yoga Flow
+  | 'video_foam_reveal'        // 47. Foam Reveal
+  | 'video_optic_focus'        // 48. Optic Focus
+  | 'video_book_pan'           // 49. Book Pan
+  | 'video_flower_mist'        // 50. Flower Mist
+  | 'video_bottle_glow'        // 51. Bottle Glow
+  | 'video_van_drive'          // 52. Van Drive
+  | 'video_tool_pick'          // 53. Tool Pick
+  | 'video_market_fresh'       // 54. Market Fresh
+  | 'video_cleaning_shine'     // 55. Cleaning Shine
+  | 'video_globe_spin'         // 56. Globe Spin
+  | 'video_steam_iron'         // 57. Steam Iron
+  | 'video_shoe_walk'          // 58. Shoe Walk
+  | 'video_tech_micro'         // 59. Tech Micro
+  | 'video_cake_slicing';      // 60. Cake Slicing
 
 export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | '1.91:1' | '4:5' | '1080x1080' | '1080x1920' | '1080x1350';
 
