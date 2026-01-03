@@ -2104,3 +2104,338 @@ export const VIDEO_MOTION_GUARDRAILS: Record<FlyerStyleKeyVideo, {
     forced: "smooth cake slice, soft layers, pastel colors, warm bakery, sweet presentation"
   }
 };
+
+// ============================================
+// DICCIONARIO DE ADVERTENCIAS DE CONSISTENCIA (v3.0)
+// "Chileno Premium" - Fricción positiva para evitar errores semánticos
+// ============================================
+
+export const CONSISTENCY_CONFLICTS: Record<string, {
+  title: string;
+  message: string;
+  icon: 'warning' | 'error' | 'info';
+  confirmButtonText: string;
+  cancelButtonText: string;
+}> = {
+  // --- BLOQUE 1: SALUD Y BIENESTAR (EL "FILTRO ANTI-SPA") ---
+  PILATES_SPA: {
+    title: '¿Estás seguro, jefe?',
+    message: '¡Ojo ahí! Estás pidiendo velas o masajes en un rubro de Pilates. Tu marca se va a ver como un Spa y no como un centro de entrenamiento profesional. ¿Seguro que no prefieres resaltar las máquinas o el esfuerzo?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  YOGA_INTENSE: {
+    title: '¡Namasté... pero con calma!',
+    message: 'Estás mezclando la paz del Yoga con la intensidad del Crossfit. Si ponemos gente transpirando a chorros y pesas gigantes, se nos va la armonía. ¿Nos quedamos con la flexibilidad?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  KINE_GYM: {
+    title: '¡Aguante un poco!',
+    message: 'Eso suena más a entrenamiento pesado de gimnasio que a kinesiología profesional. Si quieres que los pacientes confíen, mejor nos enfocamos en la rehabilitación y la salud, ¿te parece?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  DENTAL_HOSPITAL: {
+    title: '¡Cuidado!',
+    message: 'Esa descripción parece de una cirugía mayor. Un centro dental debe verse limpio pero acogedor. ¿Le bajamos un cambio al drama médico para no asustar a los pacientes?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  VET_STYLING: {
+    title: '¡Atención!',
+    message: 'Estás pidiendo cortes de pelo y moñitos, pero estamos en modo "Veterinaria". Si quieres que se vea clínico y profesional, mejor nos quedamos con el estetoscopio y el cuidado médico.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  NAIL_HAIR: {
+    title: '¡Atención a las manos!',
+    message: 'Elegiste Nail Studio pero hablas de cortes de pelo. El sistema se va a marear y el resultado va a ser cualquier cosa. Enfoquémonos en el brillo y el detalle de las uñas.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+
+  // --- BLOQUE 2: TÉCNICO E INDUSTRIAL (EL "FILTRO ANTI-LUJO") ---
+  TALLER_LUXURY: {
+    title: 'Mire, jefe...',
+    message: 'Pusiste "taller mecánico" pero pide un ambiente de oficina de lujo. Los neumáticos y la grasa no se llevan muy bien con las alfombras blancas. ¿Quieres que sea un taller real o una automotora de Vitacura?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  FERRE_BOUTIQUE: {
+    title: '¡Mire, jefe!',
+    message: 'Una ferretería es de soluciones reales, de fierros y herramientas. Si lo describimos como una boutique de lujo con vitrinas de cristal, el maestro chasquilla no nos va a encontrar nunca.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  CONSTR_DECO: {
+    title: '¡Se nos pasó la mano!',
+    message: 'Estás pidiendo muebles y cortinas finas, pero elegiste el rubro de "Construcción". Si quieres mostrar la obra, mejor sacamos los adornos y ponemos los cascos y el cemento.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  LOGISTICA_RETAIL: {
+    title: '¡Ojo con la carga!',
+    message: 'La logística se trata de eficiencia y movimiento. Si lo describimos como una tienda de mall, perdemos la fuerza de la distribución. ¿Lo dejamos más operativo?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  DETA_WASH: {
+    title: '¡Ojo ahí!',
+    message: 'El Detailing es lujo y perfección técnica. Si la descripción suena a "manguerazo en la calle", el dueño del auto caro no va a entrar. ¡Hagamos que ese brillo duela de lo lindo!',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  TECH_REPAIR_MESS: {
+    title: '¡Ojo con los cables!',
+    message: 'Un servicio técnico profesional se ve ordenado y tecnológico. Si describimos un desorden de piezas sueltas, el cliente va a pensar que le van a sobrar tornillos al celular.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+
+  // --- BLOQUE 3: GASTRONOMÍA (EL "FILTRO DE IDENTIDAD") ---
+  PAN_GOURMET: {
+    title: '¡Cuidado!',
+    message: 'Tu descripción suena a plato de restaurant fino. En una panadería de barrio lo que vende es la harina, el calor y el hornito caliente. Si seguimos, el pan va a parecer de plástico.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  SUSHI_FASTFOOD: {
+    title: '¡Un momento, maestro!',
+    message: 'El sushi es pura precisión y frescura. Si le ponemos mucha fritura o salsas chorreando en la descripción, va a parecer un completo de carrito. ¿Mantenemos la elegancia Nikkei?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  PIZZA_ITALIAN: {
+    title: '¡Epa!',
+    message: 'Una pizzería artesanal se trata del horno y la masa. Si nos ponemos muy elegantes con manteles largos y velas, la gente va a pensar que es una cena cara y no una pizza al paso.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  PASTEL_BAJON: {
+    title: '¡Cuidado con el azúcar!',
+    message: 'Una pastelería fina entra por la vista con detalles delicados. Si la describimos como comida al paso o muy rústica, perdemos la magia de la torta de novios.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  FERIA_SUPER: {
+    title: '¡Caserito, escúcheme!',
+    message: 'La gracia de la feria es lo natural y el color del cajón. Si lo describimos muy "empaquetado" o industrial, pierde el sabor del campo. ¿Le ponemos más frescura?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+
+  // --- BLOQUE 4: COMERCIO Y SERVICIOS (EL "FILTRO DE COHERENCIA") ---
+  BOTI_DISCO: {
+    title: '¡Tranquilein!',
+    message: 'Pusiste "Botillería" pero la descripción parece el VIP de una disco. Si quieres que los vecinos te compren la promo, enfoquémonos en los coolers heladitos, no en la pista de baile.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  BARBER_SPA: {
+    title: '¡Tranquilo, compadre!',
+    message: 'Las velas y el olor a lavanda son para el Spa. En la barbería mandan las tijeras y el estilo rudo. ¿Le quitamos el modo "zen" para que se vea con más actitud?',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  FURGON_RACING: {
+    title: '¡Ojo con el exceso de velocidad!',
+    message: 'Un furgón escolar tiene que transmitir seguridad a los papás. Si lo describimos con efectos de carrera, nos van a fiscalizar hasta por la pantalla.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  TRAVEL_CLINIC: {
+    title: '¡Cuidado con el destino!',
+    message: 'Una agencia de viajes tiene que vender sueños y relajo. Si la descripción suena muy fría o administrativa, nadie se va a querer subir al avión.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  SEGURIDAD_WAR: {
+    title: '¡Tranquilo, Rambo!',
+    message: 'Queremos vender protección, no una guerra. Si ponemos muchas armas o caos en la descripción, el cliente se va a asustar en vez de sentirse seguro.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  },
+  
+  TATTOO_CLINIC: {
+    title: '¡Cuidado con el estilo!',
+    message: 'Un estudio de tatuajes tiene que tener onda urbana y arte. Si lo dejamos muy "blanco y clínico", va a parecer que vas a sacar sangre y no a tatuar.',
+    icon: 'warning',
+    confirmButtonText: 'Generar igual',
+    cancelButtonText: 'Corregir'
+  }
+};
+
+// ============================================
+// REGLAS DE DETECCIÓN DE CONFLICTOS
+// Keywords que disparan cada conflicto
+// ============================================
+
+export const CONFLICT_DETECTION_RULES: Array<{
+  keywords: string[];
+  styleKeys: string[];
+  conflictCode: string;
+}> = [
+  // --- SALUD Y BIENESTAR ---
+  {
+    keywords: ['vela', 'masaje', 'spa', 'aromaterapia', 'relajante', 'zen', 'esencias', 'sahumerios'],
+    styleKeys: ['pilates', 'sport_gritty', 'physiotherapy'],
+    conflictCode: 'PILATES_SPA'
+  },
+  {
+    keywords: ['crossfit', 'pesas', 'levantamiento', 'intenso', 'cardio', 'sudor', 'entrenamiento pesado'],
+    styleKeys: ['yoga_studio', 'wellness_zen', 'pilates'],
+    conflictCode: 'YOGA_INTENSE'
+  },
+  {
+    keywords: ['gimnasio', 'maquina', 'pesa', 'entrenamiento', 'musculo', 'bodybuilding'],
+    styleKeys: ['physiotherapy', 'medical_clean'],
+    conflictCode: 'KINE_GYM'
+  },
+  {
+    keywords: ['quirófano', 'quirurgico', 'sangre', 'operatorio', 'hospital', 'cirugia'],
+    styleKeys: ['dental_clinic', 'optical'],
+    conflictCode: 'DENTAL_HOSPITAL'
+  },
+  {
+    keywords: ['corte de pelo', 'peluqueria', 'peinado', 'coloracion', 'tratamiento capilar'],
+    styleKeys: ['veterinary_clinic', 'nail_studio'],
+    conflictCode: 'VET_STYLING'
+  },
+  {
+    keywords: ['corte de pelo', 'peluqueria', 'barberia', 'afeitado'],
+    styleKeys: ['nail_studio'],
+    conflictCode: 'NAIL_HAIR'
+  },
+
+  // --- TÉCNICO E INDUSTRIAL ---
+  {
+    keywords: ['lujo', 'elegante', 'vitrina', 'cristal', 'alfombra', 'oficina', 'ejecutivo'],
+    styleKeys: ['mechanic_workshop', 'auto_metallic', 'car_detailing'],
+    conflictCode: 'TALLER_LUXURY'
+  },
+  {
+    keywords: ['boutique', 'tienda', 'vitrine', 'cristal', 'lujoso', 'exhibicion'],
+    styleKeys: ['hardware_store', 'construction_site'],
+    conflictCode: 'FERRE_BOUTIQUE'
+  },
+  {
+    keywords: ['mueble', 'cortina', 'decoracion', 'interior', 'diseño'],
+    styleKeys: ['construction_site', 'logistics_delivery'],
+    conflictCode: 'CONSTR_DECO'
+  },
+  {
+    keywords: ['tienda', 'mall', 'retail', 'cliente', 'compra', 'carrito'],
+    styleKeys: ['logistics_delivery', 'transport_school'],
+    conflictCode: 'LOGISTICA_RETAIL'
+  },
+  {
+    keywords: ['lavado', 'manguera', 'calle', 'exterior', 'barrio'],
+    styleKeys: ['car_detailing'],
+    conflictCode: 'DETA_WASH'
+  },
+  {
+    keywords: ['desorden', 'cable', 'piezas', 'suelto', 'roto'],
+    styleKeys: ['tech_repair'],
+    conflictCode: 'TECH_REPAIR_MESS'
+  },
+
+  // --- GASTRONOMÍA ---
+  {
+    keywords: ['plato gourmet', 'restaurant', 'fino', 'elegante', 'cena'],
+    styleKeys: ['bakery_bread', 'market_handwritten'],
+    conflictCode: 'PAN_GOURMET'
+  },
+  {
+    keywords: ['fritura', 'completos', 'churrasco', 'carne', 'asado'],
+    styleKeys: ['sushi_nikkei'],
+    conflictCode: 'SUSHI_FASTFOOD'
+  },
+  {
+    keywords: ['mantel', 'vela', 'cena', 'elegante', 'formal'],
+    styleKeys: ['pizzeria'],
+    conflictCode: 'PIZZA_ITALIAN'
+  },
+  {
+    keywords: ['bajón', 'rapido', 'economico', 'carrito', 'calle'],
+    styleKeys: ['pastry_shop'],
+    conflictCode: 'PASTEL_BAJON'
+  },
+  {
+    keywords: ['supermercado', 'empaquetado', 'industrial', 'congelado'],
+    styleKeys: ['flower_shop', 'market_handwritten'],
+    conflictCode: 'FERIA_SUPER'
+  },
+
+  // --- COMERCIO Y SERVICIOS ---
+  {
+    keywords: ['disco', 'fiesta', 'baile', 'vip', 'noche'],
+    styleKeys: ['liquor_store'],
+    conflictCode: 'BOTI_DISCO'
+  },
+  {
+    keywords: ['vela', 'spa', 'relajante', 'masaje', 'aroma'],
+    styleKeys: ['barber_shop'],
+    conflictCode: 'BARBER_SPA'
+  },
+  {
+    keywords: ['velocidad', 'carrera', 'rapido', 'deportivo', 'ruido'],
+    styleKeys: ['transport_school'],
+    conflictCode: 'FURGON_RACING'
+  },
+  {
+    keywords: ['frio', 'administrativo', 'oficina', 'papeleo'],
+    styleKeys: ['travel_agency'],
+    conflictCode: 'TRAVEL_CLINIC'
+  },
+  {
+    keywords: ['arma', 'pistola', 'bala', 'guerra', 'ataque', 'combate'],
+    styleKeys: ['security_systems'],
+    conflictCode: 'SEGURIDAD_WAR'
+  },
+  {
+    keywords: ['clinico', 'esteril', 'blanco', 'medico', 'sangre'],
+    styleKeys: ['tattoo_studio'],
+    conflictCode: 'TATTOO_CLINIC'
+  }
+};
