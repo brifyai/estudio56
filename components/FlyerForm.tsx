@@ -518,7 +518,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   };
   return (
     <>
-      <div className="p-4 md:p-6 space-y-6 pb-6">
+      <div className="p-3 md:p-6 space-y-4 md:space-y-6 pb-8">
       
       {/* 1. ENTRADA UNIFICADA - MODO MAGIA */}
       <div className="space-y-4">
@@ -786,7 +786,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Tipo de contenido</label>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-4">
             {/* IMAGEN IA */}
             <button
               onClick={() => {
@@ -794,18 +794,18 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 clearUploadedImage();
                 setIsStoryArtModeActive(false);
               }}
-              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
                 ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-2xl">✨</div>
-                <div className="text-sm font-bold">Imágenes</div>
-                <div className="text-[10px] text-white/60">Generar diseño</div>
+              <div className="flex flex-col items-center gap-1 md:gap-2">
+                <div className="text-xl md:text-2xl">✨</div>
+                <div className="text-xs md:text-sm font-bold">Imágenes</div>
+                <div className="text-[8px] md:text-[10px] text-white/60">Generar diseño</div>
               </div>
               {mediaType === 'image' && !uploadedImage && !isStoryArtModeActive && (
-                <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-400 rounded-full animate-pulse"></div>
               )}
             </button>
 
@@ -816,18 +816,18 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 clearUploadedImage();
                 setIsStoryArtModeActive(false);
               }}
-              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
                 ${mediaType === 'video' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-2xl">🎬</div>
-                <div className="text-sm font-bold">Video</div>
-                <div className="text-[10px] text-white/60">Motion graphics</div>
+              <div className="flex flex-col items-center gap-1 md:gap-2">
+                <div className="text-xl md:text-2xl">🎬</div>
+                <div className="text-xs md:text-sm font-bold">Video</div>
+                <div className="text-[8px] md:text-[10px] text-white/60">Motion graphics</div>
               </div>
               {mediaType === 'video' && !isStoryArtModeActive && (
-                <div className="absolute top-2 right-2 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5 md:w-2 md:h-2 bg-purple-400 rounded-full animate-pulse"></div>
               )}
             </button>
 
@@ -839,18 +839,18 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 setImprovedImageUrl(null);
                 setIsStoryArtModeActive(false);
               }}
-              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
                 ${mediaType === 'product_study' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-2xl">📸</div>
-                <div className="text-sm font-bold">Estudio</div>
-                <div className="text-[10px] text-white/60">Mejora tu foto</div>
+              <div className="flex flex-col items-center gap-1 md:gap-2">
+                <div className="text-xl md:text-2xl">📸</div>
+                <div className="text-xs md:text-sm font-bold">Estudio</div>
+                <div className="text-[8px] md:text-[10px] text-white/60">Mejora tu foto</div>
               </div>
               {mediaType === 'product_study' && !isStoryArtModeActive && (
-                <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse"></div>
               )}
             </button>
 
@@ -862,18 +862,18 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 setAspectRatio('9:16'); // Forzar 9:16
                 clearUploadedImage();
               }}
-              className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
                 ${isStoryArtModeActive
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-2xl">🎨</div>
-                <div className="text-sm font-bold">Story Art</div>
-                <div className="text-[10px] text-white/60">Dirección de Arte</div>
+              <div className="flex flex-col items-center gap-1 md:gap-2">
+                <div className="text-xl md:text-2xl">🎨</div>
+                <div className="text-xs md:text-sm font-bold">Story Art</div>
+                <div className="text-[8px] md:text-[10px] text-white/60">Dirección de Arte</div>
               </div>
               {isStoryArtModeActive && (
-                <div className="absolute top-2 right-2 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5 md:w-2 md:h-2 bg-purple-400 rounded-full animate-pulse"></div>
               )}
             </button>
           </div>
@@ -1111,11 +1111,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         )}
 
         {/* GENERATE BUTTON */}
-        <div className="pt-6">
+        <div className="pt-4 md:pt-6">
           <button
               onClick={onSubmit}
               disabled={isLoading || !description.trim()}
-              className={`w-full py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
+              className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
               ${isStoryArtModeActive
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/40'
                   : mediaType === 'video'
