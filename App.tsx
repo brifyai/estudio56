@@ -1163,17 +1163,17 @@ const handleGenerate = async () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen w-full bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
-      
-      {/* BACKGROUND AMBIENCE */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/10 blur-[150px] rounded-full animate-pulse-slow"></div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[150px] rounded-full"></div>
-      </div>
+    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
+       
+       {/* BACKGROUND AMBIENCE */}
+       <div className="fixed inset-0 pointer-events-none z-0">
+           <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/10 blur-[150px] rounded-full animate-pulse-slow"></div>
+           <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[150px] rounded-full"></div>
+       </div>
 
-      {/* LEFT PANEL: CONTROLS */}
-      <aside className="w-full md:w-[440px] flex-shrink-0 flex flex-col z-20 h-screen md:h-full p-2 md:p-4 overflow-hidden">
-        <div className="glass-panel rounded-xl md:rounded-[2rem] h-full flex flex-col shadow-2xl overflow-hidden relative">
+       {/* LEFT PANEL: CONTROLS - En mobile portrait: full width, en lg: sidebar izquierdo */}
+       <aside className="w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-full p-2 lg:p-4">
+         <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative">
             
             {/* Header */}
             <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5 z-20 relative">
@@ -1227,7 +1227,7 @@ const handleGenerate = async () => {
             </div>
 
             {/* Form Container - Scroll container con padding-bottom para footer */}
-            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto pb-24 md:pb-6">
+            <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto pb-28 lg:pb-6">
                 <FlyerForm
                     styleKey={styleKey}
                     aspectRatio={aspectRatio}
@@ -1329,17 +1329,16 @@ const handleGenerate = async () => {
         </div>
     </aside>
 
-      {/* CENTER: CANVAS - Desktop siempre visible, Mobile: solo previsualización debajo del formulario cuando hay imagen */}
+      {/* CENTER: CANVAS - En mobile portrait: debajo del panel de controles, en lg: centro */}
       <main className={`
-        flex-1 flex-col relative z-10 p-4 pl-0 overflow-hidden
-        md:flex
+        flex-1 flex-col relative z-10 p-2 lg:p-4 pl-0 overflow-hidden
+        w-full
       `}>
-          {/* MOBILE PREVIEW - Solo visible en mobile cuando hay imagen generada, debajo del formulario */}
+          {/* MOBILE PREVIEW - Visible en portrait cuando hay imagen generada, debajo del panel de controles */}
           {imageUrl && (
-            <div className="md:hidden mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="lg:hidden mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-medium text-green-400">👁️ Vista Previa</span>
-                <span className="text-white/30 text-[10px]">(debajo del formulario)</span>
               </div>
               <div className={`
                 w-full rounded-[1.5rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
@@ -1379,9 +1378,9 @@ const handleGenerate = async () => {
             </div>
           )}
 
-          {/* DESKTOP PREVIEW - Solo visible en desktop */}
+          {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
           <div className={`
-            hidden md:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col overflow-hidden shadow-2xl relative
+            hidden lg:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col overflow-hidden shadow-2xl relative
           `}>
              
              {/* Top Bar */}
@@ -1453,19 +1452,19 @@ const handleGenerate = async () => {
          </div>
       </main>
 
-      {/* RIGHT PANEL: CALENDAR - Overlay en mobile, sidebar en desktop */}
+      {/* RIGHT PANEL: CALENDAR - Overlay en mobile portrait, sidebar en landscape (lg) */}
       <aside className={`
         ${showCalendar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
         fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300
-        md:relative md:inset-auto md:opacity-100 md:pointer-events-auto
-        md:w-[280px] md:flex-shrink-0 md:flex md:flex-col md:py-4 md:pr-4
+        lg:relative lg:inset-auto lg:opacity-100 lg:pointer-events-auto
+        lg:w-[280px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-4 lg:pr-4
       `}>
-        {/* Overlay background solo en mobile */}
+        {/* Overlay background solo en mobile portrait */}
         <div
-          className="absolute inset-0 bg-black/80 md:hidden touch-none"
+          className="absolute inset-0 bg-black/80 lg:hidden touch-none"
           onClick={() => setShowCalendar(false)}
         />
-        <div className={`glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 ${showCalendar ? 'scale-100' : 'scale-95'} md:scale-100 md:max-h-full md:h-full transition-transform duration-300`}>
+        <div className={`glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 ${showCalendar ? 'scale-100' : 'scale-95'} lg:scale-100 lg:max-h-full lg:h-full transition-transform duration-300`}>
           {/* Mobile Header */}
           <div className="flex items-center justify-between p-3 border-b border-white/10">
             <span className="text-xs font-bold">Calendario</span>
