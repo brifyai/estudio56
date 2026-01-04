@@ -1727,7 +1727,7 @@ const handleGenerate = async () => {
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
                     <RealitySlider
-                      currentLevel={realityLevel}
+                      value={realityLevel}
                       sceneId={sceneId}
                       currentImageUrl={imageUrl}
                       seed={seed}
@@ -1899,7 +1899,7 @@ const handleGenerate = async () => {
           {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
             <div className="w-full px-4 pb-4">
               <RealitySlider
-                currentLevel={realityLevel}
+                value={realityLevel}
                 sceneId={sceneId}
                 currentImageUrl={imageUrl}
                 seed={seed}
