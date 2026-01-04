@@ -1504,8 +1504,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     // Obtener configuración de superficie para Visual Mimicry
     const surfaceConfig = SURFACE_CONFIGS[localSurfaceType];
 
+    // Debug: Log del estilo actual
+    console.log('🎨 [renderText] Estilo actual:', {
+      surfaceType: localSurfaceType,
+      blendMode: surfaceConfig.blendMode,
+      opacity: surfaceConfig.opacity,
+      blurAmount: surfaceConfig.blurAmount,
+      shadowType: surfaceConfig.shadowType
+    });
+
     return (
       <div
+        className="visual-mimicry-text"
         style={{
           fontFamily: displayStyles.fontFamily,
           fontSize: `${scaledFontSize}px`,
@@ -1542,11 +1552,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           textShadow: textShadowValue,
           WebkitTextStroke: displayStyles.effects.stroke ? `${scaledStrokeWidth}px ${displayStyles.textColor}` : undefined,
           filter: displayStyles.effects.glow ? `drop-shadow(0 0 ${scaledGlowBlur}px ${displayStyles.textColor})` : undefined,
-          // 🎨 VISUAL MIMICRY - Modos de fusión
+          // 🎨 VISUAL MIMICRY - Modos de fusión (aplicados AL TEXTO, no al contenedor)
           mixBlendMode: surfaceConfig.blendMode,
           opacity: surfaceConfig.opacity,
-          // 🎨 Backdrop filter para blur
+          // 🎨 Backdrop filter para blur (simula profundidad de campo)
           backdropFilter: surfaceConfig.blurAmount > 0 ? `blur(${surfaceConfig.blurAmount}px)` : undefined,
+          // 🎨 Aislamiento para que el blend mode funcione correctamente
+          isolation: 'isolate',
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
         onTouchStart={(e) => {
@@ -2164,6 +2176,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <StyleFusionSelector
             selectedStyle={localSurfaceType}
             onStyleChange={(style) => {
+              console.log('🎨 [StyleFusionSelector] Estilo seleccionado:', style);
               setLocalSurfaceType(style);
               if (onSurfaceTypeChange) {
                 onSurfaceTypeChange(style);
