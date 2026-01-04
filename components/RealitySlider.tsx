@@ -265,31 +265,6 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         </div>
       </div>
       
-      {/* Panel de información */}
-      <div className={`bg-gradient-to-r ${gradientColor} bg-opacity-10 rounded-xl p-3 border border-white/5`}>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg">{currentConfig.icon}</span>
-          <span className="text-white font-medium text-sm">
-            {currentConfig.label}
-          </span>
-        </div>
-        <p className="text-white/70 text-xs">
-          {currentConfig.description}
-        </p>
-        
-        {/* Detalles técnicos */}
-        <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
-          <div className="bg-black/20 rounded-lg p-2">
-            <span className="text-white/50 block mb-1">📷 Cámara</span>
-            <span className="text-white/80">{currentConfig.camera.split(',')[0]}</span>
-          </div>
-          <div className="bg-black/20 rounded-lg p-2">
-            <span className="text-white/50 block mb-1">💡 Iluminación</span>
-            <span className="text-white/80">{currentConfig.lighting.split(',')[0]}</span>
-          </div>
-        </div>
-      </div>
-      
       {/* Ayuda contextual */}
       {showHelp && (
         <div className="mt-3 flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
