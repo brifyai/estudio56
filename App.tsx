@@ -28,6 +28,7 @@ import { detectIndustryFromDescription } from './services/geminiService';
 import { enhancePrompt, generateFlyerImage, generateFlyerVideo, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
 import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
 import creditService from './services/creditService';
+import { SurfaceType } from './hooks/useSurfaceDetection';
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
@@ -156,6 +157,10 @@ const Dashboard: React.FC = () => {
   // NEW: Estados para posición del texto draggable
   const [textPosition, setTextPosition] = useState<{x: number, y: number}>({ x: 50, y: 50 }); // Porcentajes
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  
+  // NEW: Estados para Visual Mimicry
+  const [surfaceType, setSurfaceType] = useState<SurfaceType>('default');
+  const [autoDetectedSurface, setAutoDetectedSurface] = useState<SurfaceType | null>(null);
   
   // NEW: Estados para posición de logo y producto
   const [logoPosition, setLogoPosition] = useState<{x: number, y: number; width: number}>({ x: 10, y: 10, width: 80 });
@@ -1608,6 +1613,10 @@ const handleGenerate = async () => {
                               productPosition={productPosition}
                               setProductPosition={setProductPosition}
                               mediaType={mediaType} // NEW: Para ocultar overlays en videos y story art
+                              // Visual Mimicry props
+                              surfaceType={surfaceType}
+                              onSurfaceTypeChange={setSurfaceType}
+                              autoDetectedSurface={autoDetectedSurface}
                           />
                       </div>
                     </div>
@@ -1742,6 +1751,10 @@ const handleGenerate = async () => {
                     productPosition={productPosition}
                     setProductPosition={setProductPosition}
                     mediaType={mediaType} // NEW: Para ocultar overlays en videos y story art
+                    // Visual Mimicry props
+                    surfaceType={surfaceType}
+                    onSurfaceTypeChange={setSurfaceType}
+                    autoDetectedSurface={autoDetectedSurface}
                 />
             </div>
          </div>

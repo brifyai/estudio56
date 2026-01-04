@@ -9,6 +9,8 @@ import {
   isSharedArrayBufferSupported,
   loadFFmpeg
 } from '../services/videoPostProcessingService';
+import { useSurfaceDetection, SurfaceType, SURFACE_CONFIGS } from '../hooks/useSurfaceDetection';
+import { StyleFusionSelector } from './StyleFusionSelector';
 import Swal from 'sweetalert2';
 
 interface LogoFilters {
@@ -51,6 +53,10 @@ interface FlyerDisplayProps {
   setProductPosition?: (pos: { x: number; y: number; width: number; height: number }) => void;
   // NEW: Tipo de media para ocultar overlays en videos y story art
   mediaType?: 'image' | 'video' | 'story_art';
+  // NEW: Visual Mimicry props
+  surfaceType?: SurfaceType;
+  onSurfaceTypeChange?: (surface: SurfaceType) => void;
+  autoDetectedSurface?: SurfaceType | null;
 }
 
 export interface TextStyleOptions {
@@ -99,10 +105,20 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   setLogoPosition,
   productPosition = { x: 50, y: 70, width: 120, height: 120 },
   setProductPosition,
-  mediaType = 'image'
+  mediaType = 'image',
+  // Visual Mimicry props
+  surfaceType: surfaceTypeProp = 'default',
+  onSurfaceTypeChange,
+  autoDetectedSurface = null
 }) => {
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  
+  // NEW: Estado para Visual Mimicry
+  const [localSurfaceType, setLocalSurfaceType] = useState<SurfaceType>(surfaceTypeProp);
+  
+  // NEW: useSurfaceDetection hook
+  const { detectSurface, getSurfaceConfig } = useSurfaceDetection();
   
   // Estado para mostrar/ocultar controles de texto en mobile
   const [showTextControls, setShowTextControls] = useState(false);
@@ -231,6 +247,34 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     setIsRetrying(false);
     setMediaError(null);  // ← IMPORTANTE: Resetear también mediaError
   }, [imageUrl]);
+  
+  // NEW: Sincronizar surfaceType con prop
+  useEffect(() => {
+    setLocalSurfaceType(surfaceTypeProp);
+  }, [surfaceTypeProp]);
+  
+  // NEW: Detectar superficie automáticamente cuando hay imagen
+  useEffect(() => {
+    const detectSurfaceAutomatically = async () => {
+      if (imageUrl && !autoDetectedSurface && mediaType !== 'video' && mediaType !== 'story_art') {
+        try {
+          console.log('🎯 [FlyerDisplay] Detectando superficie automáticamente...');
+          const detected = await detectSurface(imageUrl);
+          console.log('✅ [FlyerDisplay] Superficie detectada:', detected);
+          setLocalSurfaceType(detected);
+          if (onSurfaceTypeChange) {
+            onSurfaceTypeChange(detected);
+          }
+        } catch (error) {
+          console.warn('⚠️ [FlyerDisplay] Error detectando superficie:', error);
+        }
+      }
+    };
+    
+    // Delay para no bloquear la carga inicial
+    const timeoutId = setTimeout(detectSurfaceAutomatically, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [imageUrl, autoDetectedSurface, mediaType, detectSurface, onSurfaceTypeChange]);
   
   // Placeholder elegante cuando hay error de media
   const renderMediaPlaceholder = () => (
@@ -916,6 +960,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   // Generar estilos del texto
   const getTextStyles = () => {
+    const surfaceConfig = SURFACE_CONFIGS[localSurfaceType];
+    
     const style: React.CSSProperties = {
       fontFamily: displayStyles.fontFamily,
       fontSize: `${displayStyles.fontSize}px`,
@@ -935,11 +981,17 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       pointerEvents: 'auto',
       outline: 'none',
       lineHeight: '1.4',
+      // NEW: Visual Mimicry - Modo de fusión
+      mixBlendMode: surfaceConfig.blendMode,
+      opacity: surfaceConfig.opacity,
     };
 
     const shadows: string[] = [];
-    if (displayStyles.effects.shadow) {
+    if (displayStyles.effects.shadow || surfaceConfig.shadowType === 'outer') {
       shadows.push('2px 2px 4px rgba(0,0,0,0.8)');
+    }
+    if (surfaceConfig.shadowType === 'inner') {
+      shadows.push('inset 2px 2px 4px rgba(0,0,0,0.4), inset -1px -1px 2px rgba(255,255,255,0.2)');
     }
     if (displayStyles.effects.glow) {
       shadows.push(`0 0 10px ${displayStyles.textColor}`);
@@ -950,6 +1002,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
     if (displayStyles.effects.stroke) {
       style.WebkitTextStroke = `2px ${displayStyles.textColor}`;
+    }
+
+    // NEW: Backdrop filter para blur
+    if (surfaceConfig.blurAmount > 0) {
+      style.backdropFilter = `blur(${surfaceConfig.blurAmount}px)`;
     }
 
     return style;
@@ -2091,6 +2148,23 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <span>✨</span>
           <span>{(draftVideoUrl || isVideoUrl(imageUrl)) ? 'Generar video HD' : 'Generar imagen HD'}</span>
         </button>
+      )}
+      
+      {/* NEW: SELECTOR DE ESTILO DE FUSIÓN VISUAL - Solo visible en imágenes */}
+      {!showComparison && !showVideoComparison && mediaType !== 'video' && mediaType !== 'story_art' && (
+        <div className="w-full max-w-[280px] mt-3">
+          <StyleFusionSelector
+            selectedStyle={localSurfaceType}
+            onStyleChange={(style) => {
+              setLocalSurfaceType(style);
+              if (onSurfaceTypeChange) {
+                onSurfaceTypeChange(style);
+              }
+            }}
+            autoDetectedStyle={autoDetectedSurface}
+            disabled={isDraft}
+          />
+        </div>
       )}
       
     </div>
