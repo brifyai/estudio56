@@ -1741,39 +1741,11 @@ const handleGenerate = async () => {
                 )}
                 
                 
-                {/* Panel de Editor de Texto y Estilo de Integración Visual - OCULTAR PARA VIDEOS Y STORY ART */}
-                {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
-                  <div className="p-4 border-t border-white/10 flex-shrink-0">
-                    {/* Botón desplegable del Editor de Texto */}
-                    <CollapsibleSection
-                      title="Editor de Texto"
-                      icon="✏️"
-                      defaultOpen={false}
-                    >
-                      <TextEditorPanel
-                        overlayText={overlayText}
-                        setOverlayText={setOverlayText}
-                        textStyles={manualTextStyles}
-                        setTextStyles={setManualTextStyles}
-                        onResetPosition={() => setTextPosition({ x: 50, y: 50 })}
-                        logoUrl={logoUrl}
-                        setLogoUrl={setLogoUrl}
-                        logoColor={logoColor}
-                        setLogoColor={setLogoColor}
-                        logoFilters={logoFilters}
-                        setLogoFilters={setLogoFilters}
-                        productUrl={productUrl}
-                        setProductUrl={setProductUrl}
-                      />
-                    </CollapsibleSection>
-                  </div>
-                )}
-                
-                {/* 🎚️ REALITY SLIDER - En el menú lateral izquierdo */}
+                {/* 🎚️ EDITOR DE REALIDAD - En el menú lateral izquierdo */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
                     <CollapsibleSection
-                      title="Reality Slider"
+                      title="Editor de Realidad"
                       icon="🎚️"
                       defaultOpen={false}
                     >
@@ -1798,6 +1770,34 @@ const handleGenerate = async () => {
                           Comparar Realismos ({Object.keys(realityVariations).length} versiones)
                         </button>
                       )}
+                    </CollapsibleSection>
+                  </div>
+                )}
+                
+                {/* Panel de Editor de Texto y Estilo de Integración Visual - OCULTAR PARA VIDEOS Y STORY ART */}
+                {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
+                  <div className="p-4 border-t border-white/10 flex-shrink-0">
+                    {/* Botón desplegable del Editor de Texto */}
+                    <CollapsibleSection
+                      title="Editor de Texto"
+                      icon="✏️"
+                      defaultOpen={false}
+                    >
+                      <TextEditorPanel
+                        overlayText={overlayText}
+                        setOverlayText={setOverlayText}
+                        textStyles={manualTextStyles}
+                        setTextStyles={setManualTextStyles}
+                        onResetPosition={() => setTextPosition({ x: 50, y: 50 })}
+                        logoUrl={logoUrl}
+                        setLogoUrl={setLogoUrl}
+                        logoColor={logoColor}
+                        setLogoColor={setLogoColor}
+                        logoFilters={logoFilters}
+                        setLogoFilters={setLogoFilters}
+                        productUrl={productUrl}
+                        setProductUrl={setProductUrl}
+                      />
                     </CollapsibleSection>
                   </div>
                 )}
