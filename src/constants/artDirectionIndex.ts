@@ -160,11 +160,16 @@ export function buildArtDirectionPromptSimple(
 }
 
 /**
- * Construye un prompt completo con negative prompt hardcoded de agencia
- * 
+ * 🚀 MASTER PROMPT DE REESTRUCTURACIÓN - STORY ART REAL
+ *
+ * Este prompt implementa las 3 reglas fundamentales de Story Art de Agencia:
+ * 1. Regla de Composición Vertical (Full-height 9:16 edge-to-edge)
+ * 2. Jerarquía del Sujeto (60-70% del eje vertical)
+ * 3. Zonas Seguras de Diseño (Safe Zones para texto)
+ *
  * @param subject - Descripción del producto/servicio
  * @param rubroId - ID del rubro (1-60)
- * @returns Prompt completo con guardrails de agencia
+ * @returns Prompt completo con guardrails de agencia y Story Art Real
  */
 export function buildAgencyPrompt(
   subject: string,
@@ -172,14 +177,58 @@ export function buildAgencyPrompt(
 ): string {
   const config = getArtDirectionById(rubroId);
   
+  // ============================================
+  // 🎯 REGLAS DE STORY ART REAL - AGENCIA LEVEL
+  // ============================================
+  
+  // 1. REGLA DE COMPOSICIÓN VERTICAL (Obligatoria)
+  const VERTICAL_COMPOSITION_PROMPT = "Full-height 9:16 vertical composition, edge-to-edge framing, cinematic mobile-optimized layout";
+  
+  // 2. JERARQUÍA DEL SUJETO (60-70% del eje vertical)
+  const SUBJECT_SIZE_PROMPT = "SUBJECT SIZE: The main subject must occupy 60% to 70% of the vertical axis. Use medium shots or close-ups. AVOID wide shots where the subject looks small. The subject should be LARGE and PROMINENT, filling the frame for maximum visual impact";
+  
+  // 3. ZONAS SEGURAS DE DISEÑO (Safe Zones)
+  const SAFE_ZONE_PROMPT = "SAFE ZONES: Leave the top 20% and bottom 20% of the image with clean, non-busy backgrounds (negative space) to allow for text overlay. Do not place faces or important details in these margins. Keep critical elements in the center vertical band";
+  
   // Negative prompt de agencia hardcoded
   const AGENCY_NEGATIVE_PROMPT = "(low quality, blurry text, amateur layout, stretched image, cheap flyer, cluttered design, distorted products, messy fingers, clip art style, watermark visible, low resolution, poor composition, uneven lighting, color banding, pixelated, dithered, oversaturated, undersaturated, harsh shadows, blown highlights)";
   
+  // ============================================
+  // 📊 LOG DE AUDITORÍA PARA VALIDACIÓN
+  // ============================================
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('🎨 [STORY ART PRO] Construyendo prompt de agencia');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log(`📋 Rubro ID: ${rubroId}`);
+  console.log(`🏷️ Rubro: ${config?.rubro || 'No encontrado'}`);
+  console.log(`📝 Subject original: ${subject.substring(0, 100)}...`);
+  console.log('───────────────────────────────────────────────────────────────');
+  console.log('✅ Verificando reglas de Story Art Real:');
+  console.log(`   ✓ VERTICAL_COMPOSITION: ${VERTICAL_COMPOSITION_PROMPT.substring(0, 50)}...`);
+  console.log(`   ✓ SUBJECT_SIZE: ${SUBJECT_SIZE_PROMPT.substring(0, 50)}...`);
+  console.log(`   ✓ SAFE_ZONE: ${SAFE_ZONE_PROMPT.substring(0, 50)}...`);
+  console.log('═══════════════════════════════════════════════════════════════');
+  
   if (!config) {
-    return `${subject}, professional commercial photography, high quality, clean design, 9:16 vertical format. ${AGENCY_NEGATIVE_PROMPT}`;
+    const fallbackPrompt = `${VERTICAL_COMPOSITION_PROMPT}. ${SUBJECT_SIZE_PROMPT}. ${SAFE_ZONE_PROMPT}. ${subject}, professional commercial photography, high quality, clean design. ${AGENCY_NEGATIVE_PROMPT}`;
+    console.warn('⚠️ [STORY ART PRO] No se encontró config, usando fallback');
+    return fallbackPrompt;
   }
   
-  return `${config.prompt} ${subject}. ${config.negativePrompt} ${AGENCY_NEGATIVE_PROMPT}`;
+  // Construir prompt completo: [DIRECCIÓN DE ARTE] + [SUJETO] + [REGLAS STORY ART] + [NEGATIVE]
+  const fullPrompt = `${config.prompt} ${subject}. ${VERTICAL_COMPOSITION_PROMPT}. ${SUBJECT_SIZE_PROMPT}. ${SAFE_ZONE_PROMPT}. ${config.negativePrompt} ${AGENCY_NEGATIVE_PROMPT}`;
+  
+  // Log del prompt final para auditoría
+  console.log('🎯 [STORY ART PRO] Prompt final construido:', {
+    length: fullPrompt.length,
+    preview: fullPrompt.substring(0, 200) + '...',
+    hasSubjectSize: fullPrompt.includes('60% to 70%'),
+    hasSafeZone: fullPrompt.includes('SAFE ZONES'),
+    hasVerticalComposition: fullPrompt.includes('Full-height 9:16')
+  });
+  console.log('═══════════════════════════════════════════════════════════════');
+  
+  return fullPrompt;
 }
 
 // ============================================
