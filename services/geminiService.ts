@@ -27,6 +27,7 @@ import {
   getArtDirectionById,
   ART_DIRECTION_SYSTEM
 } from "../src/constants/artDirectionIndex";
+import { analyzeVisualMimicry, generateMimicryCSS, generateMimicryClasses, VisualMimicryResult } from "./visualMimicryService";
 
 // ============================================
 // 🛡️ EL ESCUDO DE FÍSICA Y LIMPIEZA - Negative Prompt Absoluto
@@ -1495,6 +1496,7 @@ export interface GeneratedImageResult {
     composition: any;
     combinedClasses: string;
   };
+  visualMimicryResult?: VisualMimicryResult; // 🎨 Visual Mimicry: ADN cromático y modos de fusión
 }
 
 // NUEVO: Wrapper function para compatibilidad con frontend
@@ -1932,6 +1934,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   let compositionAnalysis: CompositionAnalysisResult | undefined;
   let autoTextValidation: ValidationResult | undefined;
   let enhancedStyles: any;
+  let visualMimicryResult: VisualMimicryResult | undefined; // 🎨 Visual Mimicry
 
   // OPTIMIZACIÓN: Solo hacer análisis inteligentes para HD, no para borradores
   // Los análisis añaden ~30-40 segundos innecesarios para un borrador
@@ -1969,7 +1972,22 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         }
       }
       
-      // 7. Generar estilos combinados
+      // 7. 🎨 VISUAL MIMICRY: Análisis de mimetismo visual (ADN cromático + modos de fusión)
+      try {
+        console.log("🎨 [HD] Ejecutando análisis de Visual Mimicry...");
+        visualMimicryResult = await analyzeVisualMimicry(correctedImageUrl);
+        
+        console.log("✅ [HD] Visual Mimicry completado:", {
+          accentColor: visualMimicryResult?.extractedColors?.accentColor,
+          blendMode: visualMimicryResult?.blendMode?.mode,
+          hasNoise: visualMimicryResult?.noise?.hasNoise,
+          depthOfField: visualMimicryResult?.depthOfField
+        });
+      } catch (mimicryError) {
+        console.warn("⚠️ [HD] Error en Visual Mimicry, continuando sin efectos:", mimicryError);
+      }
+      
+      // 8. Generar estilos combinados
       if (imageAnalysis && contextualTypography && contrastAnalysis && contextualEffects && compositionAnalysis) {
         intelligentTextStyles = {
           cssStyles: generateTextStylesFromAnalysis(imageAnalysis),
@@ -2029,7 +2047,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     contextualEffects,
     compositionAnalysis,
     autoTextValidation,
-    enhancedStyles
+    enhancedStyles,
+    visualMimicryResult // 🎨 Visual Mimicry: Colores extraídos y modos de fusión
   };
 };
 
