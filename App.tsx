@@ -1101,6 +1101,13 @@ const handleGenerate = async () => {
         setImageUrl(result.imageDataUrl);
         setDraftImageUrl(result.imageDataUrl);
         
+        // 🎚️ INICIALIZAR sceneId PARA REALITY SLIDER
+        // Esto es CRÍTICO para que el slider funcione
+        if (!sceneId) {
+          setSceneId(`scene_${Date.now()}_${newSeed}`);
+          console.log('🎚️ SceneId inicializado para Reality Slider:', `scene_${Date.now()}_${newSeed}`);
+        }
+        
         // NEW: Guardar generación en base de datos (image y story_art)
         if (imageQuality === 'draft' && (mediaType === 'image' || mediaType === 'story_art')) {
           const generation = await createGeneration({
@@ -1522,10 +1529,7 @@ const handleGenerate = async () => {
         // Actualizar imagen mostrada
         setImageUrl(result.imageDataUrl);
         
-        // Si es la primera variación, guardar sceneId
-        if (!sceneId) {
-          setSceneId(`scene_${Date.now()}_${seed}`);
-        }
+        // SceneId ya fue inicializado en handleGenerate, no es necesario setearlo aquí
         
         console.log('✅ Nueva variación generada y guardada en caché:', levelKey);
         setRealityGenerationMessage(`✅ Imagen ${levelKey}★ generada exitosamente`);
