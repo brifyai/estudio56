@@ -107,7 +107,7 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
               <div className="flex items-center justify-between w-full mb-1">
                 <span className="text-lg">{style.icon}</span>
                 {isSelected && (
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                 )}
               </div>
               
