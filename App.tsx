@@ -926,16 +926,16 @@ const handleGenerate = async () => {
            // Real Estate → Inmobiliaria (26)
            'realestate_night': 26,
            
-           // Luxury → Joyería (55) - closest match
+           // Luxury → Joyería (55)
            'luxury_gold': 55,
            
            // Automotive → Automotriz (27)
            'auto_metallic': 27,
            
-           // Church → Servicios Profesionales (33) - closest spiritual match
+           // Church → Servicios Profesionales (33)
            'worship_sky': 33,
            
-           // Kids → Eventos/Bodas (30) - closest kids events match
+           // Kids → Eventos/Bodas (30)
            'kids_fun': 30,
            
            // Podcast → Música/Entretención (35)
@@ -944,14 +944,29 @@ const handleGenerate = async () => {
            // Gaming → Gaming (13)
            'gamer_stream': 13,
            
-           // Eco → Verdulería (52) - closest organic match
+           // Eco → Verdulería (52)
            'eco_organic': 52,
            
-           // Urban Night → Viajes/Turismo (29) - closest entertainment match
+           // Urban Night → Viajes/Turismo (29)
            'urban_night': 29,
            
            // Corporate → Servicios Profesionales (33)
            'corporate': 33,
+           
+           // 🎸 Rock/Música → Barbería (34) - texturas crudas, contrastes altos
+           'indie_gritty': 34,
+           
+           // ☀️ Verano/Playa → Viajes/Turismo (29) - iluminación cálida, colores vibrantes
+           'summer_beach': 29,
+           
+           // 🎭 Arte/Teatro → Arte/Creatividad (38) - composiciones abstractas
+           'art_double_exp': 38,
+           
+           // 📼 Retro/Vintage → Regalería (52) - filtros sepia, grano película
+           'retro_vintage': 52,
+           
+           // 🎄 Navidad/Festividades → Eventos (30) - decoración temática
+           'seasonal_holiday': 30,
            
            // Default → Retail General (1)
            'brand_identity': 1
@@ -1096,7 +1111,11 @@ const handleGenerate = async () => {
                 'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
                 'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
                 'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
-                'eco_organic': 52, 'urban_night': 29, 'corporate': 33, 'brand_identity': 1
+                'eco_organic': 52, 'urban_night': 29, 'corporate': 33,
+                // 🎸 Estilos faltantes mapeados a rubros de agencia
+                'indie_gritty': 34, 'summer_beach': 29, 'art_double_exp': 38,
+                'retro_vintage': 52, 'seasonal_holiday': 30,
+                'brand_identity': 1
               };
               const styleKeyToMap = detectedStyleKey || styleKey;
               upgradeArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
@@ -1194,7 +1213,11 @@ const handleGenerate = async () => {
              'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
              'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
              'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
-             'eco_organic': 52, 'urban_night': 29, 'corporate': 33, 'brand_identity': 1
+             'eco_organic': 52, 'urban_night': 29, 'corporate': 33,
+             // 🎸 Estilos faltantes mapeados a rubros de agencia
+             'indie_gritty': 34, 'summer_beach': 29, 'art_double_exp': 38,
+             'retro_vintage': 52, 'seasonal_holiday': 30,
+             'brand_identity': 1
            };
            const styleKeyToMap = detectedStyleKey || styleKey;
            refineArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
