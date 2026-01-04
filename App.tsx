@@ -185,6 +185,7 @@ const Dashboard: React.FC = () => {
   const [realityVariations, setRealityVariations] = useState<Record<number, string>>({});
   const [showRealityComparator, setShowRealityComparator] = useState(false);
   const [isGeneratingReality, setIsGeneratingReality] = useState(false);
+  const [realityGenerationMessage, setRealityGenerationMessage] = useState<string | null>(null);
   
   // NEW: Estados para estilos manuales del editor de texto
   const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
@@ -1479,6 +1480,7 @@ const handleGenerate = async () => {
     // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN
     console.log('🔄 Generando nueva variación para nivel:', levelKey);
     setIsGeneratingReality(true);
+    setRealityGenerationMessage(`🎚️ Generando imagen con realismo ${levelKey}★...`);
     setRealityLevel(levelKey);
     
     try {
@@ -1526,10 +1528,14 @@ const handleGenerate = async () => {
         }
         
         console.log('✅ Nueva variación generada y guardada en caché:', levelKey);
+        setRealityGenerationMessage(`✅ Imagen ${levelKey}★ generada exitosamente`);
+        // Ocultar el mensaje después de 2 segundos
+        setTimeout(() => setRealityGenerationMessage(null), 2000);
       }
     } catch (error: any) {
       console.error('❌ Error generando variación de realidad:', error);
-      alert('Error al generar variación. Intenta de nuevo.');
+      setRealityGenerationMessage('❌ Error al generar imagen');
+      setTimeout(() => setRealityGenerationMessage(null), 3000);
     } finally {
       setIsGeneratingReality(false);
     }
@@ -1898,6 +1904,21 @@ const handleGenerate = async () => {
           {/* 🎚️ REALITY SLIDER - Panel inferior en desktop */}
           {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
             <div className="w-full px-4 pb-4">
+              {/* Alerta de generación de realidad */}
+              {realityGenerationMessage && (
+                <div className={`
+                  mb-3 px-4 py-3 rounded-xl border flex items-center justify-center gap-2 animate-pulse
+                  ${isGeneratingReality
+                    ? 'bg-blue-500/20 border-blue-500/50 text-blue-300'
+                    : 'bg-green-500/20 border-green-500/50 text-green-300'
+                  }
+                `}>
+                  <span className="text-sm font-medium">{realityGenerationMessage}</span>
+                  {isGeneratingReality && (
+                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  )}
+                </div>
+              )}
               <RealitySlider
                 value={realityLevel}
                 sceneId={sceneId}
