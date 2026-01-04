@@ -7,6 +7,8 @@ export type SurfaceType = 'wall' | 'wood' | 'glass' | 'metal' | 'fabric' | 'conc
 
 export interface SurfaceConfig {
   name: string;
+  label: string;
+  icon: string;
   blendMode: 'multiply' | 'overlay' | 'screen' | 'soft-light' | 'normal';
   opacity: number;
   shadowType: 'outer' | 'inner' | 'none';
@@ -14,81 +16,111 @@ export interface SurfaceConfig {
   displacementScale: number;
   noiseIntensity: number;
   description: string;
+  previewColor: string;
+  textColor: string;
 }
 
 /**
- * Configuración CSS para cada tipo de superficie
+ * Configuracion CSS para cada tipo de superficie
  */
 export const SURFACE_CONFIGS: Record<SurfaceType, SurfaceConfig> = {
   wall: {
     name: 'Pared Pintada',
+    label: 'Pared Blanca',
+    icon: '🏪',
     blendMode: 'multiply',
     opacity: 0.85,
     shadowType: 'outer',
     blurAmount: 0,
     displacementScale: 0.5,
     noiseIntensity: 0.2,
-    description: 'Efecto mate sobre superficie rugosa'
+    description: 'Efecto mate sobre superficie rugosa',
+    previewColor: '#f5f5f5',
+    textColor: '#333333'
   },
   wood: {
     name: 'Grabado Madera',
+    label: 'Madera',
+    icon: '🪵',
     blendMode: 'overlay',
     opacity: 0.9,
     shadowType: 'inner',
     blurAmount: 0,
     displacementScale: 0.3,
     noiseIntensity: 0.1,
-    description: 'Se funde con la veta natural de la madera'
+    description: 'Se funde con la veta natural de la madera',
+    previewColor: '#8B4513',
+    textColor: '#FFE4C4'
   },
   glass: {
     name: 'Reflejo Cristal',
+    label: 'Cristal',
+    icon: '✨',
     blendMode: 'screen',
     opacity: 0.6,
     shadowType: 'outer',
     blurAmount: 2,
     displacementScale: 0,
     noiseIntensity: 0.05,
-    description: 'Transparencia y brillo suave'
+    description: 'Transparencia y brillo suave',
+    previewColor: '#87CEEB',
+    textColor: '#1E90FF'
   },
   metal: {
     name: 'Metal',
+    label: 'Metal',
+    icon: '🏢',
     blendMode: 'soft-light',
     opacity: 0.8,
     shadowType: 'inner',
     blurAmount: 1,
     displacementScale: 0.1,
     noiseIntensity: 0.15,
-    description: 'Reflejo metálico sutil'
+    description: 'Reflejo metalico sutil',
+    previewColor: '#C0C0C0',
+    textColor: '#2F4F4F'
   },
   fabric: {
     name: 'Textil',
+    label: 'Textil',
+    icon: '🧵',
     blendMode: 'multiply',
     opacity: 0.75,
     shadowType: 'none',
     blurAmount: 0.5,
     displacementScale: 0.4,
     noiseIntensity: 0.25,
-    description: 'Integración suave con textiles'
+    description: 'Integracion suave con textiles',
+    previewColor: '#DDA0DD',
+    textColor: '#4B0082'
   },
   concrete: {
-    name: 'Hormigón',
+    name: 'Hormigon',
+    label: 'Concreto',
+    icon: '🏗️',
     blendMode: 'overlay',
     opacity: 0.85,
     shadowType: 'outer',
     blurAmount: 0,
     displacementScale: 0.6,
     noiseIntensity: 0.3,
-    description: 'Textura rugosa del hormigón'
+    description: 'Textura rugosa del hormigon',
+    previewColor: '#696969',
+    textColor: '#D3D3D3'
   },
   default: {
-    name: 'Clásico',
+    name: 'Clasico',
+    label: 'Clasico',
+    icon: '📝',
     blendMode: 'normal',
     opacity: 1,
     shadowType: 'outer',
     blurAmount: 0,
     displacementScale: 0,
     noiseIntensity: 0,
-    description: 'Texto nítido de alta visibilidad'
+    description: 'Texto nitido de alta visibilidad',
+    previewColor: '#3B82F6',
+    textColor: '#FFFFFF'
   }
 };
 
@@ -105,16 +137,16 @@ export const detectSurfaceType = async (
     
     const prompt = `Analiza esta imagen y detecta el tipo de superficie principal donde aparecería el texto.
     
-Responde SOLO con una palabra en minúsculas:
-- "wall" si es una pared pintada, enlucida o con papel tapiz
-- "wood" si es madera, muebles de madera, o superficies de madera
-- "glass" si es vidrio, ventanas, o superficies reflectantes
-- "metal" si es metal, acero, o superficies metálicas
-- "fabric" si es tela, cortinas, tapizados o textiles
-- "concrete" si es hormigón, cemento o superficies industriales
-- "default" si no puedes determinarlo con certeza
-
-La superficie donde el texto se superpondría es:`;
+    Responde SOLO con una palabra en minusculas:
+    - "wall" si es una pared pintada, enlucida o con papel tapiz
+    - "wood" si es madera, muebles de madera, o superficies de madera
+    - "glass" si es vidrio, ventanas, o superficies reflectantes
+    - "metal" si es metal, acero, o superficies metalicas
+    - "fabric" si es tela, cortinas, tapizados o textiles
+    - "concrete" si es hormigon, cemento o superficies industriales
+    - "default" si no puedes determinarlo con certeza
+    
+    La superficie donde el texto se superpondria es:`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -133,7 +165,7 @@ La superficie donde el texto se superpondría es:`;
 
     const surfaceType = response.text?.trim().toLowerCase() as SurfaceType;
     
-    // Validar que sea un tipo válido
+    // Validar que sea un tipo valido
     if (SURFACE_CONFIGS[surfaceType]) {
       console.log(`🎯 [SurfaceDetection] Superficie detectada: ${surfaceType}`);
       return surfaceType;
@@ -149,7 +181,7 @@ La superficie donde el texto se superpondría es:`;
 };
 
 /**
- * Genera el CSS completo para una superficie específica
+ * Genera el CSS completo para una superficie especifica
  */
 export const generateSurfaceCSS = (
   surfaceType: SurfaceType,
@@ -161,7 +193,7 @@ export const generateSurfaceCSS = (
   const config = SURFACE_CONFIGS[surfaceType];
   const opacity = options?.customOpacity ?? config.opacity;
   
-  // Generar sombra según el tipo
+  // Generar sombra segun el tipo
   let textShadow = '';
   if (config.shadowType === 'outer') {
     textShadow = '2px 2px 4px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.3)';
@@ -198,7 +230,7 @@ export const generateDisplacementFilter = (scale: number = 0.5): string => {
 };
 
 /**
- * Hook personalizado para usar detección de superficies
+ * Hook personalizado para usar deteccion de superficies
  */
 export const useSurfaceDetection = () => {
   const detectSurface = async (imageUrl: string): Promise<SurfaceType> => {

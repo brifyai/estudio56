@@ -754,6 +754,27 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         </div>
 
+        {/* 🦋 ESTILO DE INTEGRACIÓN VISUAL - INDICADOR SIMPLE */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
+              🦋 Integración Visual
+            </label>
+            <span className="text-[10px] text-purple-400">Auto-detectado</span>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-3">
+            <div className="flex items-center gap-3">
+              <div className="text-xl">🎨</div>
+              <div className="flex-1">
+                <div className="text-white text-xs font-medium">Mimetismo Natural</div>
+                <div className="text-white/50 text-[10px]">El texto se adapta a la superficie</div>
+              </div>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
         {mediaType === 'product_study' && !uploadedImage && (
           <div className="space-y-3">
