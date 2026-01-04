@@ -56,12 +56,30 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
         <h4 className="text-white text-xs font-bold uppercase tracking-widest">
           🎨 Estilo de Integración Visual
         </h4>
-        {autoDetectedStyle && autoDetectedStyle !== selectedStyle && (
-          <span className="text-[10px] text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded-full">
-            🤖 IA sugiere: {SURFACE_CONFIGS[autoDetectedStyle].description}
+        {/* Indicador de modo activo */}
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+          <span className="text-[10px] text-green-400 font-mono">
+            {SURFACE_CONFIGS[selectedStyle].name.toUpperCase()}
           </span>
-        )}
+        </div>
       </div>
+      
+      {/* Info de detección automática */}
+      {autoDetectedStyle && autoDetectedStyle !== selectedStyle && (
+        <div className="mb-3 p-2 bg-yellow-400/10 border border-yellow-400/30 rounded-lg flex items-center gap-2">
+          <span className="text-xs">🤖</span>
+          <span className="text-[10px] text-yellow-300">
+            IA detectó: <strong>{SURFACE_CONFIGS[autoDetectedStyle].name}</strong>
+          </span>
+          <button
+            onClick={() => onStyleChange(autoDetectedStyle)}
+            className="ml-auto text-[10px] text-yellow-400 hover:text-yellow-300 underline"
+          >
+            Aplicar
+          </button>
+        </div>
+      )}
 
       {/* Grid de opciones */}
       <div className="grid grid-cols-2 gap-2">
