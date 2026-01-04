@@ -2159,27 +2159,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
-      {/* NEW: SELECTOR DE ESTILO DE FUSIÓN VISUAL - Movido arriba para mejor visibilidad */}
-      {!showComparison && !showVideoComparison && mediaType !== 'video' && mediaType !== 'story_art' && (
-        <div className="w-full max-w-[280px] mt-3">
-          {/* Debug info visible */}
-          <div className="text-[10px] text-white/40 mb-2 font-mono bg-black/30 p-2 rounded">
-            surfaceType: {localSurfaceType} | autoDetected: {autoDetectedSurface || 'none'} | isDraft: {isDraft.toString()}
-          </div>
-          <StyleFusionSelector
-            selectedStyle={localSurfaceType}
-            onStyleChange={(style) => {
-              console.log('🎨 [StyleFusionSelector] Estilo seleccionado:', style);
-              setLocalSurfaceType(style);
-              if (onSurfaceTypeChange) {
-                onSurfaceTypeChange(style);
-              }
-            }}
-            autoDetectedStyle={autoDetectedSurface}
-            disabled={false} // Habilitado siempre para poder probar
-          />
-        </div>
-      )}
+      {/* ELIMINADO: StyleFusionSelector movido a App.tsx (panel lateral izquierdo) */}
 
       {/* BOTÓN GENERAR HD - Solo visible en mobile cuando hay borrador */}
       {isDraft && imageUrl && !showComparison && (
