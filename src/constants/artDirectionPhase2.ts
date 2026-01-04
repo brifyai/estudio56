@@ -7,28 +7,28 @@ import { ArtDirectionPrompt } from '../../types';
 // ============================================
 
 export const ART_DIRECTION_PHASE2: Record<number, ArtDirectionPrompt> = {
-  // 21. FITNESS / GYM
+  // 21. FITNESS / GIMNASIO
   21: {
     rubro: "Fitness / Gimnasio",
-    artDirection: "High-energy athletic photography, dramatic rim lighting on muscles, sweat droplets in beam, gritty texture, bold sans-serif block fonts in neon accent colors, Nike campaign aesthetic.",
-    socialMediaComposition: "Vertical 9:16 composition, subject centered with dramatic lighting from above, action text overlay space at top, brand colors in lower third, motion blur edges for energy.",
-    negativePrompt: "low quality, blurry action, amateur gym photo, stretched image, cheap flyer, cluttered design, zen meditation, yoga pose, peaceful atmosphere, candle lighting, spa aesthetic."
+    artDirection: "Authentic gym photography, natural daylight through windows, realistic muscle definition, clean equipment visible, bold sans-serif fonts in solid colors, local gym campaign aesthetic.",
+    socialMediaComposition: "Vertical 9:16 composition, subject centered with even lighting, action text overlay space at top, brand colors in lower third, clean gym atmosphere.",
+    negativePrompt: "low quality, blurry action, amateur gym photo, stretched image, cheap flyer, cluttered design, zen meditation, yoga pose, peaceful atmosphere, candle lighting, spa aesthetic, dramatic shadows."
   },
 
   // 22. RESTAURANTES / GASTRONOMÍA
   22: {
     rubro: "Restaurantes / Gastronomía",
-    artDirection: "Cinematic food photography, backlit golden hour lighting, steam rising dramatically, macro lens on texture, elegant serif fonts with warm amber tones, Michelin guide presentation style.",
-    socialMediaComposition: "Vertical 9:16, food centered in lower portion, steam effect rising, warm color grading, elegant typography overlay, appetite appeal focus with negative space at top.",
-    negativePrompt: "low quality, blurry food, amateur restaurant photo, stretched image, cheap flyer, cluttered design, burnt food, dark shadows, cold lighting, raw meat, dirty plates, empty restaurant."
+    artDirection: "Natural food photography, soft daylight illumination, appetizing food presentation, clean plate composition, elegant serif fonts with warm tones, authentic restaurant aesthetic.",
+    socialMediaComposition: "Vertical 9:16, food centered in lower portion, natural colors, elegant typography overlay, appetite appeal focus with negative space at top.",
+    negativePrompt: "low quality, blurry food, amateur restaurant photo, stretched image, cheap flyer, cluttered design, burnt food, dark shadows, cold lighting, raw meat, dirty plates, empty restaurant, dramatic lighting."
   },
 
   // 23. BEBIDAS / LICORES
   23: {
     rubro: "Bebidas / Licores",
-    artDirection: "Premium liquid photography, glass transparency effects, condensation droplets, dramatic backlighting, gold foil accents, sophisticated serif fonts with deep burgundy tones, luxury bar aesthetic.",
-    socialMediaComposition: "Vertical 9:16, bottle or glass centered with glow effect, condensation detail prominent, elegant text overlay, premium feel with dark sophisticated background.",
-    negativePrompt: "low quality, blurry glass, amateur bar photo, stretched image, cheap flyer, cluttered design, plastic cups, cheap beer, bright fluorescent lighting, empty shelf, broken bottle."
+    artDirection: "Authentic beverage photography, natural glass transparency, clean condensation, soft lighting, sophisticated serif fonts with warm tones, local bar aesthetic.",
+    socialMediaComposition: "Vertical 9:16, bottle or glass centered with clean presentation, condensation detail visible, elegant text overlay, warm inviting atmosphere.",
+    negativePrompt: "low quality, blurry glass, amateur bar photo, stretched image, cheap flyer, cluttered design, plastic cups, cheap beer, bright fluorescent lighting, empty shelf, broken bottle, dramatic backlighting."
   },
 
   // 24. SALUD / MEDICINA
@@ -50,17 +50,17 @@ export const ART_DIRECTION_PHASE2: Record<number, ArtDirectionPrompt> = {
   // 26. INMOBILIARIA
   26: {
     rubro: "Inmobiliaria",
-    artDirection: "Luxury architectural photography, wide-angle interior lens, soft shadows, warm golden hour exterior, professional real estate aesthetic, elegant serif fonts in navy and gold tones.",
-    socialMediaComposition: "Vertical 9:16, property interior or exterior centered, wide dramatic view, elegant typography with price call-to-action, aspirational lifestyle feel with warm color grading.",
-    negativePrompt: "low quality, blurry property, amateur listing photo, stretched image, cheap flyer, cluttered design, construction debris, empty lot, dark rooms, cluttered interior, ugly view."
+    artDirection: "Clean architectural photography, wide-angle interior lens, natural daylight, professional real estate aesthetic, elegant serif fonts in navy tones, authentic property presentation.",
+    socialMediaComposition: "Vertical 9:16, property interior or exterior centered, clean view, elegant typography with price call-to-action, trustworthy property feel with natural colors.",
+    negativePrompt: "low quality, blurry property, amateur listing photo, stretched image, cheap flyer, cluttered design, construction debris, empty lot, dark rooms, cluttered interior, ugly view, dramatic shadows."
   },
 
   // 27. AUTOMOTRIZ
   27: {
     rubro: "Automotriz / Autos",
-    artDirection: "Automotive commercial photography, glossy reflections, dramatic rim lighting on curves, motion blur background, bold sans-serif block fonts, automotive magazine aesthetic.",
-    socialMediaComposition: "Vertical 9:16, vehicle in dynamic pose, reflections prominent, speed lines effect, aggressive sporty typography, premium car dealership feel with dramatic lighting.",
-    negativePrompt: "low quality, blurry car, amateur dealership photo, stretched image, cheap flyer, cluttered design, dirty vehicle, rust, flat tire, broken window, dark garage, mechanic shop."
+    artDirection: "Clean automotive photography, natural reflections, even lighting on curves, clean background, bold sans-serif block fonts, professional dealership aesthetic.",
+    socialMediaComposition: "Vertical 9:16, vehicle in clean pose, reflections visible, clean typography, professional car dealership feel with natural lighting.",
+    negativePrompt: "low quality, blurry car, amateur dealership photo, stretched image, cheap flyer, cluttered design, dirty vehicle, rust, flat tire, broken window, dark garage, mechanic shop, dramatic lighting."
   },
 
   // 28. MASCOTAS / VETERINARIA
@@ -98,9 +98,9 @@ export const ART_DIRECTION_PHASE2: Record<number, ArtDirectionPrompt> = {
   // 32. CONSTRUCCIÓN / REFORMAS
   32: {
     rubro: "Construcción / Reformas",
-    artDirection: "Professional construction photography, dramatic worker action shots, architectural precision, bold industrial fonts in steel gray and safety orange, professional builder aesthetic.",
-    socialMediaComposition: "Vertical 9:16, construction progress or finished project centered, dramatic worker action, bold typography with quote request call-to-action, reliable contractor feel with strong colors.",
-    negativePrompt: "low quality, blurry construction, amateur contractor photo, stretched image, cheap flyer, cluttered design, unfinished mess, dangerous site, no workers, abandoned building, trash debris."
+    artDirection: "Professional construction photography, natural worker action shots, architectural precision, bold industrial fonts in steel gray, professional builder aesthetic.",
+    socialMediaComposition: "Vertical 9:16, construction progress or finished project centered, worker action visible, bold typography with quote request call-to-action, reliable contractor feel with strong colors.",
+    negativePrompt: "low quality, blurry construction, amateur contractor photo, stretched image, cheap flyer, cluttered design, unfinished mess, dangerous site, no workers, abandoned building, trash debris, dramatic lighting."
   },
 
   // 33. SERVICIOS PROFESIONALES
@@ -114,25 +114,25 @@ export const ART_DIRECTION_PHASE2: Record<number, ArtDirectionPrompt> = {
   // 34. ARTE / CULTURA
   34: {
     rubro: "Arte / Cultura",
-    artDirection: "Artistic gallery photography, dramatic museum lighting, abstract compositions, elegant minimal typography in black and white, contemporary art gallery aesthetic.",
-    socialMediaComposition: "Vertical 9:16, artwork or cultural event centered, dramatic lighting focus, artistic typography, sophisticated gallery feel with negative space and minimal elements.",
-    negativePrompt: "low quality, blurry art, amateur gallery photo, stretched image, cheap flyer, cluttered design, damaged artwork, empty museum, poor lighting, casual selfie, commercial product."
+    artDirection: "Artistic gallery photography, natural museum lighting, clean compositions, elegant minimal typography in black and white, contemporary art gallery aesthetic.",
+    socialMediaComposition: "Vertical 9:16, artwork or cultural event centered, clean lighting focus, artistic typography, sophisticated gallery feel with negative space and minimal elements.",
+    negativePrompt: "low quality, blurry art, amateur gallery photo, stretched image, cheap flyer, cluttered design, damaged artwork, empty museum, poor lighting, casual selfie, commercial product, dramatic lighting."
   },
 
   // 35. MÚSICA / ENTRETENIMIENTO
   35: {
     rubro: "Música / Entretenimiento",
-    artDirection: "Concert photography, dramatic stage lighting, smoke and laser effects, bold aggressive fonts in neon colors, music festival poster aesthetic.",
-    socialMediaComposition: "Vertical 9:16, performer or stage centered with lighting effects, dynamic energy, bold typography with event details, high-energy entertainment feel with vivid colors.",
-    negativePrompt: "low quality, blurry concert, amateur music photo, stretched image, cheap flyer, cluttered design, empty stage, quiet venue, daytime concert, acoustic gentle, peaceful atmosphere."
+    artDirection: "Concert photography, natural stage lighting, clean performance capture, bold fonts in solid colors, music event aesthetic.",
+    socialMediaComposition: "Vertical 9:16, performer or stage centered with clean presentation, dynamic energy, bold typography with event details, high-energy entertainment feel with natural colors.",
+    negativePrompt: "low quality, blurry concert, amateur music photo, stretched image, cheap flyer, cluttered design, empty stage, quiet venue, daytime concert, acoustic gentle, peaceful atmosphere, dramatic lighting effects."
   },
 
   // 36. DEPORTES
   36: {
     rubro: "Deportes",
-    artDirection: "Dynamic sports photography, frozen action moment, dramatic stadium lighting, gritty texture, bold block fonts in team colors, Sports Illustrated aesthetic.",
-    socialMediaComposition: "Vertical 9:16, athlete in action centered, motion blur edges, bold team colors, exciting score or event call-to-action, energetic sports feel with dynamic composition.",
-    negativePrompt: "low quality, blurry sports, amateur game photo, stretched image, cheap flyer, cluttered design, empty field, boring practice, casual play, peaceful yoga, meditation atmosphere."
+    artDirection: "Authentic sports photography, natural action moment, clean field lighting, realistic texture, bold block fonts in team colors, local sports coverage aesthetic.",
+    socialMediaComposition: "Vertical 9:16, athlete in action centered, clean composition, bold team colors, exciting score or event call-to-action, energetic sports feel with natural feel.",
+    negativePrompt: "low quality, blurry sports, amateur game photo, stretched image, cheap flyer, cluttered design, empty field, boring practice, casual play, peaceful yoga, meditation atmosphere, dramatic stadium lighting."
   },
 
   // 37. HOGAR / INTERIORISMO

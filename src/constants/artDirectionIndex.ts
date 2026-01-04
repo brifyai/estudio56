@@ -182,7 +182,7 @@ export function buildAgencyPrompt(
   // ============================================
   
   // 1. REGLA DE COMPOSICIÓN VERTICAL (Obligatoria)
-  const VERTICAL_COMPOSITION_PROMPT = "Full-height 9:16 vertical composition, edge-to-edge framing, cinematic mobile-optimized layout";
+  const VERTICAL_COMPOSITION_PROMPT = "Full-height 9:16 vertical composition, edge-to-edge framing, clean mobile-optimized layout";
   
   // 2. JERARQUÍA DEL SUJETO (60-70% del eje vertical)
   const SUBJECT_SIZE_PROMPT = "SUBJECT SIZE: The main subject must occupy 60% to 70% of the vertical axis. Use medium shots or close-ups. AVOID wide shots where the subject looks small. The subject should be LARGE and PROMINENT, filling the frame for maximum visual impact";

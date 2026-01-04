@@ -18,17 +18,17 @@ export const ART_DIRECTION_PHASE3: Record<number, ArtDirectionPrompt> = {
   // 42. BARBERÍA
   42: {
     rubro: "Barbería",
-    artDirection: "Classic masculine grooming photography, dramatic vintage lighting, sharp beard detail, leather and chrome textures, bold sans-serif fonts in black and silver tones, old school barbershop aesthetic.",
-    socialMediaComposition: "Vertical 9:16, barber in action or client transformation centered, dramatic shadows, masculine color palette, classic barbershop pole integration, bold service call-to-action.",
-    negativePrompt: "low quality, blurry barber, amateur grooming photo, stretched image, cheap flyer, cluttered design, modern spa, feminine decor, bright fluorescent, casual haircut, messy shop."
+    artDirection: "Authentic masculine grooming photography, natural vintage lighting, sharp beard detail, leather and chrome textures, bold sans-serif fonts in black and silver tones, local barbershop aesthetic.",
+    socialMediaComposition: "Vertical 9:16, barber in action or client transformation centered, clean shadows, masculine color palette, classic barbershop pole integration, bold service call-to-action.",
+    negativePrompt: "low quality, blurry barber, amateur grooming photo, stretched image, cheap flyer, cluttered design, modern spa, feminine decor, bright fluorescent, casual haircut, messy shop, dramatic lighting."
   },
 
   // 43. GIMNASIO / CROSSFIT
   43: {
     rubro: "Gimnasio / Crossfit",
-    artDirection: "High-intensity fitness photography, harsh dramatic lighting, muscle definition focus, gritty gym environment, bold aggressive fonts in red and black tones, Crossfit games aesthetic.",
-    socialMediaComposition: "Vertical 9:16, athlete lifting heavy weights centered, intense energy, motion blur on equipment, aggressive fitness call-to-action, powerful gym atmosphere.",
-    negativePrompt: "low quality, blurry gym, amateur fitness photo, stretched image, cheap flyer, cluttered design, yoga class, zen atmosphere, light weights, peaceful meditation, spa vibes."
+    artDirection: "Authentic fitness photography, natural gym lighting, muscle definition focus, clean gym environment, bold fonts in red and black tones, local gym aesthetic.",
+    socialMediaComposition: "Vertical 9:16, athlete lifting weights centered, clean energy, equipment visible, fitness call-to-action, professional gym atmosphere.",
+    negativePrompt: "low quality, blurry gym, amateur fitness photo, stretched image, cheap flyer, cluttered design, yoga class, zen atmosphere, light weights, peaceful meditation, spa vibes, dramatic lighting."
   },
 
   // 44. PISCINA / ACUÁTICO
@@ -122,9 +122,9 @@ export const ART_DIRECTION_PHASE3: Record<number, ArtDirectionPrompt> = {
   // 55. JOYERÍA
   55: {
     rubro: "Joyería",
-    artDirection: "Luxury jewelry photography, extreme macro on gemstones, dramatic rim lighting, velvet display, elegant serif fonts in gold tones, high-end jewelry aesthetic.",
-    socialMediaComposition: "Vertical 9:16, jewelry piece centered with sparkle effect, luxurious colors, special occasion call-to-action, premium jewelry feel with elegance and sophistication.",
-    negativePrompt: "low quality, blurry jewelry, amateur jewelry photo, stretched image, cheap flyer, cluttered design, tarnished metal, fake stones, costume jewelry, messy display, cheap materials."
+    artDirection: "Clean jewelry photography, natural gemstone detail, soft rim lighting, clean display, elegant serif fonts in gold tones, professional jewelry aesthetic.",
+    socialMediaComposition: "Vertical 9:16, jewelry piece centered with clean sparkle, elegant colors, special occasion call-to-action, trustworthy jewelry feel with natural elegance.",
+    negativePrompt: "low quality, blurry jewelry, amateur jewelry photo, stretched image, cheap flyer, cluttered design, tarnished metal, fake stones, costume jewelry, messy display, cheap materials, dramatic lighting."
   },
 
   // 56. ÓPTICA

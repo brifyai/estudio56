@@ -7,10 +7,15 @@
 export const REALITY_MODES = {
   /**
    * MODO 1: Para Pymes reales (evita el look "fake luxury")
-   * Genera imágenes con luz natural de día, fondos blancos limpios,
-   * texturas realistas. Ideal para gimnasios de barrio, salons de belleza locales, etc.
+   * Genera imágenes con luz natural suave, texturas auténticas,
+   * look de fotografía local chilena. Ideal para gimnasios de barrio,
+   * salons de belleza locales, restaurants familiares, etc.
    */
-  realist: `STYLE_INSTRUCTION: Authentic commercial photography. Bright natural daylight (morning light), clean white walls, realistic textures. The image should look trustworthy, approachable, and achievable for a local business in Chile. Avoid: hyper-luxury elements, dark moody lighting, cinematic fog, candles, 8k unreal render aesthetics.`,
+  realist: `STYLE_INSTRUCTION: Natural commercial photography.
+  Soft organic daylight, overcast sky lighting, authentic textures without artificial shine.
+  Handheld photography aesthetic, slight natural motion blur, realistic skin tones.
+  The scene must look like a real photo taken in a local Chilean business by a professional photographer.
+  AVOID: neon glows, cinematic fog, plastic skin, hyper-saturated colors, dramatic shadows, 8k render aesthetics, masterpiece, ultra-detailed, cinematic lighting.`,
 
   /**
    * MODO 2: El modo actual (para quien quiere vender un sueño)
