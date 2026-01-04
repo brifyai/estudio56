@@ -1748,7 +1748,7 @@ const handleGenerate = async () => {
                     <CollapsibleSection
                       title="Editor de Texto"
                       icon="✏️"
-                      defaultOpen={true}
+                      defaultOpen={false}
                     >
                       <TextEditorPanel
                         overlayText={overlayText}
@@ -1775,7 +1775,7 @@ const handleGenerate = async () => {
                     <CollapsibleSection
                       title="Reality Slider"
                       icon="🎚️"
-                      defaultOpen={true}
+                      defaultOpen={false}
                     >
                       <RealitySlider
                         value={realityLevel}
