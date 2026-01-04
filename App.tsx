@@ -228,6 +228,17 @@ const Dashboard: React.FC = () => {
     loadBrands();
   }, []);
 
+  // 🎚️ INICIALIZAR sceneId CUANDO SE GENERA UNA IMAGEN
+  // Este useEffect garantiza que sceneId se setee cada vez que imageUrl cambia
+  // y no estaba previamente seteado, asegurando que el RealitySlider funcione
+  useEffect(() => {
+    if (imageUrl && !sceneId) {
+      const newSceneId = `scene_${Date.now()}_${seed || Math.floor(Math.random() * 2000000000)}`;
+      setSceneId(newSceneId);
+      console.log('🎚️ SceneId inicializado por useEffect:', newSceneId);
+    }
+  }, [imageUrl, sceneId, seed]);
+
   useEffect(() => {
     // Enhanced auth check with better error handling
     const checkAuth = async () => {
@@ -1101,13 +1112,6 @@ const handleGenerate = async () => {
         setImageUrl(result.imageDataUrl);
         setDraftImageUrl(result.imageDataUrl);
         
-        // 🎚️ INICIALIZAR sceneId PARA REALITY SLIDER
-        // Esto es CRÍTICO para que el slider funcione
-        if (!sceneId) {
-          setSceneId(`scene_${Date.now()}_${newSeed}`);
-          console.log('🎚️ SceneId inicializado para Reality Slider:', `scene_${Date.now()}_${newSeed}`);
-        }
-        
         // NEW: Guardar generación en base de datos (image y story_art)
         if (imageQuality === 'draft' && (mediaType === 'image' || mediaType === 'story_art')) {
           const generation = await createGeneration({
@@ -1134,6 +1138,9 @@ const handleGenerate = async () => {
         setAutoTextValidation(result.autoTextValidation);
         setEnhancedStyles(result.enhancedStyles);
         setIsDraft(imageQuality === 'draft');
+        
+        // 🎚️ INICIALIZAR sceneId PARA REALITY SLIDER - useEffect separado
+        // Esto garantiza que sceneId se setee cada vez que se genera una imagen
       } else {
         // ✅ CORREGIDO: Usar videoStyleKey para videos en lugar de styleKey
         const effectiveVideoStyleKey = videoStyleKey || 'video_retail_sale';
