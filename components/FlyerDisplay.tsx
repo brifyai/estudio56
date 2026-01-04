@@ -1440,9 +1440,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     // Mostrar texto del usuario (localText) o texto generado automáticamente (overlayText/initialOverlayText)
     const displayText = localText || overlayText || initialOverlayText || '';
     
-    // OCULTAR durante comparación (excepto en modo edición)
+    // OCULTAR durante comparación SOLO en el borrador (para evitar duplicado visual)
+    // El texto SIEMPRE se muestra en HD durante la comparación
     if (!displayText && !isEditing) return null;
-    if (showComparison && !isComparisonDraft && !isEditing) return null;
+    if (showComparison && isComparisonDraft && !isEditing) return null;
 
     // Calcular escala para comparación de borrador
     // HD: 320px, Draft: 200px → escala = 200/320 = 0.625
@@ -1853,17 +1854,28 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               </div>
             </div>
             
-            {/* BOTÓN DESCARGAR IMAGEN HD - Debajo del comparador */}
-            <div className="mt-6 flex flex-col items-center gap-3">
+            {/* BOTÓN DESCARGAR IMAGEN HD - Centrado y debajo de las imágenes */}
+            <div className="mt-8 flex flex-col items-center gap-3">
               <button
                 onClick={() => {
                   // Descargar la imagen HD con todos los overlays
                   const hdContainer = document.querySelector('.hd-download-container');
                   if (hdContainer) {
                     downloadElementAsImage(hdContainer as HTMLElement, `estudio-56-hd-${Date.now()}.png`, { scale: 2 });
+                  } else {
+                    console.error('❌ No se encontró el contenedor HD para descargar');
+                    // Fallback: descargar directamente la URL de la imagen HD
+                    if (hdImageUrl) {
+                      const link = document.createElement('a');
+                      link.href = hdImageUrl;
+                      link.download = `estudio-56-hd-${Date.now()}.png`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }
                   }
                 }}
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>⬇️</span>
                 <span>Descargar imagen HD</span>
