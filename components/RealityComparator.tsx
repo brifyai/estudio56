@@ -3,16 +3,16 @@ import { RealityVariation, RealityLevel } from '../types';
 import { getRealityLabel, getRealityIcon, getRealityCategory } from '../services/realityMapper';
 
 interface RealityComparatorProps {
-  /** Variación de la izquierda (típicamente más realista) */
-  leftVariation: RealityVariation | null;
-  /** Variación de la derecha (típicamente más aspiracional) */
-  rightVariation: RealityVariation | null;
-  /** Callback cuando se selecciona una variación */
-  onSelect?: (variation: RealityVariation) => void;
+  /** ID de la scene para cargar variaciones */
+  sceneId?: string | null;
+  /** Variaciones cacheadas (nivel -> URL) */
+  variations?: Record<number, string>;
+  /** Nivel actual seleccionado */
+  currentLevel?: RealityLevel;
+  /** Callback cuando se selecciona un nivel */
+  onSelect?: (level: RealityLevel) => void;
   /** Callback cuando se cierra el comparador */
   onClose?: () => void;
-  /** Variación actualmente seleccionada */
-  selectedVariationId?: string | null;
   /** Formato de aspect ratio para el tamaño */
   aspectRatio?: '1:1' | '9:16' | '4:5' | '16:9';
   /** Si el comparador está activo */
@@ -20,17 +20,49 @@ interface RealityComparatorProps {
 }
 
 const RealityComparator: React.FC<RealityComparatorProps> = ({
-  leftVariation,
-  rightVariation,
+  sceneId,
+  variations = {},
+  currentLevel = 2.5,
   onSelect,
   onClose,
-  selectedVariationId,
   aspectRatio = '1:1',
   isActive = true
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Obtener las dos variaciones para comparar (izquierda y derecha del slider)
+  // Usamos el nivel actual como punto central
+  const currentLevelNum = parseFloat(currentLevel.toString());
+  const leftLevel = Math.max(1.0, currentLevelNum - 0.5);
+  const rightLevel = Math.min(5.0, currentLevelNum + 0.5);
+  
+  const leftVariationUrl = variations[leftLevel] || null;
+  const rightVariationUrl = variations[rightLevel] || null;
+  
+  // Crear objetos RealityVariation simulados para las funciones helper
+  const leftVariation: RealityVariation | null = leftVariationUrl ? {
+    id: `var_left_${Date.now()}`,
+    parent_scene_id: sceneId || '',
+    seed: 0,
+    stars: leftLevel as RealityLevel,
+    image_url: leftVariationUrl,
+    prompt_used: '',
+    created_at: new Date(),
+    cached: true
+  } : null;
+  
+  const rightVariation: RealityVariation | null = rightVariationUrl ? {
+    id: `var_right_${Date.now()}`,
+    parent_scene_id: sceneId || '',
+    seed: 0,
+    stars: rightLevel as RealityLevel,
+    image_url: rightVariationUrl,
+    prompt_used: '',
+    created_at: new Date(),
+    cached: true
+  } : null;
 
   // Colores por categoría
   const getCategoryColor = (stars: RealityLevel): string => {
@@ -109,15 +141,13 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
       );
     }
 
-    const isSelected = selectedVariationId === variation.id;
     const borderColor = getCategoryColor(variation.stars);
 
     return (
       <div className="relative">
-        <div 
+        <div
           className={`
             ${dimensions.width} ${dimensions.height} rounded-xl overflow-hidden relative
-            ${isSelected ? `ring-4 ${borderColor.replace('border', 'ring').replace('shadow', '')} ring-opacity-50` : ''}
             transition-all duration-300
           `}
         >
@@ -143,22 +173,23 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
               </p>
             </div>
           </div>
-          
-          {/* Badge de selección */}
-          {isSelected && (
-            <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg">
-              ✓ Seleccionado
-            </div>
-          )}
         </div>
         
         {/* Botón seleccionar */}
-        {onSelect && !isSelected && (
+        {onSelect && isLeft && leftVariation && (
           <button
-            onClick={() => onSelect(variation)}
+            onClick={() => onSelect(leftVariation.stars)}
             className="mt-3 w-full py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-colors"
           >
-            Seleccionar esta versión
+            Seleccionar {getRealityLabel(leftVariation.stars)}
+          </button>
+        )}
+        {onSelect && !isLeft && rightVariation && (
+          <button
+            onClick={() => onSelect(rightVariation.stars)}
+            className="mt-3 w-full py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-colors"
+          >
+            Seleccionar {getRealityLabel(rightVariation.stars)}
           </button>
         )}
       </div>
@@ -303,30 +334,18 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         <div className="flex gap-2 mt-4">
           {leftVariation && (
             <button
-              onClick={() => onSelect(leftVariation)}
-              className={`
-                flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all
-                ${selectedVariationId === leftVariation.id 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                }
-              `}
+              onClick={() => onSelect(leftVariation.stars)}
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
             >
-              {selectedVariationId === leftVariation.id ? '✓' : ''} {getRealityLabel(leftVariation.stars)}
+              {getRealityLabel(leftVariation.stars)}
             </button>
           )}
           {rightVariation && (
             <button
-              onClick={() => onSelect(rightVariation)}
-              className={`
-                flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all
-                ${selectedVariationId === rightVariation.id 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                }
-              `}
+              onClick={() => onSelect(rightVariation.stars)}
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
             >
-              {selectedVariationId === rightVariation.id ? '✓' : ''} {getRealityLabel(rightVariation.stars)}
+              {getRealityLabel(rightVariation.stars)}
             </button>
           )}
         </div>

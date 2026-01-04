@@ -22,6 +22,12 @@ interface RealitySliderProps {
   isLoading?: boolean;
   /** ID de la scene para el caché */
   sceneId?: string;
+  /** URL de la imagen actual */
+  currentImageUrl?: string | null;
+  /** Seed para consistencia visual */
+  seed?: number;
+  /** Callback cuando cambia el nivel (alias de onChange) */
+  onLevelChange?: (value: RealityLevel) => void;
   /** Si el slider está deshabilitado */
   disabled?: boolean;
   /** Mostrar ayuda contextual */
@@ -38,6 +44,9 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   onGenerateVariation,
   isLoading = false,
   sceneId,
+  currentImageUrl,
+  seed,
+  onLevelChange,
   disabled = false,
   showHelp = true,
   compact = false,
@@ -80,6 +89,7 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
     if (localValue !== value && !disabled && !isGenerating) {
       // Notificar cambio
       onChange(localValue);
+      onLevelChange?.(localValue);
       
       // Si hay callback de generación y el valor no está en caché, generar
       if (onGenerateVariation && sceneId) {
@@ -94,7 +104,7 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         }
       }
     }
-  }, [localValue, value, disabled, isGenerating, onChange, onGenerateVariation, sceneId, onGenerationComplete]);
+  }, [localValue, value, disabled, isGenerating, onChange, onLevelChange, onGenerateVariation, sceneId, onGenerationComplete]);
 
   // Manejar touch end para mobile
   const handleTouchEnd = useCallback(async () => {
