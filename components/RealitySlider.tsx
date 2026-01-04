@@ -76,7 +76,7 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
 
   const gradientColor = categoryColors[category];
 
-  // Manejar cambio del slider
+  // Manejar cambio del slider - solo actualiza valor local
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled || isGenerating) return;
     
@@ -84,46 +84,19 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
     setLocalValue(newValue);
   }, [disabled, isGenerating]);
 
-  // Manejar cuando el usuario suelta el slider
-  const handleMouseUp = useCallback(async () => {
+  // Manejar cuando el usuario suelta el slider - llama a onLevelChange
+  const handleMouseUp = useCallback(() => {
     if (localValue !== value && !disabled && !isGenerating) {
-      // Notificar cambio
-      onChange(localValue);
       onLevelChange?.(localValue);
-      
-      // Si hay callback de generación y el valor no está en caché, generar
-      if (onGenerateVariation && sceneId) {
-        setIsGenerating(true);
-        try {
-          await onGenerateVariation(localValue);
-          onGenerationComplete?.(localValue, '');
-        } catch (error) {
-          console.error('❌ Error generando variación:', error);
-        } finally {
-          setIsGenerating(false);
-        }
-      }
     }
-  }, [localValue, value, disabled, isGenerating, onChange, onLevelChange, onGenerateVariation, sceneId, onGenerationComplete]);
+  }, [localValue, value, disabled, isGenerating, onLevelChange]);
 
   // Manejar touch end para mobile
-  const handleTouchEnd = useCallback(async () => {
+  const handleTouchEnd = useCallback(() => {
     if (localValue !== value && !disabled && !isGenerating) {
-      onChange(localValue);
-      
-      if (onGenerateVariation && sceneId) {
-        setIsGenerating(true);
-        try {
-          await onGenerateVariation(localValue);
-          onGenerationComplete?.(localValue, '');
-        } catch (error) {
-          console.error('❌ Error generando variación:', error);
-        } finally {
-          setIsGenerating(false);
-        }
-      }
+      onLevelChange?.(localValue);
     }
-  }, [localValue, value, disabled, isGenerating, onChange, onGenerateVariation, sceneId, onGenerationComplete]);
+  }, [localValue, value, disabled, isGenerating, onLevelChange]);
 
   // Niveles disponibles
   const levels = getAvailableRealityLevels();
@@ -273,25 +246,11 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         </div>
       </div>
       
-      {/* Botón de Actualizar */}
+      {/* Botón de Actualizar - llama a onLevelChange para generar la variación */}
       <button
-        onClick={async () => {
+        onClick={() => {
           if (localValue !== value && !disabled && !isGenerating) {
-            // Notificar cambio
-            onChange(localValue);
-            
-            // Si hay callback de generación y el valor no está en caché, generar
-            if (onGenerateVariation && sceneId) {
-              setIsGenerating(true);
-              try {
-                await onGenerateVariation(localValue);
-                onGenerationComplete?.(localValue, '');
-              } catch (error) {
-                console.error('❌ Error generando variación:', error);
-              } finally {
-                setIsGenerating(false);
-              }
-            }
+            onLevelChange?.(localValue);
           }
         }}
         disabled={disabled || isGenerating || localValue === value}
