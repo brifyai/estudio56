@@ -1783,6 +1783,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
               'w-[280px] h-[498px]'}`}
         >
+          {/* Contenido mobile */}
           <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
             {(() => {
               const needsCors = imageUrl && !imageUrl.startsWith('blob:');
@@ -1937,6 +1938,59 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* VISTA DESKTOP - Solo visible en desktop (lg y superior) */}
+        <div
+          id="flyer-container-desktop"
+          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden hidden lg:block
+            ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
+              aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
+              aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
+              'w-[280px] h-[498px]'}`}
+        >
+          {/* Contenido desktop - igual que mobile pero sin controles táctiles */}
+          <div className="w-full h-full relative">
+            {(() => {
+              const needsCors = imageUrl && !imageUrl.startsWith('blob:');
+              const videoSrc = imageUrl && isVideoUrl(imageUrl);
+              
+              if (videoSrc) {
+                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
+                  return renderMediaPlaceholder();
+                }
+                return (
+                  <video
+                    src={imageUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    crossOrigin={needsCors ? "anonymous" : undefined}
+                    onError={(e) => handleMediaError(e, 'video')}
+                  />
+                );
+              }
+              
+              if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
+                return renderMediaPlaceholder();
+              }
+              
+              return (
+                <img
+                  src={imageUrl}
+                  alt="Generated Content"
+                  className="w-full h-full object-cover"
+                  crossOrigin={needsCors ? "anonymous" : undefined}
+                  onError={(e) => handleMediaError(e, 'image')}
+                />
+              );
+            })()}
+            {renderLogo()}
+            {renderProduct()}
+            {renderText()}
           </div>
         </div>
       </div>
