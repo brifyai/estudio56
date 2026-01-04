@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { FlyerStyleKey, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
 import { POSTER_STYLES, POSTER_INDUSTRY_PROMPTS } from './constants';
 import { FlyerForm } from './components/FlyerForm';
 import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
@@ -71,6 +71,7 @@ const Dashboard: React.FC = () => {
   
   // App State
   const [styleKey, setStyleKey] = useState<FlyerStyleKey>('retail_sale');
+  const [videoStyleKey, setVideoStyleKey] = useState<FlyerStyleKeyVideo>('video_retail_sale'); // NEW: Estado separado para estilos de video
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16');
   const [mediaType, setMediaType] = useState<MediaType>('image');
   const [posterStyle, setPosterStyle] = useState<PosterStyle>('promotional');
@@ -1101,17 +1102,19 @@ const handleGenerate = async () => {
         setEnhancedStyles(result.enhancedStyles);
         setIsDraft(imageQuality === 'draft');
       } else {
+        // ✅ CORREGIDO: Usar videoStyleKey para videos en lugar de styleKey
+        const effectiveVideoStyleKey = videoStyleKey || 'video_retail_sale';
         setStatus({
             isLoading: true,
             step: 'rendering',
             message: imageQuality === 'draft' ? ':: SIMULANDO_FISICAS_RAPIDAS ::' : ':: PRODUCIENDO_VIDEO_CINEMATICO ::'
           });
-        console.log('🎬 Generating video with aspectRatio:', aspectRatio);
+        console.log('🎬 Generating video with aspectRatio:', aspectRatio, '| videoStyleKey:', effectiveVideoStyleKey);
         // Generar imagen base para el video
         const videoSeed = Math.floor(Math.random() * 2000000000);
         const imageResult = await generateFlyerImage(
           enhancedPrompt,
-          effectiveStyleKey,
+          effectiveVideoStyleKey, // ✅ Usar videoStyleKey para la imagen base del video
           aspectRatio,
           'draft', // Siempre usar draft para la imagen base del video
           videoSeed,
@@ -1122,7 +1125,7 @@ const handleGenerate = async () => {
           undefined // autoTextStyle
         );
         
-        const url = await generateFlyerVideo(enhancedPrompt, effectiveStyleKey, aspectRatio, imageQuality, hasProductOverlay, imageResult.imageDataUrl);
+        const url = await generateFlyerVideo(enhancedPrompt, effectiveVideoStyleKey, aspectRatio, imageQuality, hasProductOverlay, imageResult.imageDataUrl);
         console.log('✅ Video generated:', url?.substring(0, 50) + '...');
         setImageUrl(url);
         
@@ -1271,12 +1274,12 @@ const handleGenerate = async () => {
               }
             }
       } else {
-          // Regenerar prompt en inglés para video HD
-            const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
+          // ✅ CORREGIDO: Usar videoStyleKey para video HD
+            const { english: enhancedPrompt } = await enhancePrompt(description, videoStyleKey);
             // Usar imagen draft como referencia para mantener consistencia
             url = await generateFlyerVideo(
               enhancedPrompt,
-              styleKey,
+              videoStyleKey,
               aspectRatio,
               'hd',
               hasProductOverlay,
@@ -1399,11 +1402,11 @@ const handleGenerate = async () => {
          setAutoTextValidation(result.autoTextValidation);
          setEnhancedStyles(result.enhancedStyles);
       } else {
-         // Para refine de video, generar nueva imagen base
+         // ✅ CORREGIDO: Usar videoStyleKey para refine de video
          const refineSeed = Math.floor(Math.random() * 2000000000);
          const refineImageResult = await generateFlyerImage(
            newPrompt,
-           styleKey,
+           videoStyleKey,
            aspectRatio,
            'draft',
            refineSeed,
@@ -1411,7 +1414,7 @@ const handleGenerate = async () => {
            hasProductOverlay,
            false
          );
-         url = await generateFlyerVideo(newPrompt, styleKey, aspectRatio, qualityToUse, hasProductOverlay, refineImageResult.imageDataUrl);
+         url = await generateFlyerVideo(newPrompt, videoStyleKey, aspectRatio, qualityToUse, hasProductOverlay, refineImageResult.imageDataUrl);
       }
       setImageUrl(url);
       setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
@@ -1515,6 +1518,7 @@ const handleGenerate = async () => {
             <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto overflow-x-hidden pb-32 lg:pb-6 scroll-smooth">
                 <FlyerForm
                     styleKey={styleKey}
+                    videoStyleKey={videoStyleKey} // NEW: Pasar estado de video
                     aspectRatio={aspectRatio}
                     mediaType={mediaType}
                     description={description}
@@ -1523,6 +1527,7 @@ const handleGenerate = async () => {
                     productUrl={productUrl}
                     setProductUrl={setProductUrl}
                     setStyleKey={setStyleKey}
+                    setVideoStyleKey={setVideoStyleKey} // NEW: Pasar setter de video
                     setAspectRatio={setAspectRatio}
                     setMediaType={setMediaType}
                     setDescription={setDescription}
@@ -1593,6 +1598,7 @@ const handleGenerate = async () => {
                               setTextPosition={setTextPosition}
                               workMode={workMode}
                               styleKey={styleKey}
+                              videoStyleKey={videoStyleKey} // ✅ NEW: Prop separada para video
                               overlayText={overlayText}
                               setOverlayText={setOverlayText}
                               textStyles={manualTextStyles}
@@ -1725,6 +1731,7 @@ const handleGenerate = async () => {
                     setTextPosition={setTextPosition}
                     workMode={workMode}
                     styleKey={styleKey}
+                    videoStyleKey={videoStyleKey} // ✅ NEW: Prop separada para video
                     overlayText={overlayText}
                     setOverlayText={setOverlayText}
                     textStyles={manualTextStyles}

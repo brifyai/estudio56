@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { GenerationStatus, AspectRatio, FlyerStyleKey } from '../types';
+import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo } from '../types';
 import { downloadComposedImage, getDimensionsForAspectRatio } from '../services/compositionExportService';
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
 import {
@@ -39,6 +39,7 @@ interface FlyerDisplayProps {
   setTextPosition?: (pos: { x: number; y: number }) => void;
   workMode?: 'auto' | 'manual';
   styleKey?: FlyerStyleKey;
+  videoStyleKey?: FlyerStyleKeyVideo; // NEW: Estilo de video separado
   overlayText?: string;
   setOverlayText?: (text: string) => void;
   textStyles?: TextStyleOptions;
@@ -87,6 +88,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   setTextPosition,
   workMode = 'auto',
   styleKey = 'brand_identity',
+  videoStyleKey = 'video_retail_sale', // NEW: Default para video
   overlayText = '',
   setOverlayText,
   textStyles,

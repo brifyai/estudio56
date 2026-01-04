@@ -9,6 +9,7 @@ import { processMagicMode, MagicModeResult, STYLE_NAMES_ES, detectVideoStyleFrom
 
 interface FlyerFormProps {
   styleKey: FlyerStyleKey;
+  videoStyleKey?: FlyerStyleKeyVideo; // NEW: Estado separado para estilos de video
   aspectRatio: AspectRatio;
   mediaType: MediaType;
   description: string;
@@ -20,6 +21,7 @@ interface FlyerFormProps {
   setOverlayText: (t: string) => void;
   setOverlayStyle: (s: OverlayStyle) => void;
   setStyleKey: (s: FlyerStyleKey) => void;
+  setVideoStyleKey?: (s: FlyerStyleKeyVideo) => void; // NEW: Setter para estilo de video
   setAspectRatio: (r: AspectRatio) => void;
   setMediaType: (m: MediaType) => void;
   setDescription: (s: string) => void;
@@ -56,6 +58,7 @@ interface FlyerFormProps {
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
   styleKey,
+  videoStyleKey, // NEW: Estado separado para video
   aspectRatio,
   mediaType,
   description,
@@ -67,6 +70,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   setOverlayText,
   setOverlayStyle,
   setStyleKey,
+  setVideoStyleKey, // NEW: Setter para video
   setAspectRatio,
   setMediaType,
   setDescription,
@@ -238,8 +242,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           detectedIndustry: videoDetection.industry
         });
         
-        // Auto-seleccionar el estilo de video detectado
-        setStyleKey(videoDetection.styleKey as FlyerStyleKey);
+        // ✅ CORREGIDO: Usar estado separado para video sin casteo incorrecto
+        setVideoStyleKey?.(videoDetection.styleKey);
         console.log('✅ Estilo de video detectado:', videoDetection.styleKey, 'Confianza:', videoDetection.confidence);
       }, 800);
       
@@ -247,7 +251,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     } else if (mediaType === 'video') {
       setVideoMagicModeResult(null);
     }
-  }, [description, mediaType, setStyleKey]);
+  }, [description, mediaType, setVideoStyleKey]);
 
   // NUEVO: Convertir estilo de imagen a video cuando se cambia de imagen a video
   useEffect(() => {
