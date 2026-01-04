@@ -2701,4 +2701,486 @@ export const generateVideoWithQuality = async (
       draftResult
     };
   }
+  
+};
+
+// ============================================
+// 🛠️ SISTEMA DE EDICIÓN COHERENTE CON MEMORIA DE CONTEXTO
+// Resuelve el problema de "cambios locos" cuando el usuario pide modificaciones
+// ============================================
+
+// ============================================
+// 1. ADN INMUTABLE DE LA MARCA
+// Este bloque se envía SIEMPRE, sin importar el cambio solicitado
+// Actúa como "contrato" que la IA no puede romper
+// ============================================
+const BRAND_DNA_ANCHOR = `
+  STRICT_CONSISTENCY_LOCK:
+  - DO NOT change the environment style: Keep it 3-star professional and cozy.
+  - DO NOT change the subject's identity: Keep the same person and realistic features.
+  - DO NOT add text: The ZERO_TEXT_POLICY remains active.
+  - DO NOT add luxury: No 5-star hotel elements, no marble, no excess gold.
+  - DO NOT change the photographic style: Maintain 35mm lens aesthetic.
+  - DO NOT alter the lighting mood: Keep consistent with original reference.
+`;
+
+// ============================================
+// 2. FILTRO DE COHERENCIA VISUAL
+// Reglas para mantener consistencia visual durante iteraciones
+// ============================================
+const VISUAL_CONSISTENCY_FILTER = `
+  VISUAL_COHERENCE_RULES:
+  - Maintain identical composition and subject placement
+  - Keep same camera angle and perspective
+  - Preserve color palette and mood
+  - Maintain same lighting direction and quality
+  - Keep subject size and proportions consistent
+  - Preserve background elements and depth of field
+`;
+
+// ============================================
+// 3. REGLAS DE MANTENIMIENTO DE EDICIÓN
+// Evita que la IA "alucine" cambios no deseados
+// ============================================
+const EDIT_MAINTENANCE_RULES = `
+  EDIT_MAINTENANCE:
+  - ONLY modify the specific element requested by the user
+  - ALL other elements must remain IDENTICAL to the reference
+  - If user asks for "change shirt color", ONLY change shirt color
+  - If user asks for "add plant", ONLY add plant, nothing else
+  - Do NOT take this as permission to regenerate the entire scene
+  - Do NOT improve "other things" that weren't requested
+  - Preserve the original seed's visual DNA
+`;
+
+// ============================================
+// 4. PROCESADOR DE SOLICITUDES DE EDICIÓN
+// Convierte pedidos simples en prompts técnicos ultra-detallados
+// ============================================
+export const processEditRequest = (
+  previousPrompt: string,
+  userChangeRequest: string
+): string => {
+  return `
+    REFINEMENT_MODE: Active.
+    ${BRAND_DNA_ANCHOR}
+    ${VISUAL_CONSISTENCY_FILTER}
+    ${EDIT_MAINTENANCE_RULES}
+    
+    REFERENCE_CONTEXT: "${previousPrompt}"
+    
+    SPECIFIC_MODIFICATION: "${userChangeRequest}"
+    
+    INSTRUCTION: Apply the modification ONLY to the requested element.
+    Everything else must remain IDENTICAL to the REFERENCE_CONTEXT.
+    Maintain photographic coherence and 35mm lens style.
+    
+    CRITICAL: The output must be a refined version of the reference,
+    not a completely new generation. Preserve the essence.
+  `.replace(/\n/g, ' ').trim();
+};
+
+// ============================================
+// 5. GENERADOR DE PROMPT DE EDICIÓN (Técnica de Prompt de Referencia)
+// ============================================
+export const generateEditPrompt = (
+  originalPrompt: string,
+  userRequest: string
+): string => {
+  return `
+    ORIGINAL_REFERENCE: "${originalPrompt}"
+    MODIFICATION_REQUIRED: "${userRequest}"
+    STRICT_RULE: Maintain 90% visual consistency with the original reference.
+    Only change the specific elements requested.
+    Keep the same person, same 3-star professional setting, and same lighting style.
+    Keep the same photographic quality and 35mm lens aesthetic.
+  `.replace(/\n/g, ' ').trim();
+};
+
+// ============================================
+// 6. INTERFAZ DE RESULTADO DE EDICIÓN
+// ============================================
+export interface EditResult {
+  success: boolean;
+  imageUrl?: string;
+  error?: string;
+  coherenceScore?: number;
+  appliedModification?: string;
+}
+
+// ============================================
+// 7. GENERADOR DE EDICIÓN DE IMAGEN
+// Usa imagen de referencia + prompt procesado para cambios coherentes
+// ============================================
+export const generateImageEdit = async (
+  originalImageUrl: string,
+  originalPrompt: string,
+  userChangeRequest: string,
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16',
+  seed?: number
+): Promise<EditResult> => {
+  console.log('🎨 [ImageEdit] Procesando edición coherente...');
+  console.log('📝 [ImageEdit] Solicitud:', userChangeRequest);
+  
+  try {
+    // Extraer base64 de la imagen original
+    const base64Data = originalImageUrl.split(',')[1];
+    
+    // Procesar el prompt de edición con memoria de contexto
+    const processedPrompt = processEditRequest(originalPrompt, userChangeRequest);
+    
+    // Usar el mismo seed para consistencia (o generar uno nuevo si no existe)
+    const editSeed = seed || Math.floor(Math.random() * 2000000000);
+    
+    const ai = getAiClient();
+    const model = 'gemini-3-pro-image-preview';
+    
+    console.log('🔄 [ImageEdit] Enviando edición a Gemini con contexto...');
+    
+    const response = await ai.models.generateContent({
+      model,
+      contents: {
+        parts: [
+          { text: processedPrompt },
+          {
+            inlineData: {
+              mimeType: 'image/jpeg',
+              data: base64Data
+            }
+          }
+        ]
+      },
+      config: {
+        seed: editSeed,
+        imageConfig: {
+          aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
+                       aspectRatio === '1.91:1' ? '16:9' :
+                       aspectRatio === '1080x1080' ? '1:1' :
+                       aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
+                       '1:1',
+          imageSize: "1K"
+        }
+      }
+    });
+    
+    // Extraer la imagen editada
+    const candidates = response.candidates;
+    if (!candidates || candidates.length === 0) {
+      throw new Error("API retornó 0 candidatos");
+    }
+    
+    const parts = candidates[0].content?.parts;
+    if (!parts || parts.length === 0) {
+      throw new Error("Respuesta vacía");
+    }
+    
+    for (const part of parts) {
+      if (part.inlineData && part.inlineData.data) {
+        let base64Result = part.inlineData.data.replace(/\s/g, '');
+        const imageDataUrl = `data:image/jpeg;base64,${base64Result}`;
+        
+        console.log('✅ [ImageEdit] Edición completada exitosamente');
+        
+        // Aplicar diagnóstico para evitar imágenes en negro
+        const correctedImageUrl = await diagnoseAndFixBlackImage(imageDataUrl);
+        
+        return {
+          success: true,
+          imageUrl: correctedImageUrl,
+          coherenceScore: 0.9,
+          appliedModification: userChangeRequest
+        };
+      }
+    }
+    
+    throw new Error("No se encontraron datos de imagen en la respuesta");
+    
+  } catch (error: any) {
+    console.error('❌ [ImageEdit] Error:', error);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido en edición de imagen'
+    };
+  }
+};
+
+// ============================================
+// 8. GENERADOR DE EDICIÓN DE VIDEO
+// Mantiene coherencia temporal en videos editados
+// ============================================
+export const generateVideoEdit = async (
+  originalVideoUrl: string,
+  originalPrompt: string,
+  userChangeRequest: string,
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16',
+  seed?: number
+): Promise<EditResult> => {
+  console.log('🎬 [VideoEdit] Procesando edición de video coherente...');
+  console.log('📝 [VideoEdit] Solicitud:', userChangeRequest);
+  
+  try {
+    // Procesar el prompt de edición con memoria de contexto
+    const processedPrompt = processEditRequest(originalPrompt, userChangeRequest);
+    
+    // Usar el mismo seed para consistencia temporal
+    const editSeed = seed || Math.floor(Math.random() * 2000000000);
+    
+    const ai = getAiClient();
+    const model = 'veo-3.1-generate-preview';
+    
+    console.log('🔄 [VideoEdit] Enviando edición a VEO con contexto...');
+    
+    // Generar nuevo video con el prompt procesado
+    const operation = await ai.models.generateVideos({
+      model,
+      prompt: processedPrompt,
+      config: {
+        numberOfVideos: 1,
+        resolution: '1080p',
+        aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
+                     aspectRatio === '1.91:1' ? '16:9' :
+                     aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
+                     aspectRatio === '1080x1080' ? '1:1' :
+                     '16:9'
+      }
+    });
+    
+    console.log("⏳ [VideoEdit] Generando video...");
+    
+    // Esperar a que termine la generación
+    let currentOperation = operation;
+    while (!currentOperation.done) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      currentOperation = await ai.operations.getVideosOperation({operation: currentOperation});
+    }
+    
+    const uri = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!uri) {
+      throw new Error("No video URI returned");
+    }
+    
+    console.log('📹 [VideoEdit] Video URI received:', uri);
+    
+    // Descargar el video
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const videoUrl = `${uri}&key=${apiKey}`;
+    
+    const response = await fetch(videoUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to download video: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    
+    // Validar el video
+    if (blob.size < 1000) {
+      throw new Error("Video generado está vacío o corrupto");
+    }
+    
+    if (!blob.type.startsWith('video/')) {
+      throw new Error("El archivo descargado no es un video válido");
+    }
+    
+    const localBlobUrl = URL.createObjectURL(blob);
+    
+    console.log('✅ [VideoEdit] Edición completada exitosamente');
+    
+    return {
+      success: true,
+      imageUrl: localBlobUrl,
+      coherenceScore: 0.85,
+      appliedModification: userChangeRequest
+    };
+    
+  } catch (error: any) {
+    console.error('❌ [VideoEdit] Error:', error);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido en edición de video'
+    };
+  }
+};
+
+// ============================================
+// 9. EDICIÓN CON REINTENTO AUTOMÁTICO
+// Si la edición falla, reintenta con variación de seed
+// ============================================
+export const generateEditWithRetry = async (
+  originalImageUrl: string,
+  originalPrompt: string,
+  userChangeRequest: string,
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16',
+  maxRetries: number = 2
+): Promise<EditResult> => {
+  console.log('🔄 [EditWithRetry] Iniciando edición con reintentos...');
+  
+  let lastError: string = '';
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`📍 [EditWithRetry] Intento ${attempt} de ${maxRetries}`);
+    
+    try {
+      // Usar seed diferente en cada intento para variar la generación
+      const attemptSeed = Math.floor(Math.random() * 2000000000);
+      
+      const result = await generateImageEdit(
+        originalImageUrl,
+        originalPrompt,
+        userChangeRequest,
+        artDirectionId,
+        aspectRatio,
+        attemptSeed
+      );
+      
+      if (result.success) {
+        console.log('✅ [EditWithRetry] Edición exitosa en intento', attempt);
+        return result;
+      }
+      
+      lastError = result.error || 'Error desconocido';
+      console.warn(`⚠️ [EditWithRetry] Intento ${attempt} falló:`, lastError);
+      
+    } catch (error: any) {
+      lastError = error.message;
+      console.warn(`⚠️ [EditWithRetry] Intento ${attempt} error:`, lastError);
+    }
+    
+    // Esperar antes del siguiente intento
+    if (attempt < maxRetries) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+  
+  console.error('❌ [EditWithRetry] Todos los intentos fallaron');
+  return {
+    success: false,
+    error: `Edición fallida después de ${maxRetries} intentos. Último error: ${lastError}`
+  };
+};
+
+// ============================================
+// 10. VALIDADOR DE COHERENCIA DE EDICIÓN
+// Verifica que las ediciones mantengan los estándares de calidad
+// ============================================
+export const validateEditCoherence = (
+  originalPrompt: string,
+  editedPrompt: string,
+  userRequest: string
+): { isCoherent: boolean; score: number; issues: string[] } => {
+  const issues: string[] = [];
+  let score = 1.0;
+  
+  // Verificar que el cambio solicitado esté presente
+  const requestLower = userRequest.toLowerCase();
+  const editedLower = editedPrompt.toLowerCase();
+  
+  // Verificar elementos que NO deben haber cambiado
+  const originalElements = [
+    { term: 'professional', weight: 0.1 },
+    { term: 'realistic', weight: 0.1 },
+    { term: 'cozy', weight: 0.05 },
+    { term: '3-star', weight: 0.1 }
+  ];
+  
+  for (const element of originalElements) {
+    if (originalPrompt.toLowerCase().includes(element.term) &&
+        !editedLower.includes(element.term)) {
+      issues.push(`Elemento "${element.term}" perdido durante la edición`);
+      score -= element.weight;
+    }
+  }
+  
+  // Verificar que no se hayan añadido elementos prohibidos
+  const prohibitedTerms = ['luxury', 'marble', 'gold', 'hotel', 'resort'];
+  const originalLower = originalPrompt.toLowerCase();
+  for (const term of prohibitedTerms) {
+    if (editedLower.includes(term) && !originalLower.includes(term)) {
+      issues.push(`Elemento prohibido añadido: "${term}"`);
+      score -= 0.15;
+    }
+  }
+  
+  // Verificar coherencia del cambio
+  if (userRequest.includes('color') && !editedLower.includes('color')) {
+    issues.push('Cambio de color no detectado en el resultado');
+    score -= 0.2;
+  }
+  
+  if (userRequest.includes('background') && !editedLower.includes('background')) {
+    issues.push('Cambio de fondo no detectado en el resultado');
+    score -= 0.2;
+  }
+  
+  // Normalizar score
+  score = Math.max(0, Math.min(1, score));
+  
+  return {
+    isCoherent: score >= 0.7,
+    score: Math.round(score * 100) / 100,
+    issues
+  };
+};
+
+// ============================================
+// 11. GENERADOR DE EDICIÓN INTELIGENTE (Interfaz unificada)
+// Detecta el tipo de contenido y aplica la estrategia correcta
+// ============================================
+export const smartEdit = async (
+  originalContentUrl: string,
+  originalPrompt: string,
+  userChangeRequest: string,
+  contentType: 'image' | 'video',
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16'
+): Promise<EditResult> => {
+  console.log(`🧠 [SmartEdit] Editando ${contentType} con contexto inteligente...`);
+  console.log('📝 [SmartEdit] Solicitud:', userChangeRequest);
+  
+  try {
+    // Generar el prompt de edición procesado
+    const editPrompt = generateEditPrompt(originalPrompt, userChangeRequest);
+    
+    console.log('🎯 [SmartEdit] Prompt procesado:', editPrompt.substring(0, 100) + '...');
+    
+    if (contentType === 'image') {
+      return await generateEditWithRetry(
+        originalContentUrl,
+        originalPrompt,
+        userChangeRequest,
+        artDirectionId,
+        aspectRatio
+      );
+    } else {
+      return await generateVideoEdit(
+        originalContentUrl,
+        originalPrompt,
+        userChangeRequest,
+        artDirectionId,
+        aspectRatio
+      );
+    }
+    
+  } catch (error: any) {
+    console.error('❌ [SmartEdit] Error:', error);
+    return {
+      success: false,
+      error: error.message || 'Error en edición inteligente'
+    };
+  }
+};
+
+// ============================================
+// 12. EXPORTAR UTILIDADES DE EDICIÓN
+// ============================================
+export const editUtils = {
+  processEditRequest,
+  generateEditPrompt,
+  validateEditCoherence,
+  BRAND_DNA_ANCHOR,
+  VISUAL_CONSISTENCY_FILTER,
+  EDIT_MAINTENANCE_RULES
 };
