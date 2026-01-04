@@ -122,10 +122,10 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     label: "Auténtico Local",
     description: "Punto Dulce. Smartphone moderno, luz de techo, sin filtros",
     technicalProfile: "Generar Confianza - El ancla de Estudio 56",
-    lighting: "Standard overhead LED or natural window light, slight shadows, authentic, no dramatic lighting",
-    atmosphere: "Functional local business, minor clutter, real everyday environment, relatable setting",
-    camera: "Modern smartphone, 12-48MP, natural noise, deep focus, authentic look, visible skin pores",
-    human: "Average person, natural sweat, non-branded gym wear, authentic expressions, relatable",
+    lighting: "Standard overhead LED or natural window light, slight shadows, authentic, no dramatic lighting, mixed color temperature from different light sources",
+    atmosphere: "Functional local business, realistic clutter - visible power outlet on wall, wear mark on floor, fire extinguisher on wall, minor everyday mess, relatable setting",
+    camera: "Modern smartphone, 12-48MP, natural noise, deep focus, authentic look, auto white balance artifacts, visible skin pores and natural texture",
+    human: "Average person, natural sweat visible, non-branded gym wear, authentic expressions, relatable, natural skin texture with visible pores, no airbrushing",
     negative: NEGATIVE_AUTENTICA,
     categoryModifiers: AUTENTICA_MODIFIERS,
     icon: "🏪"
@@ -215,40 +215,40 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
  */
 export const REALITY_LAYERS: Record<RealityLevel, { add: string; remove: string }> = {
   1.0: {
-    add: "security camera footage, grainy, low quality, timestamp overlay, motion blur, surveillance aesthetic",
-    remove: "professional, high quality, sharp, 4k, studio lighting, beautiful models"
+    add: "security camera footage, grainy, low quality, timestamp overlay, motion blur, surveillance aesthetic, auto white balance failure, mixed color temperature, harsh fluorescent lighting",
+    remove: "professional, high quality, sharp, 4k, studio lighting, beautiful models, perfect color grading"
   },
   1.5: {
-    add: "amateur photo, smartphone camera, natural but imperfect, authentic everyday look",
-    remove: "professional photography, studio, perfect lighting, magazine quality"
+    add: "amateur photo, smartphone camera, natural but imperfect, authentic everyday look, auto white balance artifacts, mixed lighting sources, slight color cast",
+    remove: "professional photography, studio, perfect lighting, magazine quality, perfect color harmony"
   },
   2.0: {
-    add: "modern smartphone photo, standard room lighting, visible details, everyday authenticity",
-    remove: "cinematic, professional studio, artificial perfection, luxury aesthetic"
+    add: "modern smartphone photo, standard room lighting, visible details, everyday authenticity, auto white balance, mixed color temperature from window and artificial light",
+    remove: "cinematic, professional studio, artificial perfection, luxury aesthetic, perfect color grading"
   },
   2.5: {
-    add: "shot on iPhone 15, standard room lighting, visible skin pores, natural movements, authentic local",
-    remove: "cinematic, professional studio, artificial fog, marble floors, luxury resort"
+    add: "shot on iPhone 15, standard room lighting, visible skin pores, natural movements, authentic local, realistic clutter - power outlet visible, wear mark on floor, fire extinguisher on wall, mixed color temperature",
+    remove: "cinematic, professional studio, artificial fog, marble floors, luxury resort, airbrushed skin, perfect color grading"
   },
   3.0: {
-    add: "DSLR quality, natural light photography, clean and professional, Google Business Profile aesthetic",
-    remove: "grainy, noisy, amateur, low resolution, messy environment"
+    add: "DSLR quality, natural light photography, clean and professional, Google Business Profile aesthetic, balanced color temperature, slight bokeh possible",
+    remove: "grainy, noisy, amateur, low resolution, messy environment, auto white balance artifacts"
   },
   3.5: {
-    add: "commercial photography, softbox lighting, slight bokeh, professional retouch, clean aesthetic",
-    remove: "digital noise, blurry, poor lighting, amateur photography"
+    add: "commercial photography, softbox lighting, slight bokeh, professional retouch, clean aesthetic, balanced color grading",
+    remove: "digital noise, blurry, poor lighting, amateur photography, visible wear marks, power outlets"
   },
   4.0: {
-    add: "fashion editorial, studio lighting, magazine cover quality, polished and aspirational",
-    remove: "scuffed walls, sweat, realistic clutter, everyday look"
+    add: "fashion editorial, studio lighting, magazine cover quality, polished and aspirational, perfect color grading and harmony, subtle skin retouching",
+    remove: "scuffed walls, sweat, realistic clutter, everyday look, visible pores, auto white balance"
   },
   4.5: {
-    add: "high-end commercial, luxury advertising, cinematic quality, premium aesthetic",
-    remove: "average, basic, everyday, amateur, low budget"
+    add: "high-end commercial, luxury advertising, cinematic quality, premium aesthetic, perfect color harmony, airbrushed skin, pristine environment",
+    remove: "average, basic, everyday, amateur, low budget, visible imperfections, realistic clutter"
   },
   5.0: {
-    add: "Arri Alexa, 85mm lens, high-end luxury aesthetics, volumetric lighting, pristine environment, cinematic masterpiece",
-    remove: "smartphone, grainy, noisy, cluttered, basic, real life"
+    add: "Arri Alexa, 85mm lens, high-end luxury aesthetics, volumetric lighting, pristine environment, cinematic masterpiece, perfect color grading, airbrushed high-end retouching",
+    remove: "smartphone, grainy, noisy, cluttered, basic, real life, visible pores, wear marks, power outlets, auto white balance"
   }
 };
 
