@@ -218,23 +218,21 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
           step="0.5"
           value={localValue}
           onChange={handleChange}
-          onMouseUp={handleMouseUp}
-          onTouchEnd={handleTouchEnd}
           disabled={disabled || isGenerating}
           className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
           style={{
-            background: `linear-gradient(to right, 
-              #ef4444 0%, 
-              #f97316 22%, 
-              #22c55e 44%, 
-              #3b82f6 66%, 
-              #8b5cf6 88%, 
+            background: `linear-gradient(to right,
+              #ef4444 0%,
+              #f97316 22%,
+              #22c55e 44%,
+              #3b82f6 66%,
+              #8b5cf6 88%,
               #eab308 100%)`
           }}
         />
         
         {/* Indicador de posición actual */}
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center pointer-events-none transition-all"
           style={{
             left: `${((localValue - 1) / 4) * 100}%`,
@@ -265,12 +263,47 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         </div>
       </div>
       
+      {/* Botón de Actualizar */}
+      <button
+        onClick={async () => {
+          if (localValue !== value && !disabled && !isGenerating) {
+            // Notificar cambio
+            onChange(localValue);
+            
+            // Si hay callback de generación y el valor no está en caché, generar
+            if (onGenerateVariation && sceneId) {
+              setIsGenerating(true);
+              try {
+                await onGenerateVariation(localValue);
+                onGenerationComplete?.(localValue, '');
+              } catch (error) {
+                console.error('❌ Error generando variación:', error);
+              } finally {
+                setIsGenerating(false);
+              }
+            }
+          }
+        }}
+        disabled={disabled || isGenerating || localValue === value}
+        className={`w-full py-2 px-4 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2 mb-3
+          ${localValue === value || disabled || isGenerating
+            ? 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
+            : 'bg-blue-500/20 border border-blue-500/50 text-blue-300 hover:bg-blue-500/30 hover:border-blue-500/70'
+          }
+        `}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        {localValue === value ? 'Sin cambios' : 'Actualizar'}
+      </button>
+      
       {/* Ayuda contextual */}
       {showHelp && (
         <div className="mt-3 flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
           <span className="text-blue-400 text-xs">💡</span>
           <p className="text-blue-300/80 text-[10px] leading-tight">
-            {isRealisticLevel(localValue) 
+            {isRealisticLevel(localValue)
               ? 'Nivel recomendado para generar confianza en clientes locales. Se ve auténtico y cercano.'
               : isAspirationalLevel(localValue)
               ? 'Nivel aspiracional ideal para branding premium. Puede verse "demasiado perfecto".'
