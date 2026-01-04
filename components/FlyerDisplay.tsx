@@ -1678,10 +1678,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       playsInline
                       crossOrigin="anonymous"
                     />
-                    {/* OVERLAYS PARA BORRADOR */}
-                    {renderLogoComparison(true)}
-                    {renderProductComparison(true)}
-                    {renderText(true)}
+                    {/* NOTA: Videos NO tienen overlays superpuestos */}
                   </div>
                 </div>
               </div>
@@ -1713,10 +1710,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       playsInline
                       crossOrigin="anonymous"
                     />
-                    {/* OVERLAYS PARA HD */}
-                    {renderLogoComparison(false)}
-                    {renderProductComparison(false)}
-                    {renderText(false)}
+                    {/* NOTA: Videos NO tienen overlays superpuestos */}
                   </div>
                 </div>
               </div>
