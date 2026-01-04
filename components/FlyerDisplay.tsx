@@ -336,6 +336,15 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       setShowVideoComparison(true);
     }
   }, [draftVideoUrl, hdVideoUrl, showVideoComparison]);
+
+  // Auto-show comparison when HD video is generated from draft
+  useEffect(() => {
+    if (draftVideoUrl && hdVideoUrl && !showComparison && !showVideoComparison && !hasShownComparison.current) {
+      console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
+      hasShownComparison.current = true;
+      setShowVideoComparison(true);
+    }
+  }, [draftVideoUrl, hdVideoUrl, showComparison, showVideoComparison]);
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const defaultStyles: TextStyleOptions = {

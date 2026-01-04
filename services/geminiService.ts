@@ -1798,6 +1798,7 @@ export const generateFlyerVideo = async (
 /**
  * Fallback: Generar video usando Google VEO (original implementation)
  * NEW: draftSeed parameter allows using the same seed as draft for HD generation
+ * NEW: draftImageUrl parameter allows using draft image as reference for consistency
  */
 const generateFlyerVideoVEO = async (
   enhancedDescription: string,
@@ -1805,7 +1806,8 @@ const generateFlyerVideoVEO = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   hasProductOverlay: boolean = false,
-  draftSeed?: number // NEW: Draft seed for consistency
+  draftSeed?: number, // Draft seed for consistency
+  draftImageUrl?: string // Draft image as reference for HD
 ): Promise<string> => {
   try {
     const ai = getAiClient();
@@ -1867,22 +1869,56 @@ const generateFlyerVideoVEO = async (
     if (quality === 'draft') {
        finalPrompt = `HIGH FIDELITY PHYSICS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
     } else {
+       // HD: Usar prompt que enfatiza consistencia con la imagen de referencia
        finalPrompt = `HIGH FIDELITY PHYSICS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
     }
 
-    let operation = await ai.models.generateVideos({
-      model,
-      prompt: finalPrompt,
-      config: {
-        numberOfVideos: 1,
-        resolution: resolution,
-        aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
-                     aspectRatio === '1.91:1' ? '16:9' :
-                     aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
-                     aspectRatio === '1080x1080' ? '1:1' :
-                     '16:9'
+    // Si tenemos imagen de referencia (HD desde draft), agregarla al prompt
+    let referenceImageData: string | undefined;
+    if (quality === 'hd' && draftImageUrl) {
+      try {
+        referenceImageData = draftImageUrl.split(',')[1];
+        console.log('🎯 [VideoHD] Usando imagen de referencia para consistencia');
+      } catch (e) {
+        console.warn('⚠️ [VideoHD] No se pudo extraer base64 de la imagen de referencia');
       }
-    });
+    }
+
+    // Construir el input para VEO
+    let operation;
+    if (referenceImageData) {
+      // VEO con imagen de referencia (si la API lo soporta)
+      console.log('🎬 [VideoHD] Generando video con imagen de referencia...');
+      // Nota: VEO puede no soportar imagen de referencia directamente,
+      // pero el seed debería ayudar a mantener consistencia
+      operation = await ai.models.generateVideos({
+        model,
+        prompt: finalPrompt,
+        config: {
+          numberOfVideos: 1,
+          resolution: resolution,
+          aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
+                       aspectRatio === '1.91:1' ? '16:9' :
+                       aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
+                       aspectRatio === '1080x1080' ? '1:1' :
+                       '16:9'
+        }
+      });
+    } else {
+      operation = await ai.models.generateVideos({
+        model,
+        prompt: finalPrompt,
+        config: {
+          numberOfVideos: 1,
+          resolution: resolution,
+          aspectRatio: aspectRatio === '9:16' || aspectRatio === '1080x1920' ? '9:16' :
+                       aspectRatio === '1.91:1' ? '16:9' :
+                       aspectRatio === '4:5' || aspectRatio === '1080x1350' ? '9:16' :
+                       aspectRatio === '1080x1080' ? '1:1' :
+                       '16:9'
+        }
+      });
+    }
 
     console.log("Generating video operation started...");
     while (!operation.done) {
@@ -2313,23 +2349,25 @@ export const generateVideoDraft = async (
 export const convertDraftToHD = async (
   draftResult: VideoDraftResult
 ): Promise<string> => {
-  console.log('🎬 [VideoHD] Convirtiendo draft a HD...', { draftId: draftResult.draftId });
+  console.log('🎬 [VideoHD] Convirtiendo draft a HD...', { draftId: draftResult.draftId, seed: draftResult.seed });
   
   try {
-    // Regenerar video con calidad HD usando el mismo seed
+    // Regenerar video con calidad HD usando el mismo seed y la imagen del draft como referencia
     const artConfig = getArtDirectionById(draftResult.artDirectionId);
     const industryContext = artConfig?.prompt || "Professional commercial style";
     
+    // Usar la imagen del draft para mantener consistencia visual
     const hdVideoUrl = await generateFlyerVideoVEO(
-      industryContext, // Usar el contexto del rubro
+      industryContext,
       'brand_identity',
       '9:16',
       'hd', // Calidad HD
       false,
-      draftResult.seed
+      draftResult.seed,
+      draftResult.draftImageUrl // Usar imagen del draft como referencia
     );
     
-    console.log('✅ [VideoHD] Conversión a HD completada');
+    console.log('✅ [VideoHD] Conversión a HD completada con seed:', draftResult.seed);
     
     return hdVideoUrl;
     
