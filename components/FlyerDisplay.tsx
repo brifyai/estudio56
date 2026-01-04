@@ -1815,7 +1815,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             })()}
             {renderLogo()}
             {renderProduct()}
-            {renderText()}
+            {/* Ocultar texto durante comparación para evitar duplicado */}
+            {!showComparison && renderText()}
             
             {/* BOTÓN FLOTANTE PARA MOVER TEXTO - Solo visible en mobile */}
             <div className="lg:hidden absolute bottom-4 right-4 z-[150]">
@@ -1982,7 +1983,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             })()}
             {renderLogo()}
             {renderProduct()}
-            {renderText()}
+            {/* Ocultar texto durante comparación para evitar duplicado */}
+            {!showComparison && renderText()}
           </div>
         </div>
       </div>
