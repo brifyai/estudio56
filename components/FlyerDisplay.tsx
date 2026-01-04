@@ -1951,7 +1951,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               'w-[280px] h-[498px]'}`}
         >
           {/* Contenido desktop - igual que mobile pero sin controles táctiles */}
-          <div className="w-full h-full relative">
+          <div ref={flyerContainerRef} className="w-full h-full relative">
             {(() => {
               const needsCors = imageUrl && !imageUrl.startsWith('blob:');
               const videoSrc = imageUrl && isVideoUrl(imageUrl);
