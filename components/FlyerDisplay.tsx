@@ -1501,6 +1501,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     }
     const textShadowValue = shadows.length > 0 ? shadows.join(', ') : undefined;
 
+    // Obtener configuración de superficie para Visual Mimicry
+    const surfaceConfig = SURFACE_CONFIGS[localSurfaceType];
+
     return (
       <div
         style={{
@@ -1539,6 +1542,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           textShadow: textShadowValue,
           WebkitTextStroke: displayStyles.effects.stroke ? `${scaledStrokeWidth}px ${displayStyles.textColor}` : undefined,
           filter: displayStyles.effects.glow ? `drop-shadow(0 0 ${scaledGlowBlur}px ${displayStyles.textColor})` : undefined,
+          // 🎨 VISUAL MIMICRY - Modos de fusión
+          mixBlendMode: surfaceConfig.blendMode,
+          opacity: surfaceConfig.opacity,
+          // 🎨 Backdrop filter para blur
+          backdropFilter: surfaceConfig.blurAmount > 0 ? `blur(${surfaceConfig.blurAmount}px)` : undefined,
         }}
         onMouseDown={isComparisonDraft ? undefined : handleMouseDown}
         onTouchStart={(e) => {
