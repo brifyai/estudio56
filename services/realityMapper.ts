@@ -1,77 +1,146 @@
 import { RealityLevel, RealityPromptConfig } from '../types';
 
 /**
- * 🎚️ SISTEMA DE REGULADOR DE REALIDAD
- * 
- * Este servicio mapea el valor del slider (0.5 a 5.0) con variables específicas del prompt
+ * 🎚️ SISTEMA DE REGULADOR DE REALIDAD - MATRIZ EVOLUTIVA
+ *
+ * Este servicio mapea el valor del slider (1.0 a 5.0) con variables específicas del prompt
  * para controlar el nivel de realismo de las imágenes generadas.
+ *
+ * Cada nivel tiene un "salto" perceptible pero suave, permitiendo al usuario
+ * controlar exactamente qué nivel de calidad visual quiere para su negocio.
  */
 
 // ============================================
-// 📊 CONFIGURACIÓN DE NIVELES DE REALIDAD
+// 🎨 MODIFICADORES DE COMPORTAMIENTO POR CATEGORÍA
+// ============================================
+
+// Categoría "Cruda" (1.0 - 2.0): Inyecta artifacts de cámara baja
+const CRUDA_MODIFIERS = {
+  chromaticAberration: true,
+  digitalNoise: true,
+  lowLightArtifacts: true,
+  compressionArtifacts: true
+};
+
+// Categoría "Auténtica" (2.5): El ancla de Estudio 56
+const AUTENTICA_MODIFIERS = {
+  noBokeh: true,
+  overheadLED: true,
+  realisticClutter: true,
+  noLuxuryElements: true
+};
+
+// Categoría "Profesional" (3.0 - 3.5): Limpio y ordenado
+const PROFESIONAL_MODIFIERS = {
+  softNaturalLighting: true,
+  depthOfField: true,
+  cleanEnvironment: true,
+  professionalLook: true
+};
+
+// Categoría "Aspiracional" (4.0 - 5.0): Elimina imperfecciones
+const ASPIRACIONAL_MODIFIERS = {
+  noDust: true,
+  noScuffMarks: true,
+  noSweat: true,
+  perfectSkin: true,
+  luxuryElements: true
+};
+
+// ============================================
+// 🛡️ NEGATIVE PROMPTS ESPECIALIZADOS POR CATEGORÍA
+// ============================================
+
+// 1. Crudo (1.0 - 1.5): Queremos que se vea "mal" a propósito
+export const NEGATIVE_CRUDA = "professional lighting, studio, sharp focus, clean lens, high dynamic range, artistic bokeh, balanced colors, 4k, high quality, perfect exposure, professional camera";
+
+// 2. Auténtico (2.0 - 2.5): Bloqueamos la "fantasía de catálogo"
+export const NEGATIVE_AUTENTICA = "luxury, marble, cinematic, dramatic shadows, fashion model look, airbrushed skin, perfect symmetry, expensive decor, studio flash, hotel lobby, candles, smoke, steam, fog, luxury resort";
+
+// 3. Profesional (3.0 - 3.5): Empezamos a exigir limpieza
+export const NEGATIVE_PROFESIONAL = "digital noise, blurry, messy, dirty floor, trash, poor lighting, low resolution, cheap furniture, shaky camera, amateur photography, grainy, compression artifacts";
+
+// 4. Aspiracional (4.0 - 4.5): Eliminamos lo "común"
+export const NEGATIVE_ASPIRACIONAL = "scuffed walls, sweat, realistic clutter, average body type, raw textures, everyday look, flat lighting, amateur photography, basic equipment, cheap materials, natural imperfections";
+
+// 5. Lujo (5.0): Perfection absoluta e irreal
+export const NEGATIVE_LUJO = "poverty, real life, basic equipment, cheap materials, natural skin imperfections, handheld camera, natural mess, everyday objects, average people, poor lighting, amateur";
+
+// ============================================
+// 📊 CONFIGURACIÓN DE NIVELES DE REALIDAD - MATRIZ EVOLUTIVA
 // ============================================
 
 export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
-  // 1.0 - 2.0: CRUDO / DIY (Cámara de seguridad / Celular viejo)
+  // 1.0 - 2.0: CRUDO / DIY
   // ============================================
   1.0: {
     stars: 1.0,
     label: "CCTV / Seguridad",
-    description: "Cámara de seguridad de baja calidad",
+    description: "Blanco y negro o color lavado, ruido extremo, ángulo alto, 480p",
+    technicalProfile: "Evidencia / Seguridad",
     lighting: "Poor overhead lighting, harsh fluorescent, uneven exposure, some areas completely dark",
     atmosphere: "Grainy, low resolution, compressed video quality, security camera aesthetic",
-    camera: "Old security camera, 480p, visible compression artifacts, motion blur",
+    camera: "Old security camera, 480p, visible compression artifacts, motion blur, wide angle distortion",
     human: "Unrecognizable faces, low detail, no professional posing, candid and unpolished",
-    negative: "high quality, professional, studio lighting, sharp, clear, 4k, beautiful models",
+    negative: NEGATIVE_CRUDA,
+    categoryModifiers: CRUDA_MODIFIERS,
     icon: "📸"
   },
   1.5: {
     stars: 1.5,
-    label: "Celular Antiguo",
-    description: "Smartphone básico de hace años",
-    lighting: "Basic LED ceiling light, slight yellow tint, shadows on one side",
-    atmosphere: "Authentic everyday local, minor clutter visible, functional business space",
-    camera: "Old smartphone photo, 720p, visible noise, slight blur, natural imperfections",
-    human: "Average people, common clothing brands, natural expressions, no professional styling",
-    negative: "professional photography, studio lighting, perfect skin, models, high-end",
+    label: "Cámara Espía",
+    description: "Granulado, saturación baja, óptica deficiente, 720p",
+    technicalProfile: "Captura 'In fraganti'",
+    lighting: "Basic LED ceiling light, slight yellow tint, shadows on one side, mixed color temperature",
+    atmosphere: "Authentic everyday local, minor clutter visible, functional business space, natural mess",
+    camera: "Old smartphone or basic camera, 720p, visible noise, slight blur, natural imperfections",
+    human: "Average people, common clothing brands, natural expressions, no professional styling, candid moments",
+    negative: NEGATIVE_CRUDA,
+    categoryModifiers: CRUDA_MODIFIERS,
     icon: "📱"
   },
 
   // ============================================
-  // 2.5: AUTÉNTICO LOCAL (El punto dulce -默认值)
+  // 2.0 - 2.5: AUTÉNTICO LOCAL (El punto dulce - DEFAULT)
   // ============================================
   2.0: {
     stars: 2.0,
-    label: "Smartphone Básico",
-    description: "Celular moderno pero sin cámara premium",
-    lighting: "Standard overhead LED, slightly harsh shadows, natural indoor lighting",
+    label: "Celular Básico",
+    description: "Rango dinámico limitado, balance de blancos automático (errático)",
+    technicalProfile: "Post rápido / Espontáneo",
+    lighting: "Standard overhead LED, slightly harsh shadows, natural indoor lighting, mixed sources",
     atmosphere: "Real local business, everyday clutter, authentic environment, functional space",
-    camera: "Budget smartphone, 1080p, visible but acceptable noise, deep focus",
-    human: "Real customers, common sportswear, natural sweat, authentic effort visible",
-    negative: "professional studio, softbox lighting, bokeh, airbrushed, perfect skin",
+    camera: "Budget smartphone, 1080p, visible but acceptable noise, deep focus, natural look",
+    human: "Real customers, common sportswear, natural sweat, authentic effort visible, relatable subjects",
+    negative: NEGATIVE_AUTENTICA,
+    categoryModifiers: { ...CRUDA_MODIFIERS, ...AUTENTICA_MODIFIERS },
     icon: "📱"
   },
   2.5: {
     stars: 2.5,
     label: "Auténtico Local",
-    description: "El punto dulce - foto de smartphone moderno",
-    lighting: "Standard overhead LED or natural window light, slight shadows, authentic",
-    atmosphere: "Functional local business, minor clutter, real everyday environment",
-    camera: "Modern smartphone, 12-48MP, natural noise, deep focus, authentic look",
-    human: "Average person, natural sweat, non-branded gym wear, authentic expressions",
-    negative: "hotel lobby, luxury resort, marble, candles, smoke, steam, fog, perfect symmetry",
+    description: "Punto Dulce. Smartphone moderno, luz de techo, sin filtros",
+    technicalProfile: "Generar Confianza - El ancla de Estudio 56",
+    lighting: "Standard overhead LED or natural window light, slight shadows, authentic, no dramatic lighting",
+    atmosphere: "Functional local business, minor clutter, real everyday environment, relatable setting",
+    camera: "Modern smartphone, 12-48MP, natural noise, deep focus, authentic look, visible skin pores",
+    human: "Average person, natural sweat, non-branded gym wear, authentic expressions, relatable",
+    negative: NEGATIVE_AUTENTICA,
+    categoryModifiers: AUTENTICA_MODIFIERS,
     icon: "🏪"
   },
   3.0: {
     stars: 3.0,
-    label: "Semi-Profesional",
-    description: "Cámara básica DSLR/sin espejo",
-    lighting: "Balanced natural light, soft shadows, professional but natural",
-    atmosphere: "Clean and organized local business, professional environment",
-    camera: "Entry-level DSLR or mirrorless, 1080p-4k, shallow bokeh possible",
-    human: "Fit but relatable subjects, natural expressions, common activewear brands",
-    negative: "supermodel, heavy makeup, plastic skin, luxury resort, hotel aesthetics",
+    label: "Semi-Pro",
+    description: "DSLR con lente de kit, enfoque nítido, luz natural balanceada",
+    technicalProfile: "Perfil de Negocio Google",
+    lighting: "Balanced natural light, soft shadows, professional but natural, window light",
+    atmosphere: "Clean and organized local business, professional environment, tidy but not sterile",
+    camera: "Entry-level DSLR or mirrorless, 1080p-4k, shallow bokeh possible, sharp focus",
+    human: "Fit but relatable subjects, natural expressions, common activewear brands, genuine smiles",
+    negative: NEGATIVE_PROFESIONAL,
+    categoryModifiers: PROFESIONAL_MODIFIERS,
     icon: "📷"
   },
 
@@ -80,24 +149,28 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   3.5: {
     stars: 3.5,
-    label: "Profesional",
-    description: "Fotografía comercial profesional",
-    lighting: "Professional softbox lighting, balanced exposure, subtle rim light",
-    atmosphere: "Clean and polished business setting, professional aesthetic",
-    camera: "Professional DSLR or mirrorless, 4k, controlled bokeh, sharp details",
-    human: "Athletic but natural subjects, genuine expressions, quality activewear",
-    negative: "candles, smoke, steam, fog, water reflections, floating objects, plastic textures",
+    label: "Comercial",
+    description: "DSLR con lente fijo, bokeh suave, ligera corrección de color",
+    technicalProfile: "Web / Landing Page",
+    lighting: "Professional softbox lighting, balanced exposure, subtle rim light, controlled environment",
+    atmosphere: "Clean and polished business setting, professional aesthetic, inviting atmosphere",
+    camera: "Professional DSLR or mirrorless, 4k, controlled bokeh, sharp details, smooth tones",
+    human: "Athletic but natural subjects, genuine expressions, quality activewear, approachable look",
+    negative: NEGATIVE_PROFESIONAL,
+    categoryModifiers: PROFESIONAL_MODIFIERS,
     icon: "🏢"
   },
   4.0: {
     stars: 4.0,
     label: "Editorial",
-    description: "Revista de moda/publicidad",
-    lighting: "Studio lighting with modifiers, perfect highlights and shadows",
-    atmosphere: "Highly polished commercial space, aspirational but believable",
-    camera: "High-end camera, 8k capable, cinematic bokeh, magazine quality",
-    human: "Fit models, professional posing, quality branded clothing, subtle makeup",
-    negative: "candles, excessive smoke, water on floor, neon, impossible physics",
+    description: "Formato medio, iluminación de estudio, retoque de piel sutil",
+    technicalProfile: "Catálogo / Revista",
+    lighting: "Studio lighting with modifiers, perfect highlights and shadows, professional setup",
+    atmosphere: "Highly polished commercial space, aspirational but believable, magazine quality",
+    camera: "High-end camera, 8k capable, cinematic bokeh, magazine quality, perfect composition",
+    human: "Fit models, professional posing, quality branded clothing, subtle makeup, polished look",
+    negative: NEGATIVE_ASPIRACIONAL,
+    categoryModifiers: ASPIRACIONAL_MODIFIERS,
     icon: "✨"
   },
 
@@ -106,25 +179,76 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   4.5: {
     stars: 4.5,
-    label: "Premium",
-    description: "Alta gama publicitaria",
-    lighting: "Cinematic lighting, softboxes, reflectors, perfect light control",
-    atmosphere: "Luxury aesthetic, premium materials visible, aspirational environment",
-    camera: "Cinema camera quality, shallow depth of field, perfect sharpness",
-    human: "Supermodel quality, perfect skin, designer activewear, flawless posing",
-    negative: "security camera aesthetic, grain, noise, amateur photography, CCTV",
+    label: "Premium Ad",
+    description: "Look publicitario de alta gama, alto contraste, paleta controlada",
+    technicalProfile: "Campañas de Pago (Ads)",
+    lighting: "Cinematic lighting, softboxes, reflectors, perfect light control, dramatic but beautiful",
+    atmosphere: "Luxury aesthetic, premium materials visible, aspirational environment, polished to perfection",
+    camera: "Cinema camera quality, shallow depth of field, perfect sharpness, high-end commercial",
+    human: "Supermodel quality, perfect skin, designer activewear, flawless posing, aspirational figures",
+    negative: NEGATIVE_ASPIRACIONAL,
+    categoryModifiers: ASPIRACIONAL_MODIFIERS,
     icon: "💎"
   },
   5.0: {
     stars: 5.0,
-    label: "Cine / Fantasía",
-    description: "Render de hotel 5 estrellas",
-    lighting: "Cinematic sunset lighting, studio softboxes, dramatic highlights",
-    atmosphere: "Luxury resort, marble surfaces, fog machines, candle-lit ambiance",
-    camera: "Arri Alexa or RED cinema camera, 8k raw, heavy cinematic bokeh",
-    human: "Supermodel, perfect skin, designer luxury wear, impossible perfection",
-    negative: "grain, noise, amateur, CCTV, security camera, realistic imperfections",
+    label: "Cinematográfico",
+    description: "Formato anamórfico, luces teatrales, atmósfera estilizada (humo/mármol)",
+    technicalProfile: "Branding Aspiracional",
+    lighting: "Cinematic sunset lighting, studio softboxes, dramatic highlights, theatrical setup",
+    atmosphere: "Luxury resort, marble surfaces, fog machines, candle-lit ambiance, impossible perfection",
+    camera: "Arri Alexa or RED cinema camera, 8k raw, heavy cinematic bokeh, film grain aesthetic",
+    human: "Supermodel, perfect skin, designer luxury wear, impossible perfection, movie star quality",
+    negative: NEGATIVE_LUJO,
+    categoryModifiers: ASPIRACIONAL_MODIFIERS,
     icon: "🏆"
+  }
+};
+
+// ============================================
+// 🔄 SISTEMA DE HERENCIA DE PROMPTS (CAPAS)
+// ============================================
+
+/**
+ * Capas que se añaden o quitan según el nivel de realidad
+ * Útil para transiciones suaves entre niveles
+ */
+export const REALITY_LAYERS: Record<RealityLevel, { add: string; remove: string }> = {
+  1.0: {
+    add: "security camera footage, grainy, low quality, timestamp overlay, motion blur, surveillance aesthetic",
+    remove: "professional, high quality, sharp, 4k, studio lighting, beautiful models"
+  },
+  1.5: {
+    add: "amateur photo, smartphone camera, natural but imperfect, authentic everyday look",
+    remove: "professional photography, studio, perfect lighting, magazine quality"
+  },
+  2.0: {
+    add: "modern smartphone photo, standard room lighting, visible details, everyday authenticity",
+    remove: "cinematic, professional studio, artificial perfection, luxury aesthetic"
+  },
+  2.5: {
+    add: "shot on iPhone 15, standard room lighting, visible skin pores, natural movements, authentic local",
+    remove: "cinematic, professional studio, artificial fog, marble floors, luxury resort"
+  },
+  3.0: {
+    add: "DSLR quality, natural light photography, clean and professional, Google Business Profile aesthetic",
+    remove: "grainy, noisy, amateur, low resolution, messy environment"
+  },
+  3.5: {
+    add: "commercial photography, softbox lighting, slight bokeh, professional retouch, clean aesthetic",
+    remove: "digital noise, blurry, poor lighting, amateur photography"
+  },
+  4.0: {
+    add: "fashion editorial, studio lighting, magazine cover quality, polished and aspirational",
+    remove: "scuffed walls, sweat, realistic clutter, everyday look"
+  },
+  4.5: {
+    add: "high-end commercial, luxury advertising, cinematic quality, premium aesthetic",
+    remove: "average, basic, everyday, amateur, low budget"
+  },
+  5.0: {
+    add: "Arri Alexa, 85mm lens, high-end luxury aesthetics, volumetric lighting, pristine environment, cinematic masterpiece",
+    remove: "smartphone, grainy, noisy, cluttered, basic, real life"
   }
 };
 

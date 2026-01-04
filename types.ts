@@ -301,6 +301,8 @@ export interface RealityPromptConfig {
   label: string;
   /** Descripción corta */
   description: string;
+  /** Perfil técnico de marketing */
+  technicalProfile: string;
   /** Prompt de iluminación */
   lighting: string;
   /** Prompt de atmósfera */
@@ -311,6 +313,26 @@ export interface RealityPromptConfig {
   human: string;
   /** Prompt negativo (lo que evitar) */
   negative: string;
+  /** Modificadores de comportamiento por categoría */
+  categoryModifiers?: {
+    chromaticAberration?: boolean;
+    digitalNoise?: boolean;
+    lowLightArtifacts?: boolean;
+    compressionArtifacts?: boolean;
+    noBokeh?: boolean;
+    overheadLED?: boolean;
+    realisticClutter?: boolean;
+    noLuxuryElements?: boolean;
+    softNaturalLighting?: boolean;
+    depthOfField?: boolean;
+    cleanEnvironment?: boolean;
+    professionalLook?: boolean;
+    noDust?: boolean;
+    noScuffMarks?: boolean;
+    noSweat?: boolean;
+    perfectSkin?: boolean;
+    luxuryElements?: boolean;
+  };
   /** Icono emoji */
   icon: string;
 }
