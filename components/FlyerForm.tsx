@@ -623,7 +623,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
            <div className="space-y-3">
              <div className="flex items-center justify-between">
                <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
-                 Selecciona tu texto ({marketingObjective === 'branding' ? 'Branding' : 'Leads'})
+                 2. Selecciona tu texto ({marketingObjective === 'branding' ? 'Branding' : 'Leads'})
                </label>
                <button
                  onClick={() => {
