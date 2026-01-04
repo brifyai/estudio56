@@ -60,8 +60,8 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
         </h4>
         {/* Indicador de modo activo */}
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-          <span className="text-[10px] text-green-400 font-mono">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span className="text-[10px] text-cyan-400 font-mono">
             {currentConfig.name.toUpperCase()}
           </span>
         </div>
@@ -97,8 +97,8 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
               className={`
                 flex flex-col items-start p-3 rounded-lg transition-all border
                 ${isSelected
-                  ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/20'
-                  : 'border-gray-700 bg-gray-800/50 hover:border-gray-500 hover:bg-gray-800'
+                  ? 'border-cyan-400 bg-cyan-400/10 shadow-lg shadow-cyan-400/20'
+                  : 'border-gray-700 bg-gray-800/50 hover:border-cyan-500/50 hover:bg-gray-800'
                 }
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
@@ -113,7 +113,7 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
               
               {/* Nombre del estilo */}
               <span className={`text-sm font-semibold ${
-                isSelected ? 'text-green-400' : 'text-white'
+                isSelected ? 'text-cyan-400' : 'text-white'
               }`}>
                 {style.name}
               </span>
@@ -125,7 +125,7 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
               
               {/* Indicador de detección automática */}
               {isAutoDetected && !isSelected && (
-                <span className="text-[9px] text-blue-400 mt-1 flex items-center gap-1">
+                <span className="text-[9px] text-purple-400 mt-1 flex items-center gap-1">
                   <span>✨</span> Detectado
                 </span>
               )}
@@ -150,7 +150,7 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
             <>
               <span className="text-gray-500">•</span>
               <span className="text-gray-400">Sombra:</span>
-              <span className="text-cyan-400 font-mono">
+              <span className="text-purple-400 font-mono">
                 {currentConfig.shadowType}
               </span>
             </>
