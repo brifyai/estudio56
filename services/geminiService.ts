@@ -35,6 +35,25 @@ import {
 const GLOBAL_NEGATIVE_SHIELD = "text, letters, words, logo, watermark, distorted characters, floating objects, extra limbs, morphing faces, sliding feet, anti-gravity, supernatural movement, distorted physics, glitching bodies, impossible perspectives, unrealistic skin, plastic textures";
 
 // ============================================
+// 🦴 ESCUDO ANATÓMICO - Previene errores de anatomía humana
+// Bloquea errores como: pies en la cabeza, extremidades invertidas, etc.
+// ============================================
+const ANATOMY_SHIELD = "deformed anatomy, disfigured body, extra limbs, fused limbs, feet on head, backwards limbs, inverted body, distorted proportions, morphing body parts, anatomical nonsense, floating body parts, wrong limb placement, upside down body, head at bottom, feet at top, merged body parts, twisted torso, dislocated joints, impossible bone structure, human deformation, body horror, creature features";
+
+// ============================================
+// 🦴 RULES DE ANCLAJE ÓSEO - Jerarquía estricta del cuerpo humano
+// FUERZA al modelo a mantener la estructura anatómica correcta
+// ============================================
+const BONE_ANCHOR_RULES = `
+HUMAN_STRUCTURE_RULES:
+1. Maintain strict skeletal hierarchy: Head must be at the TOP of the body, feet must be at the BASE of the body.
+2. Anchored Physics: Feet must maintain constant contact with the ground or equipment - NEVER floating above the head.
+3. No Morphing: Limb count must remain constant (2 arms, 2 legs) with no merging of body parts.
+4. Anatomical Consistency: Arms extend from shoulders, legs extend from hips, head sits on neck.
+5. Gravity Respect: All body parts must follow natural gravity - nothing defies physics.
+`;
+
+// ============================================
 // 📐 CONSTRUCTOR DE PROMPT SEGÚN EL NUEVO ORDEN DE PASOS
 // Paso 1: Descripción → Paso 3: Formato → Paso 2: Contenido → Paso 4: Objetivo (NUNCA al prompt)
 // ============================================
@@ -67,6 +86,18 @@ export const generateFinalPrompt = (config: UserConfig): string => {
     CORE_PHYSICS: All movements must strictly follow the laws of gravity and mass.
     Subject must stay grounded and anchored to the floor. No floating or morphing.
     Maintain anatomical consistency. Inertia-based movement only.
+  `;
+
+  // ============================================
+  // 🦴 ANCLAJE ÓSEO - Integrar reglas anatómicas estrictas
+  // ============================================
+  const SKELETAL_ANCHOR = `
+    SKELETAL_ANCHOR:
+    - Head ALWAYS at TOP of body, feet ALWAYS at BOTTOM
+    - Feet in CONSTANT contact with ground/equipment
+    - 2 arms extend from shoulders, 2 legs extend from hips
+    - No body part inversion, no morphing, no fusion
+    - Gravity defines all body positions
   `;
 
   // ============================================
@@ -111,9 +142,10 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   // ============================================
   const promptParts: string[] = [];
 
-  // Paso 1: Objetivo + CORE_PHYSICS (Leyes de la Física)
+  // Paso 1: Objetivo + CORE_PHYSICS (Leyes de la Física) + SKELETAL_ANCHOR
   promptParts.push(`OBJECTIVE: Professional visual asset for ${description}.`);
   promptParts.push(CORE_PHYSICS);
+  promptParts.push(SKELETAL_ANCHOR);
   
   // REGLA DE ORO: NO TEXTO (siempre presente)
   promptParts.push(`STRICT_RULE: Zero text. Zero logos. No writing on any surface.`);
@@ -152,8 +184,8 @@ export const generateFinalPrompt = (config: UserConfig): string => {
     promptParts.push(`MOTION_DYNAMICS: ${motionStyle}. Inertia-based movement.`);
   }
 
-  // NEGATIVE PROMPT (El Escudo de Física y Limpieza - siempre aplicado)
-  promptParts.push(`NEGATIVE_PROMPT: ${GLOBAL_NEGATIVE_SHIELD}`);
+  // NEGATIVE PROMPT (El Escudo de Física y Limpieza + Escudo Anatómico)
+  promptParts.push(`NEGATIVE_PROMPT: ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}`);
 
   return promptParts.join('\n\n');
 };
@@ -1536,7 +1568,8 @@ export const generateFlyerImage = async (
   // ============================================
   const industryGuardrail = IMAGE_GUARDRAILS[styleKey] || "";
   const baseNegativePrompt = "blur, low resolution, messy, watermark, text overlay, logo visible, deformed, disfigured, ugly, incomplete, extra fingers, poorly drawn hands";
-  const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}`.replace(/\s+/g, ' ').trim();
+  // AGREGAR ESCUDO ANATÓMICO para prevenir errores como pies en la cabeza
+  const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANATOMY_SHIELD}`.replace(/\s+/g, ' ').trim();
   
   console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
@@ -1867,10 +1900,10 @@ const generateFlyerVideoVEO = async (
     // Simplify prompt for Draft Video too
     let finalPrompt = "";
     if (quality === 'draft') {
-       finalPrompt = `HIGH FIDELITY PHYSICS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
+       finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
     } else {
-       // HD: Usar prompt que enfatiza consistencia con la imagen de referencia
-       finalPrompt = `HIGH FIDELITY PHYSICS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
+       // HD: Usar prompt que enfatiza consistencia con la imagen de referencia + reglas anatómicas
+       finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
     }
 
     // Si tenemos imagen de referencia (HD desde draft), agregarla al prompt

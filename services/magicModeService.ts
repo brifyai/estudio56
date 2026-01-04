@@ -36,7 +36,42 @@ export const STYLE_NAMES_ES: Record<FlyerStyleKey, string> = {
   retro_vintage: 'Retro / Vintage',
   podcast_mic: 'Podcast / Audio',
   typo_bold: 'Tipografía Pura',
-  market_handwritten: 'Feria / Mercado'
+  market_handwritten: 'Feria / Mercado',
+  // Nuevos estilos 26-40
+  mechanic_workshop: 'Taller Mecánico',
+  tire_service: 'Vulcanización',
+  construction_site: 'Construcción',
+  logistics_delivery: 'Logística / Delivery',
+  bakery_bread: 'Panadería',
+  liquor_store: 'Botillería',
+  fast_food_street: 'Comida Rápida',
+  barber_shop: 'Barbería',
+  veterinary_clinic: 'Veterinaria',
+  hvac_plumbing: 'Gasfitería / Climatización',
+  dental_clinic: 'Centro Dental',
+  physiotherapy: 'Kinesiología',
+  law_accounting: 'Estudio Jurídico',
+  gardening_landscaping: 'Jardinería',
+  security_systems: 'Seguridad',
+  // Nuevos estilos 41-60
+  sushi_nikkei: 'Sushi / Nikkei',
+  pizzeria: 'Pizzería',
+  ice_cream: 'Heladería',
+  nail_studio: 'Nail Studio',
+  tattoo_studio: 'Tattoo Studio',
+  yoga_studio: 'Yoga Studio',
+  car_detailing: 'Car Detailing',
+  optical: 'Óptica',
+  bookstore: 'Librería',
+  flower_shop: 'Florería',
+  transport_school: 'Transporte Escolar',
+  hardware_store: 'Ferretería',
+  cleaning_service: 'Limpieza',
+  travel_agency: 'Agencia de Viajes',
+  laundry: 'Lavandería',
+  shoe_store: 'Zapatería',
+  tech_repair: 'Servicio Técnico',
+  pastry_shop: 'Pastelería'
 };
 
 /**
