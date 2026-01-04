@@ -1184,18 +1184,27 @@ export const generateFlyerImage = async (
   let activeStylePrompt: string;
   let activeStyleLabel: string;
   
+  console.log(`🔍 [generateFlyerImage] artDirectionId recibido: ${artDirectionId} | styleKey: ${styleKey}`);
+  
   if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
     // Story Art: Usar dirección de arte específica del rubro
     const artConfig = getArtDirectionById(artDirectionId);
+    console.log(`🎨 [Story Art] getArtDirectionById(${artDirectionId}):`, artConfig ? artConfig.rubro : 'NULL');
+    
     if (artConfig) {
       activeStylePrompt = artConfig.prompt;
       activeStyleLabel = artConfig.rubro;
-      console.log(`🎨 [Story Art] Usando dirección de arte: ${artConfig.rubro} (ID: ${artDirectionId})`);
+      console.log(`✅ [Story Art] Usando dirección de arte: ${artConfig.rubro} (ID: ${artDirectionId})`);
       
       // CRITICAL FIX: Transformar el enhancedDescription con buildAgencyPrompt
       // Esto asegura que el prompt enviado a Gemini incluya la capa de agencia completa
+      const oldPrompt = enhancedDescription;
       enhancedDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
-      console.log('🎯 [Story Art] Prompt transformado con buildAgencyPrompt:', enhancedDescription.substring(0, 200) + '...');
+      console.log('🎯 [Story Art] Prompt transformado con buildAgencyPrompt:', {
+        oldPrompt: oldPrompt.substring(0, 100) + '...',
+        newPrompt: enhancedDescription.substring(0, 100) + '...',
+        lengthDiff: enhancedDescription.length - oldPrompt.length
+      });
     } else {
       // Fallback a estilo normal si no encuentra la configuración
       activeStylePrompt = styleConfig.english_prompt;
@@ -1206,6 +1215,7 @@ export const generateFlyerImage = async (
     // Modo normal: Usar estilo genérico
     activeStylePrompt = styleConfig.english_prompt;
     activeStyleLabel = styleConfig.label;
+    console.log(`ℹ️ [generateFlyerImage] Modo normal (no story_art), usando estilo: ${activeStyleLabel}`);
   }
   
   // DETERMINE STYLE PROMPT (mantener compatibilidad)
