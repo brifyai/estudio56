@@ -238,3 +238,63 @@ export const ART_DIRECTION_CATEGORIES = {
     rubros: [53, 54, 55, 57, 58, 59, 60]
   }
 };
+
+// ============================================
+// MAPEO DE ESTILOS A DIRECCIÓN DE ARTE (Story Art)
+// ============================================
+// Este mapeo conecta los estilos de FLYER_STYLES con los IDs de Dirección de Arte
+// para que Story Art use la configuración correcta según el estilo seleccionado
+//
+// CRÍTICO: Los mapeos deben mantener coherencia visual para evitar "estética cruzada"
+// donde elementos de un rubro aparezcan inapropiadamente en otro.
+
+export const STYLE_TO_ART_DIRECTION_MAP: Record<string, number> = {
+  // Estilos huérfanos mapeados a rubros con coherencia visual
+  'summer_beach': 39,      // Verano/Turismo → Inmobiliaria/Turismo (luz solar, espacios abiertos aspiracionales)
+  'art_double_exp': 45,    // Artístico/Teatro → Tattoo Studio (alta creatividad, composición visual artística)
+  'retro_vintage': 52,     // Retro/Vintage → Ferretería (ambiente rústico/industrial, texturas vintage)
+  'seasonal_holiday': 30,  // Festivo → Panadería (celebraciones y festividades, ambiente cálido)
+  
+  // Mapeos adicionales para completar la cobertura (coherencia visual verificada)
+  'indie_grunge': 33,      // Rock/Música → Barbería (texturas urbanas, madera, metal, contrastes fuertes)
+  'retail_sale': 1,        // Retail/Ofertas → Retail General
+  'gastronomy': 46,        // Gastronomía → Sushi Nikkei
+  'urban_night': 21,       // Noche/Discoteca → Entretención
+  'corporate': 25,         // Corporativo → Servicios Profesionales
+  'worship_sky': 23,       // Espiritual → Salud y Bienestar
+  'kids_fun': 47,          // Infantil → Heladería (ambiente festivo y colorido)
+  'tech_saas': 57,         // Tecnología → Servicio Técnico
+  'medical_clean': 42,     // Médico → Centro Dental
+  'sport_gritty': 37,      // Deporte → Kinesiología
+  'luxury_gold': 20,       // Lujo → Retail Premium
+  'aesthetic_min': 35,     // Belleza → Yoga Studio
+  'wellness_zen': 24,      // Wellness → Salud y Bienestar
+  'eco_organic': 39,       // Ecológico → Jardinería
+  'realestate_night': 16,  // Inmobiliaria → Retail Inmobiliario
+  'auto_metallic': 26,     // Automotriz → Taller Mecánico
+  'edu_sketch': 43,        // Educación → Óptica
+  'podcast_mic': 44,       // Podcast → Librería
+  'gamer_stream': 45,      // Gaming → Tattoo Studio (estilo urbano/alternativo)
+  'political_community': 17, // Política → Retail Comunitario
+  'market_handwritten': 51, // Feria Libre → Florería
+  'pilates': 36,           // Pilates → Kinesiología
+  'typo_bold': 2,          // Tipografía → Retail Especializado
+};
+
+/**
+ * Obtiene el ID de Dirección de Arte correspondiente a un estilo
+ * @param styleKey - Clave del estilo de FLYER_STYLES
+ * @returns ID del rubro de Dirección de Arte (1-60) o null si no existe mapeo
+ */
+export function getArtDirectionIdFromStyle(styleKey: string): number | null {
+  return STYLE_TO_ART_DIRECTION_MAP[styleKey] || null;
+}
+
+/**
+ * Verifica si un estilo tiene mapeo de Dirección de Arte
+ * @param styleKey - Clave del estilo
+ * @returns true si tiene mapeo, false otherwise
+ */
+export function hasArtDirectionMapping(styleKey: string): boolean {
+  return styleKey in STYLE_TO_ART_DIRECTION_MAP;
+}

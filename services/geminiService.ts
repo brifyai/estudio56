@@ -1257,11 +1257,36 @@ export const generateFlyerImage = async (
   const needsLandscape = OUTDOOR_STYLES.includes(styleKey);
   const backgroundContext = needsLandscape ? CHILEAN_OUTDOOR_CONTEXT : CHILEAN_STUDIO_CONTEXT;
   
+  // ============================================
+  // DESCRIPTORES DE COMPOSICIÓN VERTICAL 9:16 (Story Art)
+  // ============================================
+  let verticalCompositionPrompt = "";
+  let safeZonePrompt = "";
+  let subjectSizePrompt = "";
+  
+  if (aspectRatio === '9:16' && artDirectionId) {
+    // Story Art: Composición vertical inmersiva para móvil
+    verticalCompositionPrompt = "Full-height vertical cinematic framing, Edge-to-edge 9:16 composition, Optimized for mobile immersive viewing.";
+    
+    // Safe Zones: Evitar elementos críticos en zonas de texto de app/Instagram
+    safeZonePrompt = "SAFE ZONES: Keep critical elements (faces, logos, key products) in the center vertical band. AVOID placing important visual elements in the top 250px and bottom 250px of the frame (these areas may be covered by app UI elements).";
+    
+    // Sujeto grande: 60-70% del eje vertical
+    subjectSizePrompt = "SUBJECT SIZE: The main subject must occupy 60-70% of the vertical frame. The subject should be LARGE and PROMINENT, not small or lost in the background. Fill the frame with the subject for maximum visual impact.";
+  } else if (aspectRatio === '9:16') {
+    // Solo 9:16 sin Story Art
+    verticalCompositionPrompt = "Vertical 9:16 mobile-optimized composition.";
+    subjectSizePrompt = "SUBJECT SIZE: Main subject should be prominent, occupying at least 50% of the vertical frame.";
+  }
+  
   // Build unified prompt that works for both Draft and HD
   // CRITICAL: No text in image - text will be added as overlay
   const unifiedPrompt = `
     ${MASTER_STYLE}
     ${compositionPrompt}
+    ${verticalCompositionPrompt}
+    ${safeZonePrompt}
+    ${subjectSizePrompt}
     ${CHILEAN_BASE_CONTEXT}
     ${backgroundContext}
     VISUAL STYLE SPECS: ${activeStylePrompt}
@@ -1286,6 +1311,21 @@ export const generateFlyerImage = async (
     Generate a COMPLETE VISIBLE IMAGE with rich textures, clear subjects, and proper lighting.
     The image must be 100% TEXT-FREE. Any image containing text will be considered a failure.
   `.replace(/\n/g, ' ').trim();
+
+  // ============================================
+  // LOG DEL PROMPT FINAL (Validación de Dirección de Arte)
+  // ============================================
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('🎨 PROMPT FINAL ENVIADO A GEMINI (Validación Dirección de Arte)');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log(`📐 Aspect Ratio: ${aspectRatio}`);
+  console.log(`🎬 Modo: ${artDirectionId ? `Story Art (Rubro ID: ${artDirectionId})` : 'Generación Estándar'}`);
+  console.log(`🎨 Estilo: ${activeStyleLabel}`);
+  console.log(`📝 Prompt Length: ${unifiedPrompt.length} caracteres`);
+  console.log('───────────────────────────────────────────────────────────────');
+  console.log('📝 PROMPT COMPLETO:');
+  console.log(unifiedPrompt);
+  console.log('═══════════════════════════════════════════════════════════════');
 
   // ============================================
   // APLICAR GUARDRAILS DE SEGURIDAD (Negative Prompts)
