@@ -1599,7 +1599,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
       {/* CERRAR COMPARACIÓN DE IMÁGENES */}
       {showComparison && !showVideoComparison && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute top-6 left-4 lg:left-8 z-50">
           <button
             onClick={() => setShowComparison(false)}
             className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
@@ -1611,7 +1611,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       
       {/* CERRAR COMPARACIÓN DE VIDEOS */}
       {showVideoComparison && (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute top-6 left-4 lg:left-8 z-50">
           <button
             onClick={() => setShowVideoComparison(false)}
             className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
@@ -1626,14 +1626,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] bg-yellow-500/90 backdrop-blur text-black text-[10px] font-mono font-bold px-3 py-1 rounded-sm">⚡ MODO_BORRADOR</div>
       )}
       
-      {/* COMPARISON BADGE - IMÁGENES */}
-      {!isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && showComparison && (
-        <div className="absolute top-36 left-1/2 -translate-x-1/2 z-[60]">
-          <div className="bg-blue-500/90 backdrop-blur text-white text-[10px] font-mono font-bold px-3 py-1 rounded-sm">
-            <span>👁️</span> COMPARANDO BORRADOR Y HD (IMAGEN)
-          </div>
-        </div>
-      )}
       
       {/* VIDEO COMPARISON BADGE */}
       {!isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && showVideoComparison && (
@@ -1648,7 +1640,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       <div className="w-full flex flex-col items-center justify-start px-2 md:px-0 pt-2 md:py-12 relative z-0">
         {/* VIDEO COMPARISON MODE - SIDE BY SIDE */}
         {showVideoComparison && !isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
-          <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
+          <div className="absolute inset-0 z-40 bg-checkered flex items-center justify-center p-4">
             <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* VIDEO BORRADOR */}
               <div className="flex flex-col items-center">
@@ -1721,7 +1713,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
-          <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
+          <div className="absolute inset-0 z-40 bg-checkered flex flex-col items-center justify-center p-4">
+            {/* BADGE DE COMPARACIÓN - ARRIBA DE LAS IMÁGENES */}
+            <div className="mb-4">
+              <div className="bg-blue-500/90 backdrop-blur text-white text-[10px] font-mono font-bold px-4 py-2 rounded-sm">
+                <span>👁️</span> COMPARANDO BORRADOR Y HD (IMAGEN)
+              </div>
+            </div>
             <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* BORRADOR - Gemini 2.5 Flash */}
               <div className="flex flex-col items-center">
