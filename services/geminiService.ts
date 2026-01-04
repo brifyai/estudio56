@@ -28,6 +28,199 @@ import {
   ART_DIRECTION_SYSTEM
 } from "../src/constants/artDirectionIndex";
 
+// ============================================
+// 🛡️ EL ESCUDO DE LIMPIEZA - Negative Prompt Absoluto
+// Se aplica SIEMPRE para evitar textos, logos y deformaciones
+// ============================================
+const NEGATIVE_PROMPT_SHIELD = "text, letters, words, signboards, watermark, logo, typography, distorted characters, subtitles, overlay text, branded graphics, signatures, labels, credits, unrealistic skin, plastic textures, AI-generated look, neon exaggerations, cartoonish features";
+
+// ============================================
+// 📐 CONSTRUCTOR DE PROMPT SEGÚN EL NUEVO ORDEN DE PASOS
+// Paso 1: Descripción → Paso 3: Formato → Paso 2: Contenido → Paso 4: Objetivo (NUNCA al prompt)
+// ============================================
+
+export interface UserConfig {
+  description: string;      // Paso 1: Descripción del negocio
+  format: '9:16' | '1:1' | '16:9' | '4:5';  // Paso 3: Formato
+  contentType: 'image' | 'video' | 'story_art';  // Paso 2: Tipo de contenido
+  industryId: number;       // Rubro (1-60) para Dirección de Arte
+  marketingObjective?: 'branding' | 'leads';  // Paso 4: OBJETIVO - NUNCA se envía al prompt
+}
+
+/**
+ * Genera el prompt final blindado con el Escudo de Limpieza
+ * @param config - Configuración del usuario con el nuevo orden de pasos
+ * @returns Prompt final para generación de imagen/video (SIN texto del Paso 4)
+ */
+export const generateFinalPrompt = (config: UserConfig): string => {
+  const { description, format, contentType, industryId } = config;
+  
+  // Paso 1 & 2: Contexto y ADN de movimiento (60 estilos)
+  const artDirectionConfig = getArtDirectionById(industryId);
+  const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
+  const industryRubro = artDirectionConfig?.rubro || "General";
+  
+  // Estilos de movimiento predefinidos por tipo de rubro
+  const motionStyles: Record<string, string> = {
+    'Retail General': "Subtle camera pan, product reveal shot",
+    'Moda': "Gentle fabric movement, model flow",
+    'Joyas': "Diamond sparkle rotation, light refraction",
+    'Gaming': "RGB pulse, glitch motion effects",
+    'Gastronomía': "Steam rising, sauce drizzle motion",
+    'Wellness': "Soft float, zen movement",
+    'Fitness': "Dynamic action, muscle tension",
+    'Belleza': "Soft glow transition, makeup shimmer",
+    'default': "Cinematic steady motion"
+  };
+  
+  // Buscar estilo de movimiento por rubro
+  let motionStyle = "Cinematic steady motion";
+  for (const [key, value] of Object.entries(motionStyles)) {
+    if (industryRubro.toLowerCase().includes(key.toLowerCase())) {
+      motionStyle = value;
+      break;
+    }
+  }
+
+  // ============================================
+  // INSTRUCCIÓN DE COMPOSICIÓN (Basada en Paso 3: Formato)
+  // ============================================
+  let compositionRule: string;
+  let styleInstruction: string;
+  
+  if (format === '9:16') {
+    // Stories de Instagram/TikTok
+    compositionRule = "Maintain 60-70% vertical focus on the subject. Leave top and bottom areas as clear negative space for external app overlays.";
+    
+    if (contentType === 'video' || contentType === 'story_art') {
+      // Video/Story Art en 9:16
+      styleInstruction = "STYLE_INSTRUCTION: Focus on cinematic visual art. Generate a clean professional plate. Keep the subject in the center (60-70% vertical). Absolutely no embedded text or signs. Leave the top and bottom areas as negative space for external app overlays.";
+    } else {
+      // Imagen en 9:16
+      styleInstruction = "STYLE_INSTRUCTION: Cinematic vertical composition. Clean professional aesthetic. Subject centered with negative space top and bottom.";
+    }
+  } else if (format === '1:1') {
+    // Posts de Instagram/Facebook
+    compositionRule = "Centered balanced composition with clean backgrounds.";
+    
+    if (contentType === 'image') {
+      // Imagen/Estudio en 1:1
+      styleInstruction = "STYLE_INSTRUCTION: High-end photography. Zero text, zero logos. Clear backgrounds. Focus on product textures and lighting. Ensure no writing appears on walls or surfaces.";
+    } else {
+      styleInstruction = "STYLE_INSTRUCTION: Professional square composition. Clean aesthetic with balanced subject placement.";
+    }
+  } else if (format === '16:9') {
+    // YouTube/Reels horizontal
+    compositionRule = "Cinematic wide composition with centered subject.";
+    styleInstruction = "STYLE_INSTRUCTION: Cinematic horizontal video frame. Professional lighting and composition. No text or watermarks.";
+  } else {
+    // 4:5 Instagram portrait
+    compositionRule = "Vertical portrait composition with subject focus.";
+    styleInstruction = "STYLE_INSTRUCTION: Professional portrait composition. Clean aesthetic with subject prominence.";
+  }
+
+  // ============================================
+  // CONSTRUCCIÓN DEL PROMPT FINAL (Blindado)
+  // ============================================
+  const promptParts: string[] = [];
+
+  // REGLA DE ORO: NO TEXTO (siempre presente)
+  promptParts.push(`OBJECTIVE: Generate a professional visual asset for ${description}.`);
+  promptParts.push(`STRICT_RULE: Zero text. Zero logos. No writing on walls, clothing, or surfaces. ABSOLUTELY NO TEXT WHATSOEVER.`);
+
+  // DIRECCIÓN DE ARTE (Basado en el Rubro 1-60)
+  promptParts.push(`VISUAL_STYLE: ${industryContext}.`);
+  promptParts.push(`REALISM: Use organic lighting and matte textures. Avoid "AI-look" or neon exaggerations.`);
+
+  // COMPOSICIÓN (Basada en Paso 3: Formato)
+  promptParts.push(`COMPOSITION: ${compositionRule}`);
+
+  // Estilo específico según formato y contenido
+  promptParts.push(styleInstruction);
+
+  // MOTIÓN (Solo si es video/story art - Paso 2)
+  if (contentType === 'video' || contentType === 'story_art') {
+    promptParts.push(`MOTION: ${motionStyle}`);
+  }
+
+  // NEGATIVE PROMPT (El Escudo de Limpieza - siempre aplicado)
+  promptParts.push(`NEGATIVE_PROMPT: ${NEGATIVE_PROMPT_SHIELD}`);
+
+  return promptParts.join('\n\n');
+};
+
+/**
+ * Genera el texto persuasivo para el Paso 4 (Branding/Leads)
+ * Este texto se guarda SOLO para mostrar en la interfaz, NUNCA se envía al prompt de imagen
+ * @param config - Configuración del usuario
+ * @returns Texto persuasivo para mostrar al usuario (no para la IA)
+ */
+export const generateMarketingText = async (config: UserConfig): Promise<string> => {
+  const { description, marketingObjective, industryId } = config;
+  
+  // El marketingObjective puede ser 'branding' o 'leads'
+  const objective = marketingObjective || 'branding';
+  
+  // Usar la plantilla específica basada en el rubro
+  const artDirectionConfig = getArtDirectionById(industryId);
+  const industryRubro = artDirectionConfig?.rubro || 'default';
+  
+  // Mapear rubro a clave de INDUSTRY_TEXT_TEMPLATES
+  const industryKeyMap: Record<string, string> = {
+    'Retail General': 'retail_sale',
+    'Moda': 'default',
+    'Joyas': 'luxury_gold',
+    'Gaming': 'gamer_stream',
+    'Gastronomía': 'gastronomy',
+    'Wellness': 'wellness_zen',
+    'Fitness': 'sport_gritty',
+    'Belleza': 'aesthetic_min',
+    'Salud': 'medical_clean',
+    'Tecnología': 'tech_saas',
+    'default': 'default'
+  };
+  
+  const industryKey = industryKeyMap[industryRubro] || 'default';
+  const industryTexts = INDUSTRY_TEXT_TEMPLATES[industryKey] || INDUSTRY_TEXT_TEMPLATES.default;
+  const industryFallbacks = industryTexts[objective];
+  
+  try {
+    const ai = getAiClient();
+    const model = "gemini-3-flash-preview";
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout')), 8000);
+    });
+
+    const apiPromise = ai.models.generateContent({
+      model,
+      contents: `Negocio: ${description}\nIndustria: ${industryRubro}\nObjetivo: ${objective === 'branding' ? 'Branding' : 'Leads'}\nGenera texto corto y persuasivo en español (máximo 4 palabras para branding, 6 para leads):`,
+      config: {
+        systemInstruction: `Eres un experto en marketing para Chile.
+        Genera texto específico para la industria: ${industryRubro}
+        Reglas:
+        - Texto MUY CORTO y específico al negocio
+        - Solo el texto, sin explicaciones
+        - Español chileno auténtico`
+      }
+    });
+
+    const response = await Promise.race([apiPromise, timeoutPromise]) as any;
+    const text = response.text?.trim();
+    
+    if (text && text.length > 2 && text.length < 100) {
+      return text;
+    }
+    
+    console.warn(`⚠️ API falló para ${industryRubro}, usando textos específicos`);
+    return industryFallbacks[Math.floor(Math.random() * industryFallbacks.length)];
+    
+  } catch (error) {
+    console.warn(`⚠️ Error generando texto para ${industryRubro}, usando fallback específico`);
+    return industryFallbacks[Math.floor(Math.random() * industryFallbacks.length)];
+  }
+};
+
 // Exportar función de diagnóstico para uso en otros servicios
 export const diagnoseAndFixBlackImage = async (imageDataUrl: string): Promise<string> => {
   try {
