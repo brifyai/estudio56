@@ -1443,19 +1443,12 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     // Si no hay texto que mostrar y no estamos editando, no renderizar nada
     if (!displayText && !isEditing) return null;
     
-    // Durante comparación:
-    // - Si es borrador: mostrar overlay de texto (el borrador no tiene texto quemado)
-    // - Si es HD: NO mostrar overlay de texto (la imagen HD ya tiene el texto quemado)
-    // Esto evita que el texto se vea dos veces en HD
-    if (showComparison && !isComparisonDraft && !isEditing) {
-      // Estamos en HD durante comparación - no mostrar overlay porque ya está en la imagen
-      return null;
-    }
-    
-    // Durante comparación en borrador: ocultar overlay para evitar duplicado visual
-    // (el borrador también puede tener texto quemado)
-    if (showComparison && isComparisonDraft && !isEditing) {
-      return null;
+    // Durante comparación: MOSTRAR texto en ambas imágenes
+    // Las imágenes generadas no tienen el texto quemado, necesitamos mostrarlo superpuesto
+    // Solo ocultamos si estamos editando
+    if (showComparison && isEditing && !isComparisonDraft) {
+      // Solo ocultar el textarea de edición durante comparación
+      // pero el texto en modo display sí se debe ver
     }
 
     // Calcular escala para comparación de borrador
