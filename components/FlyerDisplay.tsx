@@ -92,7 +92,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   isDraft,
   onUpgradeToHD,
   initialOverlayText,
-  textPosition = { x: 50, y: 50 },
+  textPosition = { x: 50, y: 85 },
   setTextPosition,
   workMode = 'auto',
   styleKey = 'brand_identity',
@@ -392,8 +392,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const defaultStyles: TextStyleOptions = {
-    fontSize: 24,
-    fontFamily: 'Inter, sans-serif',
+    fontSize: 16,
+    fontFamily: 'Lato, sans-serif',
     fontWeight: 'bold',
     textColor: '#FFFFFF',
     backgroundColor: 'transparent',
@@ -1436,9 +1436,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   // Componente de texto - SIMPLIFICADO
   const renderText = (isComparisonDraft: boolean = false) => {
-    const displayText = localText || overlayText || initialOverlayText || '';
+    // SOLO mostrar texto que el usuario haya escrito manualmente (localText)
+    // NO mostrar texto generado automáticamente por la IA (overlayText, initialOverlayText)
+    const displayText = localText || '';
     
-    if (!displayText) return null;
+    // OCULTAR durante comparación (excepto en modo edición)
+    if (!displayText && !isEditing) return null;
+    if (showComparison && !isComparisonDraft && !isEditing) return null;
 
     // Calcular escala para comparación de borrador
     // HD: 320px, Draft: 200px → escala = 200/320 = 0.625
@@ -1595,6 +1599,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           style={{ margin: '-16px' }}
         />
         {displayText}
+        
       </div>
     );
   };
