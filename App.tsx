@@ -896,80 +896,147 @@ const handleGenerate = async () => {
        let artDirectionId: number | undefined = undefined;
        
        if (mediaType === 'story_art') {
-         // Mapeo de estilos detectados a rubros de Dirección de Arte
+         // Mapeo COMPLETO de todos los 61 estilos definidos en types.ts a rubros de Dirección de Arte (1-60)
+         // Este mapeo asegura que cada estilo use su Direction de Arte específica, evitando el default ID 1
          const styleToIndustryMap: Record<string, number> = {
-           // Retail → Retail General (1)
-           'retail_sale': 1,
-           
-           // Gastronomy → Restaurantes (22)
-           'gastronomy': 22,
-           
-           // Wellness → Salud/Bienestar (24)
-           'wellness_zen': 24,
-           'pilates': 24,
-           
-           // Fitness → Fitness/Gimnasio (21)
-           'sport_gritty': 21,
-           
-           // Beauty → Salón de Belleza (41)
-           'aesthetic_min': 41,
-           
-           // Medical → Salud/Medicina (24)
-           'medical_clean': 24,
-           
-           // Tech → Tecnología/Startups (38)
-           'tech_saas': 38,
-           
-           // Education → Educación/Cursos (25)
-           'edu_sketch': 25,
-           
-           // Real Estate → Inmobiliaria (26)
-           'realestate_night': 26,
-           
-           // Luxury → Joyería (55) - closest match
-           'luxury_gold': 55,
-           
-           // Automotive → Automotriz (27)
-           'auto_metallic': 27,
-           
-           // Church → Servicios Profesionales (33) - closest spiritual match
-           'worship_sky': 33,
-           
-           // Kids → Eventos/Bodas (30) - closest kids events match
-           'kids_fun': 30,
-           
-           // Podcast → Música/Entretención (35)
-           'podcast_mic': 35,
-           
-           // Gaming → Gaming (13)
-           'gamer_stream': 13,
-           
-           // Eco → Verdulería (52) - closest organic match
-           'eco_organic': 52,
-           
-           // Urban Night → Viajes/Turismo (29) - closest entertainment match
-           'urban_night': 29,
-           
-           // Corporate → Servicios Profesionales (33)
-           'corporate': 33,
-           
-           // Indie/Barbería (34)
-           'indie_grunge': 34,
-           
-           // Summer/Playa → Viajes/Turismo (29)
-           'summer_beach': 29,
-           
-           // Art/Creatividad → Arte/Creatividad (38)
-           'art_double_exp': 38,
-           
-           // Retro/Vintage → Regalería (52)
-           'retro_vintage': 52,
-           
-           // Seasonal/Holiday → Eventos (30)
-           'seasonal_holiday': 30,
-           
-           // Default → Retail General (1)
-           'brand_identity': 1
+           // === ESTILOS VENTAS Y COMERCIO ===
+           'retail_sale': 1,        // Retail General
+           'typo_bold': 1,          // Solo Texto → Retail
+           'auto_metallic': 27,     // Automotriz
+           'gastronomy': 22,        // Restaurantes
+
+           // === ESTILOS CORPORATIVO ===
+           'corporate': 33,         // Corporativo
+           'medical_clean': 56,     // Médico/Clínica
+           'tech_saas': 39,         // Tecnología
+           'edu_sketch': 25,        // Educación
+           'political_community': 33, // Político → Corporativo
+
+           // === ESTILOS LIFESTYLE ===
+           'aesthetic_min': 41,     // Belleza
+           'wellness_zen': 24,      // Wellness/Spa
+           'pilates': 24,           // Pilates → Wellness
+           'summer_beach': 29,      // Viajes/Turismo
+           'eco_organic': 51,       // Orgánico/Feria
+           'sport_gritty': 40,      // Gimnasio/Deporte
+
+           // === ESTILOS NOCHE ===
+           'urban_night': 29,       // Viajes (discoteca) - usar Viajes para estética nocturna
+           'luxury_gold': 55,       // Lujo
+           'realestate_night': 26,  // Inmobiliaria Nocturna
+           'gamer_stream': 13,      // Gaming
+           'indie_grunge': 35,      // Entretención/Música
+
+           // === ESTILOS EVENTOS ===
+           'kids_fun': 30,          // Eventos Infantiles
+           'worship_sky': 33,       // Iglesia → Corporativo
+           'seasonal_holiday': 30,  // Festividades → Eventos
+           'art_double_exp': 37,    // Fotografía/Arte
+           'retro_vintage': 18,     // Regalos/Vintage
+           'podcast_mic': 35,       // Entretención/Media
+
+           // === ESTILOS NUEVOS 26-40 (2026) ===
+           'mechanic_workshop': 27, // Taller Mecánico → Automotriz
+           'tire_service': 27,      // Vulcanización → Automotriz
+           'construction_site': 20, // Construcción → Electrodomésticos (ambos industriales)
+           'logistics_delivery': 1, // Logística → Retail (distribución)
+           'bakery_bread': 47,      // Panadería
+           'liquor_store': 11,      // Botillería
+           'fast_food_street': 46,  // Comida Rápida
+           'barber_shop': 34,       // Barbería
+           'veterinary_clinic': 59, // Veterinaria
+           'hvac_plumbing': 20,     // Gasfitería → Construcción (técnico)
+           'dental_clinic': 57,     // Dental
+           'physiotherapy': 40,     // Kinesiología → Gimnasio (deporte/salud)
+           'law_accounting': 31,    // Estudio Jurídico → Servicios Profesionales
+           'gardening_landscaping': 17, // Jardinería → Decoración (hogar)
+           'security_systems': 39,  // Seguridad → Tecnología
+
+           // === ESTILOS NUEVOS 41-60 (2026) ===
+           'sushi_nikkei': 22,      // Sushi → Restaurantes
+           'pizzeria': 22,          // Pizzería → Restaurantes
+           'ice_cream': 48,         // Heladería
+           'nail_studio': 42,       // Uñas
+           'tattoo_studio': 35,     // Tattoo → Entretención (arte urbano)
+           'yoga_studio': 24,       // Yoga → Wellness
+           'car_detailing': 27,     // Car Detailing → Automotriz
+           'optical': 6,            // Óptica
+           'bookstore': 16,         // Librería
+           'flower_shop': 17,       // Florería → Decoración
+           'transport_school': 1,   // Transporte Escolar → Retail (servicio local)
+           'hardware_store': 20,    // Ferretería → Construcción
+           'cleaning_service': 19,  // Limpieza
+           'travel_agency': 29,     // Agencia de Viajes
+           'laundry': 19,           // Lavandería → Limpieza
+           'shoe_store': 1,         // Zapatería → Retail
+           'tech_repair': 39,       // Servicio Técnico → Tecnología
+           'pastry_shop': 47,       // Pastelería → Panadería
+
+           // === ESTILOS ESPECIALES ===
+           'brand_identity': 1,     // Identidad Detectada → Retail (default)
+           'market_handwritten': 1, // Feria Libre → Retail (comercio local)
+
+           // === ESTILOS VIDEO (mapeados a rubros equivalentes) ===
+           'video_retail_sale': 1,
+           'video_summer_beach': 29,
+           'video_worship_sky': 33,
+           'video_corporate': 33,
+           'video_urban_night': 29,
+           'video_gastronomy': 22,
+           'video_sport_gritty': 40,
+           'video_luxury_gold': 55,
+           'video_aesthetic_min': 41,
+           'video_retro_vintage': 18,
+           'video_gamer_stream': 13,
+           'video_eco_organic': 51,
+           'video_indie_grunge': 35,
+           'video_political': 33,
+           'video_kids_fun': 30,
+           'video_art_double_exp': 37,
+           'video_medical_clean': 56,
+           'video_tech_saas': 39,
+           'video_typo_bold': 1,
+           'video_realestate_night': 26,
+           'video_auto_metallic': 27,
+           'video_edu_sketch': 25,
+           'video_wellness_zen': 24,
+           'video_podcast_mic': 35,
+           'video_seasonal_holiday': 30,
+           'video_mechanic_action': 27,
+           'video_tire_spin': 27,
+           'video_construction_drone': 20,
+           'video_logistic_flow': 1,
+           'video_baking_rise': 47,
+           'video_cooler_refresh': 11,
+           'video_griddle_sizzle': 46,
+           'video_barber_precision': 34,
+           'video_pet_interaction': 59,
+           'video_technical_fix': 20,
+           'video_dental_tech': 57,
+           'video_rehab_movement': 40,
+           'video_corporate_handshake': 31,
+           'video_lawn_transformation': 17,
+           'video_surveillance_scan': 39,
+           'video_sushi_prep': 22,
+           'video_pizza_heat': 22,
+           'video_ice_cream_drip': 48,
+           'video_nail_shine': 42,
+           'video_tattoo_ink': 35,
+           'video_yoga_flow': 24,
+           'video_foam_reveal': 27,
+           'video_optic_focus': 6,
+           'video_book_pan': 16,
+           'video_flower_mist': 17,
+           'video_bottle_glow': 11,
+           'video_van_drive': 1,
+           'video_tool_pick': 20,
+           'video_market_fresh': 1,
+           'video_cleaning_shine': 19,
+           'video_globe_spin': 29,
+           'video_steam_iron': 19,
+           'video_shoe_walk': 1,
+           'video_tech_micro': 39,
+           'video_cake_slicing': 47,
          };
          
          // Usar detectedStyleKey o effectiveStyleKey como fallback
@@ -1105,15 +1172,59 @@ const handleGenerate = async () => {
             // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
             let upgradeArtDirectionId: number | undefined = undefined;
             if (mediaType === 'story_art') {
+              // Mapeo completo (igual que en handleGenerate)
+              // Mapeo COMPLETO de todos los 61 estilos (igual que en handleGenerate)
               const styleToIndustryMap: Record<string, number> = {
-                'retail_sale': 1, 'gastronomy': 22, 'wellness_zen': 24, 'pilates': 24,
-                'sport_gritty': 21, 'aesthetic_min': 41, 'medical_clean': 24,
-                'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
-                'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
-                'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
-                'eco_organic': 52, 'urban_night': 29, 'corporate': 33,
-                'indie_grunge': 34, 'summer_beach': 29, 'art_double_exp': 38,
-                'retro_vintage': 52, 'seasonal_holiday': 30, 'brand_identity': 1
+                // === ESTILOS VENTAS Y COMERCIO ===
+                'retail_sale': 1, 'typo_bold': 1, 'auto_metallic': 27, 'gastronomy': 22,
+                // === ESTILOS CORPORATIVO ===
+                'corporate': 33, 'medical_clean': 56, 'tech_saas': 39, 'edu_sketch': 25, 'political_community': 33,
+                // === ESTILOS LIFESTYLE ===
+                'aesthetic_min': 41, 'wellness_zen': 24, 'pilates': 24, 'summer_beach': 29, 'eco_organic': 51, 'sport_gritty': 40,
+                // === ESTILOS NOCHE ===
+                'urban_night': 29, 'luxury_gold': 55, 'realestate_night': 26, 'gamer_stream': 13, 'indie_grunge': 35,
+                // === ESTILOS EVENTOS ===
+                'kids_fun': 30, 'worship_sky': 33, 'seasonal_holiday': 30, 'art_double_exp': 37, 'retro_vintage': 18, 'podcast_mic': 35,
+                // === ESTILOS NUEVOS 26-40 (2026) ===
+                'mechanic_workshop': 27, 'tire_service': 27, 'construction_site': 20, 'logistics_delivery': 1,
+                'bakery_bread': 47, 'liquor_store': 11, 'fast_food_street': 46, 'barber_shop': 34, 'veterinary_clinic': 59,
+                'hvac_plumbing': 20, 'dental_clinic': 57, 'physiotherapy': 40, 'law_accounting': 31, 'gardening_landscaping': 17,
+                'security_systems': 39,
+                // === ESTILOS NUEVOS 41-60 (2026) ===
+                'sushi_nikkei': 22, 'pizzeria': 22, 'ice_cream': 48, 'nail_studio': 42, 'tattoo_studio': 35,
+                'yoga_studio': 24, 'car_detailing': 27, 'optical': 6, 'bookstore': 16, 'flower_shop': 17,
+                'transport_school': 1, 'hardware_store': 20, 'cleaning_service': 19, 'travel_agency': 29,
+                'laundry': 19, 'shoe_store': 1, 'tech_repair': 39, 'pastry_shop': 47,
+                // === ESTILOS ESPECIALES ===
+                'brand_identity': 1, 'market_handwritten': 1,
+                // === ESTILOS VIDEO (mapeados a rubros equivalentes) ===
+                'video_retail_sale': 1, 'video_summer_beach': 29, 'video_worship_sky': 33, 'video_corporate': 33,
+                'video_urban_night': 29, 'video_gastronomy': 22, 'video_sport_gritty': 40, 'video_luxury_gold': 55,
+                'video_aesthetic_min': 41, 'video_retro_vintage': 18, 'video_gamer_stream': 13, 'video_eco_organic': 51,
+                'video_indie_grunge': 35, 'video_political': 33, 'video_kids_fun': 30, 'video_art_double_exp': 37,
+                'video_medical_clean': 56, 'video_tech_saas': 39, 'video_typo_bold': 1, 'video_realestate_night': 26,
+                'video_auto_metallic': 27, 'video_edu_sketch': 25, 'video_wellness_zen': 24, 'video_podcast_mic': 35,
+                'video_seasonal_holiday': 30, 'video_mechanic_action': 27, 'video_tire_spin': 27, 'video_construction_drone': 20,
+                'video_logistic_flow': 1, 'video_baking_rise': 47, 'video_cooler_refresh': 11, 'video_griddle_sizzle': 46,
+                'video_barber_precision': 34, 'video_pet_interaction': 59, 'video_technical_fix': 20, 'video_dental_tech': 57,
+                'video_rehab_movement': 40, 'video_corporate_handshake': 31, 'video_lawn_transformation': 17,
+                'video_surveillance_scan': 39, 'video_sushi_prep': 22, 'video_pizza_heat': 22, 'video_ice_cream_drip': 48,
+                'video_nail_shine': 42, 'video_tattoo_ink': 35, 'video_yoga_flow': 24, 'video_foam_reveal': 27,
+                'video_optic_focus': 6, 'video_book_pan': 16, 'video_flower_mist': 17, 'video_bottle_glow': 11,
+                'video_van_drive': 1, 'video_tool_pick': 20, 'video_market_fresh': 1, 'video_cleaning_shine': 19,
+                'video_globe_spin': 29, 'video_steam_iron': 19, 'video_shoe_walk': 1, 'video_tech_micro': 39,
+                'video_cake_slicing': 47,
+                // === ESTILOS ADICIONALES (fashion, etc.) ===
+                'fashion_trendy': 2, 'fashion_elegant': 3, 'fashion_sport': 4, 'electronics': 5, 'home_deco': 6,
+                'jewelry': 7, 'optics': 8, 'pharmacy': 9, 'supermarket': 10, 'pet_shop': 12, 'gaming': 13,
+                'sports': 14, 'toys': 15, 'books': 16, 'florist': 17, 'gifts': 18, 'cleaning': 19,
+                'construction': 20, 'coffee_shop': 23, 'education': 25, 'realestate': 26, 'automotive': 27,
+                'health': 28, 'travel': 29, 'events': 30, 'professional': 31, 'financial': 32,
+                'barbershop': 34, 'entertainment': 35, 'music': 36, 'photography': 37, 'creative': 38,
+                'tech': 39, 'sports_gym': 40, 'beauty': 41, 'nails': 42, 'makeup': 43, 'barber': 44,
+                'spa': 45, 'fastfood': 46, 'bakery': 47, 'icecream': 48, 'bbq': 49, 'seafood': 50,
+                'organic': 51, 'grocery': 52, 'wine': 53, 'brewery': 54, 'luxury': 55,
+                'medical': 56, 'dental': 57, 'optometrist': 58, 'veterinary': 59, 'holistic': 60
               };
               const styleKeyToMap = detectedStyleKey || styleKey;
               upgradeArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
@@ -1205,16 +1316,59 @@ const handleGenerate = async () => {
          // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
          let refineArtDirectionId: number | undefined = undefined;
          if (mediaType === 'story_art') {
-          const styleToIndustryMap: Record<string, number> = {
-            'retail_sale': 1, 'gastronomy': 22, 'wellness_zen': 24, 'pilates': 24,
-            'sport_gritty': 21, 'aesthetic_min': 41, 'medical_clean': 24,
-            'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
-            'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
-            'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
-            'eco_organic': 52, 'urban_night': 29, 'corporate': 33,
-            'indie_grunge': 34, 'summer_beach': 29, 'art_double_exp': 38,
-            'retro_vintage': 52, 'seasonal_holiday': 30, 'brand_identity': 1
-          };
+           // Mapeo COMPLETO de todos los 61 estilos (igual que en handleGenerate)
+           const styleToIndustryMap: Record<string, number> = {
+             // === ESTILOS VENTAS Y COMERCIO ===
+             'retail_sale': 1, 'typo_bold': 1, 'auto_metallic': 27, 'gastronomy': 22,
+             // === ESTILOS CORPORATIVO ===
+             'corporate': 33, 'medical_clean': 56, 'tech_saas': 39, 'edu_sketch': 25, 'political_community': 33,
+             // === ESTILOS LIFESTYLE ===
+             'aesthetic_min': 41, 'wellness_zen': 24, 'pilates': 24, 'summer_beach': 29, 'eco_organic': 51, 'sport_gritty': 40,
+             // === ESTILOS NOCHE ===
+             'urban_night': 29, 'luxury_gold': 55, 'realestate_night': 26, 'gamer_stream': 13, 'indie_grunge': 35,
+             // === ESTILOS EVENTOS ===
+             'kids_fun': 30, 'worship_sky': 33, 'seasonal_holiday': 30, 'art_double_exp': 37, 'retro_vintage': 18, 'podcast_mic': 35,
+             // === ESTILOS NUEVOS 26-40 (2026) ===
+             'mechanic_workshop': 27, 'tire_service': 27, 'construction_site': 20, 'logistics_delivery': 1,
+             'bakery_bread': 47, 'liquor_store': 11, 'fast_food_street': 46, 'barber_shop': 34, 'veterinary_clinic': 59,
+             'hvac_plumbing': 20, 'dental_clinic': 57, 'physiotherapy': 40, 'law_accounting': 31, 'gardening_landscaping': 17,
+             'security_systems': 39,
+             // === ESTILOS NUEVOS 41-60 (2026) ===
+             'sushi_nikkei': 22, 'pizzeria': 22, 'ice_cream': 48, 'nail_studio': 42, 'tattoo_studio': 35,
+             'yoga_studio': 24, 'car_detailing': 27, 'optical': 6, 'bookstore': 16, 'flower_shop': 17,
+             'transport_school': 1, 'hardware_store': 20, 'cleaning_service': 19, 'travel_agency': 29,
+             'laundry': 19, 'shoe_store': 1, 'tech_repair': 39, 'pastry_shop': 47,
+             // === ESTILOS ESPECIALES ===
+             'brand_identity': 1, 'market_handwritten': 1,
+             // === ESTILOS VIDEO (mapeados a rubros equivalentes) ===
+             'video_retail_sale': 1, 'video_summer_beach': 29, 'video_worship_sky': 33, 'video_corporate': 33,
+             'video_urban_night': 29, 'video_gastronomy': 22, 'video_sport_gritty': 40, 'video_luxury_gold': 55,
+             'video_aesthetic_min': 41, 'video_retro_vintage': 18, 'video_gamer_stream': 13, 'video_eco_organic': 51,
+             'video_indie_grunge': 35, 'video_political': 33, 'video_kids_fun': 30, 'video_art_double_exp': 37,
+             'video_medical_clean': 56, 'video_tech_saas': 39, 'video_typo_bold': 1, 'video_realestate_night': 26,
+             'video_auto_metallic': 27, 'video_edu_sketch': 25, 'video_wellness_zen': 24, 'video_podcast_mic': 35,
+             'video_seasonal_holiday': 30, 'video_mechanic_action': 27, 'video_tire_spin': 27, 'video_construction_drone': 20,
+             'video_logistic_flow': 1, 'video_baking_rise': 47, 'video_cooler_refresh': 11, 'video_griddle_sizzle': 46,
+             'video_barber_precision': 34, 'video_pet_interaction': 59, 'video_technical_fix': 20, 'video_dental_tech': 57,
+             'video_rehab_movement': 40, 'video_corporate_handshake': 31, 'video_lawn_transformation': 17,
+             'video_surveillance_scan': 39, 'video_sushi_prep': 22, 'video_pizza_heat': 22, 'video_ice_cream_drip': 48,
+             'video_nail_shine': 42, 'video_tattoo_ink': 35, 'video_yoga_flow': 24, 'video_foam_reveal': 27,
+             'video_optic_focus': 6, 'video_book_pan': 16, 'video_flower_mist': 17, 'video_bottle_glow': 11,
+             'video_van_drive': 1, 'video_tool_pick': 20, 'video_market_fresh': 1, 'video_cleaning_shine': 19,
+             'video_globe_spin': 29, 'video_steam_iron': 19, 'video_shoe_walk': 1, 'video_tech_micro': 39,
+             'video_cake_slicing': 47,
+             // === ESTILOS ADICIONALES (fashion, etc.) ===
+             'fashion_trendy': 2, 'fashion_elegant': 3, 'fashion_sport': 4, 'electronics': 5, 'home_deco': 6,
+             'jewelry': 7, 'optics': 8, 'pharmacy': 9, 'supermarket': 10, 'pet_shop': 12, 'gaming': 13,
+             'sports': 14, 'toys': 15, 'books': 16, 'florist': 17, 'gifts': 18, 'cleaning': 19,
+             'construction': 20, 'coffee_shop': 23, 'education': 25, 'realestate': 26, 'automotive': 27,
+             'health': 28, 'travel': 29, 'events': 30, 'professional': 31, 'financial': 32,
+             'barbershop': 34, 'entertainment': 35, 'music': 36, 'photography': 37, 'creative': 38,
+             'tech': 39, 'sports_gym': 40, 'beauty': 41, 'nails': 42, 'makeup': 43, 'barber': 44,
+             'spa': 45, 'fastfood': 46, 'bakery': 47, 'icecream': 48, 'bbq': 49, 'seafood': 50,
+             'organic': 51, 'grocery': 52, 'wine': 53, 'brewery': 54, 'luxury': 55,
+             'medical': 56, 'dental': 57, 'optometrist': 58, 'veterinary': 59, 'holistic': 60
+           };
            const styleKeyToMap = detectedStyleKey || styleKey;
            refineArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
            console.log(`🎨 [Story Art Refine] industryId: ${refineArtDirectionId}`);
