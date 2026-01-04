@@ -705,9 +705,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 5. FORMATO SIMPLIFICADO - OCULTAR EN MODO STORY ART */}
-        {!isStoryArtModeActive && (
-          <div className="space-y-3">
+        {/* 5. FORMATO SIMPLIFICADO */}
+        <div className="space-y-3">
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">3. Formato</label>
               <div className="grid grid-cols-2 gap-3">
                   {/* 1:1 - Universal */}
@@ -744,8 +743,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                       <div className="text-[10px] text-white/80">Stories/Reels</div>
                   </button>
               </div>
-          </div>
-        )}
+            </div>
 
         {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
         <div className="space-y-3">
