@@ -1026,8 +1026,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         )}
 
 
-        {/* 7. TEXTO SIMPLE - SOLO EN MODO MANUAL */}
-        {workMode === 'manual' && (
+        {/* 7. TEXTO SIMPLE - SOLO EN MODO MANUAL Y PARA IMÁGENES (NO PARA VIDEOS NI STORY ART) */}
+        {workMode === 'manual' && mediaType !== 'video' && mediaType !== 'story_art' && (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Texto del Flyer</label>

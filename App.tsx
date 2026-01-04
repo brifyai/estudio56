@@ -1607,14 +1607,15 @@ const handleGenerate = async () => {
                               setLogoPosition={setLogoPosition}
                               productPosition={productPosition}
                               setProductPosition={setProductPosition}
+                              mediaType={mediaType} // NEW: Para ocultar overlays en videos y story art
                           />
                       </div>
                     </div>
                   </div>
                 )}
                 
-                {/* Panel de Editor de Texto */}
-                {imageUrl && (
+                {/* Panel de Editor de Texto - OCULTAR PARA VIDEOS Y STORY ART */}
+                {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
                     <TextEditorPanel
                       overlayText={overlayText}
@@ -1740,6 +1741,7 @@ const handleGenerate = async () => {
                     setLogoPosition={setLogoPosition}
                     productPosition={productPosition}
                     setProductPosition={setProductPosition}
+                    mediaType={mediaType} // NEW: Para ocultar overlays en videos y story art
                 />
             </div>
          </div>

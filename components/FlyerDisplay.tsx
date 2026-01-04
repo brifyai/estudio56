@@ -49,6 +49,8 @@ interface FlyerDisplayProps {
   setLogoPosition?: (pos: { x: number; y: number; width: number }) => void;
   productPosition?: { x: number; y: number; width: number; height: number };
   setProductPosition?: (pos: { x: number; y: number; width: number; height: number }) => void;
+  // NEW: Tipo de media para ocultar overlays en videos y story art
+  mediaType?: 'image' | 'video' | 'story_art';
 }
 
 export interface TextStyleOptions {
@@ -96,7 +98,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   logoPosition = { x: 10, y: 10, width: 80 },
   setLogoPosition,
   productPosition = { x: 50, y: 70, width: 120, height: 120 },
-  setProductPosition
+  setProductPosition,
+  mediaType = 'image'
 }) => {
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -1834,8 +1837,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 />
               );
             })()}
-            {renderLogo()}
-            {renderProduct()}
+            {/* OCULTAR OVERLAYS EN VIDEOS Y STORY ART */}
+            {mediaType !== 'video' && mediaType !== 'story_art' && renderLogo()}
+            {mediaType !== 'video' && mediaType !== 'story_art' && renderProduct()}
             {/* Ocultar texto durante comparación para evitar duplicado */}
             {!showComparison && renderText()}
             
@@ -2002,8 +2006,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 />
               );
             })()}
-            {renderLogo()}
-            {renderProduct()}
+            {/* OCULTAR OVERLAYS EN VIDEOS Y STORY ART */}
+            {mediaType !== 'video' && mediaType !== 'story_art' && renderLogo()}
+            {mediaType !== 'video' && mediaType !== 'story_art' && renderProduct()}
             {/* Ocultar texto durante comparación para evitar duplicado */}
             {!showComparison && renderText()}
           </div>
