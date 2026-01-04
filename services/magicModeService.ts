@@ -701,244 +701,326 @@ export const enhancedUrlAnalysis = (url: string): IndustryDetection => {
 };
 
 // ============================================
-// DETECCIÓN AUTOMÁTICA PARA VIDEOS
+// DETECCIÓN AUTOMÁTICA PARA VIDEOS (60 ESTILOS)
 // ============================================
 
 /**
- * MAPEO DE ESTILOS DE VIDEO A NOMBRES EN ESPAÑOL
+ * MAPEO DE ESTILOS DE VIDEO A NOMBRES EN ESPAÑOL (60 Estilos v2.0)
  */
 export const VIDEO_STYLE_NAMES_ES: Record<FlyerStyleKeyVideo, string> = {
-  video_retail_sale: 'Retail / Ofertas',
-  video_summer_beach: 'Verano / Turismo',
-  video_worship_sky: 'Iglesia / Espiritual',
-  video_corporate: 'Corporativo / Oficina',
-  video_urban_night: 'Discoteca / Neón',
-  video_gastronomy: 'Gastronomía / Comida',
-  video_sport_gritty: 'Deporte / Gym',
-  video_luxury_gold: 'Lujo / Gala VIP',
-  video_aesthetic_min: 'Aesthetic / Belleza',
-  video_retro_vintage: 'Retro / Vintage 90s',
-  video_gamer_stream: 'Gamer / Esports',
-  video_eco_organic: 'Ecológico / Natural',
-  video_indie_grunge: 'Rock / Indie',
-  video_political: 'Política / Comunidad',
-  video_kids_fun: 'Infantil / Cumpleaños',
-  video_art_double_exp: 'Artístico / Doble Exposición',
-  video_medical_clean: 'Médico / Clínico',
-  video_tech_saas: 'Tech / AI / Digital',
-  video_typo_bold: 'Tipografía Pura',
-  video_realestate_night: 'Inmobiliaria Nocturna',
-  video_auto_metallic: 'Automotriz / Coche',
-  video_edu_sketch: 'Educación / Clases',
-  video_wellness_zen: 'Spa / Zen',
-  video_podcast_mic: 'Podcast / Media',
-  video_seasonal_holiday: 'Festividades / Navidad'
+  // BLOQUE 1: RETAIL Y ESTÉTICA (1-20)
+  video_retail_gen: 'Retail General',
+  video_fashion_women: 'Moda Mujer',
+  video_fashion_men: 'Moda Hombre',
+  video_footwear: 'Calzado',
+  video_jewelry: 'Joyas',
+  video_optics: 'Óptica',
+  video_beauty: 'Belleza/Cosmética',
+  video_perfume: 'Perfumería',
+  video_bags: 'Bolsos/Carteras',
+  video_tech_acc: 'Accesorios Tech',
+  video_smartphone: 'Smartphones',
+  video_computing: 'Computación',
+  video_gaming: 'Gaming',
+  video_photography: 'Fotografía',
+  video_audio: 'Audio/Sonido',
+  video_watches: 'Relojes',
+  video_decor: 'Decoración',
+  video_furniture: 'Muebles',
+  video_lighting: 'Iluminación',
+  video_appliances: 'Electrodomésticos',
+  
+  // BLOQUE 2: SALUD Y DEPORTE (21-30)
+  video_gym: 'Gimnasio/Deporte',
+  video_gastronomy: 'Gastronomía',
+  video_wellness_zen: 'Spa/Wellness',
+  video_medical: 'Médico/Clínico',
+  video_corporate: 'Corporativo',
+  video_real_estate: 'Inmobiliaria',
+  video_automotive: 'Automotriz',
+  video_pets: 'Mascotas',
+  video_travel: 'Viajes',
+  video_construction: 'Construcción',
+  
+  // BLOQUE 3: SERVICIOS ESPECIALIZADOS (31-40)
+  video_mechanic: 'Taller Mecánico',
+  video_tire_service: 'Vulcanización',
+  video_barber: 'Barbería',
+  video_veterinary: 'Veterinaria',
+  video_yoga: 'Yoga',
+  video_pilates: 'Pilates',
+  video_physiotherapy: 'Kinesiología',
+  video_legal: 'Estudio Jurídico',
+  video_gardening: 'Jardinería',
+  video_security: 'Seguridad',
+  
+  // BLOQUE 4: GASTRONOMÍA ESPECIALIZADA (41-50)
+  video_sushi: 'Sushi/Nikkei',
+  video_fast_food: 'Comida Rápida',
+  video_ice_cream: 'Heladería',
+  video_nail_studio: 'Nail Studio',
+  video_tattoo: 'Tattoo Studio',
+  video_pizza: 'Pizzería',
+  video_veggie: 'Veggie/Vegetariano',
+  video_coffee: 'Café',
+  video_bakery: 'Panadería',
+  video_pastry: 'Pastelería',
+  
+  // BLOQUE 5: COMERCIO ESPECIALIZADO (51-60)
+  video_butcher: 'Carnicería',
+  video_hardware: 'Ferretería',
+  video_bookstore: 'Librería',
+  video_florist: 'Florería',
+  video_cleaning: 'Limpieza',
+  video_laundry: 'Lavandería',
+  video_shoe_store: 'Zapatería',
+  video_optician: 'Óptica',
+  video_tech_repair: 'Servicio Técnico',
+  video_liquor_store: 'Botillería'
 };
 
 /**
- * MAPEO DE INDUSTRIAS A ESTILOS DE VIDEO
+ * MAPEO DE INDUSTRIAS A ESTILOS DE VIDEO (60 Estilos v2.0)
  */
 const VIDEO_INDUSTRY_STYLE_MAPPING: Record<string, FlyerStyleKeyVideo> = {
-  // VENTAS & RETAIL
-  'tienda': 'video_retail_sale',
-  'shop': 'video_retail_sale',
-  'store': 'video_retail_sale',
-  'oferta': 'video_retail_sale',
-  'sale': 'video_retail_sale',
-  'descuento': 'video_retail_sale',
-  'promocion': 'video_retail_sale',
-  'liquidacion': 'video_retail_sale',
+  // === BLOQUE 1: RETAIL Y MODA ===
+  'tienda': 'video_retail_gen',
+  'shop': 'video_retail_gen',
+  'store': 'video_retail_gen',
+  'comercio': 'video_retail_gen',
+  'minorista': 'video_retail_gen',
   
-  // VERANO / TURISMO
-  'verano': 'video_summer_beach',
-  'summer': 'video_summer_beach',
-  'playa': 'video_summer_beach',
-  'vacaciones': 'video_summer_beach',
-  'turismo': 'video_summer_beach',
-  'hotel': 'video_summer_beach',
-  'resort': 'video_summer_beach',
-  'pool': 'video_summer_beach',
-  'piscina': 'video_summer_beach',
+  'moda mujer': 'video_fashion_women',
+  'ropa mujer': 'video_fashion_women',
+  'fashion women': 'video_fashion_women',
   
-  // IGLESIA / ESPIRITUAL
-  'iglesia': 'video_worship_sky',
-  'religion': 'video_worship_sky',
-  'espiritual': 'video_worship_sky',
-  'fe': 'video_worship_sky',
-  'templo': 'video_worship_sky',
-  'congregacion': 'video_worship_sky',
+  'moda hombre': 'video_fashion_men',
+  'ropa hombre': 'video_fashion_men',
+  'fashion men': 'video_fashion_men',
+  'urbano': 'video_fashion_men',
   
-  // CORPORATIVO
-  'empresa': 'video_corporate',
-  'company': 'video_corporate',
-  'business': 'video_corporate',
-  'oficina': 'video_corporate',
-  'corporativo': 'video_corporate',
-  'profesional': 'video_corporate',
+  'zapato': 'video_footwear',
+  'zapatilla': 'video_footwear',
+  'calzado': 'video_footwear',
+  'tenis': 'video_footwear',
   
-  // NOCHE & ENTRETENCIÓN
-  'discoteca': 'video_urban_night',
-  'club': 'video_urban_night',
-  'fiesta': 'video_urban_night',
-  'noche': 'video_urban_night',
-  'dj': 'video_urban_night',
-  'nightlife': 'video_urban_night',
+  'joya': 'video_jewelry',
+  'anillo': 'video_jewelry',
+  'diamante': 'video_jewelry',
+  'joyería': 'video_jewelry',
   
-  // GASTRONOMÍA
-  'restaurant': 'video_gastronomy',
+  'lente': 'video_optics',
+  'óptica': 'video_optics',
+  'gafa': 'video_optics',
+  'vista': 'video_optics',
+  
+  'belleza': 'video_beauty',
+  'cosmético': 'video_beauty',
+  'makeup': 'video_beauty',
+  
+  'perfume': 'video_perfume',
+  'fragancia': 'video_perfume',
+  
+  'bolso': 'video_bags',
+  'cartera': 'video_bags',
+  'mochila': 'video_bags',
+  
+  'accesorio tech': 'video_tech_acc',
+  'gadget': 'video_tech_acc',
+  'cargador': 'video_tech_acc',
+  
+  'celular': 'video_smartphone',
+  'smartphone': 'video_smartphone',
+  'móvil': 'video_smartphone',
+  'iphone': 'video_smartphone',
+  
+  'computadora': 'video_computing',
+  'pc': 'video_computing',
+  'laptop': 'video_computing',
+  
+  'gaming': 'video_gaming',
+  'videojuego': 'video_gaming',
+  'esports': 'video_gaming',
+  
+  'fotografía': 'video_photography',
+  
+  'audio': 'video_audio',
+  'sonido': 'video_audio',
+  'parlante': 'video_audio',
+  
+  'reloj': 'video_watches',
+  'watch': 'video_watches',
+  
+  'decoración': 'video_decor',
+  'adorno': 'video_decor',
+  
+  'mueble': 'video_furniture',
+  'silla': 'video_furniture',
+  'mesa': 'video_furniture',
+  
+  'iluminación': 'video_lighting',
+  'lámpara': 'video_lighting',
+  
+  'electrodoméstico': 'video_appliances',
+  'cocina': 'video_appliances',
+  
+  // === BLOQUE 2: SALUD Y DEPORTE ===
+  'gym': 'video_gym',
+  'gimnasio': 'video_gym',
+  'fitness': 'video_gym',
+  'deporte': 'video_gym',
+  'entrenamiento': 'video_gym',
+  
   'restaurante': 'video_gastronomy',
   'comida': 'video_gastronomy',
+  'gastronomía': 'video_gastronomy',
   'food': 'video_gastronomy',
-  'cafe': 'video_gastronomy',
-  'burger': 'video_gastronomy',
-  'pizza': 'video_gastronomy',
-  'gourmet': 'video_gastronomy',
   
-  // DEPORTE / GYM
-  'fitness': 'video_sport_gritty',
-  'gym': 'video_sport_gritty',
-  'gimnasio': 'video_sport_gritty',
-  'deporte': 'video_sport_gritty',
-  'entrenamiento': 'video_sport_gritty',
-  'atleta': 'video_sport_gritty',
-  
-  // LUJO / GALA
-  'lujo': 'video_luxury_gold',
-  'luxury': 'video_luxury_gold',
-  'gala': 'video_luxury_gold',
-  'vip': 'video_luxury_gold',
-  'champagne': 'video_luxury_gold',
-  'evento_premium': 'video_luxury_gold',
-  
-  // AESTHETIC / BELLEZA
-  'belleza': 'video_aesthetic_min',
-  'estetica': 'video_aesthetic_min',
-  'skincare': 'video_aesthetic_min',
-  'aesthetic': 'video_aesthetic_min',
-  'minimal': 'video_aesthetic_min',
-  
-  // RETRO / VINTAGE
-  'retro': 'video_retro_vintage',
-  'vintage': 'video_retro_vintage',
-  '90s': 'video_retro_vintage',
-  'grunge': 'video_retro_vintage',
-  'nostalgia': 'video_retro_vintage',
-  
-  // GAMING / ESPORTS
-  'gaming': 'video_gamer_stream',
-  'game': 'video_gamer_stream',
-  'stream': 'video_gamer_stream',
-  'esports': 'video_gamer_stream',
-  'twitch': 'video_gamer_stream',
-  'videojuego': 'video_gamer_stream',
-  
-  // ECOLÓGICO / NATURAL
-  'eco': 'video_eco_organic',
-  'organic': 'video_eco_organic',
-  'natural': 'video_eco_organic',
-  'verde': 'video_eco_organic',
-  'frutas': 'video_eco_organic',
-  'organico': 'video_eco_organic',
-  
-  // ROCK / INDIE
-  'rock': 'video_indie_grunge',
-  'musica': 'video_indie_grunge',
-  'concierto': 'video_indie_grunge',
-  'guitarra': 'video_indie_grunge',
-  'indie': 'video_indie_grunge',
-  
-  // POLÍTICA
-  'politica': 'video_political',
-  'politico': 'video_political',
-  'candidato': 'video_political',
-  'eleccion': 'video_political',
-  'gobierno': 'video_political',
-  
-  // INFANTIL
-  'ninos': 'video_kids_fun',
-  'kids': 'video_kids_fun',
-  'infantil': 'video_kids_fun',
-  'cumpleanos': 'video_kids_fun',
-  'juguetes': 'video_kids_fun',
-  'birthday': 'video_kids_fun',
-  
-  // ARTÍSTICO
-  'arte': 'video_art_double_exp',
-  'artist': 'video_art_double_exp',
-  'teatro': 'video_art_double_exp',
-  'surreal': 'video_art_double_exp',
-  'creativo': 'video_art_double_exp',
-  
-  // MÉDICO
-  'medico': 'video_medical_clean',
-  'doctor': 'video_medical_clean',
-  'clinica': 'video_medical_clean',
-  'salud': 'video_medical_clean',
-  'hospital': 'video_medical_clean',
-  'dental': 'video_medical_clean',
-  
-  // TECH / AI
-  'tech': 'video_tech_saas',
-  'software': 'video_tech_saas',
-  'app': 'video_tech_saas',
-  'digital': 'video_tech_saas',
-  'ai': 'video_tech_saas',
-  'inteligencia': 'video_tech_saas',
-  'data': 'video_tech_saas',
-  
-  // TIPOGRÁFICO
-  'tipografia': 'video_typo_bold',
-  'texto': 'video_typo_bold',
-  'letras': 'video_typo_bold',
-  'design': 'video_typo_bold',
-  
-  // INMOBILIARIA
-  'inmobiliaria': 'video_realestate_night',
-  'inmueble': 'video_realestate_night',
-  'casa': 'video_realestate_night',
-  'departamento': 'video_realestate_night',
-  'propiedad': 'video_realestate_night',
-  'luxury_home': 'video_realestate_night',
-  
-  // AUTOMOTRIZ
-  'auto': 'video_auto_metallic',
-  'carro': 'video_auto_metallic',
-  'vehiculo': 'video_auto_metallic',
-  'automotriz': 'video_auto_metallic',
-  'taller': 'video_auto_metallic',
-  
-  // EDUCACIÓN
-  'educacion': 'video_edu_sketch',
-  'education': 'video_edu_sketch',
-  'curso': 'video_edu_sketch',
-  'clase': 'video_edu_sketch',
-  'estudiar': 'video_edu_sketch',
-  'universidad': 'video_edu_sketch',
-  
-  // WELLNESS / SPA
-  'wellness': 'video_wellness_zen',
   'spa': 'video_wellness_zen',
-  'yoga': 'video_wellness_zen',
-  'pilates': 'video_wellness_zen',
+  'wellness': 'video_wellness_zen',
   'masaje': 'video_wellness_zen',
-  'relajacion': 'video_wellness_zen',
-  'meditacion': 'video_wellness_zen',
+  'relajación': 'video_wellness_zen',
   
-  // PODCAST / MEDIA
-  'podcast': 'video_podcast_mic',
-  'radio': 'video_podcast_mic',
-  'audio': 'video_podcast_mic',
-  'entrevista': 'video_podcast_mic',
-  'media': 'video_podcast_mic',
-  'estudio': 'video_podcast_mic',
+  'médico': 'video_medical',
+  'doctor': 'video_medical',
+  'clínica': 'video_medical',
+  'salud': 'video_medical',
+  'dental': 'video_medical',
   
-  // FESTIVIDADES
-  'navidad': 'video_seasonal_holiday',
-  'christmas': 'video_seasonal_holiday',
-  'valentine': 'video_seasonal_holiday',
-  'san_valentin': 'video_seasonal_holiday',
-  'festividades': 'video_seasonal_holiday',
-  'regalos': 'video_seasonal_holiday'
+  'empresa': 'video_corporate',
+  'corporativo': 'video_corporate',
+  'oficina': 'video_corporate',
+  'business': 'video_corporate',
+  
+  'inmobiliaria': 'video_real_estate',
+  'inmueble': 'video_real_estate',
+  'casa': 'video_real_estate',
+  'departamento': 'video_real_estate',
+  
+  'auto': 'video_automotive',
+  'vehículo': 'video_automotive',
+  'carro': 'video_automotive',
+  'automotriz': 'video_automotive',
+  
+  'mascota': 'video_pets',
+  'perro': 'video_pets',
+  'gato': 'video_pets',
+  'veterinaria': 'video_pets',
+  
+  'viaje': 'video_travel',
+  'vacaciones': 'video_travel',
+  'turismo': 'video_travel',
+  'hotel': 'video_travel',
+  
+  'construcción': 'video_construction',
+  'obra': 'video_construction',
+  'edificio': 'video_construction',
+  
+  // === BLOQUE 3: SERVICIOS ESPECIALIZADOS ===
+  'mecánico': 'video_mechanic',
+  'taller': 'video_mechanic',
+  'reparación': 'video_mechanic',
+  
+  'neumático': 'video_tire_service',
+  'llanta': 'video_tire_service',
+  'vulcanización': 'video_tire_service',
+  
+  'barbería': 'video_barber',
+  'barba': 'video_barber',
+  
+  'veterinario': 'video_veterinary',
+  
+  'yoga': 'video_yoga',
+  'meditación': 'video_yoga',
+  
+  'pilates': 'video_pilates',
+  'reformer': 'video_pilates',
+  'core': 'video_pilates',
+  
+  'kinesiología': 'video_physiotherapy',
+  'fisioterapia': 'video_physiotherapy',
+  'rehabilitación': 'video_physiotherapy',
+  
+  'abogado': 'video_legal',
+  'jurídico': 'video_legal',
+  'legal': 'video_legal',
+  
+  'jardinería': 'video_gardening',
+  'paisajismo': 'video_gardening',
+  'planta': 'video_gardening',
+  
+  'seguridad': 'video_security',
+  'vigilancia': 'video_security',
+  
+  // === BLOQUE 4: GASTRONOMÍA ESPECIALIZADA ===
+  'sushi': 'video_sushi',
+  'japonés': 'video_sushi',
+  'nikkei': 'video_sushi',
+  
+  'comida rápida': 'video_fast_food',
+  'hamburguesa': 'video_fast_food',
+  'fast food': 'video_fast_food',
+  
+  'helado': 'video_ice_cream',
+  'heladería': 'video_ice_cream',
+  
+  'uñas': 'video_nail_studio',
+  'manicure': 'video_nail_studio',
+  'nail art': 'video_nail_studio',
+  
+  'tattoo': 'video_tattoo',
+  'tatuaje': 'video_tattoo',
+  
+  'pizza': 'video_pizza',
+  'italiano': 'video_pizza',
+  
+  'vegetariano': 'video_veggie',
+  'vegano': 'video_veggie',
+  'saludable': 'video_veggie',
+  
+  'café': 'video_coffee',
+  'espresso': 'video_coffee',
+  'barista': 'video_coffee',
+  
+  'pan': 'video_bakery',
+  'panadería': 'video_bakery',
+  'horno': 'video_bakery',
+  
+  'pastel': 'video_pastry',
+  'torta': 'video_pastry',
+  'pastelería': 'video_pastry',
+  
+  // === BLOQUE 5: COMERCIO ESPECIALIZADO ===
+  'carne': 'video_butcher',
+  'carnicería': 'video_butcher',
+  
+  'herramienta': 'video_hardware',
+  'taladro': 'video_hardware',
+  'ferretería': 'video_hardware',
+  
+  'libro': 'video_bookstore',
+  'librería': 'video_bookstore',
+  'lectura': 'video_bookstore',
+  
+  'flor': 'video_florist',
+  'florería': 'video_florist',
+  'ramo': 'video_florist',
+  
+  'limpieza': 'video_cleaning',
+  'aseo': 'video_cleaning',
+  'servicio': 'video_cleaning',
+  
+  'lavandería': 'video_laundry',
+  'ropa': 'video_laundry',
+  'lavado': 'video_laundry',
+  
+  'zapatería': 'video_shoe_store',
+  
+  'técnico': 'video_tech_repair',
+  
+  'botillería': 'video_liquor_store',
+  'vino': 'video_liquor_store',
+  'licor': 'video_liquor_store'
 };
 
 /**
@@ -952,191 +1034,549 @@ export interface VideoIndustryDetection {
 }
 
 /**
- * DETECTA EL ESTILO DE VIDEO DESDE URL O TEXTO
+ * DETECTA EL ESTILO DE VIDEO DESDE URL O TEXTO (60 Estilos v2.0)
  * Lógica SIMPLE y DETERMINÍSTICA sin conflictos
+ *
+ * 🎯 SISTEMA DE PALABRAS ANCLA:
+ * - Sustantivos Técnicos (Anclas): Peso 3x
+ * - Adjetivos Genéricos: Peso 1x
+ * - Anti-Anclas: Penalización -5x
  */
 export const detectVideoStyleFromInput = (input: string): VideoIndustryDetection => {
   const inputLower = input.toLowerCase();
   
+  // ============================================
   // 🔥 ORDEN DE PRIORIDAD (primera coincidencia gana)
+  // ============================================
   
-  // 1. WELLNESS & PILATES
-  if (inputLower.includes('pilates')) {
-    return { industry: 'pilates', styleKey: 'video_wellness_zen', confidence: 0.95, keywords: ['pilates'] };
-  }
-  if (inputLower.includes('yoga') || inputLower.includes('spa') || inputLower.includes('masaje') || inputLower.includes('wellness')) {
-    return { industry: 'wellness_zen', styleKey: 'video_wellness_zen', confidence: 0.9, keywords: ['yoga', 'spa', 'masaje', 'wellness'] };
-  }
-  
-  // 2. IGLESIA / ESPIRITUAL
-  if (inputLower.includes('iglesia') || inputLower.includes('templo') || inputLower.includes('congregación') || inputLower.includes('religion') || inputLower.includes('espiritual') || inputLower.includes('fe')) {
-    return { industry: 'worship_sky', styleKey: 'video_worship_sky', confidence: 0.9, keywords: ['iglesia', 'templo', 'congregación', 'religion', 'espiritual', 'fe'] };
-  }
-  
-  // 3. GASTRONOMÍA
-  if (inputLower.includes('restaurant') || inputLower.includes('restaurante') || inputLower.includes('comida') || inputLower.includes('food') || inputLower.includes('cafe')) {
-    return { industry: 'gastronomy', styleKey: 'video_gastronomy', confidence: 0.9, keywords: ['restaurant', 'restaurante', 'comida', 'food', 'cafe'] };
-  }
-  if (inputLower.includes('pizza') || inputLower.includes('hamburguesa') || inputLower.includes('burger') || inputLower.includes('gourmet')) {
-    return { industry: 'gastronomy', styleKey: 'video_gastronomy', confidence: 0.85, keywords: ['pizza', 'hamburguesa', 'burger', 'gourmet'] };
+  // === PILATES (CRÍTICO - Evitar confusión con SPA) ===
+  // Pilates tiene equipamiento específico (Reformer) y es entrenamiento activo
+  if (inputLower.includes('pilates') || inputLower.includes('reformer') || inputLower.includes('core') || inputLower.includes('máquina')) {
+    // Verificar que NO sea SPA/Masaje (Anti-Anclas de Pilates)
+    if (!inputLower.includes('spa') && !inputLower.includes('masaje') && !inputLower.includes('velas') && !inputLower.includes('sauna')) {
+      return {
+        industry: 'pilates',
+        styleKey: 'video_pilates',
+        confidence: 0.95,
+        keywords: ['pilates', 'reformer', 'core', 'máquina']
+      };
+    }
   }
   
-  // 4. RETAIL / OFERTAS
-  if (inputLower.includes('tienda') || inputLower.includes('shop') || inputLower.includes('store') || inputLower.includes('oferta') || inputLower.includes('sale') || inputLower.includes('descuento') || inputLower.includes('promoción') || inputLower.includes('liquidación')) {
-    return { industry: 'retail_sale', styleKey: 'video_retail_sale', confidence: 0.9, keywords: ['tienda', 'shop', 'store', 'oferta', 'sale', 'descuento', 'promoción', 'liquidación'] };
+  // === WELLNESS / SPA (pasivo - relajación) ===
+  if (inputLower.includes('spa') || inputLower.includes('masaje') || inputLower.includes('velas') || inputLower.includes('sauna') || inputLower.includes('jacuzzi')) {
+    return {
+      industry: 'wellness_zen',
+      styleKey: 'video_wellness_zen',
+      confidence: 0.9,
+      keywords: ['spa', 'masaje', 'velas', 'sauna', 'jacuzzi']
+    };
   }
   
-  // 5. DEPORTE / GYM
-  if (inputLower.includes('gym') || inputLower.includes('gimnasio') || inputLower.includes('fitness') || inputLower.includes('deporte') || inputLower.includes('entrenamiento') || inputLower.includes('atleta')) {
-    return { industry: 'sport_gritty', styleKey: 'video_sport_gritty', confidence: 0.9, keywords: ['gym', 'gimnasio', 'fitness', 'deporte', 'entrenamiento', 'atleta'] };
+  // === YOGA (flexibilidad, respiración) ===
+  if (inputLower.includes('yoga') || inputLower.includes('meditación') || inputLower.includes('respiración') || inputLower.includes('postura')) {
+    return {
+      industry: 'yoga',
+      styleKey: 'video_yoga',
+      confidence: 0.9,
+      keywords: ['yoga', 'meditación', 'respiración', 'postura']
+    };
   }
   
-  // 6. BELLEZA
-  if (inputLower.includes('belleza') || inputLower.includes('estética') || inputLower.includes('estetica') || inputLower.includes('skincare') || inputLower.includes('aesthetic') || inputLower.includes('minimal')) {
-    return { industry: 'aesthetic_min', styleKey: 'video_aesthetic_min', confidence: 0.9, keywords: ['belleza', 'estética', 'estetica', 'skincare', 'aesthetic', 'minimal'] };
+  // === GIMNASIO / DEPORTE ===
+  if (inputLower.includes('gym') || inputLower.includes('gimnasio') || inputLower.includes('fitness') || inputLower.includes('deporte') || inputLower.includes('entrenamiento') || inputLower.includes('atleta') || inputLower.includes('crossfit')) {
+    return {
+      industry: 'gym',
+      styleKey: 'video_gym',
+      confidence: 0.9,
+      keywords: ['gym', 'gimnasio', 'fitness', 'deporte', 'entrenamiento', 'atleta', 'crossfit']
+    };
   }
   
-  // 7. MÉDICO
-  if (inputLower.includes('médico') || inputLower.includes('medico') || inputLower.includes('doctor') || inputLower.includes('clínica') || inputLower.includes('clinica') || inputLower.includes('hospital') || inputLower.includes('dental')) {
-    return { industry: 'medical_clean', styleKey: 'video_medical_clean', confidence: 0.9, keywords: ['médico', 'medico', 'doctor', 'clínica', 'clinica', 'hospital', 'dental'] };
+  // === MÉDICO / CLÍNICO ===
+  if (inputLower.includes('médico') || inputLower.includes('medico') || inputLower.includes('doctor') || inputLower.includes('clínica') || inputLower.includes('clinica') || inputLower.includes('hospital') || inputLower.includes('dental') || inputLower.includes('dentista')) {
+    return {
+      industry: 'medical',
+      styleKey: 'video_medical',
+      confidence: 0.9,
+      keywords: ['médico', 'medico', 'doctor', 'clínica', 'clinica', 'hospital', 'dental', 'dentista']
+    };
   }
   
-  // 8. TECNOLOGÍA
-  if (inputLower.includes('tech') || inputLower.includes('software') || inputLower.includes('app') || inputLower.includes('digital') || inputLower.includes('ai') || inputLower.includes('data')) {
-    return { industry: 'tech_saas', styleKey: 'video_tech_saas', confidence: 0.9, keywords: ['tech', 'software', 'app', 'digital', 'ai', 'data'] };
+  // === KINESIOLOGÍA / FISIOTERAPIA ===
+  if (inputLower.includes('kinesiología') || inputLower.includes('fisioterapia') || inputLower.includes('rehabilitación') || inputLower.includes('terapia') || inputLower.includes('rehab')) {
+    return {
+      industry: 'physiotherapy',
+      styleKey: 'video_physiotherapy',
+      confidence: 0.9,
+      keywords: ['kinesiología', 'fisioterapia', 'rehabilitación', 'terapia', 'rehab']
+    };
   }
   
-  // 9. EDUCACIÓN
-  if (inputLower.includes('educación') || inputLower.includes('education') || inputLower.includes('curso') || inputLower.includes('clase') || inputLower.includes('estudiar') || inputLower.includes('universidad')) {
-    return { industry: 'edu_sketch', styleKey: 'video_edu_sketch', confidence: 0.9, keywords: ['educación', 'education', 'curso', 'clase', 'estudiar', 'universidad'] };
+  // === VETERINARIA ===
+  if (inputLower.includes('veterinaria') || inputLower.includes('veterinario') || inputLower.includes('mascota') || inputLower.includes('perro') || inputLower.includes('gato') || inputLower.includes('animal')) {
+    return {
+      industry: 'veterinary',
+      styleKey: 'video_veterinary',
+      confidence: 0.9,
+      keywords: ['veterinaria', 'veterinario', 'mascota', 'perro', 'gato', 'animal']
+    };
   }
   
-  // 10. CORPORATIVO
+  // === BARBERÍA ===
+  if (inputLower.includes('barbería') || inputLower.includes('barbero') || inputLower.includes('barba') || inputLower.includes('navaja') || inputLower.includes('corte masculino')) {
+    return {
+      industry: 'barber',
+      styleKey: 'video_barber',
+      confidence: 0.9,
+      keywords: ['barbería', 'barbero', 'barba', 'navaja', 'corte masculino']
+    };
+  }
+  
+  // === GASTRONOMÍA GENERAL ===
+  if (inputLower.includes('restaurante') || inputLower.includes('restaurant') || inputLower.includes('comida') || inputLower.includes('gastronomía') || inputLower.includes('chef') || inputLower.includes('plato')) {
+    return {
+      industry: 'gastronomy',
+      styleKey: 'video_gastronomy',
+      confidence: 0.9,
+      keywords: ['restaurante', 'restaurant', 'comida', 'gastronomía', 'chef', 'plato']
+    };
+  }
+  
+  // === SUSHI / NIKKEI ===
+  if (inputLower.includes('sushi') || inputLower.includes('japonés') || inputLower.includes('nikkei') || inputLower.includes('sashimi') || inputLower.includes('roll')) {
+    return {
+      industry: 'sushi',
+      styleKey: 'video_sushi',
+      confidence: 0.9,
+      keywords: ['sushi', 'japonés', 'nikkei', 'sashimi', 'roll']
+    };
+  }
+  
+  // === PIZZERÍA ===
+  if (inputLower.includes('pizza') || inputLower.includes('pizzería') || inputLower.includes('italiano') || inputLower.includes('horno de leña')) {
+    return {
+      industry: 'pizza',
+      styleKey: 'video_pizza',
+      confidence: 0.9,
+      keywords: ['pizza', 'pizzería', 'italiano', 'horno de leña']
+    };
+  }
+  
+  // === COMIDA RÁPIDA ===
+  if (inputLower.includes('hamburguesa') || inputLower.includes('fast food') || inputLower.includes('comida rápida') || inputLower.includes('burger') || inputLower.includes('fritura')) {
+    return {
+      industry: 'fast_food',
+      styleKey: 'video_fast_food',
+      confidence: 0.9,
+      keywords: ['hamburguesa', 'fast food', 'comida rápida', 'burger', 'fritura']
+    };
+  }
+  
+  // === HELADERÍA ===
+  if (inputLower.includes('helado') || inputLower.includes('heladería') || inputLower.includes('ice cream') || inputLower.includes('postre frío')) {
+    return {
+      industry: 'ice_cream',
+      styleKey: 'video_ice_cream',
+      confidence: 0.9,
+      keywords: ['helado', 'heladería', 'ice cream', 'postre frío']
+    };
+  }
+  
+  // === CAFÉ ===
+  if (inputLower.includes('café') || inputLower.includes('espresso') || inputLower.includes('barista') || inputLower.includes('coffee') || inputLower.includes('cappuccino')) {
+    return {
+      industry: 'coffee',
+      styleKey: 'video_coffee',
+      confidence: 0.9,
+      keywords: ['café', 'espresso', 'barista', 'coffee', 'cappuccino']
+    };
+  }
+  
+  // === PANADERÍA ===
+  if (inputLower.includes('pan') || inputLower.includes('panadería') || inputLower.includes('horno') || inputLower.includes('masa') || inputLower.includes('crujiente') || inputLower.includes('harina')) {
+    return {
+      industry: 'bakery',
+      styleKey: 'video_bakery',
+      confidence: 0.9,
+      keywords: ['pan', 'panadería', 'horno', 'masa', 'crujiente', 'harina']
+    };
+  }
+  
+  // === PASTELERÍA ===
+  if (inputLower.includes('pastel') || inputLower.includes('torta') || inputLower.includes('pastelería') || inputLower.includes('glaseado') || inputLower.includes('postre')) {
+    return {
+      industry: 'pastry',
+      styleKey: 'video_pastry',
+      confidence: 0.9,
+      keywords: ['pastel', 'torta', 'pastelería', 'glaseado', 'postre']
+    };
+  }
+  
+  // === VEGETARIANO / VEGANO ===
+  if (inputLower.includes('vegetariano') || inputLower.includes('vegano') || inputLower.includes('verdura') || inputLower.includes('saludable') || inputLower.includes('organic') || inputLower.includes('plant-based')) {
+    return {
+      industry: 'veggie',
+      styleKey: 'video_veggie',
+      confidence: 0.9,
+      keywords: ['vegetariano', 'vegano', 'verdura', 'saludable', 'organic', 'plant-based']
+    };
+  }
+  
+  // === CARNICERÍA ===
+  if (inputLower.includes('carne') || inputLower.includes('carnicería') || inputLower.includes('corte') || inputLower.includes('vacuno') || inputLower.includes('cerdo') || inputLower.includes('pollo')) {
+    return {
+      industry: 'butcher',
+      styleKey: 'video_butcher',
+      confidence: 0.9,
+      keywords: ['carne', 'carnicería', 'corte', 'vacuno', 'cerdo', 'pollo']
+    };
+  }
+  
+  // === FERRETERÍA ===
+  if (inputLower.includes('herramienta') || inputLower.includes('ferretería') || inputLower.includes('taladro') || inputLower.includes('martillo') || inputLower.includes('tuerca') || inputLower.includes('tornillo')) {
+    return {
+      industry: 'hardware',
+      styleKey: 'video_hardware',
+      confidence: 0.9,
+      keywords: ['herramienta', 'ferretería', 'taladro', 'martillo', 'tuerca', 'tornillo']
+    };
+  }
+  
+  // === LIBRERÍA ===
+  if (inputLower.includes('libro') || inputLower.includes('librería') || inputLower.includes('lectura') || inputLower.includes('novela') || inputLower.includes('editorial')) {
+    return {
+      industry: 'bookstore',
+      styleKey: 'video_bookstore',
+      confidence: 0.9,
+      keywords: ['libro', 'librería', 'lectura', 'novela', 'editorial']
+    };
+  }
+  
+  // === FLORERÍA ===
+  if (inputLower.includes('flor') || inputLower.includes('florería') || inputLower.includes('ramo') || inputLower.includes('pétalo') || inputLower.includes('arreglo floral')) {
+    return {
+      industry: 'florist',
+      styleKey: 'video_florist',
+      confidence: 0.9,
+      keywords: ['flor', 'florería', 'ramo', 'pétalo', 'arreglo floral']
+    };
+  }
+  
+  // === LIMPIEZA ===
+  if (inputLower.includes('limpieza') || inputLower.includes('aseo') || inputLower.includes('servicio de limpieza') || inputLower.includes('mantenimiento') || inputLower.includes('higiene')) {
+    return {
+      industry: 'cleaning',
+      styleKey: 'video_cleaning',
+      confidence: 0.9,
+      keywords: ['limpieza', 'aseo', 'servicio de limpieza', 'mantenimiento', 'higiene']
+    };
+  }
+  
+  // === LAVANDERÍA ===
+  if (inputLower.includes('lavandería') || inputLower.includes('lavado') || inputLower.includes('ropa') || inputLower.includes('secado') || inputLower.includes('plancha')) {
+    return {
+      industry: 'laundry',
+      styleKey: 'video_laundry',
+      confidence: 0.9,
+      keywords: ['lavandería', 'lavado', 'ropa', 'secado', 'plancha']
+    };
+  }
+  
+  // === ZAPATERÍA ===
+  if (inputLower.includes('zapato') || inputLower.includes('zapatería') || inputLower.includes('calzado') || inputLower.includes('talla') || inputLower.includes('suela')) {
+    return {
+      industry: 'shoe_store',
+      styleKey: 'video_shoe_store',
+      confidence: 0.9,
+      keywords: ['zapato', 'zapatería', 'calzado', 'talla', 'suela']
+    };
+  }
+  
+  // === SERVICIO TÉCNICO ===
+  if (inputLower.includes('reparación') || inputLower.includes('técnico') || inputLower.includes('servicio técnico') || inputLower.includes('celular') || inputLower.includes('computadora') || inputLower.includes('pantalla')) {
+    return {
+      industry: 'tech_repair',
+      styleKey: 'video_tech_repair',
+      confidence: 0.9,
+      keywords: ['reparación', 'técnico', 'servicio técnico', 'celular', 'computadora', 'pantalla']
+    };
+  }
+  
+  // === BOTILLERÍA ===
+  if (inputLower.includes('botillería') || inputLower.includes('vino') || inputLower.includes('cerveza') || inputLower.includes('licor') || inputLower.includes('whisky') || inputLower.includes('bebida')) {
+    return {
+      industry: 'liquor_store',
+      styleKey: 'video_liquor_store',
+      confidence: 0.9,
+      keywords: ['botillería', 'vino', 'cerveza', 'licor', 'whisky', 'bebida']
+    };
+  }
+  
+  // === TALLER MECÁNICO ===
+  if (inputLower.includes('mecánico') || inputLower.includes('taller') || inputLower.includes('motor') || inputLower.includes('reparación auto') || inputLower.includes('auto')) {
+    return {
+      industry: 'mechanic',
+      styleKey: 'video_mechanic',
+      confidence: 0.9,
+      keywords: ['mecánico', 'taller', 'motor', 'reparación auto', 'auto']
+    };
+  }
+  
+  // === VULCANIZACIÓN ===
+  if (inputLower.includes('neumático') || inputLower.includes('llanta') || inputLower.includes('rueda') || inputLower.includes('vulcanización') || inputLower.includes('goma')) {
+    return {
+      industry: 'tire_service',
+      styleKey: 'video_tire_service',
+      confidence: 0.9,
+      keywords: ['neumático', 'llanta', 'rueda', 'vulcanización', 'goma']
+    };
+  }
+  
+  // === ESTUDIO JURÍDICO ===
+  if (inputLower.includes('abogado') || inputLower.includes('jurídico') || inputLower.includes('legal') || inputLower.includes('derecho') || inputLower.includes('estudio')) {
+    return {
+      industry: 'legal',
+      styleKey: 'video_legal',
+      confidence: 0.9,
+      keywords: ['abogado', 'jurídico', 'legal', 'derecho', 'estudio']
+    };
+  }
+  
+  // === JARDINERÍA ===
+  if (inputLower.includes('jardinería') || inputLower.includes('paisajismo') || inputLower.includes('planta') || inputLower.includes('césped') || inputLower.includes('jardín')) {
+    return {
+      industry: 'gardening',
+      styleKey: 'video_gardening',
+      confidence: 0.9,
+      keywords: ['jardinería', 'paisajismo', 'planta', 'césped', 'jardín']
+    };
+  }
+  
+  // === SEGURIDAD ===
+  if (inputLower.includes('seguridad') || inputLower.includes('vigilancia') || inputLower.includes('cámara') || inputLower.includes('alarma') || inputLower.includes('protección')) {
+    return {
+      industry: 'security',
+      styleKey: 'video_security',
+      confidence: 0.9,
+      keywords: ['seguridad', 'vigilancia', 'cámara', 'alarma', 'protección']
+    };
+  }
+  
+  // === NAIL STUDIO ===
+  if (inputLower.includes('uñas') || inputLower.includes('manicure') || inputLower.includes('pedicure') || inputLower.includes('nail art') || inputLower.includes('esmalte')) {
+    return {
+      industry: 'nail_studio',
+      styleKey: 'video_nail_studio',
+      confidence: 0.9,
+      keywords: ['uñas', 'manicure', 'pedicure', 'nail art', 'esmalte']
+    };
+  }
+  
+  // === TATTOO STUDIO ===
+  if (inputLower.includes('tattoo') || inputLower.includes('tatuaje') || inputLower.includes('ink') || inputLower.includes('arte corporal')) {
+    return {
+      industry: 'tattoo',
+      styleKey: 'video_tattoo',
+      confidence: 0.9,
+      keywords: ['tattoo', 'tatuaje', 'ink', 'arte corporal']
+    };
+  }
+  
+  // === INMOBILIARIA ===
+  if (inputLower.includes('inmobiliaria') || inputLower.includes('inmueble') || inputLower.includes('casa') || inputLower.includes('departamento') || inputLower.includes('propiedad') || inputLower.includes('venta')) {
+    return {
+      industry: 'real_estate',
+      styleKey: 'video_real_estate',
+      confidence: 0.9,
+      keywords: ['inmobiliaria', 'inmueble', 'casa', 'departamento', 'propiedad', 'venta']
+    };
+  }
+  
+  // === AUTOMOTRIZ ===
+  if (inputLower.includes('auto') || inputLower.includes('vehículo') || inputLower.includes('carro') || inputLower.includes('automotriz') || inputLower.includes('concesionario')) {
+    return {
+      industry: 'automotive',
+      styleKey: 'video_automotive',
+      confidence: 0.9,
+      keywords: ['auto', 'vehículo', 'carro', 'automotriz', 'concesionario']
+    };
+  }
+  
+  // === VIAJES ===
+  if (inputLower.includes('viaje') || inputLower.includes('vacaciones') || inputLower.includes('turismo') || inputLower.includes('hotel') || inputLower.includes('destino') || inputLower.includes('resort')) {
+    return {
+      industry: 'travel',
+      styleKey: 'video_travel',
+      confidence: 0.9,
+      keywords: ['viaje', 'vacaciones', 'turismo', 'hotel', 'destino', 'resort']
+    };
+  }
+  
+  // === CONSTRUCCIÓN ===
+  if (inputLower.includes('construcción') || inputLower.includes('obra') || inputLower.includes('edificio') || inputLower.includes('cemento') || inputLower.includes('arquitectura')) {
+    return {
+      industry: 'construction',
+      styleKey: 'video_construction',
+      confidence: 0.9,
+      keywords: ['construcción', 'obra', 'edificio', 'cemento', 'arquitectura']
+    };
+  }
+  
+  // === CORPORATIVO ===
   if (inputLower.includes('empresa') || inputLower.includes('company') || inputLower.includes('business') || inputLower.includes('oficina') || inputLower.includes('corporativo') || inputLower.includes('profesional')) {
-    return { industry: 'corporate', styleKey: 'video_corporate', confidence: 0.9, keywords: ['empresa', 'company', 'business', 'oficina', 'corporativo', 'profesional'] };
+    return {
+      industry: 'corporate',
+      styleKey: 'video_corporate',
+      confidence: 0.9,
+      keywords: ['empresa', 'company', 'business', 'oficina', 'corporativo', 'profesional']
+    };
   }
   
-  // 11. VERANO / PLAYA
-  if (inputLower.includes('verano') || inputLower.includes('summer') || inputLower.includes('playa') || inputLower.includes('vacaciones') || inputLower.includes('turismo') || inputLower.includes('hotel') || inputLower.includes('piscina') || inputLower.includes('pool')) {
-    return { industry: 'summer_beach', styleKey: 'video_summer_beach', confidence: 0.9, keywords: ['verano', 'summer', 'playa', 'vacaciones', 'turismo', 'hotel', 'piscina', 'pool'] };
+  // === RETAIL GENERAL ===
+  if (inputLower.includes('tienda') || inputLower.includes('shop') || inputLower.includes('store') || inputLower.includes('comercio') || inputLower.includes('minorista')) {
+    return {
+      industry: 'retail_gen',
+      styleKey: 'video_retail_gen',
+      confidence: 0.9,
+      keywords: ['tienda', 'shop', 'store', 'comercio', 'minorista']
+    };
   }
   
-  // 12. NOCHE / DISCOTECA
-  if (inputLower.includes('discoteca') || inputLower.includes('club') || inputLower.includes('fiesta') || inputLower.includes('noche') || inputLower.includes('dj') || inputLower.includes('nightlife')) {
-    return { industry: 'urban_night', styleKey: 'video_urban_night', confidence: 0.9, keywords: ['discoteca', 'club', 'fiesta', 'noche', 'dj', 'nightlife'] };
+  // === MODA ===
+  if (inputLower.includes('moda') || inputLower.includes('ropa') || inputLower.includes('fashion') || inputLower.includes('prenda') || inputLower.includes('vestido')) {
+    return {
+      industry: 'fashion',
+      styleKey: 'video_fashion_women',
+      confidence: 0.85,
+      keywords: ['moda', 'ropa', 'fashion', 'prenda', 'vestido']
+    };
   }
   
-  // 13. LUJO
-  if (inputLower.includes('lujo') || inputLower.includes('luxury') || inputLower.includes('gala') || inputLower.includes('vip') || inputLower.includes('champagne') || inputLower.includes('premium')) {
-    return { industry: 'luxury_gold', styleKey: 'video_luxury_gold', confidence: 0.9, keywords: ['lujo', 'luxury', 'gala', 'vip', 'champagne', 'premium'] };
+  // === JOYAS ===
+  if (inputLower.includes('joya') || inputLower.includes('anillo') || inputLower.includes('diamante') || inputLower.includes('oro') || inputLower.includes('joyería')) {
+    return {
+      industry: 'jewelry',
+      styleKey: 'video_jewelry',
+      confidence: 0.9,
+      keywords: ['joya', 'anillo', 'diamante', 'oro', 'joyería']
+    };
   }
   
-  // 14. ECOLÓGICO
-  if (inputLower.includes('eco') || inputLower.includes('organic') || inputLower.includes('natural') || inputLower.includes('verde') || inputLower.includes('frutas') || inputLower.includes('orgánico')) {
-    return { industry: 'eco_organic', styleKey: 'video_eco_organic', confidence: 0.9, keywords: ['eco', 'organic', 'natural', 'verde', 'frutas', 'orgánico'] };
+  // === PERFUMERÍA ===
+  if (inputLower.includes('perfume') || inputLower.includes('fragancia') || inputLower.includes('colonia') || inputLower.includes('aroma')) {
+    return {
+      industry: 'perfume',
+      styleKey: 'video_perfume',
+      confidence: 0.9,
+      keywords: ['perfume', 'fragancia', 'colonia', 'aroma']
+    };
   }
   
-  // 15. GAMING
-  if (inputLower.includes('gaming') || inputLower.includes('game') || inputLower.includes('esports') || inputLower.includes('stream') || inputLower.includes('twitch') || inputLower.includes('videojuego')) {
-    return { industry: 'gamer_stream', styleKey: 'video_gamer_stream', confidence: 0.9, keywords: ['gaming', 'game', 'esports', 'stream', 'twitch', 'videojuego'] };
+  // === OPTICA ===
+  if (inputLower.includes('óptica') || inputLower.includes('lente') || inputLower.includes('gafa') || inputLower.includes('vista') || inputLower.includes('armazón')) {
+    return {
+      industry: 'optics',
+      styleKey: 'video_optics',
+      confidence: 0.9,
+      keywords: ['óptica', 'lente', 'gafa', 'vista', 'armazón']
+    };
   }
   
-  // 16. ROCK / MÚSICA
-  if (inputLower.includes('rock') || inputLower.includes('música') || inputLower.includes('musica') || inputLower.includes('concierto') || inputLower.includes('guitarra') || inputLower.includes('indie') || inputLower.includes('band')) {
-    return { industry: 'indie_grunge', styleKey: 'video_indie_grunge', confidence: 0.9, keywords: ['rock', 'música', 'musica', 'concierto', 'guitarra', 'indie', 'band'] };
+  // === MASCOTAS (segunda mención para cobertura) ===
+  if (inputLower.includes('mascota') || inputLower.includes('pet') || inputLower.includes('perro') || inputLower.includes('gato')) {
+    return {
+      industry: 'pets',
+      styleKey: 'video_pets',
+      confidence: 0.9,
+      keywords: ['mascota', 'pet', 'perro', 'gato']
+    };
   }
   
-  // 17. POLÍTICA
-  if (inputLower.includes('política') || inputLower.includes('politica') || inputLower.includes('candidato') || inputLower.includes('elección') || inputLower.includes('eleccion') || inputLower.includes('gobierno')) {
-    return { industry: 'political_community', styleKey: 'video_political', confidence: 0.9, keywords: ['política', 'politica', 'candidato', 'elección', 'eleccion', 'gobierno'] };
-  }
-  
-  // 18. INFANTIL
-  if (inputLower.includes('niños') || inputLower.includes('ninos') || inputLower.includes('infantil') || inputLower.includes('cumpleaños') || inputLower.includes('juguetes') || inputLower.includes('kids') || inputLower.includes('birthday')) {
-    return { industry: 'kids_fun', styleKey: 'video_kids_fun', confidence: 0.9, keywords: ['niños', 'ninos', 'infantil', 'cumpleaños', 'juguetes', 'kids', 'birthday'] };
-  }
-  
-  // 19. ARTE
-  if (inputLower.includes('arte') || inputLower.includes('artist') || inputLower.includes('teatro') || inputLower.includes('surreal') || inputLower.includes('creativo') || inputLower.includes('galeria')) {
-    return { industry: 'art_double_exp', styleKey: 'video_art_double_exp', confidence: 0.9, keywords: ['arte', 'artist', 'teatro', 'surreal', 'creativo', 'galeria'] };
-  }
-  
-  // 20. INMOBILIARIA
-  if (inputLower.includes('inmobiliaria') || inputLower.includes('inmueble') || inputLower.includes('casa') || inputLower.includes('departamento') || inputLower.includes('propiedad') || inputLower.includes('luxury_home')) {
-    return { industry: 'realestate_night', styleKey: 'video_realestate_night', confidence: 0.9, keywords: ['inmobiliaria', 'inmueble', 'casa', 'departamento', 'propiedad', 'luxury_home'] };
-  }
-  
-  // 21. AUTOMOTRIZ
-  if (inputLower.includes('auto') || inputLower.includes('carro') || inputLower.includes('vehiculo') || inputLower.includes('automotriz') || inputLower.includes('taller')) {
-    return { industry: 'auto_metallic', styleKey: 'video_auto_metallic', confidence: 0.9, keywords: ['auto', 'carro', 'vehiculo', 'automotriz', 'taller'] };
-  }
-  
-  // 22. RETRO / VINTAGE
-  if (inputLower.includes('retro') || inputLower.includes('vintage') || inputLower.includes('90s') || inputLower.includes('grunge') || inputLower.includes('nostalgia')) {
-    return { industry: 'retro_vintage', styleKey: 'video_retro_vintage', confidence: 0.9, keywords: ['retro', 'vintage', '90s', 'grunge', 'nostalgia'] };
-  }
-  
-  // 23. PODCAST / MEDIA
-  if (inputLower.includes('podcast') || inputLower.includes('radio') || inputLower.includes('audio') || inputLower.includes('entrevista') || inputLower.includes('media') || inputLower.includes('estudio')) {
-    return { industry: 'podcast_mic', styleKey: 'video_podcast_mic', confidence: 0.9, keywords: ['podcast', 'radio', 'audio', 'entrevista', 'media', 'estudio'] };
-  }
-  
-  // 24. NAVIDAD / FESTIVIDADES
-  if (inputLower.includes('navidad') || inputLower.includes('christmas') || inputLower.includes('valentín') || inputLower.includes('valentin') || inputLower.includes('festividades') || inputLower.includes('regalos') || inputLower.includes('año nuevo')) {
-    return { industry: 'seasonal_holiday', styleKey: 'video_seasonal_holiday', confidence: 0.9, keywords: ['navidad', 'christmas', 'valentín', 'valentin', 'festividades', 'regalos', 'año nuevo'] };
-  }
-  
-  // 25. TIPOGRAFÍA
-  if (inputLower.includes('tipografia') || inputLower.includes('texto') || inputLower.includes('letras') || inputLower.includes('design') || inputLower.includes('gráfico')) {
-    return { industry: 'typo_bold', styleKey: 'video_typo_bold', confidence: 0.85, keywords: ['tipografia', 'texto', 'letras', 'design', 'gráfico'] };
-  }
-  
-  // 🔒 FALLBACK FINAL: video_corporate
+  // === 🔒 FALLBACK FINAL: video_retail_gen ===
   return {
     industry: 'general',
-    styleKey: 'video_corporate',
+    styleKey: 'video_retail_gen',
     confidence: 0.3,
     keywords: []
   };
 };
 
 /**
- * MAPEO DE ESTILO IMAGEN A ESTILO VIDEO CORRESPONDIENTE
+ * MAPEO DE ESTILO IMAGEN A ESTILO VIDEO CORRESPONDIENTE (60 Estilos v2.0)
  */
 export const imageToVideoStyle: Record<FlyerStyleKey, FlyerStyleKeyVideo> = {
+  // Estilos existentes mapeados a nuevos estilos de video
   brand_identity: 'video_corporate',
-  retail_sale: 'video_retail_sale',
-  auto_metallic: 'video_auto_metallic',
-  gastronomy: 'video_gastronomy',
+  retail_sale: 'video_retail_gen',
+  summer_beach: 'video_travel',
+  worship_sky: 'video_wellness_zen', // Espiritual → Wellness (luz suave)
   corporate: 'video_corporate',
-  medical_clean: 'video_medical_clean',
-  tech_saas: 'video_tech_saas',
-  edu_sketch: 'video_edu_sketch',
-  political_community: 'video_political',
-  aesthetic_min: 'video_aesthetic_min',
+  urban_night: 'video_gym', // Noche → Gym (energía)
+  gastronomy: 'video_gastronomy',
+  sport_gritty: 'video_gym',
+  luxury_gold: 'video_jewelry',
+  aesthetic_min: 'video_beauty',
+  retro_vintage: 'video_bakery',
+  gamer_stream: 'video_gaming',
+  eco_organic: 'video_veggie',
+  indie_grunge: 'video_barber',
+  political_community: 'video_corporate',
+  kids_fun: 'video_ice_cream',
+  art_double_exp: 'video_tattoo',
+  medical_clean: 'video_medical',
+  tech_saas: 'video_smartphone',
+  typo_bold: 'video_retail_gen',
+  realestate_night: 'video_real_estate',
+  auto_metallic: 'video_automotive',
+  edu_sketch: 'video_corporate',
   wellness_zen: 'video_wellness_zen',
-  pilates: 'video_wellness_zen',
-  summer_beach: 'video_summer_beach',
-  eco_organic: 'video_eco_organic',
-  sport_gritty: 'video_sport_gritty',
-  urban_night: 'video_urban_night',
-  luxury_gold: 'video_luxury_gold',
-  realestate_night: 'video_realestate_night',
-  gamer_stream: 'video_gamer_stream',
-  indie_grunge: 'video_indie_grunge',
-  kids_fun: 'video_kids_fun',
-  worship_sky: 'video_worship_sky',
-  seasonal_holiday: 'video_seasonal_holiday',
-  art_double_exp: 'video_art_double_exp',
-  retro_vintage: 'video_retro_vintage',
-  podcast_mic: 'video_podcast_mic',
-  typo_bold: 'video_typo_bold',
-  market_handwritten: 'video_retail_sale' // Mapeo a retail para video
+  pilates: 'video_pilates', // Pilates → video_pilates (movimiento específico)
+  podcast_mic: 'video_corporate',
+  seasonal_holiday: 'video_bakery',
+  market_handwritten: 'video_retail_gen',
+  
+  // Nuevos estilos 26-40
+  mechanic_workshop: 'video_mechanic',
+  tire_service: 'video_tire_service',
+  construction_site: 'video_construction',
+  logistics_delivery: 'video_corporate',
+  bakery_bread: 'video_bakery',
+  liquor_store: 'video_liquor_store',
+  fast_food_street: 'video_fast_food',
+  barber_shop: 'video_barber',
+  veterinary_clinic: 'video_veterinary',
+  hvac_plumbing: 'video_tech_repair',
+  dental_clinic: 'video_medical',
+  physiotherapy: 'video_physiotherapy',
+  law_accounting: 'video_legal',
+  gardening_landscaping: 'video_gardening',
+  security_systems: 'video_security',
+  
+  // Nuevos estilos 41-60
+  sushi_nikkei: 'video_sushi',
+  pizzeria: 'video_pizza',
+  ice_cream: 'video_ice_cream',
+  nail_studio: 'video_nail_studio',
+  tattoo_studio: 'video_tattoo',
+  yoga_studio: 'video_yoga',
+  car_detailing: 'video_automotive',
+  optical: 'video_optics',
+  bookstore: 'video_bookstore',
+  flower_shop: 'video_florist',
+  transport_school: 'video_corporate',
+  hardware_store: 'video_hardware',
+  cleaning_service: 'video_cleaning',
+  travel_agency: 'video_travel',
+  laundry: 'video_laundry',
+  shoe_store: 'video_shoe_store',
+  tech_repair: 'video_tech_repair',
+  pastry_shop: 'video_pastry'
 };
 
 /**
  * OBTIENE EL ESTILO DE VIDEO CORRESPONDIENTE A UN ESTILO DE IMAGEN
  */
 export const getVideoStyleFromImageStyle = (imageStyleKey: FlyerStyleKey): FlyerStyleKeyVideo => {
-  return imageToVideoStyle[imageStyleKey] || 'video_corporate';
+  return imageToVideoStyle[imageStyleKey] || 'video_retail_gen';
 };

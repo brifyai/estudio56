@@ -65,72 +65,76 @@ export type FlyerStyleKey =
   | 'pastry_shop';             // 60. Pastelería
 
 // ============================================
-// FÓRMULA MAESTRA PARA VIDEO (25 estilos)
+// 🎬 SISTEMA MAESTRO DE VIDEO (60 estilos)
+// Expansión v2.0: Mapeo 1:1 con rubros de Dirección de Arte
 // Estructura: [DESCRIPCIÓN VISUAL] + [MOVIMIENTO DE CÁMARA] + [ACCIÓN] + High resolution, cinematic 4k.
 // ============================================
 export type FlyerStyleKeyVideo =
-  | 'video_retail_sale'        // 1. RETAIL / OFERTAS (Explosión 3D)
-  | 'video_summer_beach'       // 2. VERANO / TURISMO (Agua en Movimiento)
-  | 'video_worship_sky'        // 3. WORSHIP / IGLESIA (Rayos de Luz)
-  | 'video_corporate'          // 4. CORPORATIVO (Timelapse / Oficina)
-  | 'video_urban_night'        // 5. URBANO / NIGHTLIFE (Luces Estroboscópicas)
-  | 'video_gastronomy'         // 6. GASTRONOMÍA (Food Porn / Slow Mo)
-  | 'video_sport_gritty'       // 7. DEPORTE / GYM (Sudor y Esfuerzo)
-  | 'video_luxury_gold'        // 8. LUJO / GALA (Brillos y Burbujas)
-  | 'video_aesthetic_min'      // 9. MINIMALISTA / AESTHETIC (Sombras Suaves)
-  | 'video_retro_vintage'      // 10. RETRO / VINTAGE (Ruido de Celuloide)
-  | 'video_gamer_stream'       // 11. GAMER / ESPORTS (Glitch Digital)
-  | 'video_eco_organic'        // 12. ECO / NATURAL (Viento en las Hojas)
-  | 'video_indie_grunge'       // 13. INDIE / GRUNGE (Humo y Mano Alzada)
-  | 'video_political'          // 14. POLÍTICA / COMUNIDAD (Caminar y Hablar)
-  | 'video_kids_fun'           // 15. INFANTIL / KIDS (Globos Flotando)
-  | 'video_art_double_exp'     // 16. DOBLE EXPOSICIÓN (Niebla Interna)
-  | 'video_medical_clean'      // 17. MÉDICO / CLÍNICO (Escaneo Tech)
-  | 'video_tech_saas'          // 18. TECH / SAAS / AI (Flujo de Datos)
-  | 'video_typo_bold'          // 19. TIPOGRÁFICO (Fondo en Movimiento)
-  | 'video_realestate_night'   // 20. REAL ESTATE NIGHT (Time-lapse Cielo)
-  | 'video_auto_metallic'      // 21. AUTOMOTRIZ (Rueda Girando)
-  | 'video_edu_sketch'         // 22. EDUCACIÓN / SKETCH (Dibujo Animado)
-  | 'video_wellness_zen'       // 23. SPA / ZEN (Gota de Agua)
-  | 'video_podcast_mic'        // 24. PODCAST / MEDIA (Ondas de Audio)
-  | 'video_seasonal_holiday'   // 25. FESTIVIDADES (Nieve/Confetti)
-  // --- NUEVOS VIDEO STYLES 26-40 (2026) ---
-  | 'video_mechanic_action'    // 26. Taller Mecánico / Acción
-  | 'video_tire_spin'          // 27. Vulcanización / Neumático
-  | 'video_construction_drone' // 28. Construcción / Dron
-  | 'video_logistic_flow'      // 29. Logística / Flujo
-  | 'video_baking_rise'        // 30. Panadería / Horneado
-  | 'video_cooler_refresh'     // 31. Botillería / Cooler
-  | 'video_griddle_sizzle'     // 32. Comida Rápida / Plancha
-  | 'video_barber_precision'   // 33. Barbería / Precisión
-  | 'video_pet_interaction'    // 34. Veterinaria / Mascota
-  | 'video_technical_fix'      // 35. Gasfitería / Técnica
-  | 'video_dental_tech'        // 36. Dental / Tecnología
-  | 'video_rehab_movement'     // 37. Kinesiología / Rehab
-  | 'video_corporate_handshake' // 38. Estudio Jurídico / Corporativo
-  | 'video_lawn_transformation' // 39. Jardinería / Pasto
-  | 'video_surveillance_scan'  // 40. Seguridad / Vigilancia
-  // --- NUEVOS VIDEO STYLES 41-60 (2026) ---
-  | 'video_sushi_prep'         // 41. Sushi Prep
-  | 'video_pizza_heat'         // 42. Pizza Heat
-  | 'video_ice_cream_drip'     // 43. Ice Cream Drip
-  | 'video_nail_shine'         // 44. Nail Shine
-  | 'video_tattoo_ink'         // 45. Tattoo Ink
-  | 'video_yoga_flow'          // 46. Yoga Flow
-  | 'video_foam_reveal'        // 47. Foam Reveal
-  | 'video_optic_focus'        // 48. Optic Focus
-  | 'video_book_pan'           // 49. Book Pan
-  | 'video_flower_mist'        // 50. Flower Mist
-  | 'video_bottle_glow'        // 51. Bottle Glow
-  | 'video_van_drive'          // 52. Van Drive
-  | 'video_tool_pick'          // 53. Tool Pick
-  | 'video_market_fresh'       // 54. Market Fresh
-  | 'video_cleaning_shine'     // 55. Cleaning Shine
-  | 'video_globe_spin'         // 56. Globe Spin
-  | 'video_steam_iron'         // 57. Steam Iron
-  | 'video_shoe_walk'          // 58. Shoe Walk
-  | 'video_tech_micro'         // 59. Tech Micro
-  | 'video_cake_slicing';      // 60. Cake Slicing
+  // --- BLOQUE 1: RETAIL Y ESTÉTICA (IDs 1-20) ---
+  | 'video_retail_gen'         // 1. Retail General
+  | 'video_fashion_women'      // 2. Moda Mujer
+  | 'video_fashion_men'        // 3. Moda Hombre
+  | 'video_footwear'           // 4. Calzado
+  | 'video_jewelry'            // 5. Joyas
+  | 'video_optics'             // 6. Óptica
+  | 'video_beauty'             // 7. Belleza/Cosmética
+  | 'video_perfume'            // 8. Perfumería
+  | 'video_bags'               // 9. Bolsos/Carteras
+  | 'video_tech_acc'           // 10. Accesorios Tech
+  | 'video_smartphone'         // 11. Smartphones
+  | 'video_computing'          // 12. Computación
+  | 'video_gaming'             // 13. Gaming
+  | 'video_photography'        // 14. Fotografía
+  | 'video_audio'              // 15. Audio/Sonido
+  | 'video_watches'            // 16. Relojes
+  | 'video_decor'              // 17. Decoración
+  | 'video_furniture'          // 18. Muebles
+  | 'video_lighting'           // 19. Iluminación
+  | 'video_appliances'         // 20. Electrodomésticos
+  // --- BLOQUE 2: SALUD Y DEPORTE (IDs 21-30) ---
+  | 'video_gym'                // 21. Gimnasio/Deporte
+  | 'video_gastronomy'         // 22. Gastronomía
+  | 'video_wellness_zen'       // 23. Spa/Wellness
+  | 'video_medical'            // 24. Médico/Clínico
+  | 'video_corporate'          // 25. Corporativo
+  | 'video_real_estate'        // 26. Inmobiliaria
+  | 'video_automotive'         // 27. Automotriz
+  | 'video_pets'               // 28. Mascotas
+  | 'video_travel'             // 29. Viajes
+  | 'video_construction'       // 30. Construcción
+  // --- BLOQUE 3: SERVICIOS ESPECIALIZADOS (IDs 31-40) ---
+  | 'video_mechanic'           // 31. Taller Mecánico
+  | 'video_tire_service'       // 32. Vulcanización
+  | 'video_barber'             // 33. Barbería
+  | 'video_veterinary'         // 34. Veterinaria
+  | 'video_yoga'               // 35. Yoga
+  | 'video_pilates'            // 36. Pilates
+  | 'video_physiotherapy'      // 37. Kinesiología
+  | 'video_legal'              // 38. Estudio Jurídico
+  | 'video_gardening'          // 39. Jardinería
+  | 'video_security'           // 40. Seguridad
+  // --- BLOQUE 4: GASTRONOMÍA ESPECIALIZADA (IDs 41-50) ---
+  | 'video_sushi'              // 41. Sushi/Nikkei
+  | 'video_fast_food'          // 42. Comida Rápida
+  | 'video_ice_cream'          // 43. Heladería
+  | 'video_nail_studio'        // 44. Nail Studio
+  | 'video_tattoo'             // 45. Tattoo Studio
+  | 'video_pizza'              // 46. Pizzería
+  | 'video_veggie'             // 47. Veggie/Vegetariano
+  | 'video_coffee'             // 48. Café
+  | 'video_bakery'             // 49. Panadería
+  | 'video_pastry'             // 50. Pastelería
+  // --- BLOQUE 5: COMERCIO ESPECIALIZADO (IDs 51-60) ---
+  | 'video_butcher'            // 51. Carnicería
+  | 'video_hardware'           // 52. Ferretería
+  | 'video_bookstore'          // 53. Librería
+  | 'video_florist'            // 54. Florería
+  | 'video_cleaning'           // 55. Limpieza
+  | 'video_laundry'            // 56. Lavandería
+  | 'video_shoe_store'         // 57. Zapatería
+  | 'video_optician'           // 58. Óptica
+  | 'video_tech_repair'        // 59. Servicio Técnico
+  | 'video_liquor_store';      // 60. Botillería
 
 export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9' | '1.91:1' | '4:5' | '1080x1080' | '1080x1920' | '1080x1350' | '1:1.41'; // 1:1.41 = Formato A3/A4 para posters
 
