@@ -255,7 +255,9 @@ const analyzeColorsWithGemini = async (
     const ai = getAiClient();
     const model = "gemini-3-flash-preview";
     
-    const prompt = `Analiza esta imagen y extrae los colores para crear un texto que parezca pintado/grabado en la superficie.
+    const prompt = `Analiza esta imagen de un negocio local (estilo 2.5 estrellas) y extrae los colores para crear un texto que parezca un vinilo pegado o impresión económica en la superficie.
+
+La imagen es de un negocio real de barrio - no un estudio profesional. El texto debe integrarse con materiales comunes: pintura blanca estándar, concreto pulido, laminados plásticos, o superficies desgastadas.
 
 Responde en formato JSON exacto:
 {
@@ -267,12 +269,12 @@ Responde en formato JSON exacto:
 }
 
 Reglas:
-- accentColor: Debe ser un color que exista en la imagen, idealmente de las sombras o superficies donde aparecería el texto
-- shadowColor: 20-30% más oscuro que accentColor
+- accentColor: Debe ser un color que exista en la imagen, idealmente de las superficies donde aparecería el texto (paredes blancas, concreto, laminado)
+- shadowColor: 20-30% más oscuro que accentColor (para efecto vinilo/pegatina)
 - highlightColor: 20-30% más claro que accentColor
 - complementaryColor: Oposto en el círculo cromático para contraste
 
-Ejemplo: Si la imagen tiene paredes de ladrillo rojo, el texto debería usar un tono extraído de las sombras de esos ladrillos.
+Ejemplo: Si la imagen tiene paredes de concreto gris, el texto debería usar un tono gris extraído del concreto, con sombra más oscura para simular el vinilo.
 
 Responde SOLO con el JSON, sin texto adicional.`;
     
@@ -425,13 +427,14 @@ export const analyzeVisualMimicry = async (
     const lighting = await analyzeLightingWithGemini(imageDataUrl);
     console.log("💡 [VisualMimicry] Iluminación:", lighting);
     
-    // 4. Determinar modo de fusión
+    // 4. Determinar modo de fusión - 2.5 Estilos Crudos
+    // MULTIPLY es el mejor aliado para negocios 2.5 estrellas: hace que el texto parezca un vinilo pegado o impresión económica
     // Si el fondo es claro → multiply (texto oscuro)
     // Si el fondo es oscuro → overlay/screen (texto claro)
     const isDarkBackground = pixelData.brightness < 128;
-    const blendMode = isDarkBackground 
-      ? { mode: 'overlay' as const, opacity: 0.9, reason: "Fondo oscuro: overlay permite que los brillos del fondo se vean a través del texto" }
-      : { mode: 'multiply' as const, opacity: 0.85, reason: "Fondo claro: multiply hace que el texto parezca impreso/teñido en la superficie" };
+    const blendMode = isDarkBackground
+      ? { mode: 'overlay' as const, opacity: 0.9, reason: "Fondo oscuro: overlay permite que los brillos del fondo se vean a través del texto (efecto vinilo)" }
+      : { mode: 'multiply' as const, opacity: 0.85, reason: "Fondo claro: multiply hace que el texto parezca un vinilo pegado o impresión económica - coherente con negocio 2.5 estrellas" };
     
     // 5. Determinar profundidad de campo
     // Si el fondo está desenfocado (bokeh), el texto en el fondo también debería estarlo

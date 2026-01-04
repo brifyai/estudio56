@@ -55,21 +55,25 @@ HUMAN_STRUCTURE_RULES:
   `;
 
 // ============================================
-// 🏪 FILTRO DE REALISMO LOCAL - "3 Estrellas Premium"
-// Evita estética de hotel de lujo, resort, o mármol excesivo
+// 🏪 FILTRO DE REALISMO LOCAL - "2.5 Estrellas Crudo"
+// Estética de negocio real de barrio - menos perfecto, más auténtico
 // ============================================
 const REAL_BUSINESS_ENVIRONMENT = `
-ENVIRONMENT_RULES:
-- Aesthetics: "Professional but accessible 3-star local business style".
-- NO_HOTEL_LOOK: Avoid high-end resort or luxury lobby aesthetics.
+ENVIRONMENT_RULES_2_5_STARS:
+- Aesthetics: "Authentic 2.5-star local business - everyday, functional, unpolished".
+- NO_PROFESSIONAL_STAGING: This is NOT a catalog photoshoot. It looks like a real local business.
+- NO_HOTEL_LOOK: Avoid high-end resort, luxury lobby, or spa aesthetics entirely.
 - NO_ATREZZO: ABSOLUTELY NO candles, smoke, steam, fog, or water reflections on floors.
-- FLOOR: Matte wood or standard laminate flooring. NO reflective or water-coated surfaces.
+- FLOOR: Standard concrete, worn laminate, or basic tile. May show subtle wear and tear.
 - CEILING: Standard ceiling height (2.4m - 3m). NO cathedral or vaulted ceilings.
-- Textures: Use natural materials like wood, matte paint, and standard fabrics. No excessive marble or gold.
-- Proportions: Standard ceiling heights (2.4m - 3m). Realistic room sizes, not cavernous halls.
-- LIGHTING: Natural window daylight. NO cinematic lighting, NO exaggerated contrasts.
-- PHOTOGRAPHIC STYLE: Raw photo, 35mm lens, visible grain, realistic fabric and wood textures.
-- Details: Include subtle "lived-in" signs (a plant, a realistic chair, natural shadows).
+- LIGHTING: OVERHEAD FLUORESCENT OR LED CEILING LIGHTING. Not softboxes or artistic backlighting.
+- LIGHTING_QUALITY: Some areas slightly overexposed or naturally shadowed, as if taken with smartphone.
+- Textures: Standard matte paint with subtle realistic imperfections. No perfectly smooth surfaces.
+- CLUTTER: Include realistic everyday mess - a stray water bottle, slightly misaligned chair, natural wear on floor.
+- Proportions: Realistic room sizes, not cavernous halls. Feels like an actual working business.
+- PHOTOGRAPHIC STYLE: Amateur but clear smartphone photography. Slight motion blur possible.
+- NO_BOKEH: Deep depth of field where background is mostly visible but less sharp. No professional bokeh.
+- Details: Walls have standard matte paint, concrete pulido, or plastic laminates - not marble or fine wood.
 `;
 
 // ============================================
@@ -78,30 +82,38 @@ ENVIRONMENT_RULES:
 const ANTI_FANTASY_SHIELD = "hotel lobby, luxury resort, marble palace, futuristic architecture, sterile, excessive gold, clinical white, unreachable luxury, 3d render look, plastic textures, perfect symmetry, science fiction style, cathedral ceiling, reflective water floor, spa atmosphere, luxury candles, decorative smoke, vapor trails, fog effects";
 
 // ============================================
-// 💎 FILTRO DE TEXTURA FOTOGRÁFICA CRUDA - "Raw Photo"
-// Elimina el efecto plástico de la IA
+// 💎 FILTRO DE TEXTURA FOTOGRÁFICA CRUDA - "2.5 Stars Smartphone"
+// Elimina el efecto plástico de la IA - parece captura rápida de smartphone
 // ============================================
 const RAW_PHOTO_TEXTURE = `
-PHOTOGRAPHIC_TEXTURE:
-- CAMERA: Raw photo, 35mm lens, visible grain, professional camera quality.
-- LIGHTING: Natural window daylight. NO cinematic lighting, NO exaggerated contrasts.
-- TEXTURES: Realistic fabric textures, realistic wood textures, realistic skin pores.
-- NO_FILTER: Remove all plastic/AI aesthetic. Make it look like a real photo of a 3-star local business.
-- COLORS: Natural, muted professional palette. No oversaturated or artificial colors.
+PHOTOGRAPHIC_TEXTURE_2_5:
+- CAMERA: Amateur smartphone photography, not professional studio session.
+- LENS: Standard phone lens, visible compression, slight motion blur acceptable.
+- LIGHTING: STANDARD OVERHEAD CEILING LIGHTING - fluorescent or LED panels.
+- LIGHTING_EFFECTS: Some areas naturally overexposed, others shadowed. NO perfect softboxes.
+- TEXTURES: Realistic fabric, realistic surfaces, realistic skin pores.
+- FILTER: NO plastic/AI aesthetic. Looks like a quick phone capture, not a staged photoshoot.
+- COLORS: Natural, muted palette. No oversaturated or artificial enhancement.
+- DEPTH: Deep depth of field - background visible but less sharp. NO professional bokeh.
+- GRAIN: Slight digital noise from phone camera is acceptable.
 `;
 
 // ============================================
-// 👤 FILTRO DE AUTENTICIDAD HUMANA - Personas Reales
-// Evita supermodelos, piel de porcelana, y cuerpos irreales
+// 👤 FILTRO DE AUTENTICIDAD HUMANA CRUDA - "2.5 Estrellas"
+// Personas comunes de barrio, no modelos profesionales
 // ============================================
 const HUMAN_AUTHENTICITY_RULES = `
-HUMAN_SUBJECT_RULES:
-- Appearance: "Real people, relatable and healthy". Not fitness influencers or supermodels.
-- PHYSICAL_CONTACT: Subject must have 100% physical weight and contact with equipment. Feet and hands must be firmly attached to reformer rails or straps. NO floating or anti-gravity.
-- Skin Texture: Must show visible pores, natural skin variations, and subtle imperfections. No "plastic" or "airbrushed" skin.
-- Attire: Standard, professional workout or work clothes. No overly glossy or futuristic fabrics.
-- Expression: Natural, candid expressions (slight effort, genuine smiles). Not posed or staring blankly at the camera.
-- Diversity: Natural body types appropriate for the activity (fit but realistic proportions).
+HUMAN_SUBJECT_RULES_2_5:
+- Appearance: "Real everyday people, local business customers". Not fitness influencers or supermodels.
+- CLOTHING: Common sportswear brands, basic colors, no recognizable expensive labels.
+- SWEAT_EFFORT: Show real sweat, genuine effort, natural fatigue. No "makeup glow" or perfect shine.
+- PHYSICAL_CONTACT: Subject must have 100% physical weight and contact with equipment/ground.
+- Feet and hands must be firmly attached. NO floating or anti-gravity poses.
+- Skin Texture: Visible pores, natural skin variations, subtle imperfections. NO airbrushed or plastic skin.
+- Attire: Basic workout clothes, common brands, functional fabrics. NO glossy or futuristic materials.
+- Expression: Natural, candid - slight effort, genuine concentration. NOT posed or staring at camera.
+- Diversity: Natural body types for the activity - realistic proportions, not idealized.
+- HAIR: Natural, slightly messy from activity. NO perfect styling.
 `;
 
 // ============================================
@@ -2764,18 +2776,19 @@ export const generateVideoWithQuality = async (
 // ============================================
 
 // ============================================
-// 1. ADN INMUTABLE DE LA MARCA
+// 1. ADN INMUTABLE DE LA MARCA - "2.5 Estrellas"
 // Este bloque se envía SIEMPRE, sin importar el cambio solicitado
 // Actúa como "contrato" que la IA no puede romper
 // ============================================
 const BRAND_DNA_ANCHOR = `
-  STRICT_CONSISTENCY_LOCK:
-  - DO NOT change the environment style: Keep it 3-star professional and cozy.
+  STRICT_CONSISTENCY_LOCK_2_5:
+  - DO NOT change the environment style: Keep it 2.5-star authentic and functional.
   - DO NOT change the subject's identity: Keep the same person and realistic features.
   - DO NOT add text: The ZERO_TEXT_POLICY remains active.
-  - DO NOT add luxury: No 5-star hotel elements, no marble, no excess gold.
-  - DO NOT change the photographic style: Maintain 35mm lens aesthetic.
-  - DO NOT alter the lighting mood: Keep consistent with original reference.
+  - DO NOT add luxury: No 5-star hotel elements, no marble, no excess gold, no resort aesthetics.
+  - DO NOT change the photographic style: Maintain smartphone/amateur photography aesthetic.
+  - DO NOT alter the lighting mood: Keep consistent with overhead ceiling lighting.
+  - DO NOT add perfection: Keep realistic clutter, natural shadows, slight imperfections.
 `;
 
 // ============================================
@@ -2846,8 +2859,8 @@ export const generateEditPrompt = (
     MODIFICATION_REQUIRED: "${userRequest}"
     STRICT_RULE: Maintain 90% visual consistency with the original reference.
     Only change the specific elements requested.
-    Keep the same person, same 3-star professional setting, and same lighting style.
-    Keep the same photographic quality and 35mm lens aesthetic.
+    Keep the same person, same 2.5-star authentic setting, and same overhead lighting.
+    Keep the same smartphone/amateur photography aesthetic.
   `.replace(/\n/g, ' ').trim();
 };
 
@@ -3132,12 +3145,12 @@ export const validateEditCoherence = (
   const requestLower = userRequest.toLowerCase();
   const editedLower = editedPrompt.toLowerCase();
   
-  // Verificar elementos que NO deben haber cambiado
+// Verificar elementos que NO deben haber cambiado
   const originalElements = [
-    { term: 'professional', weight: 0.1 },
+    { term: 'authentic', weight: 0.1 },
     { term: 'realistic', weight: 0.1 },
-    { term: 'cozy', weight: 0.05 },
-    { term: '3-star', weight: 0.1 }
+    { term: '2.5', weight: 0.1 },
+    { term: 'smartphone', weight: 0.1 }
   ];
   
   for (const element of originalElements) {
