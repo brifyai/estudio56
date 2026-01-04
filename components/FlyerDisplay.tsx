@@ -1747,7 +1747,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                   <span className="text-emerald-400 text-xs font-mono font-bold">HD</span>
                 </div>
                 <div
-                  className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden
+                  className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden hd-download-container
                     ${aspectRatio === '9:16' ? 'w-[320px] h-[569px]' :
                       aspectRatio === '1:1' ? 'w-[360px] h-[360px]' :
                       aspectRatio === '4:5' ? 'w-[320px] h-[400px]' :
@@ -1763,6 +1763,25 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               </div>
             </div>
             
+            {/* BOTÓN DESCARGAR IMAGEN HD - Debajo del comparador */}
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <button
+                onClick={() => {
+                  // Descargar la imagen HD con todos los overlays
+                  const hdContainer = document.querySelector('.hd-download-container');
+                  if (hdContainer) {
+                    downloadElementAsImage(hdContainer as HTMLElement, `estudio-56-hd-${Date.now()}.png`, { scale: 2 });
+                  }
+                }}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2"
+              >
+                <span>⬇️</span>
+                <span>Descargar imagen HD</span>
+              </button>
+              <p className="text-white/40 text-[10px] font-mono">
+                Descarga la versión HD con texto y logo
+              </p>
+            </div>
           </div>
         )}
         
@@ -2019,8 +2038,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       {/* SPACER PEQUEÑO - Empuja los controles hacia abajo de la imagen */}
       <div className="h-4" />
       
-      {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto */}
-      <div className="w-full max-w-[280px] flex flex-col gap-2">
+      {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto - OCULTAR DURANTE COMPARACIÓN */}
+      {!showComparison && !showVideoComparison && (
+        <div className="w-full max-w-[280px] flex flex-col gap-2">
         {/* Campo de refinamiento */}
         <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl p-2 pr-2.5 pl-3 rounded-xl border border-white/10">
           <input
@@ -2049,7 +2069,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <span>✨</span>
           <span>APLICAR CAMBIOS</span>
         </button>
-      </div>
+        </div>
+      )}
 
       {/* BOTÓN GENERAR IMAGEN HD - Solo visible en mobile cuando hay borrador */}
       {isDraft && imageUrl && !showComparison && (
