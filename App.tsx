@@ -1164,7 +1164,7 @@ const handleGenerate = async () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen w-full bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative">
+    <div className="flex flex-col lg:flex-row min-h-[100dvh] w-full bg-[#030303] text-white font-sans selection:bg-blue-500/30 relative overflow-hidden">
        
        {/* BACKGROUND AMBIENCE */}
        <div className="fixed inset-0 pointer-events-none z-0">
@@ -1173,7 +1173,7 @@ const handleGenerate = async () => {
        </div>
 
        {/* LEFT PANEL: CONTROLS - En mobile portrait: full width, en lg: sidebar izquierdo */}
-       <aside className="w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-2 lg:p-4">
+       <aside className="w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-full p-2 lg:p-4">
           <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
             
             {/* Header */}
@@ -1376,8 +1376,9 @@ const handleGenerate = async () => {
 
       {/* CENTER: CANVAS - Solo visible en landscape (lg) */}
       <main className={`
-        flex-1 flex-col relative z-10 p-2 lg:p-4 pl-0 overflow-hidden
-        w-full hidden lg:flex
+        flex-1 flex-col relative z-10 p-2 lg:p-4 pl-0 overflow-hidden w-full hidden lg:flex
+        items-stretch /* Esto iguala las alturas con el sidebar */
+        pb-24 /* Evita solapamiento con el footer */
       `}>
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
           <div className={`
