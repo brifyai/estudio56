@@ -1436,9 +1436,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   // Componente de texto - SIMPLIFICADO
   const renderText = (isComparisonDraft: boolean = false) => {
-    // SOLO mostrar texto que el usuario haya escrito manualmente (localText)
-    // NO mostrar texto generado automáticamente por la IA (overlayText, initialOverlayText)
-    const displayText = localText || '';
+    // Mostrar texto del usuario (localText) o texto generado automáticamente (overlayText/initialOverlayText)
+    const displayText = localText || overlayText || initialOverlayText || '';
     
     // OCULTAR durante comparación (excepto en modo edición)
     if (!displayText && !isEditing) return null;
