@@ -589,97 +589,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
            </div>
          )}
          
-         {/* AUTO MODE - MARKETING OBJECTIVE SELECTION */}
-         {workMode === 'auto' && !marketingObjective && (
-           <div className="space-y-3">
-             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">2. ¿Qué quieres lograr?</label>
-             <div className="grid grid-cols-2 gap-3">
-               <button
-                 onClick={async () => {
-                   setOverlayText('');
-                   setSelectedTextOption('');
-                   setMarketingObjective('branding');
-                   await handleGenerateTextOptions('branding');
-                 }}
-                 className="p-4 rounded-xl border-2 border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-pink-900/20 hover:border-purple-400/50 transition-all"
-               >
-                 <div className="font-bold text-white text-sm mb-1">BRANDING</div>
-                 <div className="text-[10px] text-white/70">Reconocimiento de marca</div>
-               </button>
-               <button
-                 onClick={async () => {
-                   setOverlayText('');
-                   setSelectedTextOption('');
-                   setMarketingObjective('leads');
-                   await handleGenerateTextOptions('leads');
-                 }}
-                 className="p-4 rounded-xl border-2 border-green-500/30 bg-gradient-to-r from-green-900/20 to-emerald-900/20 hover:border-green-400/50 transition-all"
-               >
-                 <div className="font-bold text-white text-sm mb-1">LEADS</div>
-                 <div className="text-[10px] text-white/70">Generar conversiones</div>
-               </button>
-             </div>
-           </div>
-         )}
-
-         {/* AUTO MODE - TEXT OPTIONS SELECTION */}
-         {workMode === 'auto' && marketingObjective && (
-           <div className="space-y-3">
-             <div className="flex items-center justify-between">
-               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
-                 2. Selecciona tu texto ({marketingObjective === 'branding' ? 'Branding' : 'Leads'})
-               </label>
-               <button
-                 onClick={() => {
-                   setMarketingObjective(null);
-                   setOverlayText('');
-                   setTextOptions(null);
-                   setSelectedTextOption('');
-                 }}
-                 className="text-[10px] text-white/50 hover:text-white/70 transition-colors"
-               >
-                 Cambiar objetivo
-               </button>
-             </div>
-             
-             {isGeneratingText ? (
-               <div className="h-16 rounded-xl border border-blue-500/30 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 flex items-center justify-center">
-                 <div className="flex items-center gap-3">
-                   <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                   <span className="text-white text-sm">Generando opciones de texto...</span>
-                 </div>
-               </div>
-             ) : textOptions ? (
-               <div className="space-y-2">
-                 <div className="grid grid-cols-1 gap-2">
-                   {textOptions[marketingObjective].map((text, index) => {
-                     const cleanedText = cleanText(text);
-                     return (
-                       <button
-                         key={index}
-                         onClick={() => handleSelectTextOption(text)}
-                         className={`p-3 rounded-lg border text-left transition-all ${
-                           selectedTextOption === cleanedText
-                             ? 'border-green-500 bg-green-500/20 text-green-300'
-                             : 'border-white/20 bg-white/5 text-white hover:border-white/40'
-                         }`}
-                       >
-                         <div className="font-medium text-sm">{cleanedText}</div>
-                       </button>
-                     );
-                   })}
-                 </div>
-                 
-                 {selectedTextOption && (
-                   <div className="mt-3 p-3 rounded-lg border border-white/30 bg-white/10">
-                     <div className="text-[10px] font-mono text-green-400 mb-1">TEXTO SELECCIONADO</div>
-                     <div className="font-bold text-white">{selectedTextOption}</div>
-                   </div>
-                 )}
-               </div>
-             ) : null}
-           </div>
-         )}
       </div>
 
         {/* 4. STYLE CARD - SOLO EN MODO MANUAL */}
@@ -749,9 +658,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               </div>
             </div>
 
-        {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
+        {/* 2. TIPO DE CONTENIDO - IMAGEN, VIDEO, ESTUDIO, STORY ART */}
         <div className="space-y-3">
-          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">4. Tipo de contenido</label>
+          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">2. ¿Qué quieres generar?</label>
           <div className="grid grid-cols-2 gap-2 md:gap-4">
             {/* IMAGEN IA */}
             <button
@@ -820,7 +729,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               )}
             </button>
 
-            {/* STORY ART (9:16) - NUEVA TARJETA: DIRECCIÓN DE ARTE PROFESIONAL */}
+            {/* STORY ART (9:16) - DIRECCIÓN DE ARTE PROFESIONAL */}
             <button
               onClick={() => {
                 setMediaType('story_art');
@@ -1026,34 +935,128 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         )}
 
 
-        {/* 7. TEXTO SIMPLE - SOLO EN MODO MANUAL Y PARA IMÁGENES (NO PARA VIDEOS NI STORY ART) */}
-        {workMode === 'manual' && mediaType !== 'video' && mediaType !== 'story_art' && (
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Texto del Flyer</label>
-              {magicModeResult && (
+        {/* 4. OBJETIVO DEL DISEÑO - BRANDING O LEADS */}
+        <div className="space-y-3">
+          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">4. ¿Qué quieres lograr?</label>
+          
+          {/* AUTO MODE - MARKETING OBJECTIVE SELECTION */}
+          {workMode === 'auto' && !marketingObjective && (
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={async () => {
+                  setOverlayText('');
+                  setSelectedTextOption('');
+                  setMarketingObjective('branding');
+                  await handleGenerateTextOptions('branding');
+                }}
+                className="p-4 rounded-xl border-2 border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-pink-900/20 hover:border-purple-400/50 transition-all"
+              >
+                <div className="font-bold text-white text-sm mb-1">BRANDING</div>
+                <div className="text-[10px] text-white/70">Reconocimiento de marca</div>
+              </button>
+              <button
+                onClick={async () => {
+                  setOverlayText('');
+                  setSelectedTextOption('');
+                  setMarketingObjective('leads');
+                  await handleGenerateTextOptions('leads');
+                }}
+                className="p-4 rounded-xl border-2 border-green-500/30 bg-gradient-to-r from-green-900/20 to-emerald-900/20 hover:border-green-400/50 transition-all"
+              >
+                <div className="font-bold text-white text-sm mb-1">LEADS</div>
+                <div className="text-[10px] text-white/70">Generar conversiones</div>
+              </button>
+            </div>
+          )}
+
+          {/* AUTO MODE - TEXT OPTIONS SELECTION */}
+          {workMode === 'auto' && marketingObjective && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
+                  Selecciona tu texto ({marketingObjective === 'branding' ? 'Branding' : 'Leads'})
+                </label>
                 <button
-                  onClick={() => setOverlayText(magicModeResult.persuasiveText)}
-                  className="text-[8px] text-green-400 hover:text-green-300 transition-colors"
+                  onClick={() => {
+                    setMarketingObjective(null);
+                    setOverlayText('');
+                    setTextOptions(null);
+                    setSelectedTextOption('');
+                  }}
+                  className="text-[10px] text-white/50 hover:text-white/70 transition-colors"
                 >
-                  Usar Modo Magia
+                  Cambiar objetivo
                 </button>
-              )}
+              </div>
+              
+              {isGeneratingText ? (
+                <div className="h-16 rounded-xl border border-blue-500/30 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-white text-sm">Generando opciones de texto...</span>
+                  </div>
+                </div>
+              ) : textOptions ? (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-2">
+                    {textOptions[marketingObjective].map((text, index) => {
+                      const cleanedText = cleanText(text);
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => handleSelectTextOption(text)}
+                          className={`p-3 rounded-lg border text-left transition-all ${
+                            selectedTextOption === cleanedText
+                              ? 'border-green-500 bg-green-500/20 text-green-300'
+                              : 'border-white/20 bg-white/5 text-white hover:border-white/40'
+                          }`}
+                        >
+                          <div className="font-medium text-sm">{cleanedText}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {selectedTextOption && (
+                    <div className="mt-3 p-3 rounded-lg border border-white/30 bg-white/10">
+                      <div className="text-[10px] font-mono text-green-400 mb-1">TEXTO SELECCIONADO</div>
+                      <div className="font-bold text-white">{selectedTextOption}</div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
-            <input
-              value={overlayText}
-              onChange={(e) => setOverlayText(e.target.value)}
-              placeholder="Ej. 50% DCTO o ¡Contáctanos!"
-              className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:border-blue-500/50 outline-none"
-            />
-            <div className="text-[10px] text-white/50">
-              El texto se ajustará automáticamente al diseño
-              {magicModeResult && (
-                <span className="text-green-400 ml-2">• Modo Magia disponible</span>
-              )}
+          )}
+
+          {/* MANUAL MODE - TEXTO SIMPLE */}
+          {workMode === 'manual' && mediaType !== 'video' && mediaType !== 'story_art' && (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Texto del Flyer</label>
+                {magicModeResult && (
+                  <button
+                    onClick={() => setOverlayText(magicModeResult.persuasiveText)}
+                    className="text-[8px] text-green-400 hover:text-green-300 transition-colors"
+                  >
+                    Usar Modo Magia
+                  </button>
+                )}
+              </div>
+              <input
+                value={overlayText}
+                onChange={(e) => setOverlayText(e.target.value)}
+                placeholder="Ej. 50% DCTO o ¡Contáctanos!"
+                className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:border-blue-500/50 outline-none"
+              />
+              <div className="text-[10px] text-white/50">
+                El texto se ajustará automáticamente al diseño
+                {magicModeResult && (
+                  <span className="text-green-400 ml-2">• Modo Magia disponible</span>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* GENERATE BUTTON */}
         <div className="pt-4 md:pt-6">
