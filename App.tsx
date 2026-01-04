@@ -228,6 +228,27 @@ const Dashboard: React.FC = () => {
     loadBrands();
   }, []);
 
+  // Generar texto persuasivo por defecto al montar el componente
+  useEffect(() => {
+    const generateDefaultText = async () => {
+      try {
+        const defaultText = await generatePersuasiveText(
+          'Negocio local con productos y servicios de calidad',
+          'branding'
+        );
+        if (defaultText && defaultText.trim()) {
+          setOverlayText(defaultText);
+          console.log('✅ Texto persuasivo por defecto generado:', defaultText);
+        }
+      } catch (error) {
+        console.warn('⚠️ Error generando texto persuasivo por defecto, usando fallback');
+        setOverlayText('Calidad Premium');
+      }
+    };
+    
+    generateDefaultText();
+  }, []);
+
   // 🎚️ INICIALIZAR sceneId CUANDO SE GENERA UNA IMAGEN
   // Este useEffect garantiza que sceneId se setee cada vez que imageUrl cambia
   // y no estaba previamente seteado, asegurando que el RealitySlider funcione
@@ -1511,6 +1532,7 @@ const handleGenerate = async () => {
       const realityPrompt = buildGeminiPromptWithReality(enhancedPrompt, realityLevelTyped);
       
       // Generar nueva imagen con el mismo seed pero diferente nivel de realidad
+      // Usar imageUrl como referencia para que la IA trabaje sobre la imagen actual
       const result = await generateFlyerImage(
         realityPrompt,
         styleKey,
@@ -1522,7 +1544,7 @@ const handleGenerate = async () => {
         true,
         workMode === 'auto' && overlayText.trim() ? overlayText : undefined,
         workMode === 'auto' ? "modern and clean" : undefined,
-        draftImageUrl || undefined,
+        imageUrl || draftImageUrl || undefined, // Usar imagen actual como referencia
         undefined // artDirectionId
       );
       
