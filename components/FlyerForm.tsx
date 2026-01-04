@@ -747,42 +747,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 5.1 FORMATO STORY ART - DIRECCIÓN DE ARTE 9:16 */}
-        {isStoryArtModeActive && (
-          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">🎨 Dirección de Arte</label>
-              <span className="text-[10px] text-purple-400">📱 9:16 Vertical</span>
-            </div>
-            
-            {/* Feedback de Dirección de Arte Aplicada */}
-            {artDirectionApplied ? (
-              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/30">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">✓</div>
-                  <div>
-                    <div className="text-white font-bold text-sm">Dirección de Arte Aplicada</div>
-                    <div className="text-purple-300 text-xs mt-1">✓ {artDirectionFeedback || 'Tu diseño tendrá calidad de agencia'}</div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border-2 border-purple-400 rounded-full flex items-center justify-center">
-                    <div className="text-purple-400">🎨</div>
-                  </div>
-                  <div>
-                    <div className="text-white font-bold text-sm">Modo Agencia Activado</div>
-                    <div className="text-white/60 text-xs">Prompt de profesional aplicado automáticamente</div>
-                    <div className="text-purple-400 text-xs mt-1">📱 Formato forzado: 9:16 Stories</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">4. Tipo de contenido</label>
@@ -878,27 +842,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             </button>
           </div>
         </div>
-
-        {/* 6.1 STORY ART - FEEDBACK DE DIRECCIÓN DE ARTE (Solo cuando está activo) */}
-        {isStoryArtModeActive && (
-          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-purple-400">✨</span>
-                <span className="text-purple-300 text-xs font-bold">DIRECCIÓN DE ARTE PROFESIONAL</span>
-              </div>
-              <div className="text-white/70 text-xs">
-                Tu diseño será generado con calidad de agencia. El sistema ha seleccionado automáticamente el prompt de dirección de arte correspondiente a tu rubro.
-              </div>
-            </div>
-            
-            {/* Indicador de que se aplicará dirección de arte */}
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-              <span className="text-green-400">✓</span>
-              <span className="text-green-300 text-xs">Dirección de arte automática aplicada</span>
-            </div>
-          </div>
-        )}
 
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
         {mediaType === 'product_study' && !uploadedImage && (
