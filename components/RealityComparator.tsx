@@ -1,0 +1,348 @@
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { RealityVariation, RealityLevel } from '../types';
+import { getRealityLabel, getRealityIcon, getRealityCategory } from '../services/realityMapper';
+
+interface RealityComparatorProps {
+  /** Variación de la izquierda (típicamente más realista) */
+  leftVariation: RealityVariation | null;
+  /** Variación de la derecha (típicamente más aspiracional) */
+  rightVariation: RealityVariation | null;
+  /** Callback cuando se selecciona una variación */
+  onSelect?: (variation: RealityVariation) => void;
+  /** Callback cuando se cierra el comparador */
+  onClose?: () => void;
+  /** Variación actualmente seleccionada */
+  selectedVariationId?: string | null;
+  /** Formato de aspect ratio para el tamaño */
+  aspectRatio?: '1:1' | '9:16' | '4:5' | '16:9';
+  /** Si el comparador está activo */
+  isActive?: boolean;
+}
+
+const RealityComparator: React.FC<RealityComparatorProps> = ({
+  leftVariation,
+  rightVariation,
+  onSelect,
+  onClose,
+  selectedVariationId,
+  aspectRatio = '1:1',
+  isActive = true
+}) => {
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Colores por categoría
+  const getCategoryColor = (stars: RealityLevel): string => {
+    const category = getRealityCategory(stars);
+    const colors: Record<string, string> = {
+      crudo: 'border-red-500 shadow-red-500/30',
+      autentico: 'border-green-500 shadow-green-500/30',
+      profesional: 'border-blue-500 shadow-blue-500/30',
+      aspiracional: 'border-purple-500 shadow-purple-500/30',
+      lujo: 'border-amber-500 shadow-amber-500/30'
+    };
+    return colors[category] || 'border-white/20';
+  };
+
+  // Obtener dimensiones según aspect ratio
+  const getDimensions = () => {
+    switch (aspectRatio) {
+      case '9:16':
+        return { width: 'w-[200px]', height: 'h-[356px]' };
+      case '4:5':
+        return { width: 'w-[200px]', height: 'h-[250px]' };
+      case '16:9':
+        return { width: 'w-[356px]', height: 'h-[200px]' };
+      default:
+        return { width: 'w-[280px]', height: 'h-[280px]' };
+    }
+  };
+
+  const dimensions = getDimensions();
+
+  // Manejar arrastre del slider
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    e.preventDefault();
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  }, [isDragging]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Event listeners globales para el arrastre
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // Renderizar una imagen
+  const renderImage = (variation: RealityVariation | null, isLeft: boolean) => {
+    if (!variation) {
+      return (
+        <div className={`${dimensions.width} ${dimensions.height} bg-gray-800 rounded-xl flex items-center justify-center border-2 border-dashed border-white/20`}>
+          <div className="text-center">
+            <span className="text-3xl mb-2 block">❌</span>
+            <span className="text-white/50 text-xs">No disponible</span>
+          </div>
+        </div>
+      );
+    }
+
+    const isSelected = selectedVariationId === variation.id;
+    const borderColor = getCategoryColor(variation.stars);
+
+    return (
+      <div className="relative">
+        <div 
+          className={`
+            ${dimensions.width} ${dimensions.height} rounded-xl overflow-hidden relative
+            ${isSelected ? `ring-4 ${borderColor.replace('border', 'ring').replace('shadow', '')} ring-opacity-50` : ''}
+            transition-all duration-300
+          `}
+        >
+          <img
+            src={variation.image_url}
+            alt={`${getRealityLabel(variation.stars)} - ${variation.stars} estrellas`}
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+          
+          {/* Overlay con info */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200">
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{getRealityIcon(variation.stars)}</span>
+                <span className="text-white font-bold text-sm">
+                  {getRealityLabel(variation.stars)}
+                </span>
+                <span className="text-white/60 text-xs">({variation.stars}★)</span>
+              </div>
+              <p className="text-white/70 text-[10px] line-clamp-2">
+                {variation.prompt_used}
+              </p>
+            </div>
+          </div>
+          
+          {/* Badge de selección */}
+          {isSelected && (
+            <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg">
+              ✓ Seleccionado
+            </div>
+          )}
+        </div>
+        
+        {/* Botón seleccionar */}
+        {onSelect && !isSelected && (
+          <button
+            onClick={() => onSelect(variation)}
+            className="mt-3 w-full py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-colors"
+          >
+            Seleccionar esta versión
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  // Si no hay variaciones, mostrar estado vacío
+  if (!leftVariation && !rightVariation) {
+    return (
+      <div className="p-6 bg-black/40 rounded-2xl border border-white/10 text-center">
+        <span className="text-3xl mb-3 block">🔍</span>
+        <p className="text-white/60 text-sm">
+          Genera variaciones primero para comparar
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      {/* Botón cerrar */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute -top-2 -right-2 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+        >
+          ✕
+        </button>
+      )}
+
+      {/* Header */}
+      <div className="text-center mb-4">
+        <h3 className="text-white font-bold text-lg mb-1">
+          🎚️ Comparador de Realismo
+        </h3>
+        <p className="text-white/50 text-xs">
+          Arrastra para comparar las diferencias
+        </p>
+      </div>
+
+      {/* Modo slider de comparación */}
+      {leftVariation && rightVariation && (
+        <div 
+          ref={containerRef}
+          className={`
+            relative ${dimensions.width} ${dimensions.height} rounded-xl overflow-hidden cursor-ew-resize
+            border-2 ${getCategoryColor(leftVariation.stars)}
+            shadow-[0_0_30px_rgba(0,0,0,0.5)]
+          `}
+          onMouseDown={handleMouseDown}
+          onTouchMove={(e) => {
+            if (!containerRef.current) return;
+            const touch = e.touches[0];
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+            setSliderPosition(percentage);
+          }}
+        >
+          {/* Imagen derecha (fondo) */}
+          <img
+            src={rightVariation.image_url}
+            alt="Derecha"
+            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+          />
+
+          {/* Imagen izquierda (superior, recortada) */}
+          <div 
+            className="absolute inset-0 overflow-hidden"
+            style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+          >
+            <img
+              src={leftVariation.image_url}
+              alt="Izquierda"
+              className="absolute inset-0 w-full h-full object-cover"
+              draggable={false}
+            />
+          </div>
+
+          {/* Línea divisora */}
+          <div 
+            className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+            style={{ left: `${sliderPosition}%` }}
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Labels en las esquinas */}
+          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg">
+            <span className="text-xs font-bold text-white">
+              {getRealityIcon(leftVariation.stars)} {leftVariation.stars}★
+            </span>
+          </div>
+          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg">
+            <span className="text-xs font-bold text-white">
+              {rightVariation.stars}★ {getRealityIcon(rightVariation.stars)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Labels de las versiones */}
+      <div className="flex justify-between items-center mt-4 gap-4">
+        {leftVariation && (
+          <div className="flex-1 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <span className="text-sm">{getRealityIcon(leftVariation.stars)}</span>
+              <span className="text-white font-medium text-sm">
+                {getRealityLabel(leftVariation.stars)}
+              </span>
+            </div>
+            <span className="text-white/40 text-xs">
+              {leftVariation.stars} estrellas
+            </span>
+          </div>
+        )}
+        
+        <div className="text-white/30 text-sm font-mono">VS</div>
+        
+        {rightVariation && (
+          <div className="flex-1 text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <span className="text-white font-medium text-sm">
+                {getRealityLabel(rightVariation.stars)}
+              </span>
+              <span className="text-sm">{getRealityIcon(rightVariation.stars)}</span>
+            </div>
+            <span className="text-white/40 text-xs">
+              {rightVariation.stars} estrellas
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Botones de acción */}
+      {onSelect && (leftVariation || rightVariation) && (
+        <div className="flex gap-2 mt-4">
+          {leftVariation && (
+            <button
+              onClick={() => onSelect(leftVariation)}
+              className={`
+                flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all
+                ${selectedVariationId === leftVariation.id 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                }
+              `}
+            >
+              {selectedVariationId === leftVariation.id ? '✓' : ''} {getRealityLabel(leftVariation.stars)}
+            </button>
+          )}
+          {rightVariation && (
+            <button
+              onClick={() => onSelect(rightVariation)}
+              className={`
+                flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all
+                ${selectedVariationId === rightVariation.id 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                }
+              `}
+            >
+              {selectedVariationId === rightVariation.id ? '✓' : ''} {getRealityLabel(rightVariation.stars)}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Info adicional */}
+      <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+        <p className="text-blue-300/80 text-[10px] text-center">
+          💡 {isActive 
+            ? 'Usa el slider para comparar las diferencias de iluminación y realismo'
+            : 'Selecciona una versión para continuar con HD'
+          }
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default RealityComparator;

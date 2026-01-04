@@ -1,0 +1,322 @@
+import React, { useState, useCallback, useEffect } from 'react';
+import { RealityLevel } from '../types';
+import { 
+  REALITY_CONFIGS, 
+  getRealityLabel, 
+  getRealityDescription, 
+  getRealityIcon,
+  getAvailableRealityLevels,
+  isRealisticLevel,
+  isAspirationalLevel,
+  getRealityCategory 
+} from '../services/realityMapper';
+
+interface RealitySliderProps {
+  /** Nivel actual de estrellas */
+  value: RealityLevel;
+  /** Callback cuando cambia el valor */
+  onChange: (value: RealityLevel) => void;
+  /** Callback cuando se necesita generar una nueva variación */
+  onGenerateVariation?: (stars: RealityLevel) => Promise<void>;
+  /** Si está cargando/generando */
+  isLoading?: boolean;
+  /** ID de la scene para el caché */
+  sceneId?: string;
+  /** Si el slider está deshabilitado */
+  disabled?: boolean;
+  /** Mostrar ayuda contextual */
+  showHelp?: boolean;
+  /** Modo compacto (para espacios reducidos) */
+  compact?: boolean;
+  /** Callback cuando se genera exitosamente */
+  onGenerationComplete?: (stars: RealityLevel, imageUrl: string) => void;
+}
+
+const RealitySlider: React.FC<RealitySliderProps> = ({
+  value,
+  onChange,
+  onGenerateVariation,
+  isLoading = false,
+  sceneId,
+  disabled = false,
+  showHelp = true,
+  compact = false,
+  onGenerationComplete
+}) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [localValue, setLocalValue] = useState<RealityLevel>(value);
+
+  // Sincronizar valor local cuando cambia la prop
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  // Obtener configuración actual
+  const currentConfig = REALITY_CONFIGS[localValue];
+  const category = getRealityCategory(localValue);
+  
+  // Colores por categoría
+  const categoryColors = {
+    crudo: 'from-red-500 to-orange-500',
+    autentico: 'from-green-400 to-emerald-500',
+    profesional: 'from-blue-400 to-indigo-500',
+    aspiracional: 'from-purple-400 to-violet-500',
+    lujo: 'from-amber-400 to-yellow-500'
+  };
+
+  const gradientColor = categoryColors[category];
+
+  // Manejar cambio del slider
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled || isGenerating) return;
+    
+    const newValue = parseFloat(e.target.value) as RealityLevel;
+    setLocalValue(newValue);
+  }, [disabled, isGenerating]);
+
+  // Manejar cuando el usuario suelta el slider
+  const handleMouseUp = useCallback(async () => {
+    if (localValue !== value && !disabled && !isGenerating) {
+      // Notificar cambio
+      onChange(localValue);
+      
+      // Si hay callback de generación y el valor no está en caché, generar
+      if (onGenerateVariation && sceneId) {
+        setIsGenerating(true);
+        try {
+          await onGenerateVariation(localValue);
+          onGenerationComplete?.(localValue, '');
+        } catch (error) {
+          console.error('❌ Error generando variación:', error);
+        } finally {
+          setIsGenerating(false);
+        }
+      }
+    }
+  }, [localValue, value, disabled, isGenerating, onChange, onGenerateVariation, sceneId, onGenerationComplete]);
+
+  // Manejar touch end para mobile
+  const handleTouchEnd = useCallback(async () => {
+    if (localValue !== value && !disabled && !isGenerating) {
+      onChange(localValue);
+      
+      if (onGenerateVariation && sceneId) {
+        setIsGenerating(true);
+        try {
+          await onGenerateVariation(localValue);
+          onGenerationComplete?.(localValue, '');
+        } catch (error) {
+          console.error('❌ Error generando variación:', error);
+        } finally {
+          setIsGenerating(false);
+        }
+      }
+    }
+  }, [localValue, value, disabled, isGenerating, onChange, onGenerateVariation, sceneId, onGenerationComplete]);
+
+  // Niveles disponibles
+  const levels = getAvailableRealityLevels();
+
+  if (compact) {
+    // Modo compacto para espacios reducidos
+    return (
+      <div className="w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🎚️</span>
+            <span className="text-white text-xs font-medium">Realismo</span>
+          </div>
+          <div className={`px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r ${gradientColor} text-white`}>
+            {localValue} ★
+          </div>
+        </div>
+        
+        {/* Slider compacto */}
+        <div className="relative">
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.5"
+            value={localValue}
+            onChange={handleChange}
+            onMouseUp={handleMouseUp}
+            onTouchEnd={handleTouchEnd}
+            disabled={disabled || isGenerating}
+            className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+          />
+          
+          {/* Indicadores de nivel */}
+          <div className="flex justify-between mt-1 px-0.5">
+            {levels.map((level) => (
+              <button
+                key={level}
+                onClick={() => {
+                  setLocalValue(level);
+                  onChange(level);
+                }}
+                disabled={disabled || isGenerating}
+                className={`w-4 h-4 rounded-full text-[8px] flex items-center justify-center transition-all
+                  ${level === localValue 
+                    ? `bg-gradient-to-r ${gradientColor} scale-125` 
+                    : 'bg-gray-600 hover:bg-gray-500'
+                  }
+                  ${disabled || isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* Label actual */}
+        <div className="text-center mt-1">
+          <span className="text-white/70 text-[10px]">
+            {getRealityIcon(localValue)} {getRealityLabel(localValue)}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // Modo completo
+  return (
+    <div className="p-4 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🎚️</span>
+          <div>
+            <label className="text-white text-sm font-medium block">
+              Nivel de Realismo
+            </label>
+            <p className="text-white/50 text-[10px]">
+              {getRealityCategory(localValue).toUpperCase()}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <div className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${gradientColor} text-white shadow-lg`}>
+            {localValue} ★
+          </div>
+          {isGenerating && (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          )}
+        </div>
+      </div>
+      
+      {/* Slider principal */}
+      <div className="relative mb-4">
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="0.5"
+          value={localValue}
+          onChange={handleChange}
+          onMouseUp={handleMouseUp}
+          onTouchEnd={handleTouchEnd}
+          disabled={disabled || isGenerating}
+          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+          style={{
+            background: `linear-gradient(to right, 
+              #ef4444 0%, 
+              #f97316 22%, 
+              #22c55e 44%, 
+              #3b82f6 66%, 
+              #8b5cf6 88%, 
+              #eab308 100%)`
+          }}
+        />
+        
+        {/* Indicador de posición actual */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center pointer-events-none transition-all"
+          style={{
+            left: `${((localValue - 1) / 4) * 100}%`,
+            transform: 'translate(-50%, -50%)'
+          }}
+        >
+          <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${gradientColor}`} />
+        </div>
+      </div>
+      
+      {/* Labels de los extremos */}
+      <div className="flex justify-between text-[10px] text-white/50 mb-4">
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">📸</span>
+          <span>Crudo</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">🏪</span>
+          <span>Auténtico</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">✨</span>
+          <span>Profesional</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">🏆</span>
+          <span>Lujo</span>
+        </div>
+      </div>
+      
+      {/* Panel de información */}
+      <div className={`bg-gradient-to-r ${gradientColor} bg-opacity-10 rounded-xl p-3 border border-white/5`}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">{currentConfig.icon}</span>
+          <span className="text-white font-medium text-sm">
+            {currentConfig.label}
+          </span>
+        </div>
+        <p className="text-white/70 text-xs">
+          {currentConfig.description}
+        </p>
+        
+        {/* Detalles técnicos */}
+        <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+          <div className="bg-black/20 rounded-lg p-2">
+            <span className="text-white/50 block mb-1">📷 Cámara</span>
+            <span className="text-white/80">{currentConfig.camera.split(',')[0]}</span>
+          </div>
+          <div className="bg-black/20 rounded-lg p-2">
+            <span className="text-white/50 block mb-1">💡 Iluminación</span>
+            <span className="text-white/80">{currentConfig.lighting.split(',')[0]}</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Ayuda contextual */}
+      {showHelp && (
+        <div className="mt-3 flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
+          <span className="text-blue-400 text-xs">💡</span>
+          <p className="text-blue-300/80 text-[10px] leading-tight">
+            {isRealisticLevel(localValue) 
+              ? 'Nivel recomendado para generar confianza en clientes locales. Se ve auténtico y cercano.'
+              : isAspirationalLevel(localValue)
+              ? 'Nivel aspiracional ideal para branding premium. Puede verse "demasiado perfecto".'
+              : 'El punto dulce entre autenticidad y profesionalismo. Ideal para la mayoría de negocios.'
+            }
+          </p>
+        </div>
+      )}
+      
+      {/* Indicador de caché */}
+      {sceneId && (
+        <div className="mt-3 flex items-center justify-between text-[10px] text-white/40">
+          <span>ID: {sceneId.substring(0, 12)}...</span>
+          <div className="flex items-center gap-1">
+            <span className={`w-2 h-2 rounded-full ${isGenerating ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
+            <span>{isGenerating ? 'Generando...' : 'Listo'}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RealitySlider;

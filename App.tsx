@@ -1,6 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
+import RealitySlider from './components/RealitySlider';
+import RealityComparator from './components/RealityComparator';
+import {
+  getCachedVariation,
+  saveVariationToCache,
+  buildGeminiPromptWithReality
+} from './services/realitySliderService';
+import {
+  getRealityConfig,
+  getRealityLabel,
+  getRealityCategory
+} from './services/realityMapper';
 import { POSTER_STYLES, POSTER_INDUSTRY_PROMPTS } from './constants';
 import { FlyerForm } from './components/FlyerForm';
 import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
@@ -166,6 +178,13 @@ const Dashboard: React.FC = () => {
   // NEW: Estados para posición de logo y producto
   const [logoPosition, setLogoPosition] = useState<{x: number, y: number; width: number}>({ x: 10, y: 10, width: 80 });
   const [productPosition, setProductPosition] = useState<{x: number, y: number; width: number; height: number}>({ x: 50, y: 70, width: 120, height: 120 });
+  
+  // 🎚️ REALITY SLIDER STATES - Sistema de регулятор de realidad
+  const [realityLevel, setRealityLevel] = useState<number>(2.5);
+  const [sceneId, setSceneId] = useState<string | null>(null);
+  const [realityVariations, setRealityVariations] = useState<Record<number, string>>({});
+  const [showRealityComparator, setShowRealityComparator] = useState(false);
+  const [isGeneratingReality, setIsGeneratingReality] = useState(false);
   
   // NEW: Estados para estilos manuales del editor de texto
   const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
@@ -1432,11 +1451,87 @@ const handleGenerate = async () => {
   const handleError = (error: any) => {
     if (error.message && (error.message.includes('permission denied') || error.message.includes('403'))) {
       setStatus({ isLoading: false, step: 'error', message: ':: ERROR_AUTENTICACION ::' });
-      setHasKey(false); 
+      setHasKey(false);
       alert('Tu sesión expiró. Conecta nuevamente.');
     } else {
       setStatus({ isLoading: false, step: 'error', message: ':: FALLO_DEL_SISTEMA ::' });
       alert('Error al generar. Intenta de nuevo.');
+    }
+  };
+
+  // 🎚️ REALITY SLIDER HANDLER - Maneja cambios en el nivel de realidad
+  const handleRealityChange = async (newLevel: number) => {
+    console.log('🎚️ Reality Slider cambiado a:', newLevel);
+    
+    // Si es el mismo nivel, no hacer nada
+    if (newLevel === realityLevel) return;
+    
+    const levelKey = Math.round(newLevel * 2) / 2; // Redondear a 0.5
+    
+    // 1. VERIFICAR CACHÉ PRIMERO
+    if (realityVariations[levelKey]) {
+      console.log('✅ Variación encontrada en caché:', levelKey);
+      setImageUrl(realityVariations[levelKey]);
+      setRealityLevel(levelKey);
+      return;
+    }
+    
+    // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN
+    console.log('🔄 Generando nueva variación para nivel:', levelKey);
+    setIsGeneratingReality(true);
+    setRealityLevel(levelKey);
+    
+    try {
+      // Obtener configuración de realidad para este nivel
+      const realityLevelTyped = levelKey as any;
+      const realityConfig = getRealityConfig(realityLevelTyped);
+      const realityLabel = getRealityLabel(realityLevelTyped);
+      const realityCategory = getRealityCategory(realityLevelTyped);
+      
+      console.log('🎨 Configuración de realidad:', { level: levelKey, label: realityLabel, category: realityCategory });
+      
+      // Construir prompt con realidad aumentada
+      const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
+      const realityPrompt = buildGeminiPromptWithReality(enhancedPrompt, realityLevelTyped);
+      
+      // Generar nueva imagen con el mismo seed pero diferente nivel de realidad
+      const result = await generateFlyerImage(
+        realityPrompt,
+        styleKey,
+        aspectRatio,
+        'draft',
+        seed, // MISMO SEED para mantener consistencia visual
+        customStylePrompt,
+        !!productUrl,
+        true,
+        workMode === 'auto' && overlayText.trim() ? overlayText : undefined,
+        workMode === 'auto' ? "modern and clean" : undefined,
+        draftImageUrl || undefined,
+        undefined // artDirectionId
+      );
+      
+      if (result.imageDataUrl) {
+        // Guardar en caché local
+        setRealityVariations(prev => ({
+          ...prev,
+          [levelKey]: result.imageDataUrl
+        }));
+        
+        // Actualizar imagen mostrada
+        setImageUrl(result.imageDataUrl);
+        
+        // Si es la primera variación, guardar sceneId
+        if (!sceneId) {
+          setSceneId(`scene_${Date.now()}_${seed}`);
+        }
+        
+        console.log('✅ Nueva variación generada y guardada en caché:', levelKey);
+      }
+    } catch (error: any) {
+      console.error('❌ Error generando variación de realidad:', error);
+      alert('Error al generar variación. Intenta de nuevo.');
+    } finally {
+      setIsGeneratingReality(false);
     }
   };
 
@@ -1628,6 +1723,33 @@ const handleGenerate = async () => {
                   </div>
                 )}
                 
+                {/* 🎚️ REALITY SLIDER - Debajo de la imagen en mobile */}
+                {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
+                  <div className="p-4 border-t border-white/10 flex-shrink-0">
+                    <RealitySlider
+                      currentLevel={realityLevel}
+                      sceneId={sceneId}
+                      currentImageUrl={imageUrl}
+                      seed={seed}
+                      onLevelChange={handleRealityChange}
+                      disabled={isGeneratingReality}
+                    />
+                    
+                    {/* Botón para comparar versiones */}
+                    {Object.keys(realityVariations).length >= 2 && (
+                      <button
+                        onClick={() => setShowRealityComparator(true)}
+                        className="mt-3 w-full py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 text-xs font-medium transition-all flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Comparar Realismos ({Object.keys(realityVariations).length} versiones)
+                      </button>
+                    )}
+                  </div>
+                )}
+                
                 {/* Panel de Editor de Texto y Estilo de Integración Visual - OCULTAR PARA VIDEOS Y STORY ART */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
@@ -1771,9 +1893,36 @@ const handleGenerate = async () => {
                     onSurfaceTypeChange={setSurfaceType}
                     autoDetectedSurface={autoDetectedSurface}
                 />
+          </div>
+          
+          {/* 🎚️ REALITY SLIDER - Panel inferior en desktop */}
+          {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
+            <div className="w-full px-4 pb-4">
+              <RealitySlider
+                currentLevel={realityLevel}
+                sceneId={sceneId}
+                currentImageUrl={imageUrl}
+                seed={seed}
+                onLevelChange={handleRealityChange}
+                disabled={isGeneratingReality}
+              />
+              
+              {/* Botón para comparar versiones */}
+              {Object.keys(realityVariations).length >= 2 && (
+                <button
+                  onClick={() => setShowRealityComparator(true)}
+                  className="mt-3 py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 text-xs font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Comparar Realismos ({Object.keys(realityVariations).length} versiones)
+                </button>
+              )}
             </div>
-         </div>
-      </main>
+          )}
+        </div>
+    </main>
 
       {/* RIGHT PANEL: CALENDAR - Overlay en mobile portrait, sidebar en landscape (lg) */}
       <aside className={`
@@ -1876,11 +2025,26 @@ const handleGenerate = async () => {
          window.location.href = '/';
        }}
      />
+     
+     {/* 🎨 REALITY COMPARATOR - Modal de comparación */}
+     {showRealityComparator && (
+       <RealityComparator
+         sceneId={sceneId}
+         variations={realityVariations}
+         currentLevel={realityLevel}
+         onSelect={(level) => {
+           setRealityLevel(level);
+           if (realityVariations[level]) {
+             setImageUrl(realityVariations[level]);
+           }
+           setShowRealityComparator(false);
+         }}
+         onClose={() => setShowRealityComparator(false)}
+       />
+     )}
    </div>
  );
 };
-
-// Main App Component with Routing
 const App: React.FC = () => {
   return (
     <Router>

@@ -287,3 +287,95 @@ export interface ArtDirectionCatalog {
   /** Prompts por ID */
   prompts: Record<number, ArtDirectionPrompt>;
 }
+
+// ============================================
+// 🎚️ SISTEMA DE REGULADOR DE REALIDAD (Reality Slider)
+// ============================================
+
+export type RealityLevel = 1.0 | 1.5 | 2.0 | 2.5 | 3.0 | 3.5 | 4.0 | 4.5 | 5.0;
+
+export interface RealityPromptConfig {
+  /** Nivel de estrellas */
+  stars: RealityLevel;
+  /** Etiqueta descriptiva */
+  label: string;
+  /** Descripción corta */
+  description: string;
+  /** Prompt de iluminación */
+  lighting: string;
+  /** Prompt de atmósfera */
+  atmosphere: string;
+  /** Prompt de cámara */
+  camera: string;
+  /** Prompt de sujetos humanos */
+  human: string;
+  /** Prompt negativo (lo que evitar) */
+  negative: string;
+  /** Icono emoji */
+  icon: string;
+}
+
+export interface RealityVariation {
+  /** ID único de la variación */
+  id: string;
+  /** ID del borrador/scena original */
+  parent_scene_id: string;
+  /** Seed usado para consistencia visual */
+  seed: number;
+  /** Nivel de estrellas */
+  stars: RealityLevel;
+  /** URL de la imagen generada */
+  image_url: string;
+  /** Prompt usado para generar */
+  prompt_used: string;
+  /** Timestamp de creación */
+  created_at: Date;
+  /** Si ya está en caché local */
+  cached: boolean;
+}
+
+export interface RealitySliderState {
+  /** Nivel actual de estrellas */
+  currentStars: RealityLevel;
+  /** Seed actual (fijado para consistencia) */
+  currentSeed: number;
+  /** ID del scene padre */
+  sceneId: string;
+  /** Variaciones cacheadas */
+  variations: RealityVariation[];
+  /** Si está cargando una variación */
+  isLoadingVariation: boolean;
+  /** Variación actualmente cargándose */
+  loadingVariationId: string | null;
+}
+
+export interface RealitySliderCallbacks {
+  /** Llamado cuando cambia el nivel de estrellas */
+  onStarsChange: (stars: RealityLevel) => void;
+  /** Llamado cuando se necesita generar una nueva variación */
+  onGenerateVariation: (stars: RealityLevel) => Promise<string>;
+  /** Llamado cuando se selecciona una variación del caché */
+  onSelectCachedVariation: (variation: RealityVariation) => void;
+}
+
+// ============================================
+// 🎨 COMPARADOR DE REALIDAD (Reality Comparator)
+// ============================================
+
+export interface ComparisonItem {
+  /** Variación a comparar */
+  variation: RealityVariation;
+  /** Label personalizado (ej: "Auténtico", "Editorial") */
+  label: string;
+  /** Si es la versión seleccionada */
+  isSelected: boolean;
+}
+
+export interface RealityComparisonState {
+  /** Items a comparar */
+  items: ComparisonItem[];
+  /** Modo de comparación: 'side-by-side' | 'slider' */
+  mode: 'side-by-side' | 'slider';
+  /** Si el comparador está activo */
+  isActive: boolean;
+}
