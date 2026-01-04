@@ -7,6 +7,7 @@ import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
 import { TextEditorPanel } from './components/TextEditorPanel';
 import { PricingModal } from './components/PricingModal';
 import { StyleGallery } from './components/StyleGallery';
+import StyleFusionSelector from './components/StyleFusionSelector';
 import { LandingPage } from './components/LandingPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -1571,6 +1572,10 @@ const handleGenerate = async () => {
                     // NEW: Props para Poster Pro
                     posterStyle={posterStyle}
                     setPosterStyle={setPosterStyle}
+                    // Surface Detection props
+                    selectedSurface={surfaceType}
+                    setSelectedSurface={setSurfaceType}
+                    autoDetectedSurface={autoDetectedSurface}
                 />
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
@@ -1623,7 +1628,7 @@ const handleGenerate = async () => {
                   </div>
                 )}
                 
-                {/* Panel de Editor de Texto - OCULTAR PARA VIDEOS Y STORY ART */}
+                {/* Panel de Editor de Texto y Estilo de Integración Visual - OCULTAR PARA VIDEOS Y STORY ART */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
                     <TextEditorPanel
@@ -1641,6 +1646,16 @@ const handleGenerate = async () => {
                       productUrl={productUrl}
                       setProductUrl={setProductUrl}
                     />
+                    
+                    {/* 🎨 ESTILO DE INTEGRACIÓN VISUAL - Junto al editor de texto */}
+                    <div className="mt-4">
+                      <StyleFusionSelector
+                        selectedStyle={surfaceType}
+                        onStyleChange={setSurfaceType}
+                        autoDetectedStyle={autoDetectedSurface}
+                        disabled={false}
+                      />
+                    </div>
                   </div>
                 )}
             </div>

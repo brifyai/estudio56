@@ -7,7 +7,6 @@ import { REALITY_MODE_LABELS, type RealityMode } from '../src/constants/promptMo
 import { ImageAnalysisResult } from '../services/imageAnalysisService';
 import { processMagicMode, MagicModeResult, STYLE_NAMES_ES, detectVideoStyleFromInput, VIDEO_STYLE_NAMES_ES, getVideoStyleFromImageStyle } from '../services/magicModeService';
 import { SurfaceType } from '../hooks/useSurfaceDetection';
-import StyleFusionSelector from './StyleFusionSelector';
 
 interface FlyerFormProps {
   styleKey: FlyerStyleKey;
@@ -56,6 +55,10 @@ interface FlyerFormProps {
   onSpanishPromptUpdate?: (prompt: string) => void; // NEW: Callback para actualizar prompt en español desde análisis de URL
   posterStyle?: PosterStyle; // NEW: Estilo de poster seleccionado (desde padre)
   setPosterStyle?: (style: PosterStyle) => void; // NEW: Setter para estilo de poster
+  // Surface Detection props
+  selectedSurface?: SurfaceType;
+  setSelectedSurface?: (surface: SurfaceType) => void;
+  autoDetectedSurface?: SurfaceType | null;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -100,7 +103,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   currentSpanishPrompt = '',
   onSpanishPromptUpdate, // NEW: Callback para actualizar prompt en español desde análisis de URL
   posterStyle: posterStyleProp = 'promotional', // NEW: Estilo de poster desde padre
-  setPosterStyle // NEW: Setter para estilo de poster
+  setPosterStyle, // NEW: Setter para estilo de poster
+  // Surface Detection defaults
+  selectedSurface = 'default',
+  setSelectedSurface = () => {},
+  autoDetectedSurface = null
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -134,9 +141,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [artDirectionApplied, setArtDirectionApplied] = useState(false);
   const [artDirectionFeedback, setArtDirectionFeedback] = useState<string | null>(null);
   
-  // NUEVO: Estados para Estilo de Integración Visual (Surface Detection)
-  const [selectedSurface, setSelectedSurface] = useState<SurfaceType>('default');
-  const [autoDetectedSurface, setAutoDetectedSurface] = useState<SurfaceType | null>(null);
+  // Estados para Estilo de Integración Visual (Surface Detection) - Ahora vienen del padre
   
   // Editor de texto states - TAMAÑO REDUCIDO POR DEFECTO
   const [fontSize, setFontSize] = useState(24); // Reducido de 48px a 24px
@@ -759,14 +764,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             </button>
           </div>
         </div>
-
-        {/* 🎨 ESTILO DE INTEGRACIÓN VISUAL - SELECTOR COMPLETO */}
-        <StyleFusionSelector
-          selectedStyle={selectedSurface}
-          onStyleChange={setSelectedSurface}
-          autoDetectedStyle={autoDetectedSurface}
-          disabled={false}
-        />
 
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
         {mediaType === 'product_study' && !uploadedImage && (
