@@ -2173,6 +2173,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       {/* NEW: SELECTOR DE ESTILO DE FUSIÓN VISUAL - Solo visible en imágenes */}
       {!showComparison && !showVideoComparison && mediaType !== 'video' && mediaType !== 'story_art' && (
         <div className="w-full max-w-[280px] mt-3">
+          {/* Debug info visible */}
+          <div className="text-[10px] text-white/40 mb-2 font-mono">
+            surfaceType: {localSurfaceType} | autoDetected: {autoDetectedSurface || 'none'} | isDraft: {isDraft.toString()}
+          </div>
           <StyleFusionSelector
             selectedStyle={localSurfaceType}
             onStyleChange={(style) => {
@@ -2183,7 +2187,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               }
             }}
             autoDetectedStyle={autoDetectedSurface}
-            disabled={isDraft}
+            disabled={false} // Habilitado siempre para poder probar
           />
         </div>
       )}
