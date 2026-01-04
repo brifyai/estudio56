@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   buildArtDirectionPrompt,
   buildArtDirectionPromptByName,
@@ -11,9 +11,13 @@ import type { ArtDirectionResult, ContentType } from '../types';
 import {
   generatePackDual,
   quickPackDual,
-  type PackDualResult
+  generateVideoDraft,
+  convertDraftToHD,
+  type PackDualResult,
+  type VideoDraftResult
 } from '../services/geminiService';
 import { AgencyPackReveal } from './AgencyPackReveal';
+import { VideoPreview } from './VideoPreview';
 
 interface StoryArtButtonProps {
   /** Rubro del negocio (ID numérico) */
@@ -52,6 +56,14 @@ export function StoryArtButton({
   const [showAgencyPack, setShowAgencyPack] = useState(false);
   const [packDualResult, setPackDualResult] = useState<PackDualResult | null>(null);
   const [isGeneratingPack, setIsGeneratingPack] = useState(false);
+  
+  // ============================================
+  // ESTADOS PARA VIDEO DRAFT + HD
+  // ============================================
+  const [videoDraftResult, setVideoDraftResult] = useState<VideoDraftResult | null>(null);
+  const [hdVideoUrl, setHdVideoUrl] = useState<string | null>(null);
+  const [isConvertingToHD, setIsConvertingToHD] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
 
   // Verificar si el rubro tiene dirección de arte disponible
   const hasArtDirectionForIndustry = hasArtDirection(industryId);
@@ -175,6 +187,100 @@ export function StoryArtButton({
     }
   };
 
+  // ============================================
+  // GENERACIÓN DE VIDEO DRAFT (ECONÓMICO)
+  // ============================================
+  
+  const handleGenerateVideoDraft = async () => {
+    if (!subject.trim()) {
+      setFeedbackMessage('Ingresa una descripción del producto/servicio');
+      return;
+    }
+
+    setIsGeneratingPack(true);
+    setFeedbackMessage('🎬 Generando video draft económico...');
+    setShowVideoPreview(true);
+
+    try {
+      const prompt = `${subject} ${details || ''}`.trim();
+      const result = await generateVideoDraft(prompt, industryId, '9:16');
+      
+      setVideoDraftResult(result);
+      setHdVideoUrl(null); // Reset HD
+      setFeedbackMessage('✅ Video draft generado (480p) - Costo: ~$0.05 USD');
+      
+    } catch (error: any) {
+      console.error('Error generando video draft:', error);
+      setFeedbackMessage(`❌ ${error.message || 'Error generando video draft'}`);
+    } finally {
+      setIsGeneratingPack(false);
+    }
+  };
+
+  // ============================================
+  // CONVERSIÓN A HD (USANDO EL MISMO SEED)
+  // ============================================
+  
+  const handleConvertToHD = useCallback(async (): Promise<string> => {
+    if (!videoDraftResult) {
+      throw new Error('No hay video draft para convertir');
+    }
+
+    setIsConvertingToHD(true);
+    setFeedbackMessage('✨ Convirtiendo a HD...');
+
+    try {
+      const hdUrl = await convertDraftToHD(videoDraftResult);
+      setHdVideoUrl(hdUrl);
+      setFeedbackMessage('✅ Video convertido a HD (1080p+)');
+      return hdUrl;
+    } catch (error: any) {
+      console.error('Error convirtiendo a HD:', error);
+      setFeedbackMessage(`❌ ${error.message || 'Error convirtiendo a HD'}`);
+      throw error;
+    } finally {
+      setIsConvertingToHD(false);
+    }
+  }, [videoDraftResult]);
+
+  // ============================================
+  // GENERACIÓN DIRECTA EN HD (SIN DRAFT)
+  // ============================================
+  
+  const handleGenerateVideoHD = async () => {
+    if (!subject.trim()) {
+      setFeedbackMessage('Ingresa una descripción del producto/servicio');
+      return;
+    }
+
+    setIsGeneratingPack(true);
+    setFeedbackMessage('🎬 Generando video HD directamente...');
+    setShowVideoPreview(true);
+
+    try {
+      const prompt = `${subject} ${details || ''}`.trim();
+      const draftResult = await generateVideoDraft(prompt, industryId, '9:16');
+      
+      // Convertir inmediatamente a HD
+      const hdUrl = await handleConvertToHD();
+      
+      // Guardar como draft también para referencia
+      setVideoDraftResult({
+        ...draftResult,
+        draftId: `hd_direct_${Date.now()}`,
+        costEstimate: 0.55
+      });
+      
+      setFeedbackMessage('✅ Video HD generado directamente - Costo: ~$0.55 USD');
+      
+    } catch (error: any) {
+      console.error('Error generando video HD:', error);
+      setFeedbackMessage(`❌ ${error.message || 'Error generando video HD'}`);
+    } finally {
+      setIsGeneratingPack(false);
+    }
+  };
+
   const handleDownloadImage = () => {
     if (packDualResult?.imageUrl) {
       const link = document.createElement('a');
@@ -196,6 +302,20 @@ export function StoryArtButton({
   return (
     <div className={`story-art-button-container ${className}`}>
       
+      {/* Video Preview Modal */}
+      {showVideoPreview && videoDraftResult && (
+        <VideoPreview
+          draftVideoUrl={videoDraftResult.draftVideoUrl}
+          draftImageUrl={videoDraftResult.draftImageUrl}
+          draftId={videoDraftResult.draftId}
+          seed={videoDraftResult.seed}
+          artDirectionRubro={artConfig?.rubro || null}
+          onConvertToHD={handleConvertToHD}
+          isConvertingHD={isConvertingToHD}
+          hdVideoUrl={hdVideoUrl}
+        />
+      )}
+
       {/* Agency Pack Reveal Modal */}
       {showAgencyPack && packDualResult && (
         <AgencyPackReveal
@@ -249,6 +369,40 @@ export function StoryArtButton({
             <span className="btn-icon">✨</span>
             <span className="btn-text">Pack Dual</span>
             <span className="btn-ratio">Img + Video</span>
+            {isGeneratingPack && (
+              <span className="btn-loading">
+                <span className="spinner"></span>
+              </span>
+            )}
+          </button>
+
+          {/* Botón Video Draft (ECONÓMICO) */}
+          <button
+            type="button"
+            className={`content-type-btn video-draft-btn ${isGeneratingPack ? 'generating' : ''}`}
+            onClick={handleGenerateVideoDraft}
+            disabled={disabled || isGeneratingPack || !hasArtDirectionForIndustry}
+          >
+            <span className="btn-icon">📹</span>
+            <span className="btn-text">Video Draft</span>
+            <span className="btn-ratio">480p - $0.05</span>
+            {isGeneratingPack && (
+              <span className="btn-loading">
+                <span className="spinner"></span>
+              </span>
+            )}
+          </button>
+
+          {/* Botón Video HD (ALTA CALIDAD) */}
+          <button
+            type="button"
+            className={`content-type-btn video-hd-btn ${isGeneratingPack ? 'generating' : ''}`}
+            onClick={handleGenerateVideoHD}
+            disabled={disabled || isGeneratingPack || !hasArtDirectionForIndustry}
+          >
+            <span className="btn-icon">🎬</span>
+            <span className="btn-text">Video HD</span>
+            <span className="btn-ratio">1080p+ - $0.55</span>
             {isGeneratingPack && (
               <span className="btn-loading">
                 <span className="spinner"></span>
@@ -418,6 +572,34 @@ export function StoryArtButton({
         .pack-dual-btn.active {
           border-color: #f59e0b;
           background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .video-draft-btn {
+          border-color: #3b82f6;
+          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        .video-draft-btn:hover:not(:disabled) {
+          border-color: #2563eb;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .video-draft-btn.generating {
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .video-hd-btn {
+          border-color: #8b5cf6;
+          background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+        }
+
+        .video-hd-btn:hover:not(:disabled) {
+          border-color: #7c3aed;
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+        }
+
+        .video-hd-btn.generating {
+          background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
         }
 
         .btn-loading {

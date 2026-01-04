@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { FlyerStyleKey, AspectRatio, ImageQuality } from "../types";
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality } from "../types";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -927,10 +927,10 @@ export const enhancePrompt = async (userInput: string, styleKey: FlyerStyleKey):
     const ai = getAiClient();
     const model = "gemini-3-flash-preview";
     
-    const styleConfig = FLYER_STYLES[styleKey];
+    const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
     
     // Fallback si no existe el estilo
-    const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
+    const safeStyleConfig = styleConfig;
 
     const systemInstruction = `You are an expert AI Prompt Engineer for image generation.
     Your task is to take a raw Spanish description of a business service or product and translate the VISUAL DESCRIPTION into English.
@@ -1256,10 +1256,10 @@ export const generateHDFromDraft = async (
   hasProductOverlay: boolean = false
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
-  const styleConfig = FLYER_STYLES[styleKey];
+  const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
   
   // Fallback si no existe el estilo
-  const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
+  const safeStyleConfig = styleConfig;
   
   console.log('🎯 [HD From Draft] Generando HD usando borrador como referencia...');
   console.log('📝 [HD From Draft] Seed:', seed);
@@ -1369,7 +1369,7 @@ export const generateFlyerImage = async (
   artDirectionId?: number // NEW: ID del rubro (1-60) para Story Art
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
-  const styleConfig = FLYER_STYLES[styleKey];
+  const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
   
   // ============================================
   // MODO STORY ART: Usar Dirección de Arte Profesional
@@ -1400,14 +1400,16 @@ export const generateFlyerImage = async (
       });
     } else {
       // Fallback a estilo normal si no encuentra la configuración
-      activeStylePrompt = styleConfig.english_prompt;
-      activeStyleLabel = styleConfig.label;
+      const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
+      activeStylePrompt = safeStyleConfig.english_prompt;
+      activeStyleLabel = safeStyleConfig.label;
       console.warn(`⚠️ [Story Art] No se encontró config para ID: ${artDirectionId}, usando fallback`);
     }
   } else {
     // Modo normal: Usar estilo genérico
-    activeStylePrompt = styleConfig.english_prompt;
-    activeStyleLabel = styleConfig.label;
+    const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
+    activeStylePrompt = safeStyleConfig.english_prompt;
+    activeStyleLabel = safeStyleConfig.label;
     console.log(`ℹ️ [generateFlyerImage] Modo normal (no story_art), usando estilo: ${activeStyleLabel}`);
   }
   
@@ -1805,9 +1807,6 @@ const generateFlyerVideoVEO = async (
     const videoStyleKey = styleKey.startsWith('video_') ? styleKey : `video_${styleKey}`;
     const videoStyleConfig = VIDEO_STYLES[videoStyleKey];
     
-    // Si no existe el estilo de video, usar fallback de FLYER_STYLES
-    const styleConfig = videoStyleConfig ? null : FLYER_STYLES[styleKey];
-    
     let motionPrompt: string;
     let promptBase: string;
     
@@ -1815,14 +1814,17 @@ const generateFlyerVideoVEO = async (
       // Usar configuración de VIDEO_STYLES
       motionPrompt = videoStyleConfig.motionStyle || "Cinematic steady motion.";
       promptBase = videoStyleConfig.prompt || "";
-    } else if (styleConfig) {
-      // Fallback a FLYER_STYLES
-      motionPrompt = styleConfig.video_motion || "Cinematic steady motion.";
-      promptBase = styleConfig.english_prompt || "";
     } else {
-      // Fallback por defecto
-      motionPrompt = "Cinematic steady motion.";
-      promptBase = "Professional commercial video.";
+      // Fallback a FLYER_STYLES
+      const styleConfig = FLYER_STYLES[styleKey];
+      if (styleConfig) {
+        motionPrompt = styleConfig.video_motion || "Cinematic steady motion.";
+        promptBase = styleConfig.english_prompt || "";
+      } else {
+        // Fallback por defecto (cuando styleKey no existe en FLYER_STYLES)
+        motionPrompt = "Cinematic steady motion.";
+        promptBase = "Professional commercial video.";
+      }
     }
 
     // VIDEO SPECIFIC CLEANING:
@@ -2215,4 +2217,149 @@ export const quickPackDual = async (
   artDirectionId: number
 ): Promise<PackDualResult> => {
   return generatePackDual(prompt, artDirectionId, '9:16', 'draft');
+};
+
+// ============================================
+// SISTEMA DE VIDEO DRAFT + HD (ECONOMÍA DE API)
+// ============================================
+
+export interface VideoDraftResult {
+  draftId: string;           // ID único del borrador para referencia
+  draftVideoUrl: string;     // URL del video draft (480p, steps reducidos)
+  draftImageUrl: string;     // Imagen estática del draft
+  seed: number;              // Seed usado para consistencia en HD
+  artDirectionId: number;    // ID del rubro
+  createdAt: Date;           // Timestamp de creación
+  costEstimate: number;      // Costo estimado del draft
+}
+
+/**
+ * Genera un video DRAFT económico con steps reducidos
+ * @param prompt - Descripción del producto/servicio
+ * @param artDirectionId - ID del rubro (1-60)
+ * @param aspectRatio - Proporción de la imagen
+ * @returns VideoDraftResult con ID único y URLs del draft
+ */
+export const generateVideoDraft = async (
+  prompt: string,
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16'
+): Promise<VideoDraftResult> => {
+  console.log('🎬 [VideoDraft] Generando video DRAFT económico...');
+  
+  const draftId = `draft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const seed = Math.floor(Math.random() * 2000000000);
+  
+  try {
+    // Generar imagen base para el video (más económica que generar video directamente)
+    const imageResult = await generateImage(
+      prompt,
+      aspectRatio,
+      {
+        styleKey: 'brand_identity',
+        quality: 'draft',
+        seed,
+        artDirectionId
+      }
+    );
+    
+    if (!imageResult.success || !imageResult.imageUrl) {
+      throw new Error(imageResult.error || 'Error generando imagen base para video draft');
+    }
+    
+    // Generar video con parámetros económicos (steps reducidos)
+    // El estilo de video se determina automáticamente desde el artDirection
+    const videoUrl = await generateFlyerVideoVEO(
+      prompt,
+      'brand_identity',
+      aspectRatio,
+      'draft', // Calidad draft
+      false,
+      seed
+    );
+    
+    console.log('✅ [VideoDraft] Draft generado exitosamente:', { draftId, seed });
+    
+    return {
+      draftId,
+      draftVideoUrl: videoUrl,
+      draftImageUrl: imageResult.imageUrl,
+      seed,
+      artDirectionId,
+      createdAt: new Date(),
+      costEstimate: 0.05 // Estimación: $0.05 USD por draft
+    };
+    
+  } catch (error: any) {
+    console.error('❌ [VideoDraft] Error:', error);
+    throw new Error(`Error generando video draft: ${error.message}`);
+  }
+};
+
+/**
+ * Convierte un video draft a HD usando el mismo seed para consistencia
+ * @param draftResult - Resultado del draft anterior
+ * @returns URL del video en HD
+ */
+export const convertDraftToHD = async (
+  draftResult: VideoDraftResult
+): Promise<string> => {
+  console.log('🎬 [VideoHD] Convirtiendo draft a HD...', { draftId: draftResult.draftId });
+  
+  try {
+    // Regenerar video con calidad HD usando el mismo seed
+    const artConfig = getArtDirectionById(draftResult.artDirectionId);
+    const industryContext = artConfig?.prompt || "Professional commercial style";
+    
+    const hdVideoUrl = await generateFlyerVideoVEO(
+      industryContext, // Usar el contexto del rubro
+      'brand_identity',
+      '9:16',
+      'hd', // Calidad HD
+      false,
+      draftResult.seed
+    );
+    
+    console.log('✅ [VideoHD] Conversión a HD completada');
+    
+    return hdVideoUrl;
+    
+  } catch (error: any) {
+    console.error('❌ [VideoHD] Error:', error);
+    throw new Error(`Error convirtiendo a HD: ${error.message}`);
+  }
+};
+
+/**
+ * Genera video completo (draft + opción HD) en un solo llamado
+ * @param prompt - Descripción del producto/servicio
+ * @param artDirectionId - ID del rubro (1-60)
+ * @param aspectRatio - Proporción de la imagen
+ * @param quality - 'draft' | 'hd'
+ * @returns Video con la calidad solicitada
+ */
+export const generateVideoWithQuality = async (
+  prompt: string,
+  artDirectionId: number,
+  aspectRatio: AspectRatio = '9:16',
+  quality: 'draft' | 'hd' = 'draft'
+): Promise<{ videoUrl: string; draftResult?: VideoDraftResult }> => {
+  console.log(`🎬 [generateVideoWithQuality] Generando video ${quality}...`);
+  
+  if (quality === 'draft') {
+    const draftResult = await generateVideoDraft(prompt, artDirectionId, aspectRatio);
+    return {
+      videoUrl: draftResult.draftVideoUrl,
+      draftResult
+    };
+  } else {
+    // Para HD, primero generamos el draft y luego lo convertimos
+    const draftResult = await generateVideoDraft(prompt, artDirectionId, aspectRatio);
+    const hdVideoUrl = await convertDraftToHD(draftResult);
+    
+    return {
+      videoUrl: hdVideoUrl,
+      draftResult
+    };
+  }
 };

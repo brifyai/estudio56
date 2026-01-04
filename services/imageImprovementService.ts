@@ -35,7 +35,7 @@ export const improveUploadedImage = async (
     console.log('🎨 [ImageImprovement] Mejorando imagen subida por usuario...');
     
     const ai = getAiClient();
-    const styleConfig = FLYER_STYLES[styleKey];
+    const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
     
     // Convertir data URL a base64
     const base64Data = uploadedImageDataUrl.split(',')[1];
@@ -162,7 +162,7 @@ export const regenerateWithStyle = async (
     console.log('🎨 [RegenerateWithStyle] Regenerando imagen con nuevo estilo...');
     
     const ai = getAiClient();
-    const styleConfig = FLYER_STYLES[styleKey];
+    const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
     
     // Convertir data URL a base64
     const base64Data = uploadedImageDataUrl.split(',')[1];
