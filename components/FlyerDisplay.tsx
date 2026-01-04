@@ -2174,7 +2174,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       {!showComparison && !showVideoComparison && mediaType !== 'video' && mediaType !== 'story_art' && (
         <div className="w-full max-w-[280px] mt-3">
           {/* Debug info visible */}
-          <div className="text-[10px] text-white/40 mb-2 font-mono">
+          <div className="text-[10px] text-white/40 mb-2 font-mono bg-black/30 p-2 rounded">
             surfaceType: {localSurfaceType} | autoDetected: {autoDetectedSurface || 'none'} | isDraft: {isDraft.toString()}
           </div>
           <StyleFusionSelector
