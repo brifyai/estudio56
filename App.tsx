@@ -168,7 +168,7 @@ const Dashboard: React.FC = () => {
   const [enhancedStyles, setEnhancedStyles] = useState<any>(null);
   
   // NEW: Estados para posición del texto draggable
-  const [textPosition, setTextPosition] = useState<{x: number, y: number}>({ x: 50, y: 50 }); // Porcentajes
+  const [textPosition, setTextPosition] = useState<{x: number, y: number}>({ x: 50, y: 85 }); // Porcentajes - posicionado en la parte inferior
   const [isDragging, setIsDragging] = useState<boolean>(false);
   
   // NEW: Estados para Visual Mimicry
@@ -189,8 +189,8 @@ const Dashboard: React.FC = () => {
   
   // NEW: Estados para estilos manuales del editor de texto
   const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
-    fontSize: 24,
-    fontFamily: 'Inter, sans-serif',
+    fontSize: 16,
+    fontFamily: 'Lato, sans-serif',
     fontWeight: 'bold',
     textColor: '#FFFFFF',
     backgroundColor: 'transparent',
