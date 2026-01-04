@@ -100,6 +100,22 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   
+  // Estado para detectar si estamos en desktop (lg: 1024px o mayor)
+  const [isDesktop, setIsDesktop] = useState(false);
+  
+  // Detectar tamaño de pantalla
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    
+    // Verificar inicialmente
+    checkScreenSize();
+    
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+  
   // Estado para mostrar/ocultar controles de texto en mobile
   const [showTextControls, setShowTextControls] = useState(false);
   const [isDraggingText, setIsDraggingText] = useState(false);
@@ -1959,7 +1975,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       </div>
 
       {/* VISTA DESKTOP/TABLET/CRUDO - Visible solo en lg y superior */}
-      {(viewMode === 'desktop' || viewMode === 'tablet' || viewMode === 'clean') && (
+      {/* En desktop, mostrar vista desktop por defecto (cuando viewMode es 'mobile') */}
+      {(viewMode === 'desktop' || viewMode === 'tablet' || viewMode === 'clean' || (viewMode === 'mobile' && isDesktop)) && (
         <div
           id="flyer-container-desktop"
           className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container hidden lg:block
