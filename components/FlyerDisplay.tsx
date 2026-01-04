@@ -1818,84 +1818,87 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
           <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">
-            <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
-              {/* BORRADOR - Gemini 2.5 Flash */}
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-yellow-400 text-xs font-mono font-bold">BORRADOR</span>
+            {/* Contenedor vertical para alinear imágenes y botón */}
+            <div className="flex flex-col items-center">
+              <div className="flex gap-4 lg:gap-8 items-center justify-center">
+                {/* BORRADOR - Gemini 2.5 Flash */}
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-yellow-400 text-xs font-mono font-bold">BORRADOR</span>
+                  </div>
+                  <div
+                    className={`relative bg-black rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-yellow-500/30 overflow-hidden
+                      ${aspectRatio === '9:16' ? 'w-[200px] h-[356px]' :
+                        aspectRatio === '1:1' ? 'w-[225px] h-[225px]' :
+                        aspectRatio === '4:5' ? 'w-[200px] h-[250px]' :
+                        'w-[200px] h-[356px]'}`}
+                  >
+                    <div className="w-full h-full relative">
+                      <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" crossOrigin="anonymous" />
+                      {renderLogoComparison(true)}
+                      {renderProductComparison(true)}
+                      {renderText(true)}
+                    </div>
+                  </div>
                 </div>
-                <div
-                  className={`relative bg-black rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-yellow-500/30 overflow-hidden
-                    ${aspectRatio === '9:16' ? 'w-[200px] h-[356px]' :
-                      aspectRatio === '1:1' ? 'w-[225px] h-[225px]' :
-                      aspectRatio === '4:5' ? 'w-[200px] h-[250px]' :
-                      'w-[200px] h-[356px]'}`}
-                >
-                  <div className="w-full h-full relative">
-                    <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" crossOrigin="anonymous" />
-                    {renderLogoComparison(true)}
-                    {renderProductComparison(true)}
-                    {renderText(true)}
+                
+                {/* VS */}
+                <div className="flex flex-col items-center">
+                  <span className="text-white/30 text-xl lg:text-3xl font-mono">VS</span>
+                </div>
+                
+                {/* HD - Gemini 3.0 Pro */}
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-emerald-400 text-xs font-mono font-bold">HD</span>
+                  </div>
+                  <div
+                    className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden hd-download-container
+                      ${aspectRatio === '9:16' ? 'w-[320px] h-[569px]' :
+                        aspectRatio === '1:1' ? 'w-[360px] h-[360px]' :
+                        aspectRatio === '4:5' ? 'w-[320px] h-[400px]' :
+                        'w-[320px] h-[569px]'}`}
+                  >
+                    <div className="w-full h-full relative">
+                      <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                      {renderLogoComparison(false)}
+                      {renderProductComparison(false)}
+                      {renderText(false)}
+                    </div>
                   </div>
                 </div>
               </div>
               
-              {/* VS */}
-              <div className="flex flex-col items-center">
-                <span className="text-white/30 text-xl lg:text-3xl font-mono">VS</span>
-              </div>
-              
-              {/* HD - Gemini 3.0 Pro */}
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-emerald-400 text-xs font-mono font-bold">HD</span>
-                </div>
-                <div
-                  className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden hd-download-container
-                    ${aspectRatio === '9:16' ? 'w-[320px] h-[569px]' :
-                      aspectRatio === '1:1' ? 'w-[360px] h-[360px]' :
-                      aspectRatio === '4:5' ? 'w-[320px] h-[400px]' :
-                      'w-[320px] h-[569px]'}`}
-                >
-                  <div className="w-full h-full relative">
-                    <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" crossOrigin="anonymous" />
-                    {renderLogoComparison(false)}
-                    {renderProductComparison(false)}
-                    {renderText(false)}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* BOTÓN DESCARGAR IMAGEN HD - Centrado y debajo de las imágenes */}
-            <div className="mt-8 flex flex-col items-center gap-3">
-              <button
-                onClick={() => {
-                  // Descargar la imagen HD con todos los overlays
-                  const hdContainer = document.querySelector('.hd-download-container');
-                  if (hdContainer) {
-                    downloadElementAsImage(hdContainer as HTMLElement, `estudio-56-hd-${Date.now()}.png`, { scale: 2 });
-                  } else {
-                    console.error('❌ No se encontró el contenedor HD para descargar');
-                    // Fallback: descargar directamente la URL de la imagen HD
-                    if (hdImageUrl) {
-                      const link = document.createElement('a');
-                      link.href = hdImageUrl;
-                      link.download = `estudio-56-hd-${Date.now()}.png`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
+              {/* BOTÓN DESCARGAR IMAGEN HD - Centrado exactamente debajo de las imágenes */}
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <button
+                  onClick={() => {
+                    // Descargar la imagen HD con todos los overlays
+                    const hdContainer = document.querySelector('.hd-download-container');
+                    if (hdContainer) {
+                      downloadElementAsImage(hdContainer as HTMLElement, `estudio-56-hd-${Date.now()}.png`, { scale: 2 });
+                    } else {
+                      console.error('❌ No se encontró el contenedor HD para descargar');
+                      // Fallback: descargar directamente la URL de la imagen HD
+                      if (hdImageUrl) {
+                        const link = document.createElement('a');
+                        link.href = hdImageUrl;
+                        link.download = `estudio-56-hd-${Date.now()}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
                     }
-                  }
-                }}
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>⬇️</span>
-                <span>Descargar imagen HD</span>
-              </button>
-              <p className="text-white/40 text-[10px] font-mono">
-                Descarga la versión HD con texto y logo
-              </p>
+                  }}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>⬇️</span>
+                  <span>Descargar imagen HD</span>
+                </button>
+                <p className="text-white/40 text-[10px] font-mono">
+                  Descarga la versión HD con texto y logo
+                </p>
+              </div>
             </div>
           </div>
         )}
