@@ -29,10 +29,10 @@ import {
 } from "../src/constants/artDirectionIndex";
 
 // ============================================
-// 🛡️ EL ESCUDO DE LIMPIEZA - Negative Prompt Absoluto
-// Se aplica SIEMPRE para evitar textos, logos y deformaciones
+// 🛡️ EL ESCUDO DE FÍSICA Y LIMPIEZA - Negative Prompt Absoluto
+// Se aplica SIEMPRE para evitar textos, logos y deformaciones físicas
 // ============================================
-const NEGATIVE_PROMPT_SHIELD = "text, letters, words, signboards, watermark, logo, typography, distorted characters, subtitles, overlay text, branded graphics, signatures, labels, credits, unrealistic skin, plastic textures, AI-generated look, neon exaggerations, cartoonish features";
+const GLOBAL_NEGATIVE_SHIELD = "text, letters, words, logo, watermark, distorted characters, floating objects, extra limbs, morphing faces, sliding feet, anti-gravity, supernatural movement, distorted physics, glitching bodies, impossible perspectives, unrealistic skin, plastic textures";
 
 // ============================================
 // 📐 CONSTRUCTOR DE PROMPT SEGÚN EL NUEVO ORDEN DE PASOS
@@ -48,7 +48,7 @@ export interface UserConfig {
 }
 
 /**
- * Genera el prompt final blindado con el Escudo de Limpieza
+ * Genera el prompt final blindado con el Escudo de Física y Limpieza
  * @param config - Configuración del usuario con el nuevo orden de pasos
  * @returns Prompt final para generación de imagen/video (SIN texto del Paso 4)
  */
@@ -60,27 +60,14 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
   const industryRubro = artDirectionConfig?.rubro || "General";
   
-  // Estilos de movimiento predefinidos por tipo de rubro
-  const motionStyles: Record<string, string> = {
-    'Retail General': "Subtle camera pan, product reveal shot",
-    'Moda': "Gentle fabric movement, model flow",
-    'Joyas': "Diamond sparkle rotation, light refraction",
-    'Gaming': "RGB pulse, glitch motion effects",
-    'Gastronomía': "Steam rising, sauce drizzle motion",
-    'Wellness': "Soft float, zen movement",
-    'Fitness': "Dynamic action, muscle tension",
-    'Belleza': "Soft glow transition, makeup shimmer",
-    'default': "Cinematic steady motion"
-  };
-  
-  // Buscar estilo de movimiento por rubro
-  let motionStyle = "Cinematic steady motion";
-  for (const [key, value] of Object.entries(motionStyles)) {
-    if (industryRubro.toLowerCase().includes(key.toLowerCase())) {
-      motionStyle = value;
-      break;
-    }
-  }
+  // ============================================
+  // CORE_PHYSICS: Las Leyes de la Física Aplicadas
+  // ============================================
+  const CORE_PHYSICS = `
+    CORE_PHYSICS: All movements must strictly follow the laws of gravity and mass.
+    Subject must stay grounded and anchored to the floor. No floating or morphing.
+    Maintain anatomical consistency. Inertia-based movement only.
+  `;
 
   // ============================================
   // INSTRUCCIÓN DE COMPOSICIÓN (Basada en Paso 3: Formato)
@@ -90,11 +77,11 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   
   if (format === '9:16') {
     // Stories de Instagram/TikTok
-    compositionRule = "Maintain 60-70% vertical focus on the subject. Leave top and bottom areas as clear negative space for external app overlays.";
+    compositionRule = "Vertical focus (60-70% subject). Leave top and bottom as clear negative space for overlays.";
     
     if (contentType === 'video' || contentType === 'story_art') {
       // Video/Story Art en 9:16
-      styleInstruction = "STYLE_INSTRUCTION: Focus on cinematic visual art. Generate a clean professional plate. Keep the subject in the center (60-70% vertical). Absolutely no embedded text or signs. Leave the top and bottom areas as negative space for external app overlays.";
+      styleInstruction = "STYLE_INSTRUCTION: Cinematic visual art plate. Subject centered (60-70% vertical). No embedded text or signs. Top and bottom areas clear for app overlays.";
     } else {
       // Imagen en 9:16
       styleInstruction = "STYLE_INSTRUCTION: Cinematic vertical composition. Clean professional aesthetic. Subject centered with negative space top and bottom.";
@@ -105,7 +92,7 @@ export const generateFinalPrompt = (config: UserConfig): string => {
     
     if (contentType === 'image') {
       // Imagen/Estudio en 1:1
-      styleInstruction = "STYLE_INSTRUCTION: High-end photography. Zero text, zero logos. Clear backgrounds. Focus on product textures and lighting. Ensure no writing appears on walls or surfaces.";
+      styleInstruction = "STYLE_INSTRUCTION: High-end photography. Zero text, zero logos. Clear backgrounds. Focus on product textures and lighting.";
     } else {
       styleInstruction = "STYLE_INSTRUCTION: Professional square composition. Clean aesthetic with balanced subject placement.";
     }
@@ -124,27 +111,49 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   // ============================================
   const promptParts: string[] = [];
 
+  // Paso 1: Objetivo + CORE_PHYSICS (Leyes de la Física)
+  promptParts.push(`OBJECTIVE: Professional visual asset for ${description}.`);
+  promptParts.push(CORE_PHYSICS);
+  
   // REGLA DE ORO: NO TEXTO (siempre presente)
-  promptParts.push(`OBJECTIVE: Generate a professional visual asset for ${description}.`);
-  promptParts.push(`STRICT_RULE: Zero text. Zero logos. No writing on walls, clothing, or surfaces. ABSOLUTELY NO TEXT WHATSOEVER.`);
+  promptParts.push(`STRICT_RULE: Zero text. Zero logos. No writing on any surface.`);
 
-  // DIRECCIÓN DE ARTE (Basado en el Rubro 1-60)
-  promptParts.push(`VISUAL_STYLE: ${industryContext}.`);
-  promptParts.push(`REALISM: Use organic lighting and matte textures. Avoid "AI-look" or neon exaggerations.`);
+  // Paso 2: DIRECCIÓN DE ARTE (Basado en el Rubro 1-60)
+  promptParts.push(`VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.`);
 
-  // COMPOSICIÓN (Basada en Paso 3: Formato)
+  // Paso 3: COMPOSICIÓN (Basada en Formato)
   promptParts.push(`COMPOSITION: ${compositionRule}`);
 
   // Estilo específico según formato y contenido
   promptParts.push(styleInstruction);
 
-  // MOTIÓN (Solo si es video/story art - Paso 2)
+  // Paso 2 (cont): MOTIÓN (Solo si es video/story art)
   if (contentType === 'video' || contentType === 'story_art') {
-    promptParts.push(`MOTION: ${motionStyle}`);
+    const motionStyles: Record<string, string> = {
+      'Retail General': "Subtle camera pan, product reveal shot",
+      'Moda': "Gentle fabric movement, model flow",
+      'Joyas': "Diamond sparkle rotation, light refraction",
+      'Gaming': "RGB pulse, glitch motion effects",
+      'Gastronomía': "Steam rising, sauce drizzle motion",
+      'Wellness': "Soft float, zen movement",
+      'Fitness': "Dynamic action, muscle tension",
+      'Belleza': "Soft glow transition, makeup shimmer",
+      'default': "Cinematic steady motion"
+    };
+    
+    let motionStyle = "Cinematic steady motion";
+    for (const [key, value] of Object.entries(motionStyles)) {
+      if (industryRubro.toLowerCase().includes(key.toLowerCase())) {
+        motionStyle = value;
+        break;
+      }
+    }
+    
+    promptParts.push(`MOTION_DYNAMICS: ${motionStyle}. Inertia-based movement.`);
   }
 
-  // NEGATIVE PROMPT (El Escudo de Limpieza - siempre aplicado)
-  promptParts.push(`NEGATIVE_PROMPT: ${NEGATIVE_PROMPT_SHIELD}`);
+  // NEGATIVE PROMPT (El Escudo de Física y Limpieza - siempre aplicado)
+  promptParts.push(`NEGATIVE_PROMPT: ${GLOBAL_NEGATIVE_SHIELD}`);
 
   return promptParts.join('\n\n');
 };
