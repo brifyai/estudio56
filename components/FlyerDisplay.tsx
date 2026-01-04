@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo } from '../types';
-import { downloadComposedImage, getDimensionsForAspectRatio } from '../services/compositionExportService';
+import { downloadComposedImage, getDimensionsForAspectRatio, composeAndExport } from '../services/compositionExportService';
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
 import {
   processVideoWithOverlays,
@@ -1865,24 +1865,54 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               {/* BOTÓN DESCARGAR IMAGEN HD - Centrado exactamente debajo de las imágenes */}
               <div className="mt-6 flex flex-col items-center gap-3">
                 <button
-                  onClick={() => {
-                    // Descargar directamente la imagen HD (ya tiene texto y logo quemados)
+                  onClick={async () => {
+                    // Componer imagen con todos los overlays usando canvas
                     if (hdImageUrl) {
-                      console.log('📥 Descargando imagen HD:', hdImageUrl);
+                      console.log('📥 Componiendo imagen HD con overlays...');
                       
-                      // Crear link de descarga directo
-                      const link = document.createElement('a');
-                      link.href = hdImageUrl;
-                      link.download = `estudio-56-hd-${Date.now()}.png`;
-                      link.target = '_blank';
-                      link.rel = 'noopener noreferrer';
-                      
-                      // Agregar al DOM, hacer click, y remover
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      
-                      console.log('✅ Descarga iniciada');
+                      try {
+                        // Usar composeAndExport para generar imagen completa con logo y texto
+                        const composedImageUrl = await composeAndExport({
+                          imageUrl: hdImageUrl,
+                          logoUrl: logoUrl,
+                          productUrl: productUrl,
+                          overlayText: localText || overlayText || initialOverlayText || '',
+                          textPosition: textPosition,
+                          textStyles: displayStyles,
+                          logoPosition: logoPosition,
+                          productPosition: productPosition,
+                          aspectRatio: aspectRatio,
+                          quality: 'hd',
+                          containerWidth: getDimensionsForAspectRatio(aspectRatio, 'hd').width,
+                          containerHeight: getDimensionsForAspectRatio(aspectRatio, 'hd').height
+                        });
+                        
+                        // Descargar la imagen compuesta
+                        const link = document.createElement('a');
+                        link.href = composedImageUrl;
+                        link.download = `estudio-56-hd-${Date.now()}.png`;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // Limpiar URL temporal
+                        setTimeout(() => URL.revokeObjectURL(composedImageUrl), 1000);
+                        
+                        console.log('✅ Imagen HD con overlays descargada exitosamente');
+                      } catch (error) {
+                        console.error('❌ Error componiendo imagen:', error);
+                        // Fallback: descargar directamente
+                        const link = document.createElement('a');
+                        link.href = hdImageUrl;
+                        link.download = `estudio-56-hd-${Date.now()}.png`;
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
                     } else {
                       console.error('❌ No hay URL de imagen HD disponible');
                       Swal.fire({
