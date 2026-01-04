@@ -1013,10 +1013,10 @@ export const generateImage = async (
     if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
       console.log(`🎬 [Story Art] Usando Dirección de Arte Profesional - Rubro ID: ${artDirectionId}`);
       
-      // Usar el motor de Dirección de Arte Profesional
+      // Usar buildAgencyPrompt para transformar el prompt con la dirección de arte profesional
       finalPrompt = buildAgencyPrompt(prompt, artDirectionId);
       
-      console.log('🎯 [Story Art] Prompt de agencia generado:', finalPrompt.substring(0, 150) + '...');
+      console.log('🎨 [Story Art] Prompt transformado con buildAgencyPrompt:', finalPrompt.substring(0, 200) + '...');
     } else {
       // Modo estándar: Mejorar el prompt genérico
       const enhancedPrompt = await enhancePrompt(prompt, styleKey);
@@ -1191,6 +1191,11 @@ export const generateFlyerImage = async (
       activeStylePrompt = artConfig.prompt;
       activeStyleLabel = artConfig.rubro;
       console.log(`🎨 [Story Art] Usando dirección de arte: ${artConfig.rubro} (ID: ${artDirectionId})`);
+      
+      // CRITICAL FIX: Transformar el enhancedDescription con buildAgencyPrompt
+      // Esto asegura que el prompt enviado a Gemini incluya la capa de agencia completa
+      enhancedDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
+      console.log('🎯 [Story Art] Prompt transformado con buildAgencyPrompt:', enhancedDescription.substring(0, 200) + '...');
     } else {
       // Fallback a estilo normal si no encuentra la configuración
       activeStylePrompt = styleConfig.english_prompt;
