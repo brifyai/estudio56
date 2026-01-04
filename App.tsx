@@ -1044,6 +1044,7 @@ const handleGenerate = async () => {
          artDirectionId = styleToIndustryMap[styleKeyToMap] || 1; // Default a Retail General
          
          console.log(`🎨 [Story Art] Mapeando styleKey "${styleKeyToMap}" a industryId: ${artDirectionId}`);
+         console.log(`📋 [Story Art] Modo: ${mediaType} | artDirectionId: ${artDirectionId}`);
        }
        
        const result = await generateFlyerImage(
