@@ -953,6 +953,21 @@ const handleGenerate = async () => {
            // Corporate → Servicios Profesionales (33)
            'corporate': 33,
            
+           // Indie/Barbería (34)
+           'indie_grunge': 34,
+           
+           // Summer/Playa → Viajes/Turismo (29)
+           'summer_beach': 29,
+           
+           // Art/Creatividad → Arte/Creatividad (38)
+           'art_double_exp': 38,
+           
+           // Retro/Vintage → Regalería (52)
+           'retro_vintage': 52,
+           
+           // Seasonal/Holiday → Eventos (30)
+           'seasonal_holiday': 30,
+           
            // Default → Retail General (1)
            'brand_identity': 1
          };
@@ -1096,7 +1111,9 @@ const handleGenerate = async () => {
                 'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
                 'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
                 'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
-                'eco_organic': 52, 'urban_night': 29, 'corporate': 33, 'brand_identity': 1
+                'eco_organic': 52, 'urban_night': 29, 'corporate': 33,
+                'indie_grunge': 34, 'summer_beach': 29, 'art_double_exp': 38,
+                'retro_vintage': 52, 'seasonal_holiday': 30, 'brand_identity': 1
               };
               const styleKeyToMap = detectedStyleKey || styleKey;
               upgradeArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
@@ -1188,14 +1205,16 @@ const handleGenerate = async () => {
          // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
          let refineArtDirectionId: number | undefined = undefined;
          if (mediaType === 'story_art') {
-           const styleToIndustryMap: Record<string, number> = {
-             'retail_sale': 1, 'gastronomy': 22, 'wellness_zen': 24, 'pilates': 24,
-             'sport_gritty': 21, 'aesthetic_min': 41, 'medical_clean': 24,
-             'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
-             'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
-             'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
-             'eco_organic': 52, 'urban_night': 29, 'corporate': 33, 'brand_identity': 1
-           };
+          const styleToIndustryMap: Record<string, number> = {
+            'retail_sale': 1, 'gastronomy': 22, 'wellness_zen': 24, 'pilates': 24,
+            'sport_gritty': 21, 'aesthetic_min': 41, 'medical_clean': 24,
+            'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
+            'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
+            'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
+            'eco_organic': 52, 'urban_night': 29, 'corporate': 33,
+            'indie_grunge': 34, 'summer_beach': 29, 'art_double_exp': 38,
+            'retro_vintage': 52, 'seasonal_holiday': 30, 'brand_identity': 1
+          };
            const styleKeyToMap = detectedStyleKey || styleKey;
            refineArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
            console.log(`🎨 [Story Art Refine] industryId: ${refineArtDirectionId}`);
