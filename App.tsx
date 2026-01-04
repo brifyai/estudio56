@@ -876,33 +876,108 @@ const handleGenerate = async () => {
         console.log('📸 product_study - Usando imagen subida por el usuario');
         return;
       } else if (mediaType === 'image' || mediaType === 'story_art') {
-        setStatus({
-          isLoading: true,
-          step: 'rendering',
-          message: imageQuality === 'draft' ? ':: GENERANDO_PIXELES_BORRADOR ::' : ':: RENDERIZANDO_TEXTURAS_HD ::'
-        });
-        console.log('🎨 Generating image with aspectRatio:', aspectRatio);
-        
-        // NEW: Determinar si hay texto extraído automáticamente
-        const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
-        const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
-        
-        if (autoExtractedText) {
-          console.log('🤖 USANDO TEXTO AUTOMÁTICO EXTRAÍDO:', autoExtractedText);
-        }
-        
-        const result = await generateFlyerImage(
-          enhancedPrompt,
-          effectiveStyleKey,
-          aspectRatio,
-          imageQuality,
-          newSeed,
-          effectiveCustomPrompt,
-          hasProductOverlay,
-          true, // enableIntelligentTextStyles
-          autoExtractedText,
-          autoTextStyle
-        );
+       setStatus({
+         isLoading: true,
+         step: 'rendering',
+         message: imageQuality === 'draft' ? ':: GENERANDO_PIXELES_BORRADOR ::' : ':: RENDERIZANDO_TEXTURAS_HD ::'
+       });
+       console.log('🎨 Generating image with aspectRatio:', aspectRatio, '| mediaType:', mediaType);
+       
+       // NEW: Determinar si hay texto extraído automáticamente
+       const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
+       const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
+       
+       if (autoExtractedText) {
+         console.log('🤖 USANDO TEXTO AUTOMÁTICO EXTRAÍDO:', autoExtractedText);
+       }
+       
+       // NEW: Determinar artDirectionId para Story Art
+       // Mapeo de FlyerStyleKey a industryId de Dirección de Arte
+       let artDirectionId: number | undefined = undefined;
+       
+       if (mediaType === 'story_art') {
+         // Mapeo de estilos detectados a rubros de Dirección de Arte
+         const styleToIndustryMap: Record<string, number> = {
+           // Retail → Retail General (1)
+           'retail_sale': 1,
+           
+           // Gastronomy → Restaurantes (22)
+           'gastronomy': 22,
+           
+           // Wellness → Salud/Bienestar (24)
+           'wellness_zen': 24,
+           'pilates': 24,
+           
+           // Fitness → Fitness/Gimnasio (21)
+           'sport_gritty': 21,
+           
+           // Beauty → Salón de Belleza (41)
+           'aesthetic_min': 41,
+           
+           // Medical → Salud/Medicina (24)
+           'medical_clean': 24,
+           
+           // Tech → Tecnología/Startups (38)
+           'tech_saas': 38,
+           
+           // Education → Educación/Cursos (25)
+           'edu_sketch': 25,
+           
+           // Real Estate → Inmobiliaria (26)
+           'realestate_night': 26,
+           
+           // Luxury → Joyería (55) - closest match
+           'luxury_gold': 55,
+           
+           // Automotive → Automotriz (27)
+           'auto_metallic': 27,
+           
+           // Church → Servicios Profesionales (33) - closest spiritual match
+           'worship_sky': 33,
+           
+           // Kids → Eventos/Bodas (30) - closest kids events match
+           'kids_fun': 30,
+           
+           // Podcast → Música/Entretención (35)
+           'podcast_mic': 35,
+           
+           // Gaming → Gaming (13)
+           'gamer_stream': 13,
+           
+           // Eco → Verdulería (52) - closest organic match
+           'eco_organic': 52,
+           
+           // Urban Night → Viajes/Turismo (29) - closest entertainment match
+           'urban_night': 29,
+           
+           // Corporate → Servicios Profesionales (33)
+           'corporate': 33,
+           
+           // Default → Retail General (1)
+           'brand_identity': 1
+         };
+         
+         // Usar detectedStyleKey o effectiveStyleKey como fallback
+         const styleKeyToMap = detectedStyleKey || effectiveStyleKey;
+         artDirectionId = styleToIndustryMap[styleKeyToMap] || 1; // Default a Retail General
+         
+         console.log(`🎨 [Story Art] Mapeando styleKey "${styleKeyToMap}" a industryId: ${artDirectionId}`);
+       }
+       
+       const result = await generateFlyerImage(
+         enhancedPrompt,
+         effectiveStyleKey,
+         aspectRatio,
+         imageQuality,
+         newSeed,
+         effectiveCustomPrompt,
+         hasProductOverlay,
+         true, // enableIntelligentTextStyles
+         autoExtractedText,
+         autoTextStyle,
+         undefined, // draftImageForHD
+         artDirectionId // NEW: artDirectionId para Story Art (1-60)
+       );
         console.log('✅ Image generated:', result.imageDataUrl?.substring(0, 50) + '...');
         console.log('🎨 Análisis completo:', {
           imageAnalysis: result.imageAnalysis ? 'Disponible' : 'No disponible',
@@ -1012,6 +1087,22 @@ const handleGenerate = async () => {
             const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
             const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
             
+            // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
+            let upgradeArtDirectionId: number | undefined = undefined;
+            if (mediaType === 'story_art') {
+              const styleToIndustryMap: Record<string, number> = {
+                'retail_sale': 1, 'gastronomy': 22, 'wellness_zen': 24, 'pilates': 24,
+                'sport_gritty': 21, 'aesthetic_min': 41, 'medical_clean': 24,
+                'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
+                'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
+                'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
+                'eco_organic': 52, 'urban_night': 29, 'corporate': 33, 'brand_identity': 1
+              };
+              const styleKeyToMap = detectedStyleKey || styleKey;
+              upgradeArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
+              console.log(`🎨 [Story Art HD] industryId: ${upgradeArtDirectionId}`);
+            }
+            
             // NEW: Pasar imagen de borrador como referencia para mantener consistencia
             const result = await generateFlyerImage(
               enhancedPrompt,
@@ -1024,7 +1115,8 @@ const handleGenerate = async () => {
               true, // enableIntelligentTextStyles
               autoExtractedText,
               autoTextStyle,
-              draftImageUrl || undefined // Usar borrador como referencia para HD
+              draftImageUrl || undefined, // Usar borrador como referencia para HD
+              upgradeArtDirectionId // NEW: artDirectionId para Story Art
             );
             url = result.imageDataUrl;
             setIntelligentTextStyles(result.intelligentTextStyles);
@@ -1093,6 +1185,22 @@ const handleGenerate = async () => {
          const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
          const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
          
+         // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
+         let refineArtDirectionId: number | undefined = undefined;
+         if (mediaType === 'story_art') {
+           const styleToIndustryMap: Record<string, number> = {
+             'retail_sale': 1, 'gastronomy': 22, 'wellness_zen': 24, 'pilates': 24,
+             'sport_gritty': 21, 'aesthetic_min': 41, 'medical_clean': 24,
+             'tech_saas': 38, 'edu_sketch': 25, 'realestate_night': 26,
+             'luxury_gold': 55, 'auto_metallic': 27, 'worship_sky': 33,
+             'kids_fun': 30, 'podcast_mic': 35, 'gamer_stream': 13,
+             'eco_organic': 52, 'urban_night': 29, 'corporate': 33, 'brand_identity': 1
+           };
+           const styleKeyToMap = detectedStyleKey || styleKey;
+           refineArtDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
+           console.log(`🎨 [Story Art Refine] industryId: ${refineArtDirectionId}`);
+         }
+         
          const result = await generateFlyerImage(
            newPrompt,
            styleKey,
@@ -1103,7 +1211,9 @@ const handleGenerate = async () => {
            hasProductOverlay,
            true, // enableIntelligentTextStyles
            autoExtractedText,
-           autoTextStyle
+           autoTextStyle,
+           undefined, // draftImageForHD
+           refineArtDirectionId // NEW: artDirectionId para Story Art
          );
          url = result.imageDataUrl;
          setIntelligentTextStyles(result.intelligentTextStyles);

@@ -1167,19 +1167,45 @@ export const generateFlyerImage = async (
   aspectRatio: AspectRatio,
   quality: ImageQuality,
   seed: number,
-  customStylePrompt?: string, // NEW: Optional override for extracted style
-  hasProductOverlay: boolean = false, // NEW: User uploaded their own product
-  enableIntelligentTextStyles: boolean = true, // NEW: Enable AI analysis for text styles
-  autoExtractedText?: string, // NEW: Text automatically extracted from URL
-  autoTextStyle?: string, // NEW: Style for automatically extracted text
-  draftImageForHD?: string // NEW: Optional draft image to use as reference for HD
+  customStylePrompt?: string, // Optional override for extracted style
+  hasProductOverlay: boolean = false, // User uploaded their own product
+  enableIntelligentTextStyles: boolean = true, // Enable AI analysis for text styles
+  autoExtractedText?: string, // Text automatically extracted from URL
+  autoTextStyle?: string, // Style for automatically extracted text
+  draftImageForHD?: string, // Optional draft image to use as reference for HD
+  artDirectionId?: number // NEW: ID del rubro (1-60) para Story Art
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
   const styleConfig = FLYER_STYLES[styleKey];
   
-  // DETERMINE STYLE PROMPT:
-  let activeStylePrompt = styleConfig.english_prompt;
-  let activeStyleLabel = styleConfig.label;
+  // ============================================
+  // MODO STORY ART: Usar Dirección de Arte Profesional
+  // ============================================
+  let activeStylePrompt: string;
+  let activeStyleLabel: string;
+  
+  if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
+    // Story Art: Usar dirección de arte específica del rubro
+    const artConfig = getArtDirectionById(artDirectionId);
+    if (artConfig) {
+      activeStylePrompt = artConfig.prompt;
+      activeStyleLabel = artConfig.rubro;
+      console.log(`🎨 [Story Art] Usando dirección de arte: ${artConfig.rubro} (ID: ${artDirectionId})`);
+    } else {
+      // Fallback a estilo normal si no encuentra la configuración
+      activeStylePrompt = styleConfig.english_prompt;
+      activeStyleLabel = styleConfig.label;
+      console.warn(`⚠️ [Story Art] No se encontró config para ID: ${artDirectionId}, usando fallback`);
+    }
+  } else {
+    // Modo normal: Usar estilo genérico
+    activeStylePrompt = styleConfig.english_prompt;
+    activeStyleLabel = styleConfig.label;
+  }
+  
+  // DETERMINE STYLE PROMPT (mantener compatibilidad)
+  // let activeStylePrompt = styleConfig.english_prompt;
+  // let activeStyleLabel = styleConfig.label;
 
   // PRIORITY: Use customStylePrompt if available (from URL analysis)
   if (customStylePrompt && customStylePrompt.trim()) {

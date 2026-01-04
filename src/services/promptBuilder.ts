@@ -14,6 +14,7 @@ import {
   FORBIDDEN_KEYWORDS,
   type RealityMode
 } from '../constants/promptModifiers';
+// IMPORTAR DEL ÍNDICE MAESTRO que tiene los 60 rubros
 import {
   ART_DIRECTION_PROMPTS,
   AGENCY_NEGATIVE_PROMPT,
@@ -24,6 +25,10 @@ import {
   isValidArtDirectionId,
   type ArtDirectionInput
 } from '../constants/artDirection';
+
+// También importar las fases 2 y 3
+import { ART_DIRECTION_PHASE2 } from '../constants/artDirectionPhase2';
+import { ART_DIRECTION_PHASE3 } from '../constants/artDirectionPhase3';
 
 /**
  * Input para construir un prompt
@@ -215,21 +220,94 @@ export function buildArtDirectionPromptByName(
  * Obtiene la configuración de dirección de arte por ID
  */
 export function getArtDirectionConfig(industryId: number): ArtDirectionConfig | null {
-  return getArtDirectionById(industryId);
+  // Primero buscar en el índice maestro (1-60)
+  const masterConfig = getArtDirectionById(industryId);
+  if (masterConfig) {
+    return masterConfig;
+  }
+  
+  // Si no está en el índice maestro, buscar en las fases
+  if (industryId >= 21 && industryId <= 40) {
+    const phase2 = ART_DIRECTION_PHASE2[industryId];
+    if (phase2) {
+      return {
+        id: industryId,
+        rubro: phase2.rubro,
+        prompt: phase2.artDirection,
+        negativePrompt: phase2.negativePrompt,
+        aspectRatio: '9:16',
+        style: `phase2-${industryId}`
+      };
+    }
+  }
+  
+  if (industryId >= 41 && industryId <= 60) {
+    const phase3 = ART_DIRECTION_PHASE3[industryId];
+    if (phase3) {
+      return {
+        id: industryId,
+        rubro: phase3.rubro,
+        prompt: phase3.artDirection,
+        negativePrompt: phase3.negativePrompt,
+        aspectRatio: '9:16',
+        style: `phase3-${industryId}`
+      };
+    }
+  }
+  
+  return null;
 }
 
 /**
  * Verifica si un ID de rubro tiene dirección de arte disponible
  */
 export function hasArtDirection(industryId: number): boolean {
-  return isValidArtDirectionId(industryId);
+  // Verificar en índice maestro (1-20)
+  if (isValidArtDirectionId(industryId)) {
+    return true;
+  }
+  // Verificar en fases 2 y 3
+  if (industryId >= 21 && industryId <= 40 && ART_DIRECTION_PHASE2[industryId]) {
+    return true;
+  }
+  if (industryId >= 41 && industryId <= 60 && ART_DIRECTION_PHASE3[industryId]) {
+    return true;
+  }
+  return false;
 }
 
 /**
  * Obtiene todos los rubros disponibles con dirección de arte
  */
 export function getAvailableArtDirections(): ArtDirectionConfig[] {
-  return Object.values(ART_DIRECTION_PROMPTS);
+  // Combinar las 3 fases
+  const all: ArtDirectionConfig[] = Object.values(ART_DIRECTION_PROMPTS);
+  
+  // Agregar fase 2
+  Object.entries(ART_DIRECTION_PHASE2).forEach(([key, value]) => {
+    all.push({
+      id: Number(key),
+      rubro: value.rubro,
+      prompt: value.artDirection,
+      negativePrompt: value.negativePrompt,
+      aspectRatio: '9:16',
+      style: `phase2-${key}`
+    });
+  });
+  
+  // Agregar fase 3
+  Object.entries(ART_DIRECTION_PHASE3).forEach(([key, value]) => {
+    all.push({
+      id: Number(key),
+      rubro: value.rubro,
+      prompt: value.artDirection,
+      negativePrompt: value.negativePrompt,
+      aspectRatio: '9:16',
+      style: `phase3-${key}`
+    });
+  });
+  
+  return all;
 }
 
 /**
