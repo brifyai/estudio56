@@ -1640,7 +1640,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       <div className="w-full flex flex-col items-center justify-start px-2 md:px-0 pt-2 md:py-12 relative z-0">
         {/* VIDEO COMPARISON MODE - SIDE BY SIDE */}
         {showVideoComparison && !isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
-          <div className="absolute inset-0 z-40 bg-checkered flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">
             <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* VIDEO BORRADOR */}
               <div className="flex flex-col items-center">
@@ -1713,7 +1713,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
-          <div className="absolute inset-0 z-40 bg-checkered flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">
             <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* BORRADOR - Gemini 2.5 Flash */}
               <div className="flex flex-col items-center">
