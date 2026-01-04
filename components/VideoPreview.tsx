@@ -30,14 +30,16 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
   isConvertingHD = false,
   hdVideoUrl
 }) => {
-  const [showHD, setShowHD] = useState(false);
+  const [isComparing, setIsComparing] = useState(false);
+  const [activeCompareTab, setActiveCompareTab] = useState<'draft' | 'hd'>('draft');
 
   const handleConvertToHD = async () => {
     if (!onConvertToHD) return;
     
     try {
-      const hdUrl = await onConvertToHD();
-      setShowHD(true);
+      await onConvertToHD();
+      setIsComparing(true);
+      setActiveCompareTab('hd');
       
       await Swal.fire({
         title: '✨ Video HD Listo',
@@ -65,66 +67,154 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
     link.click();
   };
 
-  const currentVideoUrl = showHD ? hdVideoUrl : draftVideoUrl;
   const isHDReady = !!hdVideoUrl;
 
+  // Modo comparador: muestra ambos videos lado a lado
+  if (isComparing && hdVideoUrl) {
+    return (
+      <div className="video-preview-container space-y-4">
+        {/* Header del comparador */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              COMPARADOR
+            </div>
+            <span className="text-xs text-white/50 font-mono">
+              ID: {draftId}
+            </span>
+          </div>
+          <button
+            onClick={() => setIsComparing(false)}
+            className="text-xs text-white/50 hover:text-white transition-colors"
+          >
+            ✕ Cerrar comparador
+          </button>
+        </div>
+
+        {/* Tabs de comparación */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveCompareTab('draft')}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              activeCompareTab === 'draft'
+                ? 'bg-blue-500/30 text-blue-300 border border-blue-500/50'
+                : 'bg-white/5 text-white/60 hover:bg-white/10'
+            }`}
+          >
+            📹 Draft 480p
+          </button>
+          <button
+            onClick={() => setActiveCompareTab('hd')}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+              activeCompareTab === 'hd'
+                ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50'
+                : 'bg-white/5 text-white/60 hover:bg-white/10'
+            }`}
+          >
+            ✨ HD 1080p+
+          </button>
+        </div>
+
+        {/* Videos lado a lado */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Draft */}
+          <div className={`relative rounded-xl overflow-hidden ${activeCompareTab === 'draft' ? 'ring-2 ring-blue-500' : ''}`}>
+            <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-blue-500/90 text-white text-xs font-bold rounded">
+              DRAFT
+            </div>
+            <video
+              src={draftVideoUrl || ''}
+              controls
+              className="w-full aspect-[9/16]"
+              poster={draftImageUrl || undefined}
+            />
+          </div>
+
+          {/* HD */}
+          <div className={`relative rounded-xl overflow-hidden ${activeCompareTab === 'hd' ? 'ring-2 ring-amber-500' : ''}`}>
+            <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-amber-500/90 text-white text-xs font-bold rounded">
+              HD
+            </div>
+            <video
+              src={hdVideoUrl}
+              controls
+              className="w-full aspect-[9/16]"
+            />
+          </div>
+        </div>
+
+        {/* Info de costos */}
+        <div className="bg-white/5 rounded-lg p-3 text-xs text-white/60">
+          <div className="flex justify-between">
+            <span>Draft: $0.05 USD</span>
+            <span>HD: $0.55 USD</span>
+            <span>Ahorro: $0.50 USD (generando draft primero)</span>
+          </div>
+        </div>
+
+        {/* Acciones */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleDownload(draftVideoUrl!, 'draft')}
+            className="flex-1 py-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <span>⬇️</span>
+            <span>Descargar Draft</span>
+          </button>
+          <button
+            onClick={() => handleDownload(hdVideoUrl, 'hd')}
+            className="flex-1 py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <span>⬇️</span>
+            <span>Descargar HD</span>
+          </button>
+        </div>
+
+        <style>{`
+          .video-preview-container {
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Modo simple: solo video draft con botón para convertir
   return (
     <div className="video-preview-container space-y-4">
-      {/* Header con estado */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-            showHD 
-              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' 
-              : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-          }`}>
-            {showHD ? 'HD 1080p+' : 'DRAFT 480p'}
+          <div className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+            DRAFT 480p
           </div>
-          
           {draftId && (
             <span className="text-xs text-white/50 font-mono">
               ID: {draftId}
             </span>
           )}
-          
-          {seed && (
-            <span className="text-xs text-white/30 font-mono">
-              Seed: {seed}
-            </span>
-          )}
         </div>
-
-        {/* Indicador de calidad */}
-        {isHDReady && !showHD && (
-          <div className="text-xs text-amber-400">
-            ✓ HD disponible
-          </div>
-        )}
       </div>
 
       {/* Video Player */}
-      {currentVideoUrl ? (
+      {draftVideoUrl ? (
         <div className="relative rounded-xl overflow-hidden bg-black/40 border border-white/10">
           <video
-            src={currentVideoUrl}
+            src={draftVideoUrl}
             controls
             className="w-full aspect-[9/16] max-h-[60vh]"
             poster={draftImageUrl || undefined}
           />
-          
-          {/* Badge de calidad en el video */}
           <div className="absolute top-3 right-3">
-            <div className={`px-2 py-1 rounded text-xs font-bold ${
-              showHD 
-                ? 'bg-amber-500/90 text-white' 
-                : 'bg-blue-500/90 text-white'
-            }`}>
-              {showHD ? 'HD' : 'DRAFT'}
+            <div className="px-2 py-1 rounded text-xs font-bold bg-blue-500/90 text-white">
+              DRAFT
             </div>
           </div>
         </div>
       ) : (
-        /* Placeholder cuando no hay video */
         <div className="aspect-[9/16] max-h-[60vh] bg-black/40 border border-white/10 rounded-xl flex items-center justify-center">
           <div className="text-center text-white/50">
             <div className="text-4xl mb-2">🎬</div>
@@ -137,76 +227,60 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
       {draftId && (
         <div className="bg-white/5 rounded-lg p-3 text-xs text-white/60">
           <div className="flex justify-between">
-            <span>Calidad: {showHD ? '1080p+ (Alta)' : '480p (Económica)'}</span>
-            <span>Costo: {showHD ? '$$$' : '$0.05 USD'}</span>
+            <span>Calidad: 480p (Económica)</span>
+            <span>Costo: $0.05 USD</span>
           </div>
         </div>
       )}
 
       {/* Acciones */}
       <div className="flex gap-3">
-        {/* Botón Descargar */}
-        {currentVideoUrl && (
+        {draftVideoUrl && (
           <button
-            onClick={() => handleDownload(currentVideoUrl!, showHD ? 'hd' : 'draft')}
+            onClick={() => handleDownload(draftVideoUrl, 'draft')}
             className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-all flex items-center justify-center gap-2"
           >
             <span>⬇️</span>
-            <span>Descargar {showHD ? 'HD' : 'Draft'}</span>
+            <span>Descargar Draft</span>
           </button>
         )}
 
-        {/* Botón Convertir a HD */}
-        {!showHD && isHDReady && onConvertToHD && (
-          <button
-            onClick={handleConvertToHD}
-            disabled={isConvertingHD}
-            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isConvertingHD ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Convirtiendo...</span>
-              </>
-            ) : (
-              <>
-                <span>✨</span>
-                <span>Convertir a HD</span>
-              </>
-            )}
-          </button>
-        )}
-
-        {/* Botón Ver Draft (si está en HD) */}
-        {showHD && draftVideoUrl && (
-          <button
-            onClick={() => setShowHD(false)}
-            className="flex-1 py-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 font-medium transition-all flex items-center justify-center gap-2"
-          >
-            <span>👀</span>
-            <span>Ver Draft</span>
-          </button>
-        )}
+        {/* Botón Generar Video HD */}
+        <button
+          onClick={handleConvertToHD}
+          disabled={isConvertingHD || !onConvertToHD}
+          className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isConvertingHD ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Convirtiendo...</span>
+            </>
+          ) : (
+            <>
+              <span>✨</span>
+              <span>Generar Video HD</span>
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Comparación de calidad */}
-      {!showHD && isHDReady && (
-        <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">💡</div>
-            <div>
-              <div className="text-amber-300 font-medium text-sm mb-1">
-                ¿Quieres mejor calidad?
-              </div>
-              <div className="text-white/60 text-xs">
-                Convierte a HD para obtener video en 1080p+ con más detalles y mejor iluminación.
-                <br />
-                <span className="text-amber-400">Costo adicional: ~$0.50 USD</span>
-              </div>
+      {/* Sugerencia */}
+      <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4">
+        <div className="flex items-start gap-3">
+          <div className="text-2xl">💡</div>
+          <div>
+            <div className="text-amber-300 font-medium text-sm mb-1">
+              ¿Quieres mejor calidad?
+            </div>
+            <div className="text-white/60 text-xs">
+              Genera Video HD para obtener 1080p+ con más detalles y mejor iluminación.
+              <br />
+              <span className="text-amber-400">Costo adicional: ~$0.50 USD</span>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       <style>{`
         .video-preview-container {
