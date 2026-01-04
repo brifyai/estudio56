@@ -1719,14 +1719,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         )}
         
-        {/* IMAGE COMPARISON MODE - MOBILE: Draft arriba, HD abajo | DESKTOP: Side by side */}
+        {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
           <div className="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-4">
-            <div className={`
-              flex items-center justify-center w-full h-full max-w-6xl
-              ${/* Mobile: vertical (col) | Desktop: horizontal (row) */ ''}
-              lg:flex-row flex-col gap-4 lg:gap-8
-            >
+            <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* BORRADOR - Gemini 2.5 Flash */}
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-2 mb-2">
@@ -1748,9 +1744,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 </div>
               </div>
               
-              {/* VS - Mobile: horizontal line | Desktop: circle */}
+              {/* VS */}
               <div className="flex flex-col items-center">
-                <span className="text-white/30 font-mono lg:text-xl px-8 py-2 border-t lg:border-t-0 lg:border-l border-white/20 w-full lg:w-auto text-center">VS</span>
+                <span className="text-white/30 text-xl lg:text-3xl font-mono">VS</span>
               </div>
               
               {/* HD - Gemini 3.0 Pro */}
