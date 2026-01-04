@@ -6,6 +6,8 @@ import { analyzeUrlContent, generatePersuasiveText, INDUSTRY_TEXT_TEMPLATES, det
 import { REALITY_MODE_LABELS, type RealityMode } from '../src/constants/promptModifiers';
 import { ImageAnalysisResult } from '../services/imageAnalysisService';
 import { processMagicMode, MagicModeResult, STYLE_NAMES_ES, detectVideoStyleFromInput, VIDEO_STYLE_NAMES_ES, getVideoStyleFromImageStyle } from '../services/magicModeService';
+import { SurfaceType } from '../hooks/useSurfaceDetection';
+import StyleFusionSelector from './StyleFusionSelector';
 
 interface FlyerFormProps {
   styleKey: FlyerStyleKey;
@@ -131,6 +133,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [isStoryArtModeActive, setIsStoryArtModeActive] = useState(false);
   const [artDirectionApplied, setArtDirectionApplied] = useState(false);
   const [artDirectionFeedback, setArtDirectionFeedback] = useState<string | null>(null);
+  
+  // NUEVO: Estados para Estilo de Integración Visual (Surface Detection)
+  const [selectedSurface, setSelectedSurface] = useState<SurfaceType>('default');
+  const [autoDetectedSurface, setAutoDetectedSurface] = useState<SurfaceType | null>(null);
   
   // Editor de texto states - TAMAÑO REDUCIDO POR DEFECTO
   const [fontSize, setFontSize] = useState(24); // Reducido de 48px a 24px
@@ -754,26 +760,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         </div>
 
-        {/* 🦋 ESTILO DE INTEGRACIÓN VISUAL - INDICADOR SIMPLE */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
-              🦋 Integración Visual
-            </label>
-            <span className="text-[10px] text-purple-400">Auto-detectado</span>
-          </div>
-          
-          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-3">
-            <div className="flex items-center gap-3">
-              <div className="text-xl">🎨</div>
-              <div className="flex-1">
-                <div className="text-white text-xs font-medium">Mimetismo Natural</div>
-                <div className="text-white/50 text-[10px]">El texto se adapta a la superficie</div>
-              </div>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
+        {/* 🎨 ESTILO DE INTEGRACIÓN VISUAL - SELECTOR COMPLETO */}
+        <StyleFusionSelector
+          selectedStyle={selectedSurface}
+          onStyleChange={setSelectedSurface}
+          autoDetectedStyle={autoDetectedSurface}
+          disabled={false}
+        />
 
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
         {mediaType === 'product_study' && !uploadedImage && (
