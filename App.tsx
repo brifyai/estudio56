@@ -19,7 +19,6 @@ import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
 import { TextEditorPanel } from './components/TextEditorPanel';
 import { PricingModal } from './components/PricingModal';
 import { StyleGallery } from './components/StyleGallery';
-import StyleFusionSelector from './components/StyleFusionSelector';
 import { LandingPage } from './components/LandingPage';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -1760,15 +1759,6 @@ const handleGenerate = async () => {
                       setProductUrl={setProductUrl}
                     />
                     
-                    {/* 🎨 ESTILO DE INTEGRACIÓN VISUAL - Junto al editor de texto */}
-                    <div className="mt-4">
-                      <StyleFusionSelector
-                        selectedStyle={surfaceType}
-                        onStyleChange={setSurfaceType}
-                        autoDetectedStyle={autoDetectedSurface}
-                        disabled={false}
-                      />
-                    </div>
                   </div>
                 )}
                 
