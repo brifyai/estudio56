@@ -588,7 +588,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          {/* AUTO MODE - MARKETING OBJECTIVE SELECTION */}
          {workMode === 'auto' && !marketingObjective && (
            <div className="space-y-3">
-             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">¿Qué quieres lograr?</label>
+             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">2. ¿Qué quieres lograr?</label>
              <div className="grid grid-cols-2 gap-3">
                <button
                  onClick={async () => {
@@ -708,7 +708,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         {/* 5. FORMATO SIMPLIFICADO - OCULTAR EN MODO STORY ART */}
         {!isStoryArtModeActive && (
           <div className="space-y-3">
-              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Formato</label>
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">3. Formato</label>
               <div className="grid grid-cols-2 gap-3">
                   {/* 1:1 - Universal */}
                   <button
@@ -785,7 +785,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
 
         {/* 6. TIPO DE MEDIO - IMAGEN, VIDEO, POSTER O IMAGEN PROPIA */}
         <div className="space-y-3">
-          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Tipo de contenido</label>
+          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">4. Tipo de contenido</label>
           <div className="grid grid-cols-2 gap-2 md:gap-4">
             {/* IMAGEN IA */}
             <button
