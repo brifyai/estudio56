@@ -1508,7 +1508,8 @@ const handleGenerate = async () => {
     if (realityVariations[levelKey]) {
       console.log('✅ Variación encontrada en caché:', levelKey);
       setImageUrl(realityVariations[levelKey]);
-      setDraftImageUrl(realityVariations[levelKey]); // Actualizar draft para que HD use esta variación
+      // HD siempre es la imagen actual con cambios, draft es la original
+      setHdImageUrl(realityVariations[levelKey]); // Actualizar HD con la variación
       setRealityLevel(levelKey);
       return;
     }
@@ -1556,9 +1557,9 @@ const handleGenerate = async () => {
           [levelKey]: result.imageDataUrl
         }));
         
-        // Actualizar imagen mostrada Y draft para que HD use esta variación
+        // Actualizar imagen mostrada - HD es la imagen actual con cambios
         setImageUrl(result.imageDataUrl);
-        setDraftImageUrl(result.imageDataUrl);
+        setHdImageUrl(result.imageDataUrl); // HD siempre tiene los cambios actuales
         
         // SceneId ya fue inicializado en handleGenerate, no es necesario setearlo aquí
         
