@@ -1873,21 +1873,33 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               <div className="mt-6 flex flex-col items-center gap-3">
                 <button
                   onClick={() => {
-                    // Descargar la imagen HD con todos los overlays
-                    const hdContainer = document.querySelector('.hd-download-container');
-                    if (hdContainer) {
-                      downloadElementAsImage(hdContainer as HTMLElement, `estudio-56-hd-${Date.now()}.png`, { scale: 2 });
+                    // Descargar directamente la imagen HD (ya tiene texto y logo quemados)
+                    if (hdImageUrl) {
+                      console.log('📥 Descargando imagen HD:', hdImageUrl);
+                      
+                      // Crear link de descarga directo
+                      const link = document.createElement('a');
+                      link.href = hdImageUrl;
+                      link.download = `estudio-56-hd-${Date.now()}.png`;
+                      link.target = '_blank';
+                      link.rel = 'noopener noreferrer';
+                      
+                      // Agregar al DOM, hacer click, y remover
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      
+                      console.log('✅ Descarga iniciada');
                     } else {
-                      console.error('❌ No se encontró el contenedor HD para descargar');
-                      // Fallback: descargar directamente la URL de la imagen HD
-                      if (hdImageUrl) {
-                        const link = document.createElement('a');
-                        link.href = hdImageUrl;
-                        link.download = `estudio-56-hd-${Date.now()}.png`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }
+                      console.error('❌ No hay URL de imagen HD disponible');
+                      Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se encontró la imagen HD para descargar',
+                        background: '#1a1a1a',
+                        color: '#ffffff',
+                        confirmButtonColor: '#10b981'
+                      });
                     }
                   }}
                   className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
