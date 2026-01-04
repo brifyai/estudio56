@@ -19,35 +19,37 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
   disabled = false
 }) => {
   const styles = [
-    { 
-      id: 'wall' as SurfaceType, 
-      name: 'Pared Pintada', 
-      icon: '🎨', 
+    {
+      id: 'default' as SurfaceType,
+      name: 'Clásico',
+      icon: '✍️',
+      description: 'Texto nítido de alta visibilidad',
+      config: SURFACE_CONFIGS.default
+    },
+    {
+      id: 'wall' as SurfaceType,
+      name: 'Pared Pintada',
+      icon: '🎨',
       description: 'Efecto mate sobre superficie',
       config: SURFACE_CONFIGS.wall
     },
-    { 
-      id: 'wood' as SurfaceType, 
-      name: 'Grabado Madera', 
-      icon: '🪵', 
+    {
+      id: 'wood' as SurfaceType,
+      name: 'Grabado Madera',
+      icon: '🪵',
       description: 'Se funde con la veta natural',
       config: SURFACE_CONFIGS.wood
     },
-    { 
-      id: 'glass' as SurfaceType, 
-      name: 'Reflejo Cristal', 
-      icon: '🪟', 
+    {
+      id: 'glass' as SurfaceType,
+      name: 'Reflejo Cristal',
+      icon: '🪟',
       description: 'Transparencia y brillo suave',
       config: SURFACE_CONFIGS.glass
-    },
-    { 
-      id: 'default' as SurfaceType, 
-      name: 'Clásico', 
-      icon: '✍️', 
-      description: 'Texto nítido de alta visibilidad',
-      config: SURFACE_CONFIGS.default
     }
   ];
+
+  const currentConfig = SURFACE_CONFIGS[selectedStyle];
 
   return (
     <div className="mt-4 p-4 bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-700/50">
@@ -60,7 +62,7 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
           <span className="text-[10px] text-green-400 font-mono">
-            {SURFACE_CONFIGS[selectedStyle].name.toUpperCase()}
+            {currentConfig.name.toUpperCase()}
           </span>
         </div>
       </div>
@@ -94,8 +96,8 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
               disabled={disabled}
               className={`
                 flex flex-col items-start p-3 rounded-lg transition-all border
-                ${isSelected 
-                  ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/20' 
+                ${isSelected
+                  ? 'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/20'
                   : 'border-gray-700 bg-gray-800/50 hover:border-gray-500 hover:bg-gray-800'
                 }
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -134,22 +136,22 @@ export const StyleFusionSelector: React.FC<StyleFusionSelectorProps> = ({
 
       {/* Info del estilo actual */}
       <div className="mt-3 p-2 bg-gray-800/50 rounded-lg border border-gray-700/50">
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <span className="text-gray-400">Mezcla:</span>
           <span className="text-cyan-400 font-mono">
-            {SURFACE_CONFIGS[selectedStyle].blendMode}
+            {currentConfig.blendMode}
           </span>
-          <span className="text-gray-500 mx-1">•</span>
+          <span className="text-gray-500">•</span>
           <span className="text-gray-400">Opacidad:</span>
           <span className="text-cyan-400 font-mono">
-            {Math.round(SURFACE_CONFIGS[selectedStyle].opacity * 100)}%
+            {Math.round(currentConfig.opacity * 100)}%
           </span>
-          {SURFACE_CONFIGS[selectedStyle].shadowType !== 'none' && (
+          {currentConfig.shadowType !== 'none' && (
             <>
-              <span className="text-gray-500 mx-1">•</span>
+              <span className="text-gray-500">•</span>
               <span className="text-gray-400">Sombra:</span>
               <span className="text-cyan-400 font-mono">
-                {SURFACE_CONFIGS[selectedStyle].shadowType}
+                {currentConfig.shadowType}
               </span>
             </>
           )}
