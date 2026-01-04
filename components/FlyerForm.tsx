@@ -588,7 +588,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          {/* AUTO MODE - MARKETING OBJECTIVE SELECTION */}
          {workMode === 'auto' && !marketingObjective && (
            <div className="space-y-3">
-             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono text-center block">¿Qué quieres lograr?</label>
+             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">¿Qué quieres lograr?</label>
              <div className="grid grid-cols-2 gap-3">
                <button
                  onClick={async () => {
