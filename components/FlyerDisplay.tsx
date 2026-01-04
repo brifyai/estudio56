@@ -96,25 +96,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   productPosition = { x: 50, y: 70, width: 120, height: 120 },
   setProductPosition
 }) => {
-  const [viewMode, setViewMode] = useState<'mobile' | 'tablet' | 'computer' | 'clean'>('mobile');
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Estado para detectar si estamos en desktop (lg: 1024px o mayor)
-  const [isDesktop, setIsDesktop] = useState(false);
-  
-  // Detectar tamaño de pantalla
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    
-    // Verificar inicialmente
-    checkScreenSize();
-    
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
   
   // Estado para mostrar/ocultar controles de texto en mobile
   const [showTextControls, setShowTextControls] = useState(false);
@@ -381,9 +364,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   // Obtener contenedor del flyer
   const getFlyerContainer = (): HTMLElement | null => {
-    if (viewMode === 'desktop') {
-      return flyerContainerRef.current?.querySelector('.flyer-inner-container') as HTMLElement || flyerContainerRef.current;
-    }
     return flyerContainerRef.current;
   };
 
@@ -1616,19 +1596,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start animate-fade-in">
-      {/* CONTROLS - Solo visible en pantallas grandes (lg), oculto en mobile */}
-      {!showComparison && (
-        <div className="hidden lg:block absolute top-0 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-1">
-            <div className="flex items-center gap-1">
-              <button onClick={() => setViewMode('mobile')} className={`px-4 py-2 rounded-xl text-[12px] font-bold ${viewMode === 'mobile' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>📱 MÓVIL</button>
-              <button onClick={() => setViewMode('tablet')} className={`px-4 py-2 rounded-xl text-[12px] font-bold ${viewMode === 'tablet' ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>📱 TABLET</button>
-              <button onClick={() => setViewMode('computer')} className={`px-4 py-2 rounded-xl text-[12px] font-bold ${viewMode === 'computer' ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>💻 COMPUTADOR</button>
-              <button onClick={() => setViewMode('clean')} className={`px-4 py-2 rounded-xl text-[12px] font-bold ${viewMode === 'clean' ? 'bg-gradient-to-r from-gray-500 to-slate-500 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>🧹 CRUDO</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* CERRAR COMPARACIÓN DE IMÁGENES */}
       {showComparison && !showVideoComparison && (
@@ -1973,178 +1940,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         </div>
       </div>
-
-      {/* VISTA COMPUTADOR - Con marco de monitor */}
-      {viewMode === 'computer' && (
-        <div className="flex flex-col items-center">
-          {/* Marco del monitor */}
-          <div className="relative bg-[#1a1a1a] rounded-t-[1.5rem] p-4 pb-2 shadow-2xl border border-[#333]">
-            {/* Cámara */}
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#2a2a2a] border border-[#333]" />
-            
-            {/* Pantalla del monitor */}
-            <div
-              id="flyer-container-computer"
-              className={`relative bg-black rounded-lg overflow-hidden border border-[#333]
-                ${aspectRatio === '9:16' ? 'w-[360px] h-[640px]' :
-                  aspectRatio === '1:1' ? 'w-[400px] h-[400px]' :
-                  aspectRatio === '4:5' ? 'w-[360px] h-[450px]' : 'w-[360px] h-[640px]'
-                }`}
-            >
-              <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-                {(() => {
-                  const needsCors = imageUrl && !imageUrl.startsWith('blob:');
-                  const videoSrc = imageUrl && isVideoUrl(imageUrl);
-                  
-                  if (videoSrc) {
-                    if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
-                      return renderMediaPlaceholder();
-                    }
-                    return (
-                      <video
-                        src={imageUrl}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        crossOrigin={needsCors ? "anonymous" : undefined}
-                        onError={(e) => handleMediaError(e, 'video')}
-                      />
-                    );
-                  }
-                  
-                  if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
-                    return renderMediaPlaceholder();
-                  }
-                  
-                  return (
-                    <img
-                      src={imageUrl}
-                      alt="Generated Content"
-                      className="w-full h-full object-cover"
-                      crossOrigin={needsCors ? "anonymous" : undefined}
-                      onError={(e) => handleMediaError(e, 'image')}
-                    />
-                  );
-                })()}
-                {renderLogo()}
-                {renderProduct()}
-                {renderText()}
-              </div>
-            </div>
-          </div>
-          
-          {/* Base del monitor */}
-          <div className="w-48 h-4 bg-[#1a1a1a] rounded-b-lg border border-[#333]" />
-          <div className="w-32 h-2 bg-[#2a2a2a] rounded-b-xl mt-1" />
-        </div>
-      )}
-      
-      {/* VISTA TABLET - Visible solo en lg y superior */}
-      {viewMode === 'tablet' && (
-        <div
-          id="flyer-container-tablet"
-          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container hidden lg:block
-            ${aspectRatio === '9:16' ? 'w-[400px] h-[711px]' :
-              aspectRatio === '1:1' ? 'w-[400px] h-[400px]' :
-              aspectRatio === '4:5' ? 'w-[400px] h-[500px]' : 'w-[400px] h-[711px]'
-            }`}
-        >
-          <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-            {(() => {
-              const needsCors = imageUrl && !imageUrl.startsWith('blob:');
-              const videoSrc = imageUrl && isVideoUrl(imageUrl);
-              
-              if (videoSrc) {
-                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
-                  return renderMediaPlaceholder();
-                }
-                return (
-                  <video
-                    src={imageUrl}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    crossOrigin={needsCors ? "anonymous" : undefined}
-                    onError={(e) => handleMediaError(e, 'video')}
-                  />
-                );
-              }
-              
-              if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
-                return renderMediaPlaceholder();
-              }
-              
-              return (
-                <img
-                  src={imageUrl}
-                  alt="Generated Content"
-                  className="w-full h-full object-cover"
-                  crossOrigin={needsCors ? "anonymous" : undefined}
-                  onError={(e) => handleMediaError(e, 'image')}
-                />
-              );
-            })()}
-            {renderLogo()}
-            {renderProduct()}
-            {renderText()}
-          </div>
-        </div>
-      )}
-      
-      {/* VISTA CRUDO - Visible solo en lg y superior */}
-      {viewMode === 'clean' && (
-        <div
-          id="flyer-container-clean"
-          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container hidden lg:block
-            ${aspectRatio === '9:16' ? 'w-[450px] h-[800px]' :
-              aspectRatio === '1:1' ? 'w-[450px] h-[450px]' :
-              aspectRatio === '4:5' ? 'w-[450px] h-[562px]' : 'w-[450px] h-[800px]'
-            }`}
-        >
-          <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
-            {(() => {
-              const needsCors = imageUrl && !imageUrl.startsWith('blob:');
-              const videoSrc = imageUrl && isVideoUrl(imageUrl);
-              
-              if (videoSrc) {
-                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
-                  return renderMediaPlaceholder();
-                }
-                return (
-                  <video
-                    src={imageUrl}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    crossOrigin={needsCors ? "anonymous" : undefined}
-                    onError={(e) => handleMediaError(e, 'video')}
-                  />
-                );
-              }
-              
-              if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
-                return renderMediaPlaceholder();
-              }
-              
-              return (
-                <img
-                  src={imageUrl}
-                  alt="Generated Content"
-                  className="w-full h-full object-cover"
-                  crossOrigin={needsCors ? "anonymous" : undefined}
-                  onError={(e) => handleMediaError(e, 'image')}
-                />
-              );
-            })()}
-          </div>
-        </div>
-      )}
 
       {/* UI DE PROGRESO DE PROCESAMIENTO DE VIDEO */}
       {isProcessingVideo && (
