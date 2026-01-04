@@ -70,6 +70,10 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
   const canvasWidth = useCustomDimensions ? options.containerWidth! : getDimensionsForAspectRatio(options.aspectRatio, options.quality).width;
   const canvasHeight = useCustomDimensions ? options.containerHeight! : getDimensionsForAspectRatio(options.aspectRatio, options.quality).height;
   
+  // Calcular dimensiones de borrador para referencia de escala
+  const draftDims = getDimensionsForAspectRatio(options.aspectRatio, 'draft');
+  const hdDims = getDimensionsForAspectRatio(options.aspectRatio, 'hd');
+  
   const canvas = document.createElement('canvas');
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
@@ -151,8 +155,21 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
     
     // Escalar texto proporcionalmente al tamaño de la imagen
     // Esto asegura que el texto se vea del mismo tamaño relativo en Draft y HD
-    const draftWidth = getDimensionsForAspectRatio(options.aspectRatio, 'draft').width;
-    const scaleFactor = canvasWidth / draftWidth; // 2x para HD (1080/540 = 2)
+    // Solo escalar si las dimensiones personalizadas son diferentes a draft (evitar doble escala)
+    let scaleFactor: number;
+    if (useCustomDimensions && canvasWidth === draftDims.width && canvasHeight === draftDims.height) {
+      // Dimensiones personalizadas iguales a draft → no escalar
+      scaleFactor = 1;
+    } else if (useCustomDimensions && canvasWidth === hdDims.width && canvasHeight === hdDims.height) {
+      // Dimensiones HD estándar → escalar 2x
+      scaleFactor = 2;
+    } else if (useCustomDimensions) {
+      // Dimensiones personalizadas diferentes → escalar proporcionalmente
+      scaleFactor = canvasWidth / draftDims.width;
+    } else {
+      // Usar dimensiones estándar según calidad
+      scaleFactor = options.quality === 'hd' ? 2 : 1;
+    }
     
     // Usar tamaño de fuente escalado proporcionalmente
     const fontSize = textStyles.fontSize * scaleFactor;
