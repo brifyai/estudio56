@@ -32,7 +32,7 @@ import {
 // 🛡️ EL ESCUDO DE FÍSICA Y LIMPIEZA - Negative Prompt Absoluto
 // Se aplica SIEMPRE para evitar textos, logos y deformaciones físicas
 // ============================================
-const GLOBAL_NEGATIVE_SHIELD = "text, letters, words, logo, watermark, distorted characters, floating objects, extra limbs, morphing faces, sliding feet, anti-gravity, supernatural movement, distorted physics, glitching bodies, impossible perspectives, unrealistic skin, plastic textures";
+const GLOBAL_NEGATIVE_SHIELD = "text, letters, words, logo, watermark, distorted characters, floating objects, extra limbs, morphing faces, sliding feet, anti-gravity, supernatural movement, distorted physics, glitching bodies, impossible perspectives, unrealistic skin, plastic textures, candles, smoke, steam, fog, water on floor, neon, fused objects, floating people, melting equipment, liquid floors";
 
 // ============================================
 // 🦴 ESCUDO ANATÓMICO - Previene errores de anatomía humana
@@ -61,16 +61,33 @@ const REAL_BUSINESS_ENVIRONMENT = `
 ENVIRONMENT_RULES:
 - Aesthetics: "Professional but accessible 3-star local business style".
 - NO_HOTEL_LOOK: Avoid high-end resort or luxury lobby aesthetics.
+- NO_ATREZZO: ABSOLUTELY NO candles, smoke, steam, fog, or water reflections on floors.
+- FLOOR: Matte wood or standard laminate flooring. NO reflective or water-coated surfaces.
+- CEILING: Standard ceiling height (2.4m - 3m). NO cathedral or vaulted ceilings.
 - Textures: Use natural materials like wood, matte paint, and standard fabrics. No excessive marble or gold.
 - Proportions: Standard ceiling heights (2.4m - 3m). Realistic room sizes, not cavernous halls.
-- Lighting: Soft natural light from standard windows. Avoid theatrical or neon lighting.
+- LIGHTING: Natural window daylight. NO cinematic lighting, NO exaggerated contrasts.
+- PHOTOGRAPHIC STYLE: Raw photo, 35mm lens, visible grain, realistic fabric and wood textures.
 - Details: Include subtle "lived-in" signs (a plant, a realistic chair, natural shadows).
 `;
 
 // ============================================
 // 🛡️ ESCUDO ANTI-FANTASÍA - Lo que NO queremos en locales
 // ============================================
-const ANTI_FANTASY_SHIELD = "hotel lobby, luxury resort, marble palace, futuristic architecture, sterile, excessive gold, clinical white, unreachable luxury, 3d render look, plastic textures, perfect symmetry, science fiction style";
+const ANTI_FANTASY_SHIELD = "hotel lobby, luxury resort, marble palace, futuristic architecture, sterile, excessive gold, clinical white, unreachable luxury, 3d render look, plastic textures, perfect symmetry, science fiction style, cathedral ceiling, reflective water floor, spa atmosphere, luxury candles, decorative smoke, vapor trails, fog effects";
+
+// ============================================
+// 💎 FILTRO DE TEXTURA FOTOGRÁFICA CRUDA - "Raw Photo"
+// Elimina el efecto plástico de la IA
+// ============================================
+const RAW_PHOTO_TEXTURE = `
+PHOTOGRAPHIC_TEXTURE:
+- CAMERA: Raw photo, 35mm lens, visible grain, professional camera quality.
+- LIGHTING: Natural window daylight. NO cinematic lighting, NO exaggerated contrasts.
+- TEXTURES: Realistic fabric textures, realistic wood textures, realistic skin pores.
+- NO_FILTER: Remove all plastic/AI aesthetic. Make it look like a real photo of a 3-star local business.
+- COLORS: Natural, muted professional palette. No oversaturated or artificial colors.
+`;
 
 // ============================================
 // 👤 FILTRO DE AUTENTICIDAD HUMANA - Personas Reales
@@ -79,6 +96,7 @@ const ANTI_FANTASY_SHIELD = "hotel lobby, luxury resort, marble palace, futurist
 const HUMAN_AUTHENTICITY_RULES = `
 HUMAN_SUBJECT_RULES:
 - Appearance: "Real people, relatable and healthy". Not fitness influencers or supermodels.
+- PHYSICAL_CONTACT: Subject must have 100% physical weight and contact with equipment. Feet and hands must be firmly attached to reformer rails or straps. NO floating or anti-gravity.
 - Skin Texture: Must show visible pores, natural skin variations, and subtle imperfections. No "plastic" or "airbrushed" skin.
 - Attire: Standard, professional workout or work clothes. No overly glossy or futuristic fabrics.
 - Expression: Natural, candid expressions (slight effort, genuine smiles). Not posed or staring blankly at the camera.
@@ -185,26 +203,32 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
   const industryRubro = artDirectionConfig?.rubro || "General";
   
-  // ============================================
-  // CORE_PHYSICS: Las Leyes de la Física Aplicadas
-  // ============================================
-  const CORE_PHYSICS = `
-    CORE_PHYSICS: All movements must strictly follow the laws of gravity and mass.
-    Subject must stay grounded and anchored to the floor. No floating or morphing.
-    Maintain anatomical consistency. Inertia-based movement only.
-  `;
+// ============================================
+// 💎 FILTRO DE TEXTURA FOTOGRÁFICA CRUDA - "Raw Photo"
+// Elimina el efecto plástico de la IA
+// ============================================
+const RAW_PHOTO_TEXTURE = `
+PHOTOGRAPHIC_TEXTURE:
+- CAMERA: Raw photo, 35mm lens, visible grain, professional camera quality.
+- LIGHTING: Natural window daylight. NO cinematic lighting, NO exaggerated contrasts.
+- TEXTURES: Realistic fabric textures, realistic wood textures, realistic skin pores.
+- NO_FILTER: Remove all plastic/AI aesthetic. Make it look like a real photo of a 3-star local business.
+- COLORS: Natural, muted professional palette. No oversaturated or artificial colors.
+`;
 
-  // ============================================
-  // 🦴 ANCLAJE ÓSEO - Integrar reglas anatómicas estrictas
-  // ============================================
-  const SKELETAL_ANCHOR = `
-    SKELETAL_ANCHOR:
-    - Head ALWAYS at TOP of body, feet ALWAYS at BOTTOM
-    - Feet in CONSTANT contact with ground/equipment
-    - 2 arms extend from shoulders, 2 legs extend from hips
-    - No body part inversion, no morphing, no fusion
-    - Gravity defines all body positions
-  `;
+// ============================================
+// 🦴 ANCLAJE ÓSEO - Integrar reglas anatómicas estrictas
+// ============================================
+const SKELETAL_ANCHOR = `
+SKELETAL_ANCHOR:
+- Head ALWAYS at TOP of body, feet ALWAYS at BOTTOM
+- PHYSICAL_WEIGHT: Subject must have 100% physical weight and contact with equipment. Feet and hands must be firmly attached to reformer rails or straps.
+- Feet in CONSTANT contact with ground/equipment
+- 2 arms extend from shoulders, 2 legs extend from hips
+- No body part inversion, no morphing, no fusion
+- Gravity defines all body positions
+- NO_FLOATING: All body parts must be grounded. No anti-gravity or supernatural poses.
+`;
 
   // ============================================
   // INSTRUCCIÓN DE COMPOSICIÓN (Basada en Paso 3: Formato)
@@ -248,16 +272,16 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   // ============================================
   const promptParts: string[] = [];
 
-  // 🧹 LIMPIEZA DE INTENCIÓN - Engañar a la IA para que piense que es fotografía, no diseño
-  promptParts.push(STRICT_CLEAN_RULES.trim());
+// 🧹 LIMPIEZA DE INTENCIÓN - Engañar a la IA para que piense que es fotografía, no diseño
+promptParts.push(STRICT_CLEAN_RULES.trim());
 
-  // Paso 1: Objetivo + CORE_PHYSICS (Leyes de la Física) + SKELETAL_ANCHOR (usando descripción limpia)
-  promptParts.push(`OBJECTIVE: Professional visual asset - ${cleanDescription}.`);
-  promptParts.push(CORE_PHYSICS);
-  promptParts.push(SKELETAL_ANCHOR);
+// Paso 1: Objetivo + RAW_PHOTO_TEXTURE + SKELETAL_ANCHOR (usando descripción limpia)
+promptParts.push(`OBJECTIVE: Professional visual asset - ${cleanDescription}.`);
+promptParts.push(RAW_PHOTO_TEXTURE);
+promptParts.push(SKELETAL_ANCHOR);
 
-  // Paso 2: DIRECCIÓN DE ARTE (Basado en el Rubro 1-60)
-  promptParts.push(`VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.`);
+// Paso 2: DIRECCIÓN DE ARTE (Basado en el Rubro 1-60)
+promptParts.push(`VISUAL_STYLE: ${industryContext}. Natural daylight, matte textures.`);
 
   // Paso 3: COMPOSICIÓN (Basada en Formato)
   promptParts.push(`COMPOSITION: ${compositionRule}`);
@@ -376,17 +400,20 @@ export const generateRealisticFinalPrompt = (config: UserConfig): string => {
   // Objetivo y contexto (usando descripción limpia)
   promptParts.push(`OBJECTIVE: Professional visual asset - ${cleanDescription}.`);
   
-  // Filtro de realismo local (negocios reales)
-  promptParts.push(REAL_BUSINESS_ENVIRONMENT);
-  
-  // Filtro de autenticidad humana (personas reales)
-  promptParts.push(HUMAN_AUTHENTICITY_RULES);
-  
-  // Física y anatomía (usando constantes existentes)
-  promptParts.push(BONE_ANCHOR_RULES);
-  
-  // Dirección de arte
-  promptParts.push(`VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.`);
+// Filtro de realismo local (negocios reales)
+promptParts.push(REAL_BUSINESS_ENVIRONMENT);
+
+// Filtro de autenticidad humana (personas reales)
+promptParts.push(HUMAN_AUTHENTICITY_RULES);
+
+// Física y anatomía (usando constantes existentes)
+promptParts.push(BONE_ANCHOR_RULES);
+
+// Textura fotográfica cruda
+promptParts.push(RAW_PHOTO_TEXTURE);
+
+// Dirección de arte
+promptParts.push(`VISUAL_STYLE: ${industryContext}. Natural daylight, matte textures.`);
   
   // Composición
   promptParts.push(`COMPOSITION: ${compositionRule}`);
@@ -437,16 +464,17 @@ export const generateCleanPrompt = (config: UserConfig): string => {
   const artDirectionConfig = getArtDirectionById(industryId);
   const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
   
-  return `
-    ${CLEAN_PLATE_RULE}
-    ${REAL_BUSINESS_ENVIRONMENT}
-    ${HUMAN_AUTHENTICITY_RULES}
-    
-    SCENE: ${cleanDescription}
-    VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.
-    
-    NEGATIVE_PROMPT: ${NEGATIVE_TEXT_SHIELD}, ${ANTI_FANTASY_SHIELD}, ${ANTI_MODEL_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}
-  `.trim();
+return `
+${CLEAN_PLATE_RULE}
+${REAL_BUSINESS_ENVIRONMENT}
+${HUMAN_AUTHENTICITY_RULES}
+${RAW_PHOTO_TEXTURE}
+
+SCENE: ${cleanDescription}
+VISUAL_STYLE: ${industryContext}. Natural daylight, matte textures.
+
+NEGATIVE_PROMPT: ${NEGATIVE_TEXT_SHIELD}, ${ANTI_FANTASY_SHIELD}, ${ANTI_MODEL_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}
+`.trim();
 };
 
 /**
@@ -1774,38 +1802,45 @@ export const generateFlyerImage = async (
     subjectSizePrompt = "SUBJECT SIZE: Main subject should be prominent, occupying at least 50% of the vertical frame.";
   }
   
-  // Build unified prompt that works for both Draft and HD
-  // CRITICAL: No text in image - text will be added as overlay
-  const unifiedPrompt = `
-    ${MASTER_STYLE}
-    ${compositionPrompt}
-    ${verticalCompositionPrompt}
-    ${safeZonePrompt}
-    ${subjectSizePrompt}
-    ${CHILEAN_BASE_CONTEXT}
-    ${backgroundContext}
-    VISUAL STYLE SPECS: ${activeStylePrompt}
-    SUBJECT DESCRIPTION: ${enhancedDescription}
-    ${textIntegrationPrompt}
-    ${productPromptSuffix}
-    
-    STRICT PROHIBITION - ZERO TOLERANCE:
-    1. ABSOLUTELY NO TEXT whatsoever - this is non-negotiable
-    2. NO letters, numbers, words, symbols, or characters of any kind
-    3. NO signs, menus, billboards, posters, banners, labels, or text on objects
-    4. NO text on clothing, products, walls, buildings, vehicles, or any surfaces
-    5. NO brand names, logos, or text that looks like writing
-    6. If you include any text, the image will be REJECTED
-    7. Text will be professionally added LATER as a separate overlay layer
-    
-    VISUAL REQUIREMENTS:
-    - Clean, blank surfaces where text would normally appear
-    - Plain walls, empty signs, blank menus, bare products
-    - Focus on textures, lighting, colors, and composition only
-    
-    Generate a COMPLETE VISIBLE IMAGE with rich textures, clear subjects, and proper lighting.
-    The image must be 100% TEXT-FREE. Any image containing text will be considered a failure.
-  `.replace(/\n/g, ' ').trim();
+// Build unified prompt that works for both Draft and HD
+// CRITICAL: No text in image - text will be added as overlay
+const unifiedPrompt = `
+${MASTER_STYLE}
+${compositionPrompt}
+${verticalCompositionPrompt}
+${safeZonePrompt}
+${subjectSizePrompt}
+${CHILEAN_BASE_CONTEXT}
+${backgroundContext}
+VISUAL STYLE SPECS: ${activeStylePrompt}
+SUBJECT DESCRIPTION: ${enhancedDescription}
+${textIntegrationPrompt}
+${productPromptSuffix}
+
+${REAL_BUSINESS_ENVIRONMENT}
+${RAW_PHOTO_TEXTURE}
+
+STRICT PROHIBITION - ZERO TOLERANCE:
+1. ABSOLUTELY NO TEXT whatsoever - this is non-negotiable
+2. NO letters, numbers, words, symbols, or characters of any kind
+3. NO signs, menus, billboards, posters, banners, labels, or text on objects
+4. NO text on clothing, products, walls, buildings, vehicles, or any surfaces
+5. NO brand names, logos, or text that looks like writing
+6. NO candles, smoke, steam, fog, or water reflections on floors
+7. NO floating people or objects - everything must be grounded
+8. If you include any text, the image will be REJECTED
+9. Text will be professionally added LATER as a separate overlay layer
+
+VISUAL REQUIREMENTS:
+- Clean, blank surfaces where text would normally appear
+- Plain walls, empty signs, blank menus, bare products
+- Focus on textures, lighting, colors, and composition only
+- Natural window daylight, NO cinematic lighting
+- Raw photo quality with visible grain and realistic textures
+
+Generate a COMPLETE VISIBLE IMAGE with rich textures, clear subjects, and proper lighting.
+The image must be 100% TEXT-FREE. Any image containing text will be considered a failure.
+`.replace(/\n/g, ' ').trim();
 
   // ============================================
   // LOG DEL PROMPT FINAL (Validación de Dirección de Arte)
@@ -1822,15 +1857,15 @@ export const generateFlyerImage = async (
   console.log(unifiedPrompt);
   console.log('═══════════════════════════════════════════════════════════════');
 
-  // ============================================
-  // APLICAR GUARDRAILS DE SEGURIDAD (Negative Prompts)
-  // ============================================
-  const industryGuardrail = IMAGE_GUARDRAILS[styleKey] || "";
-  const baseNegativePrompt = "blur, low resolution, messy, watermark, text overlay, logo visible, deformed, disfigured, ugly, incomplete, extra fingers, poorly drawn hands";
-  // AGREGAR ESCUDO ANATÓMICO para prevenir errores como pies en la cabeza
-  const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANATOMY_SHIELD}`.replace(/\s+/g, ' ').trim();
-  
-  console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
+// ============================================
+// APLICAR GUARDRAILS DE SEGURIDAD (Negative Prompts)
+// ============================================
+const industryGuardrail = IMAGE_GUARDRAILS[styleKey] || "";
+const baseNegativePrompt = "blur, low resolution, messy, watermark, text overlay, logo visible, deformed, disfigured, ugly, incomplete, extra fingers, poorly drawn hands, candles, smoke, steam, fog, water on floor, neon, fused objects, floating people, melting equipment, liquid floors";
+// AGREGAR ESCUDO ANATÓMICO para prevenir errores como pies en la cabeza
+const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI_FANTASY_SHIELD}, ${ANATOMY_SHIELD}`.replace(/\s+/g, ' ').trim();
+
+console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
   if (quality === 'draft') {
     // Use same model family as HD for consistency
@@ -2156,14 +2191,14 @@ const generateFlyerVideoVEO = async (
       console.log('🛡️ [Video Guardrails] Aplicando para:', motionGuardrailKey);
     }
 
-    // Simplify prompt for Draft Video too
-    let finalPrompt = "";
-    if (quality === 'draft') {
-       finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
-    } else {
-       // HD: Usar prompt que enfatiza consistencia con la imagen de referencia + reglas anatómicas
-       finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. CINEMATIC VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
-    }
+// Simplify prompt for Draft Video too
+let finalPrompt = "";
+if (quality === 'draft') {
+  finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. RAW PHOTO STYLE. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} ${RAW_PHOTO_TEXTURE.replace(/\n/g, ' ')} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
+} else {
+  // HD: Usar prompt que enfatiza consistencia con la imagen de referencia + reglas anatómicas
+  finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. NATURAL DAYLIGHT VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} ${REAL_BUSINESS_ENVIRONMENT.replace(/\n/g, ' ')} ${RAW_PHOTO_TEXTURE.replace(/\n/g, ' ')} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
+}
 
     // Si tenemos imagen de referencia (HD desde draft), agregarla al prompt
     let referenceImageData: string | undefined;
