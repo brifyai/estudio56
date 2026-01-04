@@ -1556,9 +1556,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           textShadow: textShadowValue,
           WebkitTextStroke: displayStyles.effects.stroke ? `${scaledStrokeWidth}px ${displayStyles.textColor}` : undefined,
           filter: displayStyles.effects.glow ? `drop-shadow(0 0 ${scaledGlowBlur}px ${displayStyles.textColor})` : undefined,
-          // 🎨 VISUAL MIMICRY - Modos de fusión (aplicados AL TEXTO, no al contenedor)
-          // El texto SIEMPRE tiene opacidad 1 para garantizar visibilidad
-          mixBlendMode: surfaceConfig.blendMode,
+          // 🎨 VISUAL MIMICRY - El texto SIEMPRE tiene opacidad 1 y blendMode normal para garantizar visibilidad
+          mixBlendMode: 'normal',
           opacity: 1,
           // 🎨 Backdrop filter para blur (simula profundidad de campo)
           backdropFilter: surfaceConfig.blurAmount > 0 ? `blur(${surfaceConfig.blurAmount}px)` : undefined,
