@@ -1713,13 +1713,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
-          <div className="absolute inset-0 z-40 bg-checkered flex flex-col items-center justify-center p-4">
-            {/* BADGE DE COMPARACIÓN - ARRIBA DE LAS IMÁGENES */}
-            <div className="mb-4">
-              <div className="bg-blue-500/90 backdrop-blur text-white text-[10px] font-mono font-bold px-4 py-2 rounded-sm">
-                <span>👁️</span> COMPARANDO BORRADOR Y HD (IMAGEN)
-              </div>
-            </div>
+          <div className="absolute inset-0 z-40 bg-checkered flex items-center justify-center p-4">
             <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
               {/* BORRADOR - Gemini 2.5 Flash */}
               <div className="flex flex-col items-center">
