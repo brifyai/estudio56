@@ -2159,18 +2159,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
 
-      {/* BOTÓN GENERAR HD - Solo visible en mobile cuando hay borrador */}
-      {isDraft && imageUrl && !showComparison && (
-        <button
-          onClick={onUpgradeToHD}
-          className="w-full max-w-[280px] bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-xs flex items-center justify-center gap-2 mt-3 animate-pulse"
-        >
-          <span>✨</span>
-          <span>{(draftVideoUrl || isVideoUrl(imageUrl)) ? 'Generar video HD' : 'Generar imagen HD'}</span>
-        </button>
-      )}
-      
-      {/* NEW: SELECTOR DE ESTILO DE FUSIÓN VISUAL - Solo visible en imágenes */}
+      {/* NEW: SELECTOR DE ESTILO DE FUSIÓN VISUAL - Movido arriba para mejor visibilidad */}
       {!showComparison && !showVideoComparison && mediaType !== 'video' && mediaType !== 'story_art' && (
         <div className="w-full max-w-[280px] mt-3">
           {/* Debug info visible */}
@@ -2190,6 +2179,17 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             disabled={false} // Habilitado siempre para poder probar
           />
         </div>
+      )}
+
+      {/* BOTÓN GENERAR HD - Solo visible en mobile cuando hay borrador */}
+      {isDraft && imageUrl && !showComparison && (
+        <button
+          onClick={onUpgradeToHD}
+          className="w-full max-w-[280px] bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-xs flex items-center justify-center gap-2 mt-3 animate-pulse"
+        >
+          <span>✨</span>
+          <span>{(draftVideoUrl || isVideoUrl(imageUrl)) ? 'Generar video HD' : 'Generar imagen HD'}</span>
+        </button>
       )}
       
     </div>
