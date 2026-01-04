@@ -17,6 +17,7 @@ import { POSTER_STYLES, POSTER_INDUSTRY_PROMPTS } from './constants';
 import { FlyerForm } from './components/FlyerForm';
 import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
 import { TextEditorPanel } from './components/TextEditorPanel';
+import { CollapsibleSection } from './components/CollapsibleSection';
 import { PricingModal } from './components/PricingModal';
 import { StyleGallery } from './components/StyleGallery';
 import { LandingPage } from './components/LandingPage';
@@ -1743,49 +1744,61 @@ const handleGenerate = async () => {
                 {/* Panel de Editor de Texto y Estilo de Integración Visual - OCULTAR PARA VIDEOS Y STORY ART */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
-                    <TextEditorPanel
-                      overlayText={overlayText}
-                      setOverlayText={setOverlayText}
-                      textStyles={manualTextStyles}
-                      setTextStyles={setManualTextStyles}
-                      onResetPosition={() => setTextPosition({ x: 50, y: 50 })}
-                      logoUrl={logoUrl}
-                      setLogoUrl={setLogoUrl}
-                      logoColor={logoColor}
-                      setLogoColor={setLogoColor}
-                      logoFilters={logoFilters}
-                      setLogoFilters={setLogoFilters}
-                      productUrl={productUrl}
-                      setProductUrl={setProductUrl}
-                    />
-                    
+                    {/* Botón desplegable del Editor de Texto */}
+                    <CollapsibleSection
+                      title="Editor de Texto"
+                      icon="✏️"
+                      defaultOpen={true}
+                    >
+                      <TextEditorPanel
+                        overlayText={overlayText}
+                        setOverlayText={setOverlayText}
+                        textStyles={manualTextStyles}
+                        setTextStyles={setManualTextStyles}
+                        onResetPosition={() => setTextPosition({ x: 50, y: 50 })}
+                        logoUrl={logoUrl}
+                        setLogoUrl={setLogoUrl}
+                        logoColor={logoColor}
+                        setLogoColor={setLogoColor}
+                        logoFilters={logoFilters}
+                        setLogoFilters={setLogoFilters}
+                        productUrl={productUrl}
+                        setProductUrl={setProductUrl}
+                      />
+                    </CollapsibleSection>
                   </div>
                 )}
                 
                 {/* 🎚️ REALITY SLIDER - En el menú lateral izquierdo */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
-                    <RealitySlider
-                      value={realityLevel}
-                      sceneId={sceneId}
-                      currentImageUrl={imageUrl}
-                      seed={seed}
-                      onLevelChange={handleRealityChange}
-                      disabled={isGeneratingReality}
-                    />
-                    
-                    {/* Botón para comparar versiones */}
-                    {Object.keys(realityVariations).length >= 2 && (
-                      <button
-                        onClick={() => setShowRealityComparator(true)}
-                        className="mt-3 w-full py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 text-xs font-medium transition-all flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Comparar Realismos ({Object.keys(realityVariations).length} versiones)
-                      </button>
-                    )}
+                    <CollapsibleSection
+                      title="Reality Slider"
+                      icon="🎚️"
+                      defaultOpen={true}
+                    >
+                      <RealitySlider
+                        value={realityLevel}
+                        sceneId={sceneId}
+                        currentImageUrl={imageUrl}
+                        seed={seed}
+                        onLevelChange={handleRealityChange}
+                        disabled={isGeneratingReality}
+                      />
+                      
+                      {/* Botón para comparar versiones */}
+                      {Object.keys(realityVariations).length >= 2 && (
+                        <button
+                          onClick={() => setShowRealityComparator(true)}
+                          className="mt-3 w-full py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 text-xs font-medium transition-all flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Comparar Realismos ({Object.keys(realityVariations).length} versiones)
+                        </button>
+                      )}
+                    </CollapsibleSection>
                   </div>
                 )}
             </div>
