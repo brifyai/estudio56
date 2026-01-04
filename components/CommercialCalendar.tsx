@@ -16,6 +16,7 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
   const [activeAlerts, setActiveAlerts] = useState<CommercialEvent[]>([]);
   const [showCalendar, setShowCalendar] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -58,14 +59,15 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
     return colors[category] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
   };
 
-  // Generar días del mes para el calendario
+  // Generar días del mes para el calendario (lunes a domingo)
   const getMonthDays = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay();
+    // Ajuste: getDay() devuelve 0 para domingo, lo cambiemos a 1 para lunes
+    const startingDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
     
     const days = [];
     
@@ -239,9 +241,9 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
               </div>
             </div>
 
-            {/* Días de la semana */}
+            {/* Días de la semana (Lunes a Domingo) */}
             <div className="grid grid-cols-7 gap-0.5 mb-1">
-              {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, index) => (
+              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, index) => (
                 <div key={`day-${index}`} className="text-center text-[8px] text-white/50 font-medium">
                   {day}
                 </div>
@@ -259,16 +261,20 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
                 const hasEvents = dayEvents.length > 0;
                 const isCurrentDay = isToday(date);
                 const isPastDay = isPast(date);
+                const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
                 
                 return (
                   <div
                     key={date.toISOString()}
-                    className={`h-5 rounded flex items-center justify-center text-[9px] transition-all
-                      ${isCurrentDay 
-                        ? 'bg-blue-500 text-white font-bold shadow-lg' 
-                        : isPastDay 
-                          ? 'text-white/20'
-                          : 'text-white hover:bg-white/10'
+                    onClick={() => setSelectedDate(date)}
+                    className={`h-5 rounded flex items-center justify-center text-[9px] transition-all cursor-pointer
+                      ${isSelected
+                        ? 'bg-blue-600 text-white font-bold shadow-lg ring-2 ring-blue-400/50'
+                        : isCurrentDay
+                          ? 'bg-blue-500 text-white font-bold shadow-lg'
+                          : isPastDay
+                            ? 'text-white/20'
+                            : 'text-white hover:bg-white/10'
                       }
                       ${hasEvents && !isPastDay ? 'border border-white/20' : ''}
                     `}
@@ -279,6 +285,55 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
                 );
               })}
             </div>
+
+            {/* Eventos del día seleccionado */}
+            {selectedDate && (
+              <div className="mt-3 p-2 rounded-lg bg-white/5 border border-white/10">
+                <div className="text-[10px] font-bold text-white mb-2">
+                  {selectedDate.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </div>
+                {(() => {
+                  const dayEvents = getEventsForDate(selectedDate);
+                  if (dayEvents.length === 0) {
+                    return (
+                      <div className="text-[9px] text-white/40 italic">
+                        No hay eventos este día
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-1">
+                      {dayEvents.map((event) => (
+                        <div
+                          key={event.id}
+                          className={`flex items-center gap-2 p-1.5 rounded-lg border ${getCategoryColor(event.category)}`}
+                        >
+                          <span className="text-xs">{getCategoryEmoji(event.category)}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] font-medium truncate">{event.name}</div>
+                            {event.description && (
+                              <div className="text-[8px] text-white/50 truncate">{event.description}</div>
+                            )}
+                          </div>
+                          {onGenerateForEvent && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onGenerateForEvent(event);
+                              }}
+                              className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors"
+                              title="Generar oferta para este evento"
+                            >
+                              ✨
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           {/* PRÓXIMOS EVENTOS */}
