@@ -128,14 +128,31 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
-  // Renderizar una imagen
-  const renderImage = (variation: RealityVariation | null, isLeft: boolean) => {
+  // Renderizar una imagen con soporte para generación bajo demanda
+  const renderImage = (variation: RealityVariation | null, isLeft: boolean, onGenerate?: () => void) => {
     if (!variation) {
       return (
-        <div className={`${dimensions.width} ${dimensions.height} bg-gray-800 rounded-xl flex items-center justify-center border-2 border-dashed border-white/20`}>
-          <div className="text-center">
-            <span className="text-3xl mb-2 block">❌</span>
-            <span className="text-white/50 text-xs">No disponible</span>
+        <div className={`${dimensions.width} ${dimensions.height} bg-gray-800/50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-white/20 relative overflow-hidden`}>
+          {/* Skeleton Loader Pattern */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" style={{ transform: 'skewX(-20deg)' }} />
+          </div>
+          
+          <div className="text-center relative z-10">
+            <span className="text-3xl mb-2 block">🎨</span>
+            <span className="text-white/50 text-xs block mb-3">Variación no generada</span>
+            
+            {onGenerate && (
+              <button
+                onClick={onGenerate}
+                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 text-blue-300 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 mx-auto"
+              >
+                <svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Generar
+              </button>
+            )}
           </div>
         </div>
       );
@@ -230,6 +247,15 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         </p>
       </div>
 
+      {/* 🎯 GENERAR VARIACIÓN FALTANTE SI NECESARIO */}
+      {(!leftVariation || !rightVariation) && onSelect && (
+        <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <p className="text-blue-300/80 text-xs text-center">
+            💡 Genera variaciones para comparar todos los niveles de realismo
+          </p>
+        </div>
+      )}
+      
       {/* Modo slider de comparación */}
       {leftVariation && rightVariation && (
         <div 

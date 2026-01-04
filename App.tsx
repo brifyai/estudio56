@@ -1496,6 +1496,7 @@ const handleGenerate = async () => {
   };
 
   // 🎚️ REALITY SLIDER HANDLER - Maneja cambios en el nivel de realidad
+  // MEJORADO: Usa imagen de referencia + artDirectionId para consistencia visual al 100%
   const handleRealityChange = async (newLevel: number) => {
     console.log('🎚️ Reality Slider cambiado a:', newLevel);
     
@@ -1514,7 +1515,7 @@ const handleGenerate = async () => {
       return;
     }
     
-    // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN
+    // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN CON REFERENCIA
     console.log('🔄 Generando nueva variación para nivel:', levelKey);
     setIsGeneratingReality(true);
     setRealityGenerationMessage(`🎚️ Generando imagen con realismo ${levelKey}★...`);
@@ -1533,21 +1534,47 @@ const handleGenerate = async () => {
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
       const realityPrompt = buildGeminiPromptWithReality(enhancedPrompt, realityLevelTyped);
       
-      // Generar nueva imagen con el mismo seed pero diferente nivel de realidad
-      // Usar imageUrl como referencia para que la IA trabaje sobre la imagen actual
+      // 🎯 GENERACIÓN CON REFERENCIA: Mantenemos el local exactamente como está,
+      // pero le cambiamos la iluminación/estilo al nivel solicitado
+      const referenceImage = imageUrl || draftImageUrl;
+      
+      // Determinar artDirectionId para mantener la Dirección de Arte
+      // Usamos el mismo mapeo que en handleGenerate para consistencia
+      let artDirectionId: number | undefined = undefined;
+      if (mediaType === 'story_art') {
+        const styleToIndustryMap: Record<string, number> = {
+          'retail_sale': 1, 'typo_bold': 1, 'auto_metallic': 27, 'gastronomy': 22,
+          'corporate': 33, 'medical_clean': 56, 'tech_saas': 39, 'edu_sketch': 25, 'political_community': 33,
+          'aesthetic_min': 41, 'wellness_zen': 24, 'pilates': 24, 'summer_beach': 29, 'eco_organic': 51, 'sport_gritty': 40,
+          'urban_night': 29, 'luxury_gold': 55, 'realestate_night': 26, 'gamer_stream': 13, 'indie_grunge': 35,
+          'kids_fun': 30, 'worship_sky': 33, 'seasonal_holiday': 30, 'art_double_exp': 37, 'retro_vintage': 18, 'podcast_mic': 35,
+          'mechanic_workshop': 27, 'tire_service': 27, 'construction_site': 20, 'logistics_delivery': 1,
+          'bakery_bread': 47, 'liquor_store': 11, 'fast_food_street': 46, 'barber_shop': 34, 'veterinary_clinic': 59,
+          'hvac_plumbing': 20, 'dental_clinic': 57, 'physiotherapy': 40, 'law_accounting': 31, 'gardening_landscaping': 17,
+          'security_systems': 39, 'sushi_nikkei': 22, 'pizzeria': 22, 'ice_cream': 48, 'nail_studio': 42, 'tattoo_studio': 35,
+          'yoga_studio': 24, 'car_detailing': 27, 'optical': 6, 'bookstore': 16, 'flower_shop': 17,
+          'transport_school': 1, 'hardware_store': 20, 'cleaning_service': 19, 'travel_agency': 29,
+          'laundry': 19, 'shoe_store': 1, 'tech_repair': 39, 'pastry_shop': 47,
+          'brand_identity': 1, 'market_handwritten': 1
+        };
+        const styleKeyToMap = detectedStyleKey || styleKey;
+        artDirectionId = styleToIndustryMap[styleKeyToMap] || 1;
+        console.log(`🎨 [Reality] ArtDirectionId preservado: ${artDirectionId}`);
+      }
+      
       const result = await generateFlyerImage(
         realityPrompt,
         styleKey,
         aspectRatio,
         'draft',
-        seed, // MISMO SEED para mantener consistencia visual
+        seed, // 🔐 BLOQUEO DE SEMILLA para consistencia visual
         customStylePrompt,
         !!productUrl,
         true,
         workMode === 'auto' && overlayText.trim() ? overlayText : undefined,
         workMode === 'auto' ? "modern and clean" : undefined,
-        imageUrl || draftImageUrl || undefined, // Usar imagen actual como referencia
-        undefined // artDirectionId
+        referenceImage || undefined, // 🖼️ IMAGEN DE REFERENCIA para transformación controlada
+        artDirectionId // 🎨 DIRECCIÓN DE ARTE preservada
       );
       
       if (result.imageDataUrl) {
