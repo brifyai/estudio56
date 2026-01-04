@@ -620,7 +620,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
 
         {/* 5. FORMATO SIMPLIFICADO */}
         <div className="space-y-3">
-              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">3. Formato</label>
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">2. Formato</label>
               <div className="grid grid-cols-2 gap-3">
                   {/* 1:1 - Universal */}
                   <button
@@ -660,7 +660,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
 
         {/* 2. TIPO DE CONTENIDO - IMAGEN, VIDEO, ESTUDIO, STORY ART */}
         <div className="space-y-3">
-          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">2. ¿Qué quieres generar?</label>
+          <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">3. ¿Qué quieres generar?</label>
           <div className="grid grid-cols-2 gap-2 md:gap-4">
             {/* IMAGEN IA */}
             <button

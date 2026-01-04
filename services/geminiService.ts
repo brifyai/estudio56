@@ -51,7 +51,110 @@ HUMAN_STRUCTURE_RULES:
 3. No Morphing: Limb count must remain constant (2 arms, 2 legs) with no merging of body parts.
 4. Anatomical Consistency: Arms extend from shoulders, legs extend from hips, head sits on neck.
 5. Gravity Respect: All body parts must follow natural gravity - nothing defies physics.
+  `;
+
+// ============================================
+// 🏪 FILTRO DE REALISMO LOCAL - "3 Estrellas Premium"
+// Evita estética de hotel de lujo, resort, o mármol excesivo
+// ============================================
+const REAL_BUSINESS_ENVIRONMENT = `
+ENVIRONMENT_RULES:
+- Aesthetics: "Professional but accessible 3-star local business style".
+- NO_HOTEL_LOOK: Avoid high-end resort or luxury lobby aesthetics.
+- Textures: Use natural materials like wood, matte paint, and standard fabrics. No excessive marble or gold.
+- Proportions: Standard ceiling heights (2.4m - 3m). Realistic room sizes, not cavernous halls.
+- Lighting: Soft natural light from standard windows. Avoid theatrical or neon lighting.
+- Details: Include subtle "lived-in" signs (a plant, a realistic chair, natural shadows).
 `;
+
+// ============================================
+// 🛡️ ESCUDO ANTI-FANTASÍA - Lo que NO queremos en locales
+// ============================================
+const ANTI_FANTASY_SHIELD = "hotel lobby, luxury resort, marble palace, futuristic architecture, sterile, excessive gold, clinical white, unreachable luxury, 3d render look, plastic textures, perfect symmetry, science fiction style";
+
+// ============================================
+// 👤 FILTRO DE AUTENTICIDAD HUMANA - Personas Reales
+// Evita supermodelos, piel de porcelana, y cuerpos irreales
+// ============================================
+const HUMAN_AUTHENTICITY_RULES = `
+HUMAN_SUBJECT_RULES:
+- Appearance: "Real people, relatable and healthy". Not fitness influencers or supermodels.
+- Skin Texture: Must show visible pores, natural skin variations, and subtle imperfections. No "plastic" or "airbrushed" skin.
+- Attire: Standard, professional workout or work clothes. No overly glossy or futuristic fabrics.
+- Expression: Natural, candid expressions (slight effort, genuine smiles). Not posed or staring blankly at the camera.
+- Diversity: Natural body types appropriate for the activity (fit but realistic proportions).
+`;
+
+// ============================================
+// 🛡️ ESCUDO ANTI-MODELO - Lo que NO queremos en personas
+// ============================================
+const ANTI_MODEL_SHIELD = "supermodel look, heavy makeup, plastic surgery look, perfect porcelain skin, bodybuilder physique, staring at camera, fake smile, airbrushed face, doll-like features";
+
+// ============================================
+// 🔤 BLOQUEO DE TEXTO - Sistema Anti-Texto Absoluto
+// Evita que la IA genere letras, palabras o símbolos en las imágenes
+// ============================================
+
+// Escudo negativo exhaustivo para bloquear cualquier carácter
+const NEGATIVE_TEXT_SHIELD = "text, typography, watermark, logo, subtitles, captions, letters, words, alphabet, signature, branding, header, footer, overlay text, writing, scribbles, messy text, distorted letters, menu, price tags, signs, billboards, posters, banners, labels, written characters, alphanumeric, numbers, digits, kanji, chinese characters, arabic text, cyrillic, symbols, icons, emojis, decorative text, fancy letters, stylized text, typography design";
+
+// Regla de "Cámara Limpia" - Fotografía pura sin elementos gráficos
+const CLEAN_PLATE_RULE = `
+  CLEAN_PLATE_RULES:
+  - ZERO_TEXT_POLICY: Do not render any letters, words, or symbols under any circumstances.
+  - PURE_PHOTOGRAPHY: The output must be a raw photograph, not a finished advertisement or flyer.
+  - NO_GRAPHICS: No logos, no icons, no watermarks, no design elements.
+  - ENVIRONMENTAL_ONLY: Render only physical objects, lighting, and people.
+  - BLANK_SURFACES: Walls must be blank, shirts must be plain, signs must be empty boards.
+  - The image must be 100% free of any written characters or graphic overlays.
+`;
+
+// Reglas estrictas de limpieza visual
+const STRICT_CLEAN_RULES = `
+  STRICT_VISUAL_RULES:
+  - ZERO_TEXT_POLICY: Do not render any letters, words, or symbols under any circumstances.
+  - PURE_PHOTOGRAPHY: The output must be a raw photograph, not a finished advertisement or flyer.
+  - NO_GRAPHICS: No logos, no icons, no watermarks.
+  - ENVIRONMENTAL_ONLY: Render only physical objects, lighting, and people.
+  - If you see a wall, it must be blank. If you see a shirt, it must be plain. If you see a sign, it must be an empty board.
+  - Focus 100% on the 3-star professional realism we defined.
+`;
+
+// ============================================
+// 🧹 SANITIZE INTENT - Limpia palabras que incitan a generar texto
+// Transforma "Flyer de Pilates" → "Escena fotográfica auténtica de Pilates"
+// ============================================
+const sanitizeIntent = (userDescription: string): string => {
+  const forbiddenWords = [
+    'flyer', 'anuncio', 'poster', 'cartel', 'post', 'publicación',
+    'banner', 'letrero', 'texto', 'letras', 'logo', 'flyer publicitario',
+    'diseño', 'grafico', 'advertisement', 'promotional', 'marketing'
+  ];
+  
+  let cleanDescription = userDescription.toLowerCase();
+  
+  forbiddenWords.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+    // Reemplazamos términos de diseño por términos fotográficos
+    cleanDescription = cleanDescription.replace(regex, 'escena fotográfica auténtica');
+  });
+
+  // Si la descripción queda vacía o solo tiene palabras de diseño, usar descripción genérica
+  if (cleanDescription.trim().length < 10 ||
+      cleanDescription.includes('escena fotográfica auténtica')) {
+    // Extraer el tema real (última palabra que no sea de diseño)
+    const words = userDescription.split(' ').filter(w =>
+      !forbiddenWords.some(fw => fw.toLowerCase() === w.toLowerCase())
+    );
+    if (words.length > 0) {
+      cleanDescription = `escena fotográfica auténtica de ${words.join(' ')}`;
+    } else {
+      cleanDescription = 'autentic professional business scene';
+    }
+  }
+
+  return cleanDescription;
+};
 
 // ============================================
 // 📐 CONSTRUCTOR DE PROMPT SEGÚN EL NUEVO ORDEN DE PASOS
@@ -73,6 +176,9 @@ export interface UserConfig {
  */
 export const generateFinalPrompt = (config: UserConfig): string => {
   const { description, format, contentType, industryId } = config;
+  
+  // 🧹 SANITIZAR la descripción del usuario para eliminar palabras que incitan a generar texto
+  const cleanDescription = sanitizeIntent(description);
   
   // Paso 1 & 2: Contexto y ADN de movimiento (60 estilos)
   const artDirectionConfig = getArtDirectionById(industryId);
@@ -142,13 +248,13 @@ export const generateFinalPrompt = (config: UserConfig): string => {
   // ============================================
   const promptParts: string[] = [];
 
-  // Paso 1: Objetivo + CORE_PHYSICS (Leyes de la Física) + SKELETAL_ANCHOR
-  promptParts.push(`OBJECTIVE: Professional visual asset for ${description}.`);
+  // 🧹 LIMPIEZA DE INTENCIÓN - Engañar a la IA para que piense que es fotografía, no diseño
+  promptParts.push(STRICT_CLEAN_RULES.trim());
+
+  // Paso 1: Objetivo + CORE_PHYSICS (Leyes de la Física) + SKELETAL_ANCHOR (usando descripción limpia)
+  promptParts.push(`OBJECTIVE: Professional visual asset - ${cleanDescription}.`);
   promptParts.push(CORE_PHYSICS);
   promptParts.push(SKELETAL_ANCHOR);
-  
-  // REGLA DE ORO: NO TEXTO (siempre presente)
-  promptParts.push(`STRICT_RULE: Zero text. Zero logos. No writing on any surface.`);
 
   // Paso 2: DIRECCIÓN DE ARTE (Basado en el Rubro 1-60)
   promptParts.push(`VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.`);
@@ -184,10 +290,163 @@ export const generateFinalPrompt = (config: UserConfig): string => {
     promptParts.push(`MOTION_DYNAMICS: ${motionStyle}. Inertia-based movement.`);
   }
 
-  // NEGATIVE PROMPT (El Escudo de Física y Limpieza + Escudo Anatómico)
-  promptParts.push(`NEGATIVE_PROMPT: ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}`);
+  // 🔤 BLOQUEO DE TEXTO ABSOLUTO - Negative prompts combinados
+  promptParts.push(`NEGATIVE_PROMPT: ${NEGATIVE_TEXT_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}`);
 
   return promptParts.join('\n\n');
+};
+
+// ============================================
+// 🛠️ FUNCIONES DE GENERACIÓN CON FILTROS DE REALISMO
+// ============================================
+
+/**
+ * Genera un prompt con filtro de realismo local (negocios reales, no hoteles de lujo)
+ * @param config - Configuración del usuario
+ * @returns Prompt con reglas de ambiente real
+ */
+export const generateRealisticPrompt = (config: UserConfig): string => {
+  const artDirectionConfig = getArtDirectionById(config.industryId);
+  const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
+  
+  return `
+    OBJECTIVE: High-quality photographic capture of a real ${config.description} business.
+    STYLE: Candid lifestyle photography, shot on 35mm lens.
+    ${REAL_BUSINESS_ENVIRONMENT}
+    
+    VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.
+    
+    STRICT_PHOTOGRAPHY_RULES:
+    - Visible skin pores and natural fabric textures.
+    - Muted, professional color palette (natural tones).
+    - Authentic shadows and depth of field (slight bokeh).
+    
+    NEGATIVE_PROMPT: ${ANTI_FANTASY_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}
+  `;
+};
+
+/**
+ * Genera un prompt con filtro de autenticidad humana (personas reales, no supermodelos)
+ * @param basePrompt - Prompt base al que agregar reglas humanas
+ * @returns Prompt con reglas de sujetos reales
+ */
+export const generateHumanPrompt = (basePrompt: string): string => {
+  return `
+    ${basePrompt}
+    ${HUMAN_AUTHENTICITY_RULES}
+    STRICT_PHOTOGRAPHY: High-speed shutter to capture natural movement, authentic skin tones under natural light.
+    NEGATIVE_PROMPT: ${ANTI_MODEL_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}
+  `;
+};
+
+/**
+ * Genera el prompt final con filtros de realismo integrados
+ * @param config - Configuración del usuario
+ * @returns Prompt final con filtros de realidad local y autenticidad humana
+ */
+export const generateRealisticFinalPrompt = (config: UserConfig): string => {
+  const { description, format, contentType, industryId } = config;
+  
+  // 🧹 SANITIZAR la descripción del usuario para eliminar palabras que incitan a generar texto
+  const cleanDescription = sanitizeIntent(description);
+  
+  // Obtener configuración de dirección de arte
+  const artDirectionConfig = getArtDirectionById(industryId);
+  const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
+  const industryRubro = artDirectionConfig?.rubro || "General";
+  
+  // Reglas de composición según formato
+  let compositionRule: string;
+  if (format === '9:16') {
+    compositionRule = "Vertical focus (60-70% subject). Leave top and bottom as clear negative space for overlays.";
+  } else if (format === '1:1') {
+    compositionRule = "Centered balanced composition with clean backgrounds.";
+  } else if (format === '16:9') {
+    compositionRule = "Cinematic wide composition with centered subject.";
+  } else {
+    compositionRule = "Vertical portrait composition with subject focus.";
+  }
+  
+  // Construir prompt con filtros de realismo
+  const promptParts: string[] = [];
+  
+  // 🧹 LIMPIEZA DE INTENCIÓN - Engañar a la IA para que piense que es fotografía, no diseño
+  promptParts.push(STRICT_CLEAN_RULES.trim());
+  
+  // Objetivo y contexto (usando descripción limpia)
+  promptParts.push(`OBJECTIVE: Professional visual asset - ${cleanDescription}.`);
+  
+  // Filtro de realismo local (negocios reales)
+  promptParts.push(REAL_BUSINESS_ENVIRONMENT);
+  
+  // Filtro de autenticidad humana (personas reales)
+  promptParts.push(HUMAN_AUTHENTICITY_RULES);
+  
+  // Física y anatomía (usando constantes existentes)
+  promptParts.push(BONE_ANCHOR_RULES);
+  
+  // Dirección de arte
+  promptParts.push(`VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.`);
+  
+  // Composición
+  promptParts.push(`COMPOSITION: ${compositionRule}`);
+  
+  // Movimiento para video
+  if (contentType === 'video' || contentType === 'story_art') {
+    const motionStyles: Record<string, string> = {
+      'Retail General': "Subtle camera pan, product reveal shot",
+      'Moda': "Gentle fabric movement, model flow",
+      'Joyas': "Diamond sparkle rotation, light refraction",
+      'Gaming': "RGB pulse, glitch motion effects",
+      'Gastronomía': "Steam rising, sauce drizzle motion",
+      'Wellness': "Soft float, zen movement",
+      'Fitness': "Dynamic action, muscle tension",
+      'Belleza': "Soft glow transition, makeup shimmer",
+      'default': "Cinematic steady motion"
+    };
+    
+    let motionStyle = "Cinematic steady motion";
+    for (const [key, value] of Object.entries(motionStyles)) {
+      if (industryRubro.toLowerCase().includes(key.toLowerCase())) {
+        motionStyle = value;
+        break;
+      }
+    }
+    
+    promptParts.push(`MOTION_DYNAMICS: ${motionStyle}. Inertia-based movement.`);
+  }
+  
+  // 🔤 BLOQUEO DE TEXTO ABSOLUTO - Negative prompts combinados
+  promptParts.push(`NEGATIVE_PROMPT: ${NEGATIVE_TEXT_SHIELD}, ${ANTI_FANTASY_SHIELD}, ${ANTI_MODEL_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}`);
+  
+  return promptParts.join('\n\n');
+};
+
+/**
+ * Genera un prompt completamente limpio sin texto usando sanitizeIntent
+ * @param config - Configuración del usuario
+ * @returns Prompt con intención sanitizada y bloqueo de texto absoluto
+ */
+export const generateCleanPrompt = (config: UserConfig): string => {
+  const { description, industryId } = config;
+  
+  // 🧹 Sanitizar la descripción del usuario
+  const cleanDescription = sanitizeIntent(description);
+  
+  // Obtener configuración de dirección de arte
+  const artDirectionConfig = getArtDirectionById(industryId);
+  const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
+  
+  return `
+    ${CLEAN_PLATE_RULE}
+    ${REAL_BUSINESS_ENVIRONMENT}
+    ${HUMAN_AUTHENTICITY_RULES}
+    
+    SCENE: ${cleanDescription}
+    VISUAL_STYLE: ${industryContext}. Matte textures and organic lighting.
+    
+    NEGATIVE_PROMPT: ${NEGATIVE_TEXT_SHIELD}, ${ANTI_FANTASY_SHIELD}, ${ANTI_MODEL_SHIELD}, ${GLOBAL_NEGATIVE_SHIELD}, ${ANATOMY_SHIELD}
+  `.trim();
 };
 
 /**
