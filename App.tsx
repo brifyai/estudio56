@@ -186,8 +186,8 @@ const Dashboard: React.FC = () => {
   const [showRealityComparator, setShowRealityComparator] = useState(false);
   const [isGeneratingReality, setIsGeneratingReality] = useState(false);
   const [realityGenerationMessage, setRealityGenerationMessage] = useState<string | null>(null);
-  // NEW: Forzar supresión de comparación durante cambios de realidad
-  const [suppressComparison, setSuppressComparison] = useState(false);
+  // NEW: Estado SEPARADO para variaciones de realidad - NO tocar hdImageUrl
+  const [realityImageUrl, setRealityImageUrl] = useState<string | null>(null);
   
   // NEW: Estados para estilos manuales del editor de texto
   const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
@@ -798,6 +798,8 @@ const handleGenerate = async () => {
     }
     setImageUrl(null);
     setHdImageUrl(null);
+    // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
+    setRealityImageUrl(null);
     setCurrentSpanishPrompt(''); // Limpiar prompt en español
     const newSeed = Math.floor(Math.random() * 2000000000);
     setSeed(newSeed);
@@ -1499,6 +1501,7 @@ const handleGenerate = async () => {
 
   // 🎚️ REALITY SLIDER HANDLER - Maneja cambios en el nivel de realidad
   // MEJORADO: Usa imagen de referencia + artDirectionId para consistencia visual al 100%
+  // ARQUITECTURA: Las variaciones de realidad se guardan en realityImageUrl, NO en hdImageUrl
   const handleRealityChange = async (newLevel: number) => {
     console.log('🎚️ Reality Slider cambiado a:', newLevel);
     
@@ -1511,8 +1514,8 @@ const handleGenerate = async () => {
     if (realityVariations[levelKey]) {
       console.log('✅ Variación encontrada en caché:', levelKey);
       setImageUrl(realityVariations[levelKey]);
-      // HD siempre es la imagen actual con cambios, draft es la original
-      setHdImageUrl(realityVariations[levelKey]); // Actualizar HD con la variación
+      // 🎯 GUARDAR EN realityImageUrl - NO en hdImageUrl para evitar comparación automática
+      setRealityImageUrl(realityVariations[levelKey]);
       setRealityLevel(levelKey);
       return;
     }
@@ -1520,7 +1523,6 @@ const handleGenerate = async () => {
     // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN CON REFERENCIA
     console.log('🔄 Generando nueva variación para nivel:', levelKey);
     setIsGeneratingReality(true);
-    setSuppressComparison(true); // 🔒 FORZAR supresión de comparación
     setRealityGenerationMessage(`🎚️ Generando imagen con realismo ${levelKey}★...`);
     setRealityLevel(levelKey);
     
@@ -1587,9 +1589,10 @@ const handleGenerate = async () => {
           [levelKey]: result.imageDataUrl
         }));
         
-        // Actualizar imagen mostrada - HD es la imagen actual con cambios
+        // Actualizar imagen mostrada
         setImageUrl(result.imageDataUrl);
-        setHdImageUrl(result.imageDataUrl); // HD siempre tiene los cambios actuales
+        // 🎯 GUARDAR EN realityImageUrl - NO en hdImageUrl para evitar comparación automática
+        setRealityImageUrl(result.imageDataUrl);
         
         // SceneId ya fue inicializado en handleGenerate, no es necesario setearlo aquí
         
@@ -1604,8 +1607,6 @@ const handleGenerate = async () => {
       setTimeout(() => setRealityGenerationMessage(null), 3000);
     } finally {
       setIsGeneratingReality(false);
-      // NEW: Restaurar suppressComparison después de un delay para permitir que el useEffect se ejecute
-      setTimeout(() => setSuppressComparison(false), 100);
     }
   };
 
@@ -1757,46 +1758,48 @@ const handleGenerate = async () => {
                       w-full rounded-[1.5rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
                     `}>
                       <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 p-2">
-                          <FlyerDisplay
-                              imageUrl={imageUrl}
-                              draftImageUrl={draftImageUrl}
-                              hdImageUrl={hdImageUrl}
-                              draftVideoUrl={draftVideoUrl}
-                              hdVideoUrl={hdVideoUrl}
-                              status={status}
-                              aspectRatio={aspectRatio}
-                              logoUrl={logoUrl}
-                              logoColor={logoColor}
-                              logoFilters={logoFilters}
-                              productUrl={productUrl}
-                              onRefine={handleRefine}
-                              isDraft={isDraft}
-                              onUpgradeToHD={handleUpgradeToHD}
-                              initialOverlayText={overlayText}
-                              textPosition={textPosition}
-                              setTextPosition={setTextPosition}
-                              workMode={workMode}
-                              styleKey={styleKey}
-                              videoStyleKey={videoStyleKey} // ✅ NEW: Prop separada para video
-                              overlayText={overlayText}
-                              setOverlayText={setOverlayText}
-                              textStyles={manualTextStyles}
-                              setTextStyles={setManualTextStyles}
-                              logoPosition={logoPosition}
-                              setLogoPosition={setLogoPosition}
-                              productPosition={productPosition}
-                              setProductPosition={setProductPosition}
-                              mediaType={mediaType} // NEW: Para ocultar overlays en videos y story art
-                              // Visual Mimicry props
-                              surfaceType={surfaceType}
-                              onSurfaceTypeChange={setSurfaceType}
-                              autoDetectedSurface={autoDetectedSurface}
-                              // NEW: Para evitar comparación automática durante generación de realidad
-                              isGeneratingReality={isGeneratingReality}
-                              // NEW: Supresión forzada de comparación durante realidad
-                              suppressComparison={suppressComparison}
-                          />
-                      </div>
+                          {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: realityImageUrl → hdImageUrl → draftImageUrl */}
+                          {(() => {
+                            const displayUrl = realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
+                            return (
+                              <FlyerDisplay
+                                imageUrl={displayUrl}
+                                draftImageUrl={draftImageUrl}
+                                hdImageUrl={hdImageUrl}
+                                draftVideoUrl={draftVideoUrl}
+                                hdVideoUrl={hdVideoUrl}
+                                status={status}
+                                aspectRatio={aspectRatio}
+                                logoUrl={logoUrl}
+                                logoColor={logoColor}
+                                logoFilters={logoFilters}
+                                productUrl={productUrl}
+                                onRefine={handleRefine}
+                                isDraft={isDraft}
+                                onUpgradeToHD={handleUpgradeToHD}
+                                initialOverlayText={overlayText}
+                                textPosition={textPosition}
+                                setTextPosition={setTextPosition}
+                                workMode={workMode}
+                                styleKey={styleKey}
+                                videoStyleKey={videoStyleKey}
+                                overlayText={overlayText}
+                                setOverlayText={setOverlayText}
+                                textStyles={manualTextStyles}
+                                setTextStyles={setManualTextStyles}
+                                logoPosition={logoPosition}
+                                setLogoPosition={setLogoPosition}
+                                productPosition={productPosition}
+                                setProductPosition={setProductPosition}
+                                mediaType={mediaType}
+                                surfaceType={surfaceType}
+                                onSurfaceTypeChange={setSurfaceType}
+                                autoDetectedSurface={autoDetectedSurface}
+                                isGeneratingReality={isGeneratingReality}
+                              />
+                            );
+                          })()}
+                       </div>
                     </div>
                   </div>
                 )}
@@ -1941,49 +1944,50 @@ const handleGenerate = async () => {
                 {/* Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
-                <FlyerDisplay
-                    imageUrl={imageUrl}
-                    draftImageUrl={draftImageUrl}
-                    hdImageUrl={hdImageUrl}
-                    // Videos
-                    draftVideoUrl={draftVideoUrl}
-                    hdVideoUrl={hdVideoUrl}
-                    status={status}
-                    aspectRatio={aspectRatio}
-                    logoUrl={logoUrl}
-                    logoColor={logoColor}
-                    logoFilters={logoFilters}
-                    productUrl={productUrl}
-                    onRefine={handleRefine}
-                    isDraft={isDraft}
-                    onUpgradeToHD={handleUpgradeToHD}
-                    initialOverlayText={overlayText}
-                    textPosition={textPosition}
-                    setTextPosition={setTextPosition}
-                    workMode={workMode}
-                    styleKey={styleKey}
-                    videoStyleKey={videoStyleKey} // ✅ NEW: Prop separada para video
-                    overlayText={overlayText}
-                    setOverlayText={setOverlayText}
-                    textStyles={manualTextStyles}
-                    setTextStyles={setManualTextStyles}
-                    logoPosition={logoPosition}
-                    setLogoPosition={setLogoPosition}
-                    productPosition={productPosition}
-                    setProductPosition={setProductPosition}
-                    mediaType={mediaType} // NEW: Para ocultar overlays en videos y story art
-                    // Visual Mimicry props
-                    surfaceType={surfaceType}
-                    onSurfaceTypeChange={setSurfaceType}
-                    autoDetectedSurface={autoDetectedSurface}
-                    // NEW: Para evitar comparación automática durante generación de realidad
-                    isGeneratingReality={isGeneratingReality}
-                    // NEW: Supresión forzada de comparación durante realidad
-                    suppressComparison={suppressComparison}
-                />
-          </div>
-          
-        </div>
+                {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: realityImageUrl → hdImageUrl → draftImageUrl */}
+                {(() => {
+                  const displayUrl = realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
+                  return (
+                    <FlyerDisplay
+                      imageUrl={displayUrl}
+                      draftImageUrl={draftImageUrl}
+                      hdImageUrl={hdImageUrl}
+                      draftVideoUrl={draftVideoUrl}
+                      hdVideoUrl={hdVideoUrl}
+                      status={status}
+                      aspectRatio={aspectRatio}
+                      logoUrl={logoUrl}
+                      logoColor={logoColor}
+                      logoFilters={logoFilters}
+                      productUrl={productUrl}
+                      onRefine={handleRefine}
+                      isDraft={isDraft}
+                      onUpgradeToHD={handleUpgradeToHD}
+                      initialOverlayText={overlayText}
+                      textPosition={textPosition}
+                      setTextPosition={setTextPosition}
+                      workMode={workMode}
+                      styleKey={styleKey}
+                      videoStyleKey={videoStyleKey}
+                      overlayText={overlayText}
+                      setOverlayText={setOverlayText}
+                      textStyles={manualTextStyles}
+                      setTextStyles={setManualTextStyles}
+                      logoPosition={logoPosition}
+                      setLogoPosition={setLogoPosition}
+                      productPosition={productPosition}
+                      setProductPosition={setProductPosition}
+                      mediaType={mediaType}
+                      surfaceType={surfaceType}
+                      onSurfaceTypeChange={setSurfaceType}
+                      autoDetectedSurface={autoDetectedSurface}
+                      isGeneratingReality={isGeneratingReality}
+                    />
+                  );
+                })()}
+           </div>
+           
+         </div>
     </main>
 
       {/* RIGHT PANEL: CALENDAR - Overlay en mobile portrait, sidebar en landscape (lg) */}
@@ -2100,6 +2104,8 @@ const handleGenerate = async () => {
            setRealityLevel(level);
            if (realityVariations[level]) {
              setImageUrl(realityVariations[level]);
+             // 🎯 GUARDAR en realityImageUrl para mantener la arquitectura
+             setRealityImageUrl(realityVariations[level]);
            }
            setShowRealityComparator(false);
          }}
