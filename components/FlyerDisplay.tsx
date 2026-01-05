@@ -165,6 +165,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   // Estado local para el texto mientras se edita
   const [localText, setLocalText] = useState('');
+  // Guardar texto original del borrador para comparación HD vs Draft
+  const [draftOverlayText, setDraftOverlayText] = useState<string>('');
   
   // Estado local para dimensiones del textarea
   const [textDimensions, setTextDimensions] = useState({ width: 200, height: 60 });
@@ -370,6 +372,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   
   const displayStyles = textStyles || defaultStyles;
 
+  // Inicializar texto del borrador cuando se carga la imagen
+  useEffect(() => {
+    if (initialOverlayText && !draftOverlayText) {
+      setDraftOverlayText(initialOverlayText);
+    }
+  }, [initialOverlayText, draftOverlayText]);
+  
   // Sincronizar texto local cuando cambia overlayText (solo si no está editando)
   useEffect(() => {
     // Solo actualizar si no estamos editando Y el texto cambió significativamente
@@ -1381,7 +1390,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // Componente de texto - SIMPLIFICADO
   const renderText = (isComparisonDraft: boolean = false) => {
     // Mostrar texto del usuario (localText) o texto generado automáticamente (overlayText/initialOverlayText)
-    const displayText = localText || overlayText || initialOverlayText || '';
+    // Para borrador en comparación, usar draftOverlayText (texto original del borrador)
+    const displayText = isComparisonDraft 
+      ? (draftOverlayText || initialOverlayText || localText || overlayText || '')
+      : (localText || overlayText || initialOverlayText || '');
     
     // Si no hay texto que mostrar y no estamos editando, no renderizar nada
     if (!displayText && !isEditing) return null;
