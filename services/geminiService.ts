@@ -129,6 +129,20 @@ const ANTI_MODEL_SHIELD = "supermodel look, heavy makeup, plastic surgery look, 
 // Escudo negativo exhaustivo para bloquear cualquier carácter
 const NEGATIVE_TEXT_SHIELD = "text, typography, watermark, logo, subtitles, captions, letters, words, alphabet, signature, branding, header, footer, overlay text, writing, scribbles, messy text, distorted letters, menu, price tags, signs, billboards, posters, banners, labels, written characters, alphanumeric, numbers, digits, kanji, chinese characters, arabic text, cyrillic, symbols, icons, emojis, decorative text, fancy letters, stylized text, typography design";
 
+// 🛡️ BLOQUEO DE TEXTO ESPECÍFICO PARA VIDEOS - Más agresivo para prevenir texto en movimiento
+const VIDEO_TEXT_BLOCK = `
+VIDEO_TEXT_BLOCK_STRICT:
+- ABSOLUTELY NO TEXT OF ANY KIND in the video frame
+- NO text on walls, signs, menus, products, clothing, or any surface
+- NO superimposed text, titles, or captions
+- NO on-screen graphics with words or letters
+- NO branding text or logos
+- NO price tags or labels with writing
+- If text appears, the video is INVALID
+- Pure video content only - no typography, no graphics, no text overlays
+- Walls must be blank, signs must be empty, products must be plain
+`.trim();
+
 // Regla de "Cámara Limpia" - Fotografía pura sin elementos gráficos
 const CLEAN_PLATE_RULE = `
   CLEAN_PLATE_RULES:
@@ -2225,10 +2239,10 @@ const generateFlyerVideoVEO = async (
 // Simplify prompt for Draft Video too
 let finalPrompt = "";
 if (quality === 'draft') {
-  finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. RAW PHOTO STYLE. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} ${RAW_PHOTO_TEXTURE.replace(/\n/g, ' ')} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE.${motionGuardrailText}`;
+  finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. RAW PHOTO STYLE. Video clip: ${cleanDescription} ${productPromptSuffix}. Movement: ${motionPrompt}. ${CHILEAN_CONTEXT_LITE} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} ${RAW_PHOTO_TEXTURE.replace(/\n/g, ' ')} REMOVE ALL SYMBOLS. WALLS MUST BE BLANK TEXTURE. ${VIDEO_TEXT_BLOCK} ${motionGuardrailText}`;
 } else {
   // HD: Usar prompt que enfatiza consistencia con la imagen de referencia + reglas anatómicas
-  finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. NATURAL DAYLIGHT VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} ${REAL_BUSINESS_ENVIRONMENT.replace(/\n/g, ' ')} ${RAW_PHOTO_TEXTURE.replace(/\n/g, ' ')} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE.${motionGuardrailText}`;
+  finalPrompt = `HIGH FIDELITY PHYSICS. ANATOMICAL CORRECTNESS. NATURAL DAYLIGHT VIDEO. STYLE: ${promptBase}. MOVEMENT: ${motionPrompt}. CONTEXT: Chile. SUBJECT: ${cleanDescription} ${productPromptSuffix} ${VIDEO_PHYSICS_GUARDRAIL} ${BONE_ANCHOR_RULES} ${REAL_BUSINESS_ENVIRONMENT.replace(/\n/g, ' ')} ${RAW_PHOTO_TEXTURE.replace(/\n/g, ' ')} STRICTLY NO TEXT OR SYMBOLS ON SURFACES. WALLS ARE SOLID COLOR OR PLAIN TEXTURE. ${VIDEO_TEXT_BLOCK} ${motionGuardrailText}`;
 }
 
     // Si tenemos imagen de referencia (HD desde draft), agregarla al prompt
