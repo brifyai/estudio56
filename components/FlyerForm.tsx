@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Swal from 'sweetalert2';
 import { estudioAlerts } from '../src/lib/alerts';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle, PosterStyle } from '../types';
@@ -146,6 +146,22 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // NUEVO: Estados para alternativas de texto
   const [textOptions, setTextOptions] = useState<{branding: string[], leads: string[]} | null>(null);
   const [selectedTextOption, setSelectedTextOption] = useState<string>('');
+  
+  // Validación para habilitar botón GENERAR CAMPAÑA
+  const canGenerate = useMemo(() => {
+    const hasMediaType = mediaType && mediaType !== '';
+    const hasDescription = description && description.trim() !== '';
+    
+    // Para image y product_study, también necesita marketing objective y texto seleccionado
+    if (mediaType === 'image' || mediaType === 'product_study') {
+      const hasMarketingObjective = marketingObjective && marketingObjective !== '';
+      const hasTextOption = selectedTextOption && selectedTextOption !== '';
+      return hasMediaType && hasDescription && hasMarketingObjective && hasTextOption;
+    }
+    
+    // Para video y story_art, solo necesita mediaType y description
+    return hasMediaType && hasDescription;
+  }, [mediaType, description, marketingObjective, selectedTextOption]);
   
   // NUEVO: Estados para Modo Magia
   const [magicModeResult, setMagicModeResult] = useState<MagicModeResult | null>(null);
@@ -1248,9 +1264,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 // Ejecutar generación normal
                 onSubmit();
               }}
-              disabled={isLoading || !description.trim()}
+              disabled={isLoading || !canGenerate}
               className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
-              ${isStoryArtModeActive
+              ${!canGenerate 
+                  ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
+                  : isStoryArtModeActive
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/40'
                   : mediaType === 'video'
                   ? 'bg-indigo-600 text-white shadow-indigo-900/40'
