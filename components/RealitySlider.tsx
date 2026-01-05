@@ -269,8 +269,12 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
       <div className="flex gap-2 mb-3">
         {/* Botón Actualizar - Solo cambia la imagen principal */}
         <button
+          type="button"
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
             if (localValue !== value && !disabled && !isGenerating) {
               onLevelChange?.(localValue);
             }
