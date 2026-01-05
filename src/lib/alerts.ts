@@ -73,7 +73,7 @@ export const estudioAlerts = {
           }
           
           // Si no hay actualización, avanzar automáticamente
-          if (percent < 95) {
+          if (percent < 100) {
             percent += 2;
             updateProgress(percent, message || 'Generando imagen...');
           }
