@@ -42,6 +42,7 @@ import { enhancePrompt, generateFlyerImage, refineDescription, generatePersuasiv
 import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
 import creditService from './services/creditService';
 import { SurfaceType } from './hooks/useSurfaceDetection';
+import { getStoryArtStyleById, type StoryArtStyleId } from './src/constants/storyArtStyles';
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
@@ -174,6 +175,15 @@ const Dashboard: React.FC = () => {
   // NEW: Estados para Visual Mimicry
   const [surfaceType, setSurfaceType] = useState<SurfaceType>('default');
   const [autoDetectedSurface, setAutoDetectedSurface] = useState<SurfaceType | null>(null);
+  
+  // 🎨 STORY ART VISUAL STYLE STATE - 7 estilos visuales únicos
+  const [storyArtVisualStyleId, setStoryArtVisualStyleId] = useState<StoryArtStyleId | null>(null);
+  
+  // Handler para cuando se selecciona un estilo visual Story Art
+  const handleStoryArtStyleSelected = (id: StoryArtStyleId | null) => {
+    setStoryArtVisualStyleId(id);
+    console.log(`🎨 Estilo visual Story Art seleccionado: ${id}`);
+  };
   
   // NEW: Estados para posición de logo y producto
   const [logoPosition, setLogoPosition] = useState<{x: number, y: number; width: number}>({ x: 10, y: 10, width: 80 });
@@ -1198,19 +1208,14 @@ const handleGenerate = async () => {
           undefined // autoTextStyle
         );
         
-        // Video generation disabled
-        // const url = await generateFlyerVideo(enhancedPrompt, effectiveVideoStyleKey, aspectRatio, imageQuality, hasProductOverlay, imageResult.imageDataUrl);
-        console.log('✅ Video generated:', url?.substring(0, 50) + '...');
-        setImageUrl(url);
+        // Video generation disabled - no hacer nada cuando está deshabilitado
+        console.log('⚠️ Generación de video deshabilitada');
+        // Usar la imagen base generada en lugar de video
+        setImageUrl(imageResult.imageDataUrl);
         
-        // Guardar video e imagen en estados correspondientes
+        // Guardar imagen en estados correspondientes (no hay video)
         if (imageQuality === 'draft') {
-          setDraftVideoUrl(url);
-          setDraftVideoImageUrl(imageResult.imageDataUrl); // Guardar imagen para usar en HD
-          // Limpiar video HD anterior
-          setHdVideoUrl(null);
-        } else {
-          setHdVideoUrl(url);
+          setDraftVideoImageUrl(imageResult.imageDataUrl); // Guardar imagen para uso futuro
         }
         
         setIsDraft(imageQuality === 'draft');
@@ -1348,17 +1353,20 @@ const handleGenerate = async () => {
               }
             }
       } else {
-          // ✅ CORREGIDO: Usar videoStyleKey para video HD
+          // ✅ CORREGIDO: Video generation disabled - usar imagen base
+            console.log('⚠️ Generación de video HD deshabilitada, usando imagen base');
             const { english: enhancedPrompt } = await enhancePrompt(description, videoStyleKey);
-            // Usar imagen draft como referencia para mantener consistencia
-            url = await generateFlyerVideo(
+            const hdImageResult = await generateFlyerImage(
               enhancedPrompt,
               videoStyleKey,
               aspectRatio,
               'hd',
+              seed,
+              undefined,
               hasProductOverlay,
-              draftVideoImageUrl || undefined // Usar imagen draft para mantener consistencia
+              false
             );
+            url = hdImageResult.imageDataUrl;
       }
         setImageUrl(url);
         setHdImageUrl(url);
@@ -1488,7 +1496,7 @@ const handleGenerate = async () => {
            hasProductOverlay,
            false
          );
-         url = await generateFlyerVideo(newPrompt, videoStyleKey, aspectRatio, qualityToUse, hasProductOverlay, refineImageResult.imageDataUrl);
+         url = refineImageResult.imageDataUrl;
       }
       setImageUrl(url);
       setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
@@ -1766,6 +1774,9 @@ const handleGenerate = async () => {
                     selectedSurface={surfaceType}
                     setSelectedSurface={setSurfaceType}
                     autoDetectedSurface={autoDetectedSurface}
+                    // 🎨 Story Art props - Already defined at top of Dashboard
+                    storyArtVisualStyleId={storyArtVisualStyleId}
+                    onStoryArtStyleSelected={handleStoryArtStyleSelected}
                 />
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
