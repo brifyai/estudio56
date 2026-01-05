@@ -186,7 +186,13 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
 
   // Modo completo
   return (
-    <div className="p-4 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md">
+    <div
+      className="p-4 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md"
+      onClick={(e) => {
+        console.log('🖱️ [RealitySlider] onClick capturado');
+        e.stopPropagation();
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
