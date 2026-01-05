@@ -2005,8 +2005,8 @@ const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
   if (quality === 'draft') {
-    // Draft: Use Gemini 2.0 for fast generation
-    const model = 'gemini-2.0-flash-exp';
+    // Draft: Use Gemini 2.5 for Story Art (best quality/speed balance)
+    const model = 'gemini-2.5-flash-image';
     
     try {
         // Use same seed, same prompt structure, just different model variant
