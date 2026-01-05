@@ -138,12 +138,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [progressMessage, setProgressMessage] = useState('Iniciando...');
   
   // NEW: Refs para que el intervalo pueda leer valores actualizados
-  const progressPercentRef = useRef(0);
+  const progressPercentRef = useRef<{ current: number; lastProgressTime?: number }>({ current: 0, lastProgressTime: undefined });
   const progressMessageRef = useRef('Iniciando...');
   
   // Mantener refs sincronizados con estados
   useEffect(() => {
-    progressPercentRef.current = progressPercent;
+    progressPercentRef.current.current = progressPercent;
   }, [progressPercent]);
   
   useEffect(() => {
@@ -360,11 +360,34 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     };
     
     // Buscar coincidencia con el mensaje actual
+    let found = false;
     for (const [key, value] of Object.entries(messageProgress)) {
       if (status.message.includes(key)) {
         setProgressPercent(value.percent);
         setProgressMessage(value.message);
+        found = true;
+        console.log('📊 Progreso actualizado:', value.message, value.percent + '%');
         break;
+      }
+    }
+    
+    // Si no se encontró ningún mensaje conocido y isLoading es true, avanzar progresivamente
+    if (!found && isLoading) {
+      // Si pasan más de 5 segundos sin cambio, avanzar automáticamente
+      const currentTime = Date.now();
+      if (!progressPercentRef.current.lastProgressTime) {
+        progressPercentRef.current.lastProgressTime = currentTime;
+      }
+      
+      const elapsed = currentTime - (progressPercentRef.current.lastProgressTime || currentTime);
+      
+      // Si ya pasó un tiempo significativo, avanzar el progreso
+      if (elapsed > 5000 && progressPercentRef.current.current < 80) {
+        const newPercent = Math.min(progressPercentRef.current.current + 10, 80);
+        setProgressPercent(newPercent);
+        setProgressMessage('Generando imagen...');
+        progressPercentRef.current.lastProgressTime = currentTime;
+        console.log('📊 Progreso automático:', newPercent + '%');
       }
     }
     
@@ -1276,7 +1299,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                         const progressBar = document.getElementById('progress-bar');
                         const progressText = document.getElementById('progress-text');
                         const progressPercentEl = document.getElementById('progress-percent');
-                        const currentPercent = progressPercentRef.current;
+                        const currentPercent = progressPercentRef.current.current;
                         const currentMessage = progressMessageRef.current;
                         
                         if (progressBar) progressBar.style.width = currentPercent + '%';
