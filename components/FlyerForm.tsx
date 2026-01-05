@@ -1242,7 +1242,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 // Mostrar alerta de progreso si es imagen y calidad draft
                 if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
                   // Abrir alerta de progreso con SweetAlert2
-                  progressAlertRef.current = estudioAlerts.progress('Iniciando...');
+                  progressAlertRef.current = estudioAlerts.progress('Generando imagen en borrador');
                   console.log('📊 Alerta de progreso abierta');
                 }
                 // Ejecutar generación normal
