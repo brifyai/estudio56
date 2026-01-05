@@ -131,6 +131,38 @@ export const STORY_ART_VISUAL_STYLES: StoryArtStyle[] = [
 // Alias para compatibilidad
 export const STORY_ART_STYLES = STORY_ART_VISUAL_STYLES;
 
+// Categorías organizadas
+export const STORY_ART_CATEGORIES: Record<string, { label: string; styles: StoryArtStyleId[] }> = {
+  editorial: {
+    label: '✨ Editorial & Moda',
+    styles: ['vogue_negative']
+  },
+  digital: {
+    label: '🌈 Digital & Urbano',
+    styles: ['neon_kinetic']
+  },
+  product: {
+    label: '🔍 Producto & Detalle',
+    styles: ['macro_essence']
+  },
+  cinematic: {
+    label: '🎬 Cinematográfico',
+    styles: ['cinematic_frame']
+  },
+  artistic: {
+    label: '🎨 Artístico',
+    styles: ['collage_dynamic']
+  },
+  classic: {
+    label: '🗿 Clásico & Elegante',
+    styles: ['marble_sculpture']
+  },
+  anime: {
+    label: '🎭 Anime & Cosplay',
+    styles: ['anime_to_real']
+  }
+};
+
 // Función para obtener un estilo por ID
 export function getStoryArtStyle(styleId: StoryArtStyleId): StoryArtStyle | undefined {
   return STORY_ART_VISUAL_STYLES.find(style => style.id === styleId);

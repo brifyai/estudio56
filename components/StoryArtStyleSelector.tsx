@@ -163,17 +163,6 @@ export const StoryArtStyleSelector: React.FC<StoryArtStyleSelectorProps> = ({
         })}
       </div>
 
-      {/* Descripción del estilo seleccionado */}
-      {selectedStyle && (
-        <div className="selected-style-details">
-          <h4>Detalles del Estilo</h4>
-          <p>{STORY_ART_STYLES[selectedStyle].description}</p>
-          <div className="style-technical-preview">
-            <code>{STORY_ART_STYLES[selectedStyle].prompt.substring(0, 150)}...</code>
-          </div>
-        </div>
-      )}
-
       {/* Estilos grid para selección rápida */}
       <div className="style-quick-select">
         <h4>Selección Rápida</h4>
