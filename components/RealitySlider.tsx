@@ -149,7 +149,10 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
                   key={level}
                   onClick={() => {
                     setLocalValue(level);
-                    onChange(level);
+                    // Solo cambiar si es diferente y llamar a onLevelChange
+                    if (level !== value) {
+                      onLevelChange?.(level);
+                    }
                   }}
                   disabled={disabled || isGenerating}
                   className={`relative w-4 h-4 rounded-full text-[8px] flex items-center justify-center transition-all
