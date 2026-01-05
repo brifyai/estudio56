@@ -401,3 +401,58 @@ export interface RealityComparisonState {
   /** Si el comparador está activo */
   isActive: boolean;
 }
+
+// ============================================
+// 🎨 TIPOS PARA STORY ART STYLES
+// ============================================
+
+export type StoryArtStyleId =
+  | 'vogue_negative'
+  | 'neon_kinetic'
+  | 'macro_essence'
+  | 'cinematic_frame'
+  | 'collage_dynamic'
+  | 'marble_sculpture'
+  | 'anime_to_real';
+
+export interface StoryArtStyle {
+  id: StoryArtStyleId;
+  name: string;
+  description: string;
+  prompt: string;
+  negativePrompt: string;
+  icon: string;
+  category: 'editorial' | 'digital' | 'product' | 'documental' | 'montage' | 'classic' | 'cosplay';
+  color: string;
+}
+
+export interface StoryArtCategory {
+  label: string;
+  description: string;
+  styles: StoryArtStyleId[];
+}
+
+export interface StoryArtState {
+  /** Si Story Art está activo */
+  isActive: boolean;
+  /** Estilo visual seleccionado */
+  selectedStyle: StoryArtStyleId | null;
+  /** ID del rubro de dirección de arte */
+  artDirectionId: number | null;
+  /** Si la dirección de arte fue aplicada */
+  artDirectionApplied: boolean;
+  /** Feedback message */
+  feedbackMessage: string | null;
+}
+
+export interface StoryArtResult {
+  success: boolean;
+  prompt: string;
+  style: StoryArtStyle | null;
+  artDirectionConfig: {
+    id: number;
+    rubro: string;
+    prompt: string;
+  } | null;
+  error?: string;
+}

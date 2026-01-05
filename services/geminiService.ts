@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality } from "../types";
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId } from "../types";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -27,6 +27,12 @@ import {
   getArtDirectionById,
   ART_DIRECTION_SYSTEM
 } from "../src/constants/artDirectionIndex";
+import {
+  STORY_ART_STYLES,
+  getStoryArtStyle,
+  buildStoryArtPrompt,
+  type StoryArtStyle
+} from "../src/constants/storyArtStyles";
 import { analyzeVisualMimicry, generateMimicryCSS, generateMimicryClasses, VisualMimicryResult } from "./visualMimicryService";
 
 // ============================================
@@ -1746,18 +1752,72 @@ export const generateFlyerImage = async (
                                enhancedDescription.includes('SAFE ZONES:');
   
   if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
-    // Story Art: Usar dirección de arte específica del rubro
+    // Story Art: Usar dirección de arte específica del rubro + ESTILOS VISUALES ÚNICOS
     const artConfig = getArtDirectionById(artDirectionId);
     console.log(`🎨 [Story Art] getArtDirectionById(${artDirectionId}):`, artConfig ? artConfig.rubro : 'NULL');
     console.log(`🔍 [Story Art] Prompt ya tiene reglas de Story Art: ${HAS_STORY_ART_RULES}`);
     
     if (artConfig) {
-      activeStylePrompt = artConfig.prompt;
-      activeStyleLabel = artConfig.rubro;
-      console.log(`✅ [Story Art] Usando dirección de arte: ${artConfig.rubro} (ID: ${artDirectionId})`);
+      // ============================================
+      // APLICAR ESTILOS VISUALES ÚNICOS DE STORY ART
+      // Esto es lo que diferencia Story Art de imágenes normales
+      // Los estilos visuales se seleccionan por categoría del rubro
+      // ============================================
+      
+      // Mapear rubro a estilo visual de Story Art
+      const getStoryArtStyleForIndustry = (rubro: string): 'vogue_negative' | 'neon_kinetic' | 'macro_essence' | 'cinematic_frame' | 'collage_dynamic' | 'marble_sculpture' | 'anime_to_real' => {
+        const rubroLower = rubro.toLowerCase();
+        
+        // Belleza, Moda, Wellness → Editorial/Vogue
+        if (rubroLower.includes('belleza') || rubroLower.includes('moda') || rubroLower.includes('wellness') || rubroLower.includes('spa')) {
+          return 'vogue_negative';
+        }
+        // Gaming, Tech, Entretención → Digital/Neon
+        if (rubroLower.includes('gaming') || rubroLower.includes('tech') || rubroLower.includes('entretencion') || rubroLower.includes('noche')) {
+          return 'neon_kinetic';
+        }
+        // Gastronomía, Joyas, Producto → Producto/Macro
+        if (rubroLower.includes('gastronom') || rubroLower.includes('joyas') || rubroLower.includes('comida') || rubroLower.includes('retail')) {
+          return 'macro_essence';
+        }
+        // Fitness, Deportes, Salud → Documental/Cinematic
+        if (rubroLower.includes('fitness') || rubroLower.includes('deporte') || rubroLower.includes('salud') || rubroLower.includes('gym')) {
+          return 'cinematic_frame';
+        }
+        // Eventos, Entretención, Kids → Montaje/Collage
+        if (rubroLower.includes('evento') || rubroLower.includes('fiesta') || rubroLower.includes('niños') || rubroLower.includes('infantil')) {
+          return 'collage_dynamic';
+        }
+        // Lujo, Premium, Inmobiliaria → Clásico/Marble
+        if (rubroLower.includes('lujo') || rubroLower.includes('premium') || rubroLower.includes('inmobili') || rubroLower.includes('auto')) {
+          return 'marble_sculpture';
+        }
+        // Por defecto → Cinematic Frame (más versátil)
+        return 'cinematic_frame';
+      };
+      
+      const storyArtStyleId = getStoryArtStyleForIndustry(artConfig.rubro);
+      const storyArtStyle = getStoryArtStyle(storyArtStyleId);
+      
+      if (storyArtStyle) {
+        console.log(`🎭 [Story Art] Aplicando estilo visual único: ${storyArtStyle.name} (${storyArtStyle.category})`);
+        console.log(`📝 [Story Art] Prompt: ${storyArtStyle.prompt.substring(0, 100)}...`);
+        
+        // Combinar dirección de arte del rubro con estilo visual único de Story Art
+        activeStylePrompt = `${artConfig.prompt}\n${storyArtStyle.prompt}`;
+        activeStyleLabel = `${artConfig.rubro} + ${storyArtStyle.name}`;
+        
+        // Aplicar buildStoryArtPrompt para integrar el estilo visual en el prompt
+        enhancedDescription = buildStoryArtPrompt(enhancedDescription, storyArtStyleId, artConfig.prompt);
+        console.log(`✅ [Story Art] Estilo visual único aplicado: ${storyArtStyle.name}`);
+      } else {
+        // Fallback a solo dirección de arte si no hay estilo visual
+        activeStylePrompt = artConfig.prompt;
+        activeStyleLabel = artConfig.rubro;
+        console.log(`⚠️ [Story Art] No se encontró estilo visual para ID: ${artDirectionId}, usando solo dirección de arte`);
+      }
       
       // SOLO aplicar buildAgencyPrompt si el prompt NO tiene las reglas de Story Art
-      // Esto evita duplicación cuando generatePackDual o generateFlyerVideo ya aplicaron buildAgencyPrompt
       if (!HAS_STORY_ART_RULES) {
         const oldPrompt = enhancedDescription;
         enhancedDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);

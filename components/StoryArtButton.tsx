@@ -7,7 +7,8 @@ import {
   getAvailableArtDirections
 } from '../src/services/promptBuilder';
 import { getAllArtDirections, type ArtDirectionInput } from '../src/constants/artDirection';
-import type { ArtDirectionResult, ContentType } from '../types';
+import type { ArtDirectionResult, ContentType, StoryArtStyleId } from '../types';
+import { StoryArtStyleSelector } from './StoryArtStyleSelector';
 import {
   generatePackDual,
   quickPackDual,
@@ -56,6 +57,12 @@ export function StoryArtButton({
   const [showAgencyPack, setShowAgencyPack] = useState(false);
   const [packDualResult, setPackDualResult] = useState<PackDualResult | null>(null);
   const [isGeneratingPack, setIsGeneratingPack] = useState(false);
+  
+  // ============================================
+  // ESTADO PARA ESTILOS VISUALES DE STORY ART
+  // ============================================
+  const [selectedStoryArtStyle, setSelectedStoryArtStyle] = useState<StoryArtStyleId | null>(null);
+  const [showStyleSelector, setShowStyleSelector] = useState(false);
   
   // ============================================
   // ESTADOS PARA VIDEO DRAFT + HD
@@ -460,14 +467,47 @@ export function StoryArtButton({
           </div>
           <div className="info-details">
             <span className="info-ratio">📐 Formato: {artConfig.aspectRatio}</span>
-            <button 
-              type="button"
-              className="info-toggle"
-              onClick={() => setShowRubros(!showRubros)}
-            >
-              {showRubros ? 'Ocultar' : 'Ver otros rubros'}
-            </button>
+            <div className="info-actions">
+              <button
+                type="button"
+                className="info-toggle-style"
+                onClick={() => setShowStyleSelector(!showStyleSelector)}
+              >
+                {showStyleSelector ? 'Ocultar estilos' : '🎭 Ver estilos visuales'}
+              </button>
+              <button
+                type="button"
+                className="info-toggle"
+                onClick={() => setShowRubros(!showRubros)}
+              >
+                {showRubros ? 'Ocultar' : 'Ver otros rubros'}
+              </button>
+            </div>
           </div>
+          
+          {/* Selector de Estilos Visuales Story Art */}
+          {showStyleSelector && (
+            <div className="style-selector-container">
+              <StoryArtStyleSelector
+                selectedStyle={selectedStoryArtStyle}
+                onStyleSelect={(styleId) => {
+                  setSelectedStoryArtStyle(styleId);
+                  console.log(`🎨 Estilo Story Art seleccionado: ${styleId} para rubro ${artConfig.rubro}`);
+                }}
+                currentIndustry={artConfig.rubro}
+                disabled={isGeneratingPack}
+                className="embedded-style-selector"
+              />
+            </div>
+          )}
+          
+          {/* Estilo visual seleccionado */}
+          {selectedStoryArtStyle && (
+            <div className="selected-style-badge">
+              <span className="style-badge-icon">✨</span>
+              <span className="style-badge-text">Estilo: {selectedStoryArtStyle.replace(/_/g, ' ')}</span>
+            </div>
+          )}
           
           {/* Lista de rubros disponibles */}
           {showRubros && (
@@ -726,6 +766,28 @@ export function StoryArtButton({
           color: #6b7280;
         }
 
+        .info-actions {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .info-toggle-style {
+          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 0.75rem;
+          font-weight: 500;
+          transition: all 0.2s;
+        }
+
+        .info-toggle-style:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
         .info-toggle {
           background: none;
           border: none;
@@ -739,6 +801,40 @@ export function StoryArtButton({
           margin-top: 1rem;
           padding-top: 1rem;
           border-top: 1px solid #ddd6fe;
+        }
+
+        .style-selector-container {
+          margin-top: 1rem;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 12px;
+        }
+
+        .embedded-style-selector {
+          background: transparent;
+          padding: 0;
+        }
+
+        .selected-style-badge {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0.75rem;
+          padding: 0.5rem 1rem;
+          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+          color: white;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 500;
+          width: fit-content;
+        }
+
+        .style-badge-icon {
+          font-size: 1rem;
+        }
+
+        .style-badge-text {
+          text-transform: capitalize;
         }
 
         .rubros-list h4 {
