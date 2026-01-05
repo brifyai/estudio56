@@ -326,19 +326,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     }
   }, [mediaType, styleKey, setStyleKey]);
 
-  // NEW: Cerrar SweetAlert cuando termina la generación (solo si no se cerró ya)
-  useEffect(() => {
-    if (!isLoading && Swal.isVisible()) {
-      // El intervalo ya maneja el cierre a 100%, esto es backup
-      const timer = setTimeout(() => {
-        if (Swal.isVisible()) {
-          Swal.close();
-        }
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading]);
-
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {
       const reader = new FileReader();
