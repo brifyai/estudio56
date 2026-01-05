@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-  buildArtDirectionPrompt,
-  getArtDirectionConfig,
-  hasArtDirection
+  getArtDirectionConfig
 } from '../src/services/promptBuilder';
-import { getAllArtDirections, type ArtDirectionInput } from '../src/constants/artDirection';
-import type { ArtDirectionResult, ContentType, StoryArtStyleId } from '../types';
+import { getAllArtDirections } from '../src/constants/artDirection';
+import type { ArtDirectionResult, ContentType } from '../types';
 import { StoryArtStyleSelector } from './StoryArtStyleSelector';
+import {
+  getStoryArtStyleById as getStoryArtStyle,
+  buildStoryArtPrompt,
+  type StoryArtStyleId
+} from '../src/constants/storyArtStyles';
 
 interface StoryArtButtonProps {
   /** Rubro del negocio (ID numérico) */
@@ -49,11 +52,42 @@ export function StoryArtButton({
   const [selectedStoryArtStyle, setSelectedStoryArtStyle] = useState<StoryArtStyleId | null>(null);
   const [showStyleSelector, setShowStyleSelector] = useState(false);
 
-  // Verificar si el rubro tiene dirección de arte disponible
-  const hasArtDirectionForIndustry = hasArtDirection(industryId);
-
-  // Obtener configuración del rubro
+  // ============================================
+  // STORY ART: Ahora usa SOLO los 7 estilos visuales únicos
+  // La dirección de arte por rubro (60 rubros) ya NO se usa para Story Art
+  // ============================================
+  
+  // Obtener configuración del rubro (solo para mostrar info, NO se usa en generación)
   const artConfig = getArtDirectionConfig(industryId);
+
+  /**
+   * Obtiene el estilo visual recomendado basado en el rubro
+   */
+  const getRecommendedStyle = (industry: number): StoryArtStyleId => {
+    const artConfig = getArtDirectionConfig(industry);
+    const rubro = artConfig?.rubro?.toLowerCase() || '';
+    
+    if (rubro.includes('belleza') || rubro.includes('moda') || rubro.includes('spa')) {
+      return 'vogue_negative';
+    }
+    if (rubro.includes('gaming') || rubro.includes('tech') || rubro.includes('entretencion')) {
+      return 'neon_kinetic';
+    }
+    if (rubro.includes('gastronom') || rubro.includes('joyas') || rubro.includes('comida')) {
+      return 'macro_essence';
+    }
+    if (rubro.includes('fitness') || rubro.includes('deporte') || rubro.includes('salud')) {
+      return 'cinematic_frame';
+    }
+    if (rubro.includes('evento') || rubro.includes('fiesta') || rubro.includes('niños')) {
+      return 'collage_dynamic';
+    }
+    if (rubro.includes('lujo') || rubro.includes('premium') || rubro.includes('inmobili')) {
+      return 'marble_sculpture';
+    }
+    
+    return 'cinematic_frame'; // Default
+  };
 
   const handleContentTypeChange = (newType: ContentType) => {
     setContentType(newType);
@@ -64,50 +98,43 @@ export function StoryArtButton({
       onContentTypeChange(newType);
     }
 
-    // Si selecciona STORY ART, aplicar dirección de arte automáticamente
-    if (newType === 'story_art' && hasArtDirectionForIndustry) {
-      applyArtDirection();
+    // Si selecciona STORY ART, aplicar estilo visual automáticamente
+    if (newType === 'story_art') {
+      applyStoryArtStyle();
     }
   };
 
-  const applyArtDirection = () => {
-    if (!hasArtDirectionForIndustry) {
-      setFeedbackMessage('Este rubro aún no tiene dirección de arte configurada');
-      onPromptGenerated({
-        prompt: '',
-        config: { id: 0, rubro: '', style: '', aspectRatio: '' },
-        success: false,
-        error: 'Rubro sin dirección de arte'
-      });
-      return;
-    }
-
+  const applyStoryArtStyle = () => {
     setIsGenerating(true);
 
     try {
-      const input: ArtDirectionInput = {
-        industryId,
-        userSubject: subject,
-        userDetails: details
-      };
+      // Story Art ahora usa SOLO los 7 estilos visuales únicos
+      // No usa dirección de arte por rubro
+      const styleId = getRecommendedStyle(industryId);
+      const storyArtStyle = getStoryArtStyle(styleId);
+      
+      if (!storyArtStyle) {
+        throw new Error('Estilo visual no encontrado');
+      }
 
-      const prompt = buildArtDirectionPrompt(input);
+      // Construir prompt con el estilo visual único
+      const prompt = buildStoryArtPrompt(subject, styleId);
       
       setArtDirectionApplied(true);
-      setFeedbackMessage('✓ Dirección de arte automática aplicada');
+      setFeedbackMessage(`✓ Estilo "${storyArtStyle.name}" aplicado`);
 
       onPromptGenerated({
         prompt,
         config: {
-          id: artConfig!.id,
-          rubro: artConfig!.rubro,
-          style: artConfig!.style,
-          aspectRatio: artConfig!.aspectRatio
+          id: 1, // Story Art usa estilos visuales, no rubros (ID genérico)
+          rubro: storyArtStyle.name,
+          style: storyArtStyle.category,
+          aspectRatio: '9:16'
         },
         success: true
       });
     } catch (error) {
-      setFeedbackMessage('Error al aplicar dirección de arte');
+      setFeedbackMessage('Error al aplicar estilo visual');
       onPromptGenerated({
         prompt: '',
         config: { id: 0, rubro: '', style: '', aspectRatio: '' },
@@ -121,8 +148,8 @@ export function StoryArtButton({
 
   // Mostrar feedback cuando se selecciona STORY ART
   useEffect(() => {
-    if (contentType === 'story_art' && hasArtDirectionForIndustry && !artDirectionApplied) {
-      applyArtDirection();
+    if (contentType === 'story_art' && !artDirectionApplied) {
+      applyStoryArtStyle();
     }
   }, [contentType]);
 
@@ -158,19 +185,16 @@ export function StoryArtButton({
             <span className="btn-ratio">1:1 / 4:5</span>
           </button>
 
-          {/* Botón STORY ART (9:16) - NUEVO */}
+          {/* Botón STORY ART (9:16) - 7 ESTILOS VISUALES ÚNICOS */}
           <button
             type="button"
             className={`content-type-btn story-art-btn ${contentType === 'story_art' ? 'active' : ''}`}
             onClick={() => handleContentTypeChange('story_art')}
-            disabled={disabled || !hasArtDirectionForIndustry}
+            disabled={disabled}
           >
             <span className="btn-icon">📱</span>
             <span className="btn-text">Story Art</span>
             <span className="btn-ratio">9:16</span>
-            {!hasArtDirectionForIndustry && (
-              <span className="btn-badge">Próximo</span>
-            )}
           </button>
 
           {/* Botón Reel Cover */}
@@ -198,17 +222,12 @@ export function StoryArtButton({
           ) : artDirectionApplied ? (
             <span className="feedback-success">
               <span className="check-icon">✓</span>
-              {feedbackMessage || `Dirección de arte aplicada: ${artConfig?.rubro || 'Profesional'}`}
-            </span>
-          ) : hasArtDirectionForIndustry ? (
-            <span className="feedback-info">
-              <span className="info-icon">ℹ</span>
-              Se aplicará dirección de arte automáticamente
+              {feedbackMessage || `Estilo visual aplicado`}
             </span>
           ) : (
-            <span className="feedback-warning">
-              <span className="warning-icon">⚠</span>
-              {feedbackMessage || 'Dirección de arte no disponible para este rubro'}
+            <span className="feedback-info">
+              <span className="info-icon">ℹ</span>
+              Se aplicará estilo visual automáticamente
             </span>
           )}
         </div>

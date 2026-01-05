@@ -785,7 +785,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               )}
             </button>
 
-            {/* STORY ART (9:16) - DIRECCIÓN DE ARTE PROFESIONAL */}
+            {/* STORY ART (9:16) - 7 ESTILOS VISUALES ÚNICOS */}
             <button
               onClick={() => {
                 setMediaType('story_art');
@@ -801,7 +801,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <div className="flex flex-col items-center gap-1 md:gap-2">
                 <div className="text-xl md:text-2xl">🎨</div>
                 <div className="text-xs md:text-sm font-bold">Story Art</div>
-                <div className="text-[8px] md:text-[10px] text-white/60">Dirección de Arte</div>
+                <div className="text-[8px] md:text-[10px] text-white/60">7 Estilos Únicos</div>
               </div>
               {isStoryArtModeActive && (
                 <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5 md:w-2 md:h-2 bg-purple-400 rounded-full animate-pulse"></div>

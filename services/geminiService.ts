@@ -1561,7 +1561,7 @@ export interface SimpleImageResult {
 
 /**
  * Función simplificada para generar imágenes (compatibilidad con frontend)
- * OPCIONAL: mode = 'story_art' para usar Dirección de Arte Profesional
+ * MODO STORY ART: Solo usa los 7 estilos visuales únicos, SIN dirección de arte por rubro
  */
 export const generateImage = async (
   prompt: string,
@@ -1570,8 +1570,7 @@ export const generateImage = async (
     styleKey?: FlyerStyleKey;
     quality?: ImageQuality;
     seed?: number;
-    artDirectionId?: number; // ID del rubro (1-60) para Story Art
-    storyArtStyleId?: StoryArtStyleId; // Estilo visual de Story Art seleccionado por el usuario
+    storyArtStyleId?: StoryArtStyleId; // Estilo visual de Story Art (7 estilos únicos)
   }
 ): Promise<SimpleImageResult> => {
   try {
@@ -1580,23 +1579,25 @@ export const generateImage = async (
     const styleKey = options?.styleKey || 'brand_identity';
     const quality = options?.quality || 'draft';
     const seed = options?.seed || Math.floor(Math.random() * 1000000);
-    const artDirectionId = options?.artDirectionId;
     const userStoryArtStyleId = options?.storyArtStyleId; // Estilo visual seleccionado por el usuario
     
     let finalPrompt: string;
     
     // ============================================
-    // MODO STORY ART: Pasar artDirectionId para que generateFlyerImage maneje la dirección de arte
-    // NO aplicar buildAgencyPrompt aquí - generateFlyerImage ya lo hace internamente
+    // MODO STORY ART: Solo usa los 7 estilos visuales únicos
+    // NO usa dirección de arte por rubro (artDirectionId eliminado)
     // ============================================
-    if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
-      console.log(`🎬 [Story Art] Usando Dirección de Arte Profesional - Rubro ID: ${artDirectionId}`);
+    if (userStoryArtStyleId) {
+      console.log(`🎨 [Story Art] Usando estilo visual único: ${userStoryArtStyleId}`);
       
-      // NO transformar el prompt aquí - generateFlyerImage lo hará correctamente
-      // Pasar el prompt original para que buildAgencyPrompt se aplique UNA sola vez
-      finalPrompt = prompt;
-      
-      console.log('🎨 [Story Art] Prompt original pasado a generateFlyerImage (buildAgencyApply se aplicará allá)');
+      // Aplicar el estilo visual único al prompt
+      const storyArtStyle = getStoryArtStyle(userStoryArtStyleId);
+      if (storyArtStyle) {
+        finalPrompt = buildStoryArtPrompt(prompt, userStoryArtStyleId);
+        console.log(`✅ [Story Art] Estilo aplicado: ${storyArtStyle.name}`);
+      } else {
+        finalPrompt = prompt;
+      }
     } else {
       // Modo estándar: Mejorar el prompt genérico
       const enhancedPrompt = await enhancePrompt(prompt, styleKey);
@@ -1615,8 +1616,8 @@ export const generateImage = async (
       undefined, // autoExtractedText
       undefined, // autoTextStyle
       undefined, // draftImageForHD
-      artDirectionId, // PASAR artDirectionId para usar dirección de arte real
-      userStoryArtStyleId // PASAR estilo visual de Story Art seleccionado por el usuario
+      undefined, // artDirectionId - YA NO SE USA para Story Art
+      userStoryArtStyleId // PASAR estilo visual de Story Art
     );
     
     return {
@@ -1782,101 +1783,32 @@ export const generateFlyerImage = async (
   // ============================================
   let activeStoryArtStyleId: StoryArtStyleId | undefined;
   
-  if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
-    // Story Art: Usar dirección de arte específica del rubro + ESTILOS VISUALES ÚNICOS
-    const artConfig = getArtDirectionById(artDirectionId);
-    console.log(`🎨 [Story Art] getArtDirectionById(${artDirectionId}):`, artConfig ? artConfig.rubro : 'NULL');
-    console.log(`🔍 [Story Art] Prompt ya tiene reglas de Story Art: ${HAS_STORY_ART_RULES}`);
-    console.log(`🎭 [Story Art] Estilo visual seleccionado por usuario: ${storyArtStyleId || 'NONE (usando automático)'}`);
+  // ============================================
+  // MODO STORY ART: SOLO usa los 7 estilos visuales únicos
+  // NO usa dirección de arte por rubro (artDirectionId ya no se pasa)
+  // ============================================
+  if (storyArtStyleId) {
+    console.log(`🎨 [Story Art] Usando estilo visual único: ${storyArtStyleId}`);
     
-    if (artConfig) {
-      // ============================================
-      // APLICAR ESTILOS VISUALES ÚNICOS DE STORY ART
-      // Esto es lo que diferencia Story Art de imágenes normales
-      // PRIORIDAD: Usar estilo del usuario si está seleccionado, sino auto-seleccionar por rubro
-      // ============================================
+    const storyArtStyle = getStoryArtStyle(storyArtStyleId);
+    
+    if (storyArtStyle) {
+      console.log(`🎭 [Story Art] Aplicando estilo visual único: ${storyArtStyle.name} (${storyArtStyle.category})`);
+      console.log(`📝 [Story Art] Prompt: ${storyArtStyle.prompt.substring(0, 100)}...`);
       
-      // Determinar el estilo visual a usar
-      if (storyArtStyleId && storyArtStyleId !== null && storyArtStyleId !== undefined) {
-        // Usar el estilo visual seleccionado por el usuario
-        activeStoryArtStyleId = storyArtStyleId;
-        console.log(`✅ [Story Art] Usando estilo visual seleccionado por usuario: ${storyArtStyleId}`);
-      } else {
-        // Auto-seleccionar estilo visual basado en el rubro
-        const getStoryArtStyleForIndustry = (rubro: string): StoryArtStyleId => {
-          const rubroLower = rubro.toLowerCase();
-          
-          // Belleza, Moda, Wellness → Editorial/Vogue
-          if (rubroLower.includes('belleza') || rubroLower.includes('moda') || rubroLower.includes('wellness') || rubroLower.includes('spa')) {
-            return 'vogue_negative';
-          }
-          // Gaming, Tech, Entretención → Digital/Neon
-          if (rubroLower.includes('gaming') || rubroLower.includes('tech') || rubroLower.includes('entretencion') || rubroLower.includes('noche')) {
-            return 'neon_kinetic';
-          }
-          // Gastronomía, Joyas, Producto → Producto/Macro
-          if (rubroLower.includes('gastronom') || rubroLower.includes('joyas') || rubroLower.includes('comida') || rubroLower.includes('retail')) {
-            return 'macro_essence';
-          }
-          // Fitness, Deportes, Salud → Documental/Cinematic
-          if (rubroLower.includes('fitness') || rubroLower.includes('deporte') || rubroLower.includes('salud') || rubroLower.includes('gym')) {
-            return 'cinematic_frame';
-          }
-          // Eventos, Entretención, Kids → Montaje/Collage
-          if (rubroLower.includes('evento') || rubroLower.includes('fiesta') || rubroLower.includes('niños') || rubroLower.includes('infantil')) {
-            return 'collage_dynamic';
-          }
-          // Lujo, Premium, Inmobiliaria → Clásico/Marble
-          if (rubroLower.includes('lujo') || rubroLower.includes('premium') || rubroLower.includes('inmobili') || rubroLower.includes('auto')) {
-            return 'marble_sculpture';
-          }
-          // Por defecto → Cinematic Frame (más versátil)
-          return 'cinematic_frame';
-        };
-        
-        activeStoryArtStyleId = getStoryArtStyleForIndustry(artConfig.rubro);
-        console.log(`🎲 [Story Art] Estilo visual auto-seleccionado para rubro: ${activeStoryArtStyleId}`);
-      }
+      // SOLO usar el estilo visual único, SIN dirección de arte por rubro
+      activeStylePrompt = storyArtStyle.prompt;
+      activeStyleLabel = storyArtStyle.name;
       
-      const storyArtStyle = getStoryArtStyle(activeStoryArtStyleId);
-      
-      if (storyArtStyle) {
-        console.log(`🎭 [Story Art] Aplicando estilo visual único: ${storyArtStyle.name} (${storyArtStyle.category})`);
-        console.log(`📝 [Story Art] Prompt: ${storyArtStyle.prompt.substring(0, 100)}...`);
-        
-        // Combinar dirección de arte del rubro con estilo visual único de Story Art
-        activeStylePrompt = `${artConfig.prompt}\n${storyArtStyle.prompt}`;
-        activeStyleLabel = `${artConfig.rubro} + ${storyArtStyle.name}`;
-        
-        // Aplicar buildStoryArtPrompt para integrar el estilo visual en el prompt
-        // IMPORTANTE: Usar activeStoryArtStyleId (convertir undefined a null para la función)
-        enhancedDescription = buildStoryArtPrompt(enhancedDescription, activeStoryArtStyleId || null);
-        console.log(`✅ [Story Art] Estilo visual único aplicado: ${storyArtStyle.name}`);
-      } else {
-        // Fallback a solo dirección de arte si no hay estilo visual
-        activeStylePrompt = artConfig.prompt;
-        activeStyleLabel = artConfig.rubro;
-        console.log(`⚠️ [Story Art] No se encontró estilo visual para ID: ${artDirectionId}, usando solo dirección de arte`);
-      }
-      
-      // SOLO aplicar buildAgencyPrompt si el prompt NO tiene las reglas de Story Art
-      if (!HAS_STORY_ART_RULES) {
-        const oldPrompt = enhancedDescription;
-        enhancedDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
-        console.log('🎯 [Story Art] Prompt transformado con buildAgencyPrompt:', {
-          oldPrompt: oldPrompt.substring(0, 100) + '...',
-          newPrompt: enhancedDescription.substring(0, 100) + '...',
-          lengthDiff: enhancedDescription.length - oldPrompt.length
-        });
-      } else {
-        console.log('⚠️ [Story Art] Prompt ya tiene reglas de Story Art - NO aplicando buildAgencyPrompt de nuevo');
-      }
+      // Aplicar buildStoryArtPrompt para integrar el estilo visual en el prompt
+      enhancedDescription = buildStoryArtPrompt(enhancedDescription, storyArtStyleId);
+      console.log(`✅ [Story Art] Estilo visual único aplicado: ${storyArtStyle.name}`);
     } else {
-      // Fallback a estilo normal si no encuentra la configuración
+      // Fallback a estilo normal si no encuentra el estilo visual
       const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
       activeStylePrompt = safeStyleConfig.english_prompt;
       activeStyleLabel = safeStyleConfig.label;
-      console.warn(`⚠️ [Story Art] No se encontró config para ID: ${artDirectionId}, usando fallback`);
+      console.warn(`⚠️ [Story Art] No se encontró estilo visual: ${storyArtStyleId}, usando fallback`);
     }
   } else {
     // Modo normal: Usar estilo genérico
