@@ -1137,6 +1137,14 @@ const handleGenerate = async () => {
         setImageUrl(result.imageDataUrl);
         setDraftImageUrl(result.imageDataUrl);
         
+        // 🎯 GUARDAR IMAGEN ORIGINAL EN CACHÉ DE REALITY para comparación
+        // La imagen base (2.5★) siempre debe estar disponible para comparar
+        const originalLevel = 2.5;
+        setRealityVariations(prev => ({
+          ...prev,
+          [originalLevel]: result.imageDataUrl
+        }));
+        
         // NEW: Guardar generación en base de datos (image y story_art)
         if (imageQuality === 'draft' && (mediaType === 'image' || mediaType === 'story_art')) {
           const generation = await createGeneration({
@@ -1520,6 +1528,17 @@ const handleGenerate = async () => {
       return;
     }
     
+    // 2. SIEMPRE ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ
+    const originalLevel = 2.5;
+    if (draftImageUrl) {
+      // Guardar siempre, sobrescribiendo si es necesario para asegurar sincronización
+      setRealityVariations(prev => ({
+        ...prev,
+        [originalLevel]: draftImageUrl
+      }));
+      console.log('💾 Imagen original (2.5★) guardada en caché de realidad');
+    }
+    
     // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN CON REFERENCIA
     console.log('🔄 Generando nueva variación para nivel:', levelKey);
     setIsGeneratingReality(true);
@@ -1821,11 +1840,21 @@ const handleGenerate = async () => {
                         onLevelChange={handleRealityChange}
                         disabled={isGeneratingReality}
                         cachedVariations={realityVariations}
-                        onOpenComparator={() => setShowRealityComparator(true)}
+                        onOpenComparator={() => {
+                          // 🎯 ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ ANTES DE ABRIR
+                          const originalLevel = 2.5;
+                          if (!realityVariations[originalLevel] && draftImageUrl) {
+                            setRealityVariations(prev => ({
+                              ...prev,
+                              [originalLevel]: draftImageUrl
+                            }));
+                          }
+                          setShowRealityComparator(true);
+                        }}
                       />
                       
-                      {/* Botón para comparar versiones */}
-                      {Object.keys(realityVariations).length >= 2 && (
+                      {/* Botón para comparar versiones - AHORA FUNCIONA CON 1+ VARIACIONES */}
+                      {Object.keys(realityVariations).length >= 1 && (
                         <button
                           onClick={() => setShowRealityComparator(true)}
                           className="mt-3 w-full py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 text-xs font-medium transition-all flex items-center justify-center gap-2"
@@ -1833,7 +1862,10 @@ const handleGenerate = async () => {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
-                          Comparar Realismos ({Object.keys(realityVariations).length} versiones)
+                          {Object.keys(realityVariations).length === 1
+                            ? 'Comparar Realismos (genera más)'
+                            : `Comparar Realismos (${Object.keys(realityVariations).length} versiones)`
+                          }
                         </button>
                       )}
                     </CollapsibleSection>

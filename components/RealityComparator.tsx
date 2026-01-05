@@ -239,6 +239,51 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
     );
   }
 
+  // 🎯 NUEVO: Si solo hay una variación (izquierda), mostrar en modo "solo vista"
+  // Esto ocurre cuando el usuario no ha generado variaciones adicionales
+  if (leftVariation && !rightVariation) {
+    return (
+      <div className="relative">
+        {/* Botón cerrar */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute -top-2 -right-2 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+          >
+            ✕
+          </button>
+        )}
+
+        {/* Header */}
+        <div className="text-center mb-4">
+          <h3 className="text-white font-bold text-lg mb-1">
+            🎚️ Vista de Realismo
+          </h3>
+          <p className="text-white/50 text-xs">
+            Genera más variaciones para comparar
+          </p>
+        </div>
+
+        {/* Indicador de modo único */}
+        <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <p className="text-blue-300/80 text-xs text-center">
+            📷 Imagen Original ({originalLevelNum}★) - {getRealityLabel(originalLevelNum as RealityLevel)}
+          </p>
+        </div>
+
+        {/* Mostrar solo la imagen izquierda */}
+        {renderImage(leftVariation, true, undefined)}
+
+        {/* Info adicional */}
+        <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <p className="text-yellow-300/80 text-[10px] text-center">
+            💡 Genera variaciones en el slider para comparar diferentes niveles de realismo
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
       {/* Botón cerrar */}
