@@ -90,22 +90,6 @@ export const StoryArtStyleSelector: React.FC<StoryArtStyleSelectorProps> = ({
           Elige un estilo visual único para diferenciar tu Story Art
         </p>
         
-        {/* Preview del estilo activo */}
-        {previewData && (
-          <div
-            className="style-preview-card"
-            style={{ borderLeftColor: previewData.colors[0] }}
-          >
-            <div className="style-preview-icon">{previewData.icon}</div>
-            <div className="style-preview-info">
-              <span className="style-preview-name">{previewData.name}</span>
-              <span className="style-preview-category">{previewData.category}</span>
-            </div>
-            <span className="style-preview-badge">
-              {selectedStyle ? 'Seleccionado' : 'Recomendado'}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Categorías expandibles */}
