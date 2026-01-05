@@ -128,6 +128,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
+  // NEW: Estados para alerta de progreso de generación
+  const [generationProgress, setGenerationProgress] = useState<{ show: boolean; percent: number; message: string }>({
+    show: false,
+    percent: 0,
+    message: ''
+  });
+  
   // NEW: Estados para objetivo de marketing
   const [marketingObjective, setMarketingObjective] = useState<'branding' | 'leads' | null>(null);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
@@ -318,6 +325,16 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       console.log('🎬 Estilo convertido de imagen a video:', videoStyle);
     }
   }, [mediaType, styleKey, setStyleKey]);
+
+  // NEW: Cerrar SweetAlert cuando termina la generación
+  useEffect(() => {
+    if (!isLoading && Swal.isVisible()) {
+      // Cerrar la alerta después de un pequeño delay para que el usuario vea el 100%
+      setTimeout(() => {
+        Swal.close();
+      }, 500);
+    }
+  }, [isLoading]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {
@@ -1181,7 +1198,58 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         {/* GENERATE BUTTON */}
         <div className="pt-4 md:pt-6">
           <button
-              onClick={onSubmit}
+              onClick={async () => {
+                // Mostrar alerta de progreso si es imagen y calidad draft
+                if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
+                  // Mostrar SweetAlert2 con progreso
+                  Swal.fire({
+                    title: '🎨 Generando imagen en borrador',
+                    html: `
+                      <div style="text-align: left; margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                          <span id="progress-text">Iniciando...</span>
+                          <span id="progress-percent">0%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
+                          <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease;"></div>
+                        </div>
+                      </div>
+                    `,
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    background: '#1a1a1a',
+                    color: '#ffffff',
+                    didOpen: () => {
+                      // Animar progreso
+                      let percent = 0;
+                      const messages = [
+                        'Analizando contexto...',
+                        'Construyendo prompt...',
+                        'Generando píxeles...',
+                        'Aplicando estilos...',
+                        'Finalizando...'
+                      ];
+                      const interval = setInterval(() => {
+                        percent += 20;
+                        if (percent > 100) percent = 100;
+                        const messageIndex = Math.min(Math.floor(percent / 20), messages.length - 1);
+                        const progressBar = document.getElementById('progress-bar');
+                        const progressText = document.getElementById('progress-text');
+                        const progressPercent = document.getElementById('progress-percent');
+                        if (progressBar) progressBar.style.width = percent + '%';
+                        if (progressText) progressText.textContent = messages[messageIndex];
+                        if (progressPercent) progressPercent.textContent = percent + '%';
+                        if (percent === 100) {
+                          clearInterval(interval);
+                        }
+                      }, 400);
+                    }
+                  });
+                }
+                // Ejecutar generación normal
+                onSubmit();
+              }}
               disabled={isLoading || !description.trim()}
               className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
               ${isStoryArtModeActive
