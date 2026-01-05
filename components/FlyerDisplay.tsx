@@ -378,22 +378,24 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   }, [draftImageUrl, hdImageUrl, showComparison, isGeneratingReality]);
   
   // Auto-show video comparison when HD video is generated - solo la primera vez
+  // NEW: No abrir comparación si isGeneratingReality es true
   useEffect(() => {
-    if (draftVideoUrl && hdVideoUrl && !showVideoComparison && !hasShownVideoComparison.current) {
+    if (draftVideoUrl && hdVideoUrl && !showVideoComparison && !hasShownVideoComparison.current && !isGeneratingReality) {
       console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
       hasShownVideoComparison.current = true;
       setShowVideoComparison(true);
     }
-  }, [draftVideoUrl, hdVideoUrl, showVideoComparison]);
-
+  }, [draftVideoUrl, hdVideoUrl, showVideoComparison, isGeneratingReality]);
+  
   // Auto-show comparison when HD video is generated from draft
+  // NEW: No abrir comparación si isGeneratingReality es true
   useEffect(() => {
-    if (draftVideoUrl && hdVideoUrl && !showComparison && !showVideoComparison && !hasShownComparison.current) {
+    if (draftVideoUrl && hdVideoUrl && !showComparison && !showVideoComparison && !hasShownComparison.current && !isGeneratingReality) {
       console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
       hasShownComparison.current = true;
       setShowVideoComparison(true);
     }
-  }, [draftVideoUrl, hdVideoUrl, showComparison, showVideoComparison]);
+  }, [draftVideoUrl, hdVideoUrl, showComparison, showVideoComparison, isGeneratingReality]);
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const defaultStyles: TextStyleOptions = {
