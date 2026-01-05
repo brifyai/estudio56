@@ -21,11 +21,80 @@ const getAiClient = () => new GoogleGenAI({
 });
 
 /**
+ * 🖼️ Genera un thumbnail de baja resolución para análisis
+ * Optimización: Reduce el tamaño de imagen para análisis de Gemini Vision
+ * Esto reduce significativamente los tokens y costos de API
+ */
+const createThumbnailForAnalysis = async (imageDataUrl: string, maxDimension: number = 512): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          console.warn('⚠️ No se pudo crear contexto de canvas, usando imagen original');
+          resolve(imageDataUrl);
+          return;
+        }
+        
+        // Calcular nuevas dimensiones manteniendo aspect ratio
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round(height * (maxDimension / width));
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round(width * (maxDimension / height));
+            height = maxDimension;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Dibujar imagen redimensionada
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convertir a data URL con calidad reducida para análisis
+        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
+        console.log(`🖼️ Thumbnail creado: ${img.width}x${img.height} → ${width}x${height} (reducción: ${Math.round((1 - (width * height) / (img.width * img.height)) * 100)}%)`);
+        
+        resolve(thumbnailUrl);
+      };
+      
+      img.onerror = (error) => {
+        console.warn('⚠️ Error cargando imagen para thumbnail, usando original:', error);
+        resolve(imageDataUrl);
+      };
+      
+      img.src = imageDataUrl;
+    } catch (error) {
+      console.warn('⚠️ Error creando thumbnail, usando imagen original:', error);
+      resolve(imageDataUrl);
+    }
+  });
+};
+
+/**
  * Analiza una imagen para extraer información visual y recomendar estilos de texto
+ * OPTIMIZADO: Usa thumbnail de baja resolución para reducir costos de API
  */
 export const analyzeImageForTextStyle = async (imageDataUrl: string): Promise<ImageAnalysisResult> => {
   try {
     console.log("🔍 Analizando imagen para estilos de texto...");
+    
+    // 🖼️ OPTIMIZACIÓN: Crear thumbnail para análisis (reduce tokens ~75%)
+    console.log("🖼️ Creando thumbnail para análisis optimizado...");
+    const thumbnailUrl = await createThumbnailForAnalysis(imageDataUrl, 512);
     
     const ai = getAiClient();
     const model = "gemini-3-flash-preview";
@@ -65,7 +134,7 @@ Responde SOLO con el JSON, sin texto adicional.`;
           {
             inlineData: {
               mimeType: "image/jpeg",
-              data: imageDataUrl.split(',')[1] // Remove data:image/jpeg;base64, prefix
+              data: thumbnailUrl.split(',')[1] // Usar thumbnail en lugar de imagen original
             }
           }
         ]

@@ -1,1087 +1,936 @@
 # 📊 INFORME COMPLETO DE LA APLICACIÓN ESTUDIO 56
-## Plataforma de Generación de Contenido Publicitario con Inteligencia Artificial
+
+## Aplicación de Generación de Contenido Visual con Inteligencia Artificial
+
+**Versión:** 2.0  
+**Fecha:** Enero 2026  
+**Tecnologías Principales:** React, TypeScript, Google Gemini API, Supabase
 
 ---
 
 ## 1. 📋 RESUMEN EJECUTIVO
 
-**Estudio 56** es una plataforma web de última generación diseñada para la creación automatizada de contenido publicitario (flyers, videos, banners) utilizando modelos de inteligencia artificial de Google (Gemini). La aplicación está orientada específicamente al mercado chileno y latinoamericano, con adaptaciones culturales, idiomáticas y de formato publicitario local.
+Estudio 56 es una aplicación web de generación de contenido visual publicitario que utiliza inteligencia artificial para crear flyers, stories, videos y materiales de marketing para negocios chilenos. La aplicación integra múltiples servicios de IA, un sistema de dirección de arte profesional con 60 rubros especializados, y un regulador de realidad que permite ajustar el nivel de realismo de las imágenes generadas.
 
 ### Características Principales:
-- ✅ **Generación de Imágenes**: Modelos Gemini 2.5 Flash (borrador) y Gemini 3.0 Pro (HD)
-- ✅ **Generación de Videos**: Google VEO 3.1 (720p draft / 1080p producción)
-- ✅ **Modo Automático**: Análisis inteligente de URLs y detección automática de industria
-- ✅ **Modo Manual**: Control total sobre estilo, texto y composición
-- ✅ **Sistema de Créditos**: Gestión de recursos por planes de usuario
-- ✅ **Marca Personal**: Gestión de múltiples marcas por usuario
-- ✅ **Calendario Comercial**: Recordatorios de fechas促销 chilenas
-- ✅ **Edición de Overlays**: Texto, logo y producto superpuestos con drag & drop
+- 🎨 **60 rubros de dirección de arte** especializados por industria
+- 🎚️ **Regulador de realidad (1.0 - 5.0 estrellas)** para control de realismo
+- 📱 **Formatos múltiples:** 1:1, 9:16, 4:5, 16:9, 1:1.41 (Poster Pro)
+- 🤖 **Generación de imágenes y videos** con Google Gemini API
+- 📊 **Análisis inteligente de imágenes** para estilos de texto
+- 💾 **Sistema de caché** para variaciones de realidad
+- 🔐 **Autenticación y gestión de usuarios** con Supabase
 
 ---
 
-## 2. 🏗️ ARQUITECTURA TÉCNICA
+## 2. 🏗️ ARQUITECTURA DE LA APLICACIÓN
 
-### 2.1 Stack Tecnológico
-
-```
-Frontend:
-├── React 18.3 (TypeScript)
-├── Vite 6.0 (Build Tool)
-├── Tailwind CSS 4.0 (Estilos)
-├── React Router 7 (Navegación)
-└── SweetAlert2 (Notificaciones)
-
-Backend (BaaS):
-├── Supabase (Auth + Database + Storage)
-├── Google Gemini API (Imágenes + Videos)
-└── Netlify (Hosting + Edge Functions)
-
-Herramientas de Desarrollo:
-├── ESLint (Linting)
-├── TypeScript 5.x (Tipado)
-└── PostCSS (Procesamiento CSS)
-```
-
-### 2.2 Estructura de Archivos
+### 2.1 Estructura de Archivos
 
 ```
 estudio-56/
-├── App.tsx                          # Componente principal con routing
-├── index.tsx                        # Entry point
-├── index.html                       # Plantilla HTML
-├── package.json                     # Dependencias
-├── vite.config.ts                   # Configuración Vite
-├── tsconfig.json                    # Configuración TypeScript
-├── netlify.toml                     # Configuración Netlify
-├── constants.ts                     # Estilos y configuraciones globales
-├── types.ts                         # Definiciones de tipos TypeScript
-│
-├── components/                      # Componentes React
-│   ├── Dashboard.tsx               # Panel principal
-│   ├── FlyerForm.tsx               # Formulario de creación
-│   ├── FlyerDisplay.tsx            # Visualización y descarga
-│   ├── TextEditorPanel.tsx         # Editor de texto avanzado
-│   ├── StyleGallery.tsx            # Galerías de estilos
-│   ├── PricingModal.tsx            # Modal de precios
-│   ├── BrandPanel.tsx              # Gestión de marcas
-│   ├── CommercialCalendar.tsx      # Calendario comercial
-│   ├── LoginPage.tsx               # Página de login
-│   ├── RegisterPage.tsx            # Página de registro
-│   └── [otras páginas]             # Auth, Perfil, Legal
-│
-├── services/                       # Servicios de negocio
-│   ├── supabaseService.ts          # Autenticación y DB
-│   ├── geminiService.ts            # IA de Google
-│   ├── creditService.ts            # Sistema de créditos
-│   ├── brandService.ts             # Gestión de marcas
-│   ├── flyerGenerationService.ts   # Generaciones guardadas
-│   ├── videoPostProcessingService.ts # FFmpeg.wasm
-│   ├── compositionExportService.ts # Exportación de imágenes
-│   ├── domCaptureService.ts        # Captura DOM
-│   └── [servicios de análisis]     # IA para análisis de imagen
-│
-├── hooks/                          # Custom hooks
-│   └── useDraggable.ts             # Hook para drag & drop
-│
-├── database/                       # Scripts SQL
-│   ├── schema.sql                  # Schema completo
-│   └── [scripts de migración]
-│
-└── scripts/                        # Scripts de utilidad
-    ├── setup-database.js
-    ├── insert-default-data.js
-    └── [scripts varios]
+├── src/
+│   ├── components/          # Componentes React
+│   ├── services/            # Servicios de IA
+│   ├── constants/           # Constantes y prompts
+│   ├── hooks/               # Custom hooks
+│   └── index.css           # Estilos globales
+├── services/               # Servicios principales
+├── database/               # Scripts SQL
+├── scripts/                # Scripts de utilidad
+└── public/                 # Archivos estáticos
 ```
 
-### 2.3 Configuración de Headers (COOP/COEP)
+### 2.2 Tecnologías y Dependencias
 
-**Archivo**: `netlify.toml`
-
-```toml
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cross-Origin-Embedder-Policy = "credentialless"
-    Cross-Origin-Opener-Policy = "same-origin"
-```
-
-Esta configuración es **CRÍTICA** para:
-- Habilitar `SharedArrayBuffer` en el navegador
-- Permitir el funcionamiento de FFmpeg.wasm
-- Procesamiento de video en el cliente
+| Tecnología | Versión | Propósito |
+|------------|---------|-----------|
+| React | 18.x | Framework UI |
+| TypeScript | 5.x | Tipado estático |
+| Google GenAI SDK | Latest | API de Gemini |
+| Supabase | Latest | Backend as a Service |
+| Tailwind CSS | 3.x | Estilización |
+| Vite | 5.x | Build tool |
 
 ---
 
-## 3. 🎨 SISTEMA DE ESTILOS (FLYER_STYLES)
+## 3. 🎨 SISTEMA DE DIRECCIÓN DE ARTE
 
-La aplicación cuenta con **29 estilos predefinidos** organizados en categorías:
+### 3.1 Catálogo de 60 Rubros
 
-### 3.1 Categorías de Estilos
+La aplicación implementa un sistema de **Dirección de Arte Profesional** con 60 rubros especializados, cada uno con prompts específicos, negative prompts y configuraciones de composición.
 
-| Categoría | Descripción | Estilos Incluidos |
-|-----------|-------------|-------------------|
-| **VENTAS** | Ofertas y Liquidaciones | retail_sale, typo_bold, auto_metallic, gastronomy, market_handwritten |
-| **CORPORATIVO** | Negocios profesionales | corporate, medical_clean, tech_saas, edu_sketch, political_community |
-| **LIFESTYLE** | Estilo de vida | aesthetic_min, wellness_zen, pilates, summer_beach, eco_organic, sport_gritty |
-| **NOCHE** | Entretenimiento nocturno | urban_night, luxury_gold, realestate_night, gamer_stream, indie_grunge |
-| **EVENTOS** | Celebraciones especiales | kids_fun, worship_sky, seasonal_holiday, art_double_exp, retro_vintage, podcast_mic |
-| **CUSTOM** | Personalizado | brand_identity (detectado desde URL) |
+#### **FASE 1: Retail y Estética (Rubros 1-20)**
 
-### 3.2 Detalle de Cada Estilo
+| ID | Rubro | Estilo | Prompt Principal |
+|----|-------|--------|------------------|
+| 1 | Retail General | Commercial-Retail | Fotografía comercial limpia, iluminación de estudio |
+| 2 | Moda Mujer | Fashion-Editorial | Look editorial de moda, luz natural suave |
+| 3 | Moda Hombre | Streetwear-Urban | Vibra urbana, sombras duras, texturas gritty |
+| 4 | Calzado | Product-Dynamic | Shot dinámico desde ángulo bajo |
+| 5 | Joyas | Luxury-Jewelry | Macro extremo, bokeh, luz de borde |
+| 6 | Óptica | Medical-Clean | Foco en lentes, composición simétrica |
+| 7 | Belleza/Cosmética | Beauty-Soft | Texturas de piel, fondos pastel |
+| 8 | Perfumería | Luxury-Fragrance | Iluminación etérea, partículas flotando |
+| 9 | Bolsos/Carteras | Luxury-Bags | Flat-lay editorial, enfoque en texturas |
+| 10 | Accesorios Tech | Tech-Cyber | Estética cyber-clean, RGB sutil |
+| 11 | Smartphones | Tech-Premium | Reflejos de pantalla, espacio oscuro |
+| 12 | Computación | Tech-Setup | Sombras profundas, teclado backlit |
+| 13 | Gaming | Gaming-Esports | Saturación RGB, efectos glitch |
+| 14 | Fotografía | Vintage-Camera | Cámaras vintage, luz golden hour |
+| 15 | Audio/Sonido | Audio-Pro | Ondas visuales, tonos moody |
+| 16 | Relojes | Luxury-Watch | Precisión relojería, fondo madera |
+| 17 | Decoración | Interior-Design | Estilo revista de interiores |
+| 18 | Muebles | Furniture-Catalog | Catálogo de muebles, fondo seamless |
+| 19 | Iluminación | Lighting-Design | Contraste luz/sombra, filamento visible |
+| 20 | Electrodomésticos | Appliance-Modern | Reflejos acero, cocina moderna |
 
-#### retail_sale (Ofertas/Liquidación)
-- **Prompt**: "High-End 3D Commercial Art. Dynamic zero-gravity explosion, floating 3D percentage signs (%), confetti."
-- **Movimiento**: "Confetti falls in the foreground. 3D elements float gently."
-- **Ejemplo**: "Tienda 'El Ofertón': Liquidación de Invierno, todo con 50% de descuento."
+#### **FASE 2: Salud y Deporte (Rubros 21-40)**
 
-#### gastronomy (Gastronomía/Sushi)
-- **Prompt**: "Michelin-Star Food Photography. 100mm Macro Lens. Backlit with warm golden light, visible water droplets, steam rising."
-- **Movimiento**: "Cinematic Macro (extreme close-up) with minimal movement, steam rising softly."
-- **Ejemplo**: "Sanguchería 'El Guatón': Churrasco Italiano XL + Schop Artesanal a $8.990."
+| ID | Rubro | Estilo | Prompt Principal |
+|----|-------|--------|------------------|
+| 21 | Gimnasio/Deporte | Sport-Gritty | Fotografía deportiva gritty, sudor visible |
+| 22 | Gastronomía | Gastronomy | Fotografía Michelin, vapor ascendente |
+| 23 | Spa/Wellness | Wellness-Zen | Velas, bambú, ripples de agua |
+| 24 | Médico/Clínico | Medical-Clean | Ambiente clínico estéril, luz brillante |
+| 25 | Corporativo | Corporate | Editorial corporativo estilo Forbes |
+| 26 | Inmobiliaria | Real-Estate | Fotografía arquitectónica nocturna |
+| 27 | Automotriz | Auto-Metallic | Render CGI automotriz, reflejos |
+| 28 | Mascotas | Pets | Veterinaria, ambiente cálido |
+| 29 | Viajes | Travel | Paisajes turísticos, luz de viaje |
+| 30 | Construcción | Construction | Obra en progreso, trabajadores |
 
-#### corporate (Corporativo/Inmobiliaria)
-- **Prompt**: "Premium Corporate Editorial (Forbes Magazine style). 50mm Prime Lens, f/1.8 aperture. Blurred modern glass architecture."
-- **Movimiento**: "Extremely slow parallax slide. The person is anchored and static."
-- **Ejemplo**: "Inmobiliaria 'Los Andes': Últimas unidades en Las Condes, entrega inmediata."
+#### **FASE 3: Servicios Especializados (Rubros 31-60)**
 
-#### medical_clean (Médico/Clínica)
-- **Prompt**: "Sterile Medical Design. Pure White and Light Cyan palette. Bright, shadowless clinical light."
-- **Movimiento**: "Clean mechanical camera slide (Slider shot) over static medical equipment."
-- **Ejemplo**: "Centro Dental 'Sonrisas': Ortodoncia Invisible, evaluación inicial sin costo."
-
-#### urban_night (Discoteca/Neón)
-- **Prompt**: "Cyberpunk Nightlife / Concert Photography. Volumetric fog, Laser lights. Neon Purple, Cyan, Magenta."
-- **Movimiento**: "Subject stands cool and static. Neon lights trail rapidly around them. Smoke swirls."
-- **Ejemplo**: "Club 'La Casona': Sábado de Reggaeton Old School, ellas entran gratis hasta la 1 AM."
-
-#### luxury_gold (Gala VIP/Año Nuevo)
-- **Prompt**: "Luxury Royal Aesthetic. Gold foil, black silk, marble, glitter. Soft warm sparkling bokeh."
-- **Movimiento**: "Smooth gliding camera (Gimbal shot), gold particles floating in the air."
-- **Ejemplo**: "Evento 'Gala Vino': Degustación Premium en Hotel W, reserva tu mesa."
-
-#### wellness_zen (Spa/Yoga)
-- **Prompt**: "Zen Wellness Photography. Soft candle light, dim and relaxing. Water ripples, bamboo, steam."
-- **Movimiento**: "Tripod shot (Static), water dripping in super slow motion, candle flame flickering gently."
-- **Ejemplo**: "Centro 'Alma Zen': Masaje descontracturante y piedras calientes 2x1."
-
-#### sport_gritty (Deporte/Gym)
-- **Prompt**: "Gritty Sports Commercial Photography (Nike Campaign). 'Rembrandt Lighting', high contrast, harsh rim light."
-- **Movimiento**: "Super slow motion. Subject is tensed and breathing heavily. Sweat drips."
-- **Ejemplo**: "Gimnasio 'Titanium': Plan Anual 50% OFF, sin matrícula de incorporación."
-
-#### market_handwritten (Feria Libre Chilena)
-- **Prompt**: "Traditional Chilean Market ('Feria Libre') Aesthetic. Colorful cardboard signs with handwritten prices in thick black marker."
-- **Movimiento**: "Slow pan across market stalls, vendors arranging products, sunlight filtering through awnings."
-- **Ejemplo**: "Verdulería 'Don Pedro': Tomates a $1.500 el kilo, limones $500, ofertas de la semana."
-
----
-
-## 4. 🎬 SISTEMA DE VIDEOS (VIDEO_STYLES)
-
-La aplicación incluye **25 estilos de video** con prompts de movimiento específicos:
-
-### 4.1 Configuración de Video
-
-| Configuración | Draft | Producción |
-|--------------|-------|------------|
-| **Modelo** | veo-3.1-fast-generate-preview | veo-3.1-generate-preview |
-| **Resolución** | 720p | 1080p |
-| **Velocidad** | Fast | Standard |
-| **Calidad** | Standard | High |
-| **Costo** | 0.3x | 1.0x |
-
-### 4.2 Estilos de Video Principales
-
-1. **video_retail_sale**: Explosión 3D con confetti
-2. **video_summer_beach**: Piscina infinita con cóctel
-3. **video_worship_sky**: Siluetas con rayos de luz divina
-4. **video_urban_night**: DJ con neón y humo
-5. **video_gastronomy**: Hamburguesa con queso derritiéndose
-6. **video_sport_gritty**: Atleta sudando en slow motion
-7. **video_luxury_gold**: Brindis con champagne y oro
-8. **video_medical_clean**: Doctor con ADN en fondo
-9. **video_tech_saas**: Cerebro digital con nodos
-10. **video_wellness_zen**: Gota de agua creando ripples
+| ID | Rubro | Estilo | Prompt Principal |
+|----|-------|--------|------------------|
+| 31 | Taller Mecánico | Mechanic-Workshop | Auto en elevador, herramientas |
+| 32 | Vulcanización | Tire-Service | Neumáticos, equipamiento profesional |
+| 33 | Barbería | Barber-Shop | Silla de cuero, espejos LED |
+| 34 | Veterinaria | Veterinary-Clinic | Mascota en mesa de examen |
+| 35 | Yoga | Yoga-Studio | Persona en pose yoga, luz natural |
+| 36 | Pilates | Pilates | Reformer, estudio limpio |
+| 37 | Kinesiología | Physiotherapy | Equipamiento rehabilitación |
+| 38 | Estudio Jurídico | Law-Office | Oficina profesional, libreros |
+| 39 | Jardinería | Gardening | Jardín verde, herramientas |
+| 40 | Seguridad | Security-Systems | Cámaras CCTV, monitoreo digital |
 
 ---
 
-## 5. 🔧 MODOS DE TRABAJO
+## 4. 🤖 INTELIGENCIAS ARTIFICIALES UTILIZADAS
 
-### 5.1 Modo Automático (AUTO)
+### 4.1 Google Gemini API
 
-El sistema analiza la entrada del usuario y detecta automáticamente:
+La aplicación utiliza **Google Gemini API** como motor principal de generación de imágenes y análisis.
 
-1. **Industria**: Basado en palabras clave
-   - Pilates/Yoga → wellness_zen
-   - Iglesia → worship_sky
-   - Gym/Deporte → sport_gritty
-   - Belleza → aesthetic_min
-   - Ofertas → retail_sale
-   - Gastronomía → gastronomy
-   - Y más...
+#### **Modelos Utilizados**
 
-2. **Objetivo de Marketing**:
-   - **Branding**: Reconocimiento de marca
-   - **Leads**: Generar conversiones
+| Modelo | Uso | Calidad | Velocidad |
+|--------|-----|---------|-----------|
+| `gemini-2.5-flash-image` | Borradores (Draft) | Media | Rápida |
+| `gemini-3.0-flash-exp` | Imágenes HD | Alta | Media |
+| `gemini-3-pro-image-preview` | Mejora de imágenes | Alta | Media |
+| `gemini-3-flash-preview` | Análisis y prompts | Media | Rápida |
+| `gemini-1.5-flash` | Análisis de imágenes | Media | Rápida |
+| `veo-3.1-generate-preview` | Generación de video | Alta | Lenta |
 
-3. **Texto Automático**:
-   - Plantillas específicas por industria
-   - Generación con IA como fallback
-
-### 5.2 Modo Manual (MANUAL)
-
-El usuario tiene control total sobre:
-- Selección de estilo
-- Texto personalizado
-- Posición de elementos
-- Formato (1:1, 9:16, 4:5)
-- Calidad (Draft/HD)
-
----
-
-## 6. 📐 FORMATOS DE IMAGEN SOPORTADOS
-
-### Formatos Principales
-
-| Formato | Dimensiones | Uso |
-|---------|-------------|-----|
-| **1:1** | 1080x1080 | Instagram/Facebook Ads |
-| **9:16** | 1080x1920 | Stories/Reels/TikTok |
-| **4:5** | 1080x1350 | Instagram Feed Vertical |
-| **1.91:1** | 1200x628 | Facebook Link Post |
-| **16:9** | 1920x1080 | Video Horizontal |
-
----
-
-## 7. 🔄 SISTEMA DE GENERACIÓN
-
-### 7.1 Flujo de Generación de Imágenes
-
-```
-┌─────────────────┐
-│  Input Usuario  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Modo Auto/Manual│
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Enhance Prompt │
-│  (Español→Inglés)│
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Seleccionar    │
-│  Estilo         │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Generar Imagen │
-│  (Gemini Flash) │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Diagnóstico    │
-│  (Corregir      │
-│  imágenes negras)│
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Análisis IA    │
-│  (Tipografía,   │
-│  Contraste,     │
-│  Composición)   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Mostrar        │
-│  Resultado      │
-└─────────────────┘
-```
-
-### 7.2 Flujo de Mejora a HD
-
-```
-┌─────────────────┐
-│  Imagen Draft   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Generar HD     │
-│  (Gemini Pro)   │
-│  Usando Draft   │
-│  como Referencia│
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Mostrar        │
-│  Comparación    │
-│  Draft vs HD    │
-└─────────────────┘
-```
-
-### 7.3 Flujo de Generación de Videos
-
-```
-┌─────────────────┐
-│  Input Usuario  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Generar Imagen │
-│  Base (Draft)   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Generar Video  │
-│  (Google VEO)   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Descargar      │
-│  Video          │
-└─────────────────┘
-```
-
----
-
-## 8. 🖼️ SISTEMA DE OVERLAYS
-
-### 8.1 Elementos Superpuestos
-
-| Elemento | Características |
-|----------|-----------------|
-| **Texto** | Drag & drop, redimensionable, efectos (sombra/borde/brillo) |
-| **Logo** | Recolor automático, filtros (grayscale, brightness, contrast, opacity) |
-| **Producto** | Imagen subida por usuario, posicionamiento libre |
-
-### 8.2 Editor de Texto
-
-**Efectos Disponibles**:
-- ✅ Sombra (shadow)
-- ✅ Borde (stroke)
-- ✅ Brillo (glow)
-
-**Estilos de Tipografía**:
-- Familia de fuente
-- Tamaño
-- Peso (bold, normal)
-- Color
-- Espaciado
-- Transformación (mayúsculas, capitalize)
-
-### 8.3 Filtros de Logo
-
-| Filtro | Rango | Descripción |
-|--------|-------|-------------|
-| Grayscale | 0-100% | Convierte a escala de grises |
-| Brightness | 50-200% | Ajusta luminosidad |
-| Contrast | 50-200% | Ajusta contraste |
-| Opacity | 0-100% | Ajusta transparencia |
-
----
-
-## 9. 💰 SISTEMA DE CRÉDITOS
-
-### 9.1 Planes
-
-| Plan | Créditos/Mes | Precio |
-|------|--------------|--------|
-| **GRATIS** | Limitado | $0 |
-| **PRO** | Ilimitado | Por definir |
-| **AGENCIA** | Multi-usuario | Por definir |
-
-### 9.2 Tipos de Crédito
-
-| Tipo | Uso |
-|------|-----|
-| `draft` | Generación de borrador |
-| `final_image` | Mejora a HD |
-| `video` | Generación de video |
-| `product_study` | Mejora de imagen propia |
-
----
-
-## 10. 🏢 SISTEMA DE MARCAS (BRANDS)
-
-### 10.1 Estructura de Marca
+#### **Configuración de Generación**
 
 ```typescript
-interface Brand {
-  id: string;
-  user_id: string;
-  name: string;
-  logo_url: string;
-  primary_color: string;
-  secondary_color: string;
-  website_url?: string;
-  instagram_url?: string;
-  is_default: boolean;
-  created_at: string;
+// Parámetros principales
+interface ImageGenerationConfig {
+  aspectRatio: '1:1' | '9:16' | '16:9' | '4:5' | '1080x1080' | '1080x1920';
+  imageSize: '1K' | '4K';  // Solo para HD
+  seed: number;  // Para consistencia
+  quality: 'draft' | 'hd';
 }
 ```
 
-### 10.2 Funcionalidades
+### 4.2 Servicios de IA Implementados
 
-- ✅ Crear múltiples marcas
-- ✅ Seleccionar marca activa
-- ✅ Colores personalizados
-- ✅ Logos por marca
-- ✅ Marca por defecto
+#### **4.2.1 geminiService.ts**
 
----
+Servicio principal para generación de imágenes y videos.
 
-## 11. 📅 CALENDARIO COMERCIAL
+##### Funciones Principales:
 
-### 11.1 Fechas促销 Chilenas
+| Función | Descripción | Endpoint |
+|---------|-------------|----------|
+| `generateImage()` | Genera imagen simple | `models.generateContent` |
+| `generateFlyerImage()` | Genera flyer completo | `models.generateContent` |
+| `generateHDFromDraft()` | Mejora borrador a HD | `models.generateContent` |
+| `enhanceUserImage()` | Mejora imagen subida | `models.generateContent` |
+| `analyzeUrlContent()` | Analiza URL para extraer estilo | `models.generateContent` |
+| `generatePersuasiveText()` | Genera texto persuasivo | `models.generateContent` |
+| `generateImageEdit()` | Edita imagen existente | `models.generateContent` |
+| `generateVideoEdit()` | Edita video existente | `models.generateVideos` |
 
-| Fecha | Evento |
-|-------|--------|
-| 18 Septiembre | Fiestas Patrias |
-| Octubre | Halloween |
-| Noviembre | Black Friday |
-| Diciembre | Navidad |
-| Enero | Verano |
-| Febrero | San Valentín |
-
-### 11.2 Funcionalidades
-
-- ✅ Visualización de calendario
-- ✅ Recordatorios de eventos
-- ✅ Generación rápida para eventos
-- ✅ Notificaciones automáticas
-
----
-
-## 12. 🔐 AUTENTICACIÓN
-
-### 12.1 Proveedores
-
-- **Email/Password**: Autenticación tradicional
-- **Google OAuth**: Login con cuenta Google
-
-### 12.2 Flujo de Auth
-
-```
-Login/Registro → Supabase Auth → Sesión Activa
-                                    ↓
-                           Verificar en DB (users)
-                                    ↓
-                           Cargar plan y créditos
-                                    ↓
-                           Acceso a Dashboard
-```
-
----
-
-## 13. 📊 ANÁLISIS INTELIGENTE DE IMÁGENES
-
-### 13.1 Servicios de Análisis
-
-| Servicio | Función |
-|----------|---------|
-| `imageAnalysisService` | Análisis de imagen para texto |
-| `contextualTypographyService` | Tipografía contextual |
-| `contrastAnalysisService` | Análisis de contraste |
-| `contextualEffectsService` | Efectos contextuales |
-| `compositionAnalysisService` | Composición para texto |
-| `autoTextValidationService` | Validación automática |
-
-### 13.2 Salida de Análisis
+##### Prompts del Sistema:
 
 ```typescript
-interface GeneratedImageResult {
-  imageDataUrl: string;
-  imageAnalysis?: ImageAnalysisResult;
-  contextualTypography?: ContextualTypographyResult;
-  contrastAnalysis?: ContrastAnalysis;
-  contextualEffects?: ContextualEffects;
-  compositionAnalysis?: CompositionAnalysisResult;
-  enhancedStyles?: {
-    typography: any;
-    contrast: any;
-    effects: any;
-    composition: any;
-    combinedClasses: string;
+// MASTER_STYLE - Estilo maestro para todas las generaciones
+const MASTER_STYLE = `
+Professional social media flyer design. 
+Aesthetic: GraphicRiver bestseller, glossy finish, 
+ultra-detailed, commercial photography, 8k resolution, 
+Unreal Engine 5 render style.
+`;
+
+// CHILEAN_BASE_CONTEXT - Contexto chileno
+const CHILEAN_BASE_CONTEXT = `
+LOCALE SETTING: Chile (South America).
+1. FACES/PEOPLE: Subjects must have realistic Chilean phenotypes.
+2. TEXT & LANGUAGE: ANY visible text MUST BE IN SPANISH.
+   - STRICTLY NO ENGLISH TEXT
+   - USE: "Oferta", "Abierto", "Liquidación", "Rico"
+   - CURRENCY: Use Chilean Peso format with dot separator (e.g. "$1.000")
+`;
+```
+
+#### **4.2.2 imageAnalysisService.ts**
+
+Analiza imágenes para extraer información visual y recomendar estilos de texto.
+
+##### Función Principal:
+
+```typescript
+analyzeImageForTextStyle(imageDataUrl: string): Promise<ImageAnalysisResult>
+```
+
+##### Salida:
+
+```typescript
+interface ImageAnalysisResult {
+  dominantColors: string[];      // Colores dominantes
+  mood: 'elegant' | 'modern' | 'corporate' | 'artistic' | 'playful' | 'luxury' | 'minimalist';
+  lighting: 'bright' | 'soft' | 'dramatic' | 'warm' | 'cool';
+  style: 'clean' | 'vibrant' | 'muted' | 'neon' | 'metallic' | 'organic';
+  recommendedTextStyle: {
+    fontFamily: string;
+    fontWeight: string;
+    color: string;
+    textShadow: string;
+    gradient?: string;
   };
 }
 ```
 
----
+##### Modelo Utilizado: `gemini-3-flash-preview`
 
-## 14. 🎬 PROCESAMIENTO DE VIDEO CON FFmpeg.wasm
+#### **4.2.3 realitySliderService.ts**
 
-### 14.1 Configuración Requerida
+Gestiona el regulador de realidad y caché de variaciones.
 
-**Headers HTTP**:
-```
-Cross-Origin-Embedder-Policy: credentialless
-Cross-Origin-Opener-Policy: same-origin
-```
-
-### 14.2 Funcionalidades
+##### Funciones Principales:
 
 | Función | Descripción |
 |---------|-------------|
-| `processVideoWithOverlays` | Procesa video con logo y texto |
-| `downloadProcessedVideo` | Descarga video procesado |
-| `downloadOriginalVideo` | Descarga video original |
-| `isSharedArrayBufferSupported` | Verifica soporte del navegador |
-| `loadFFmpeg` | Carga FFmpeg.wasm |
+| `handleStarsChange()` | Cambia nivel de realidad |
+| `generateAllVariations()` | Genera todas las variaciones |
+| `getCachedVariation()` | Obtiene variación cacheada |
+| `saveVariationToCache()` | Guarda variación en caché |
+| `buildGeminiPromptWithReality()` | Construye prompt con nivel de realidad |
 
-### 14.3 Flujo de Procesamiento
+##### Niveles de Realidad:
 
-```
-┌─────────────────┐
-│  Video Original │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Cargar FFmpeg  │
-│  (SharedArray   │
-│   Buffer)       │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Agregar Logo   │
-│  (Posición %)   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Quemar Texto   │
-│  (Burn-in)      │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Exportar MP4   │
-│  (H.264)        │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Descargar      │
-└─────────────────┘
-```
+| Nivel | Etiqueta | Descripción |
+|-------|----------|-------------|
+| 1.0 | Raw | Fotografía cruda de smartphone |
+| 1.5 | Authentic | Más real, menos procesado |
+| 2.0 | Natural | Equilibrio natural |
+| 2.5 | Professional | Estándar profesional |
+| 3.0 | Polished | Más pulido |
+| 3.5 | Editorial | Estilo editorial |
+| 4.0 | Premium | Alta calidad premium |
+| 4.5 | Luxury | Estilo de lujo |
+| 5.0 | Ultimate | Máxima calidad |
 
----
+#### **4.2.4 visualMimicryService.ts**
 
-## 15. 📤 EXPORTACIÓN
+Analiza el ADN cromático de imágenes y genera modos de fusión.
 
-### 15.1 Imágenes
-
-**Método**: Captura DOM con html2canvas
-
-**Resoluciones**:
-- Draft: 1x (resolución nativa)
-- HD: 2x (alta resolución)
-
-### 15.2 Videos
-
-**Método**: FFmpeg.wasm (cliente) o descarga directa
-
-**Formatos**: MP4 (H.264)
-
----
-
-## 16. 🌐 CONTEXTO CHILENO
-
-### 16.1 Adaptaciones
-
-| Aspecto | Adaptación |
-|---------|------------|
-| **Idioma** | Español chileno |
-| **Moneda** | Pesos Chilenos ($) |
-| **Formato moneda** | $1.000 (con punto) |
-| **Fechas** | Formato DD/MM |
-| **Personas** | Fenotipo chileno (herencia mixta) |
-| **Clima** | Templado/fresco (no tropical) |
-| **Eventos** | Fiestas Patrias, Cyber Monday, etc. |
-
-### 16.2 Contextos de Fondo
+##### Función Principal:
 
 ```typescript
-// Contexto base (aplica a todo)
-CHILEAN_BASE_CONTEXT = `
-LOCALE SETTING: Chile (South America).
-FACES/PEOPLE: Chilean phenotypes.
-TEXT: Spanish only (NO English).
-CURRENCY: Chilean Peso format with dot separator.
-`
-
-// Contexto outdoor (estilos de paisaje)
-CHILEAN_OUTDOOR_CONTEXT = `
-GEOGRAPHIC SETTING: CHILE.
-COAST: Pacific Ocean (dark blue, grey sand).
-LAKE/SOUTH: Volcanoes, green forests.
-CENTRAL ZONE: Mediterranean, dry hills.
-MOUNTAINS: The Andes (snow-capped).
-`
-
-// Contexto studio (estilos interiores)
-CHILEAN_STUDIO_CONTEXT = `
-BACKGROUND: STUDIO / INDOOR.
-FORBIDDEN: Landscapes, mountains, skies.
-`
+analyzeVisualMimicry(imageDataUrl: string): Promise<VisualMimicryResult>
 ```
 
----
-
-## 17. 🔑 PROMPTS DEL SISTEMA
-
-### 17.1 Prompt Maestro (HD)
+##### Salida:
 
 ```typescript
-MASTER_STYLE = `
-Professional social media flyer design.
-Aesthetic: GraphicRiver bestseller, glossy finish,
-ultra-detailed, commercial photography, 8k resolution,
-Unreal Engine 5 render style.
-`
+interface VisualMimicryResult {
+  extractedColors: {
+    accentColor: string;      // Color de acento
+    primaryPalette: string[]; // Paleta primaria
+    secondaryPalette: string[]; // Paleta secundaria
+  };
+  blendMode: {
+    mode: string;             // Modo de fusión
+    opacity: number;          // Opacidad
+  };
+  noise: {
+    hasNoise: boolean;        // Tiene ruido
+    noiseType: string;        // Tipo de ruido
+  };
+  depthOfField: {
+    hasBokeh: boolean;        // Tiene bokeh
+    focusPoint: { x: number; y: number };
+  };
+}
 ```
 
-### 17.2 Regla Anti-Texto
+#### **4.2.5 contextualTypographyService.ts**
+
+Analiza tipografía contextual y genera estilos.
+
+##### Funciones:
 
 ```typescript
-STRICT PROHIBITION - ZERO TOLERANCE:
-1. ABSOLUTELY NO TEXT whatsoever
-2. NO letters, numbers, words, symbols
-3. NO signs, menus, billboards, posters
-4. NO text on clothing, products, walls
-5. Text will be added LATER as overlay
+analyzeContextualTypography(imageDataUrl: string, imageAnalysis: ImageAnalysisResult): Promise<ContextualTypographyResult>
+generateContextualStyles(contextualTypography: ContextualTypographyResult): any
+generateContextualClasses(contextualTypography: ContextualTypographyResult): string
+```
+
+#### **4.2.6 contrastAnalysisService.ts**
+
+Analiza el contraste de la imagen para optimización de texto.
+
+##### Función Principal:
+
+```typescript
+analyzeImageContrast(imageDataUrl: string, focusPoint: { x: number; y: number }): Promise<ContrastAnalysis>
+```
+
+##### Salida:
+
+```typescript
+interface ContrastAnalysis {
+  overallContrast: number;      // Contraste general (0-1)
+  brightness: number;           // Brillo (0-1)
+  dynamicRange: number;         // Rango dinámico
+  recommendedTextColor: string; // Color recomendado para texto
+  recommendedShadow: string;    // Sombra recomendada
+  contrastScore: number;        // Puntuación de contraste
+}
+```
+
+#### **4.2.7 contextualEffectsService.ts**
+
+Analiza efectos contextuales y genera estilos de efectos.
+
+##### Función Principal:
+
+```typescript
+analyzeContextualEffects(imageDataUrl: string, imageAnalysis: ImageAnalysisResult): Promise<ContextualEffects>
+```
+
+#### **4.2.8 compositionAnalysisService.ts**
+
+Analiza composición para posicionamiento automático de texto.
+
+##### Función Principal:
+
+```typescript
+analyzeCompositionForText(imageDataUrl: string, enhancedDescription: string, aspectRatio: AspectRatio): Promise<CompositionAnalysisResult>
+```
+
+##### Salida:
+
+```typescript
+interface CompositionAnalysisResult {
+  safeZones: {
+    top: { start: number; end: number };
+    middle: { start: number; end: number };
+    bottom: { start: number; end: number };
+  };
+  focalPoint: { x: number; y: number };
+  compositionType: 'centered' | 'rule-of-thirds' | 'diagonal' | 'symmetrical';
+  recommendedTextPosition: 'top' | 'middle' | 'bottom';
+  visualBalance: number;
+}
 ```
 
 ---
 
-## 18. 📱 INTERFAZ DE USUARIO
+## 5. 📝 PROMPTS DEL SISTEMA
 
-### 18.1 Layout Principal
+### 5.1 Prompts de Guardrail (Negativos)
 
-```
-┌─────────────────────────────────────────┐
-│  [Header: Logo + Marca + Plan]          │
-├──────────────┬──────────────────┬───────┤
-│              │                  │       │
-│  LEFT PANEL  │   CENTER        │ RIGHT │
-│  (Controles) │   (Canvas)      │ PANEL │
-│              │                  │(Calendario)│
-│              │                  │       │
-│  - FlyerForm │  - FlyerDisplay │       │
-│  - TextEditor│  - Comparación  │       │
-│              │                  │       │
-├──────────────┴──────────────────┴───────┤
-│  [Footer: Links legales + Logout]       │
-└─────────────────────────────────────────┘
+#### **GLOBAL_NEGATIVE_SHIELD**
+```typescript
+const GLOBAL_NEGATIVE_SHIELD = `
+text, letters, words, logo, watermark, distorted characters, 
+floating objects, extra limbs, morphing faces, sliding feet, 
+anti-gravity, supernatural movement, distorted physics, 
+glitching bodies, impossible perspectives, unrealistic skin, 
+plastic textures, candles, smoke, steam, fog, water on floor, 
+neon, fused objects, floating people, melting equipment, liquid floors
+`;
 ```
 
-### 18.2 Componentes Principales
+#### **ANATOMY_SHIELD** (Prevención de errores anatómicos)
+```typescript
+const ANATOMY_SHIELD = `
+deformed anatomy, disfigured body, extra limbs, fused limbs, 
+feet on head, backwards limbs, inverted body, distorted proportions, 
+morphing body parts, anatomical nonsense, floating body parts, 
+wrong limb placement, upside down body, head at bottom, feet at top, 
+merged body parts, twisted torso, dislocated joints, impossible bone structure, 
+human deformation, body horror, creature features
+`;
+```
 
-| Componente | Función |
-|------------|---------|
-| `Dashboard` | Contenedor principal |
-| `FlyerForm` | Formulario de entrada |
-| `FlyerDisplay` | Visualización y acciones |
-| `TextEditorPanel` | Editor avanzado de texto |
-| `StyleGallery` | Selector de estilos |
-| `BrandPanel` | Gestión de marcas |
-| `CommercialCalendar` | Calendario comercial |
-| `PricingModal` | Planes y precios |
+#### **ANTI_FANTASY_SHIELD** (Ambiente de negocio real)
+```typescript
+const ANTI_FANTASY_SHIELD = `
+hotel lobby, luxury resort, marble palace, futuristic architecture, 
+sterile, excessive gold, clinical white, unreachable luxury, 
+3d render look, plastic textures, perfect symmetry, 
+science fiction style, cathedral ceiling, reflective water floor, 
+spa atmosphere, luxury candles, decorative smoke, vapor trails, fog effects
+`;
+```
+
+#### **ANTI_MODEL_SHIELD** (Personas auténticas)
+```typescript
+const ANTI_MODEL_SHIELD = `
+supermodel look, heavy makeup, plastic surgery look, perfect porcelain skin, 
+bodybuilder physique, staring at camera, fake smile, airbrushed face, 
+doll-like features
+`;
+```
+
+#### **VIDEO_TEXT_BLOCK** (Bloqueo de texto en videos)
+```typescript
+const VIDEO_TEXT_BLOCK = `
+VIDEO_TEXT_BLOCK_STRICT:
+- FORBIDDEN: text, letters, words, numbers, symbols, characters of any kind
+- FORBIDDEN: text on walls, signs, menus, products, clothing, surfaces
+- FORBIDDEN: superimposed text, titles, captions, on-screen graphics
+- FORBIDDEN: branding text, logos, price tags, labels with writing
+- MANDATORY: Blank walls, empty signs, plain products, no writing anywhere
+- MANDATORY: Pure video content only - NO typography, NO graphics, NO text overlays
+- This is a RAW VIDEO, not a finished advertisement - NO text elements
+- Zero tolerance: Any text in the video = FAILED generation
+`;
+```
+
+### 5.2 Prompts de Estilo por Categoría
+
+#### **FLYER_STYLES** (60 estilos visuales)
+
+##### Estilos de VENTAS:
+
+| Estilo | Prompt |
+|--------|--------|
+| retail_sale | `High-End 3D Commercial Art. Tech: Cinema 4D, Octane Render. Composition: Dynamic zero-gravity explosion, floating 3D percentage signs. Lighting: Studio softbox, vibrant rim lights.` |
+| gastronomy | `Michelin-Star Food Photography. Camera: 100mm Macro. Lighting: Backlit with warm golden light. Details: Visible water droplets, smoke rising.` |
+| auto_metallic | `Automotive Commercial CGI. Render: Unreal Engine 5, Raytraced reflections. Texture: Carbon fiber, brushed aluminum.` |
+
+##### Estilos CORPORATIVOS:
+
+| Estilo | Prompt |
+|--------|--------|
+| corporate | `Premium Corporate Editorial (Forbes Magazine style). Camera: Canon EOS R5, 50mm f/1.8. Background: Blurred modern glass architecture.` |
+| medical_clean | `Sterile Medical Design. Palette: Pure White and Light Cyan. Lighting: Bright, shadowless clinical light.` |
+| tech_saas | `Abstract High-Tech Data Visualization. Elements: Network nodes, floating isometric 3D cubes. Palette: Deep Royal Blue and glowing cyan.` |
+
+##### Estilos LIFESTYLE:
+
+| Estilo | Prompt |
+|--------|--------|
+| aesthetic_min | `Minimalist Product Photography (Instagram Clean Girl Trend). Lighting: Soft-focus natural window light. Palette: Monochromatic Beige, Cream, White, Sage Green.` |
+| wellness_zen | `Zen Wellness Photography. Lighting: Soft candle light. Elements: Water ripples, bamboo, steam. Palette: Earthy Browns, Greens, Soft White.` |
+| sport_gritty | `Gritty Sports Commercial Photography (Nike Campaign). Lighting: Rembrandt Lighting, high contrast, harsh rim light.` |
+
+##### Estilos NOCHE:
+
+| Estilo | Prompt |
+|--------|--------|
+| urban_night | `Cyberpunk Nightlife / Concert Photography. Tech: Volumetric fog, Laser lights. Palette: Neon Purple, Cyan, Magenta against deep blacks.` |
+| luxury_gold | `Luxury Royal Aesthetic. Materials: Gold foil, black silk, marble, glitter. Lighting: Soft, warm, sparkling bokeh.` |
+| gamer_stream | `3D Esports Tournament Art. Effects: Glitch art, digital distortion. Palette: Neon Green or Twitch Purple.` |
+
+### 5.3 Prompts de Dirección de Arte por Rubro
+
+#### **Ejemplo: Rubro 5 - Joyas**
+
+```typescript
+const JEWELRY_PROMPT = `
+Extreme macro photography at jewelry scale, beautiful bokeh highlights 
+from studio lights, dramatic rim lighting on metallic edges creating sparkle, 
+luxury velvet textures as background, diamond and gemstone fire visible. 
+Professional jewelry photography with light refraction analysis.
+`;
+
+const JEWELRY_NEGATIVE = `
+(low quality, blurry text, amateur layout, stretched image, cheap flyer, 
+cluttered design, flat lighting, no sparkle, dull metal, blurry gemstone, 
+amateur product shot, inconsistent reflections)
+`;
+```
+
+#### **Ejemplo: Rubro 13 - Gaming**
+
+```typescript
+const GAMING_PROMPT = `
+High-energy RGB saturation with neon colors exploding, glitch art effects 
+and digital artifacts, dark industrial background with metal textures, 
+aggressive gaming typography with angular designs. Esports tournament aesthetic.
+`;
+
+const GAMING_NEGATIVE = `
+(low quality, blurry text, amateur layout, stretched image, cheap flyer, 
+cluttered design, flat colors, no RGB, amateur gaming setup, inconsistent 
+lighting, cartoony graphics, low contrast)
+`;
+```
+
+### 5.4 Prompts de Video
+
+#### **Estructura del Prompt de Video**
+
+```
+[DESCRIPCIÓN VISUAL] + [MOVIMIENTO DE CÁMARA] + [ACCIÓN DEL SUJETO] + High resolution, cinematic 4k.
+```
+
+#### **Ejemplo: video_gastronomy**
+
+```typescript
+const VIDEO_GASTRONOMY_PROMPT = `
+Gourmet burger with melting cheese and steam. Extreme close-up. 
+Cheese slowly oozing down the side of the burger. Steam rising gracefully. 
+Sauce being poured in slow motion from above. High resolution, cinematic 4k.
+`;
+
+const MOTION_STYLE = "Cheese oozing, steam rising, sauce pouring slow motion";
+```
+
+### 5.5 Prompts de Análisis
+
+#### **Análisis de Imagen para Estilos de Texto**
+
+```typescript
+const ANALYSIS_PROMPT = `
+Analiza esta imagen y extrae la siguiente información en formato JSON:
+
+{
+  "dominantColors": ["#color1", "#color2", "#color3"],
+  "mood": "elegant|modern|corporate|artistic|playful|luxury|minimalist",
+  "lighting": "bright|soft|dramatic|warm|cool",
+  "style": "clean|vibrant|muted|neon|metallic|organic",
+  "recommendedTextStyle": {
+    "fontFamily": "font-family-name",
+    "fontWeight": "normal|bold|black",
+    "color": "#hex-color",
+    "textShadow": "shadow-description"
+  }
+}
+
+Enfócate en:
+1. Colores dominantes
+2. Mood general
+3. Tipo de iluminación
+4. Estilo visual
+5. Recomendaciones para texto
+
+Responde SOLO con el JSON, sin texto adicional.
+`;
+```
 
 ---
 
-## 19. 🔧 SERVICIOS TÉCNICOS
+## 6. 🔧 SERVICIOS Y ENDPOINTS
 
-### 19.1 Servicios de IA
+### 6.1 Supabase Service
 
-| Servicio | Función |
-|----------|---------|
-| `geminiService.ts` | Generación de imágenes y videos |
-| `imageAnalysisService.ts` | Análisis de imagen |
-| `magicModeService.ts` | Detección automática de estilo |
+#### **Configuración**
 
-### 19.2 Servicios de Exportación
+```typescript
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabase = createClient(supabaseUrl, supabaseKey);
+```
 
-| Servicio | Función |
-|----------|---------|
-| `compositionExportService.ts` | Exportación de composiciones |
-| `domCaptureService.ts` | Captura de DOM |
-| `videoPostProcessingService.ts` | Procesamiento de video |
+#### **Variables de Entorno**
 
-### 19.3 Servicios de Negocio
+| Variable | Descripción |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | URL del proyecto Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Clave anónima del proyecto |
+| `VITE_GEMINI_API_KEY` | Clave de Google Gemini API |
 
-| Servicio | Función |
-|----------|---------|
-| `supabaseService.ts` | Auth y base de datos |
-| `creditService.ts` | Sistema de créditos |
-| `brandService.ts` | Gestión de marcas |
-| `flyerGenerationService.ts` | Generaciones guardadas |
+#### **Tipos de Datos**
+
+```typescript
+interface User {
+  id: string;
+  email: string;
+  created_at: string;
+  plan: string;
+  credits: number;
+}
+
+interface Flyer {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  style_key: string;
+  aspect_ratio: string;
+  media_type: string;
+  image_quality: string;
+  image_url?: string;
+  video_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface UserPlan {
+  id: string;
+  name: string;
+  price: number;
+  credits_per_month: number;
+  features: string[];
+}
+```
+
+### 6.2 Endpoints de API
+
+#### **Google Gemini API**
+
+| Endpoint | Método | Uso |
+|----------|--------|-----|
+| `models.generateContent` | POST | Generación de imágenes |
+| `models.generateVideos` | POST | Generación de videos |
+| `operations.getVideos` | GET | Estado de operación de video |
+
+#### **Supabase (PostgreSQL)**
+
+| Tabla | Operaciones | Descripción |
+|-------|-------------|-------------|
+| `users` | SELECT, INSERT, UPDATE | Usuarios y autenticación |
+| `flyers` | CRUD completo | Flyers generados |
+| `user_plans` | SELECT | Planes de usuario |
+| `credits` | SELECT, UPDATE | Sistema de créditos |
+| `reality_variations` | CRUD | Variaciones de realidad |
 
 ---
 
-## 20. 🚀 FLUJO DE DESPLIEGUE
+## 7. 📱 COMPONENTES PRINCIPALES
 
-### 20.1 Netlify
+### 7.1 Dashboard
 
-**Configuración**: `netlify.toml`
+El componente principal que gestiona la generación de contenido visual.
+
+### 7.2 StoryArtStyleSelector
+
+Selector de estilos visuales para Story Art con 7 estilos únicos:
+
+| ID | Estilo | Descripción |
+|----|--------|-------------|
+| vogue_negative | Vogue Negative | Estilo editorial de moda negativo |
+| neon_kinetic | Neon Kinetic | Neón cinético urbano |
+| macro_essence | Macro Essence | Macro de producto |
+| cinematic_frame | Cinematic Frame | Marco cinematográfico |
+| collage_dynamic | Collage Dynamic | Collage dinámico |
+| marble_sculpture | Marble Sculpture | Escultura de mármol |
+| anime_to_real | Anime to Real | Anime a realista |
+
+### 7.3 RealitySlider
+
+Componente del regulador de realidad con:
+
+- Slider de 1.0 a 5.0 estrellas
+- Vista previa de variaciones
+- Caché local con localStorage
+- Generación bajo demanda
+
+### 7.4 FlyerForm
+
+Formulario de generación con:
+
+- Descripción del negocio
+- Selección de formato (1:1, 9:16, 4:5, 16:9)
+- Selección de estilo visual
+- Calidad (Draft/HD)
+- Modo de realidad
+
+### 7.5 RealityComparator
+
+Comparador de variaciones con:
+
+- Vista lado a lado
+- Slider de comparación
+- Puntuación de coherencia
+
+---
+
+## 8. 🎛️ SISTEMA DE REGULADOR DE REALIDAD
+
+### 8.1 Configuraciones por Nivel
+
+```typescript
+const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
+  1.0: {
+    stars: 1.0,
+    label: "Raw",
+    description: "Fotografía cruda de smartphone",
+    technicalProfile: "Smartphone photography, amateur aesthetic",
+    lighting: "Overhead fluorescent, some shadows",
+    human: "Real people, natural sweat, authentic effort",
+    negative: "No filters, no professional lighting, no polish"
+  },
+  2.5: {
+    stars: 2.5,
+    label: "Professional",
+    description: "Estándar profesional",
+    technicalProfile: "Professional commercial photography",
+    lighting: "Natural window daylight",
+    human: "Real everyday people, authentic appearance",
+    negative: "No excessive polish, no luxury elements"
+  },
+  5.0: {
+    stars: 5.0,
+    label: "Ultimate",
+    description: "Máxima calidad editorial",
+    technicalProfile: "8k render, Unreal Engine 5",
+    lighting: "Cinematic lighting, perfect softboxes",
+    human: "Perfect skin, no visible pores, airbrushed",
+    negative: "No imperfections, no dust, no scuff marks"
+  }
+};
+```
+
+### 8.2 Caché de Variaciones
+
+El sistema implementa caché en dos niveles:
+
+1. **Memoria local (localCache):** Variaciones en memoria
+2. **localStorage:** Persistencia de variaciones
+
+```typescript
+// Estructura de variación cacheada
+interface RealityVariation {
+  id: string;
+  parent_scene_id: string;
+  seed: number;
+  stars: RealityLevel;
+  image_url: string;
+  prompt_used: string;
+  created_at: Date;
+  cached: boolean;
+}
+```
+
+---
+
+## 9. 🔒 SISTEMA DE SEGURIDAD
+
+### 9.1 Guardrails Implementados
+
+1. **Bloqueo de texto:** Evita generación de texto en imágenes
+2. **Filtro anatómico:** Previene errores de anatomía humana
+3. **Filtro de realismo:** Mantiene consistencia visual
+4. **Sanitización de inputs:** Previene inyecciones de prompt
+5. **Validación de contenido:** Filtra contenido inapropiado
+
+### 9.2 Palabras Prohibidas
+
+```typescript
+const FORBIDDEN_KEYWORDS = [
+  'violence', 'blood', 'weapons', 'drugs', 'abuse',
+  'hate', 'discrimination', 'explicit', 'nsfw'
+];
+```
+
+---
+
+## 10. 📊 FLUJOS DE GENERACIÓN
+
+### 10.1 Flujo de Generación de Imagen
+
+```
+1. Usuario ingresa descripción
+2. Selección de rubro (1-60)
+3. Selección de formato (1:1, 9:16, etc.)
+4. Selección de calidad (Draft/HD)
+5. Generación de prompt con dirección de arte
+6. Envío a Gemini API
+7. Recepción y validación de imagen
+8. Diagnóstico y corrección (si es necesario)
+9. Análisis inteligente de imagen
+10. Generación de estilos de texto
+11. Presentación al usuario
+```
+
+### 10.2 Flujo de Mejora a HD
+
+```
+1. Usuario selecciona borrador
+2. Conversión de imagen a base64
+3. Construcción de prompt de mejora
+4. Envío a Gemini con imagen de referencia
+5. Recepción de imagen HD
+6. Diagnóstico y corrección
+7. Análisis completo de imagen HD
+8. Actualización de estilos de texto
+```
+
+### 10.3 Flujo de Análisis de URL
+
+```
+1. Usuario ingresa URL
+2. Envío a Gemini para análisis
+3. Extracción de información:
+   - Nombre del negocio
+   - Descripción
+   - Productos/Servicios
+   - Estilo visual
+   - Colores
+   - Audiencia objetivo
+4. Generación de prompt basado en análisis
+5. Presentación de resultados
+```
+
+---
+
+## 11. 💳 SISTEMA DE CRÉDITOS
+
+### 11.1 Planes Disponibles
+
+| Plan | Precio | Créditos/Mes | Características |
+|------|--------|--------------|-----------------|
+| Free | $0 | 5 | Generación básica |
+| Pro | $19.900 | 50 | HD + Análisis completo |
+| Agency | $49.900 | 200 | Todo + Variaciones + Video |
+
+### 11.2 Consumo de Créditos
+
+| Operación | Costo |
+|-----------|-------|
+| Draft Image | 1 crédito |
+| HD Image | 3 créditos |
+| Análisis de URL | 1 crédito |
+| Variación de Realidad | 1 crédito |
+| Video (Draft) | 5 créditos |
+| Video (Production) | 15 créditos |
+
+---
+
+## 12. 📈 ESTADÍSTICAS Y MÉTRICAS
+
+### 12.1 Métricas de Caché
+
+```typescript
+interface CacheStats {
+  totalScenes: number;        // Total de escenas
+  totalVariations: number;    // Total de variaciones
+  oldestVariation: Date | null;
+  newestVariation: Date | null;
+}
+```
+
+### 12.2 Puntuación de Coherencia
+
+El sistema calcula una puntuación de coherencia para ediciones:
+
+```typescript
+interface CoherenceResult {
+  isCoherent: boolean;        // Si es coherente
+  score: number;              // Puntuación (0-1)
+  issues: string[];           // Problemas encontrados
+}
+```
+
+---
+
+## 13. 🚀 OPTIMIZACIONES
+
+### 13.1 Rendimiento
+
+- **Timeout de 8 segundos** para generación de texto
+- **Timeout de 20 segundos** para análisis de URL
+- **Análisis inteligente** solo para HD (no para borradores)
+- **Caché de variaciones** para evitar regeneraciones
+
+### 13.2 Consistencia Visual
+
+- **Seed fijo** para mantener consistencia entre Draft y HD
+- **Mismo prompt** para todas las calidades
+- **Variaciones con mismo seed** para comparabilidad
+
+### 13.3 Corrección de Imágenes
+
+El sistema implementa diagnóstico y corrección automática:
+
+```typescript
+// Detecta imágenes en negro (>80% píxeles oscuros)
+if (blackPixelRatio > 0.8 || avgBrightness < 20) {
+  // Aplica corrección: brillo(1.5) contraste(1.3) saturate(1.2)
+}
+```
+
+---
+
+## 14. 🔧 CONFIGURACIÓN Y VARIABLES DE ENTORNO
+
+### 14.1 Variables Requeridas
+
+```env
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-clave-anonima
+VITE_GEMINI_API_KEY=tu-clave-de-gemini
+```
+
+### 14.2 Configuración de Netlify
 
 ```toml
 [build]
   command = "npm run build"
   publish = "dist"
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cross-Origin-Embedder-Policy = "credentialless"
-    Cross-Origin-Opener-Policy = "same-origin"
-```
+[build.environment]
+  NODE_VERSION = "20"
 
-### 20.2 Variables de Entorno
-
-```env
-VITE_SUPABASE_URL=xxx
-VITE_SUPABASE_ANON_KEY=xxx
-VITE_GEMINI_API_KEY=xxx
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 ```
 
 ---
 
-## 21. 📈 ESTADÍSTICAS DEL SISTEMA
+## 15. 📝 CONCLUSIONES
 
-### 21.1 Métricas de Código
+### 15.1 Fortalezas del Sistema
 
-| Métrica | Valor |
-|---------|-------|
-| Componentes React | 20+ |
-| Servicios | 15+ |
-| Estilos de flyer | 29 |
-| Estilos de video | 25 |
-| Formatos de imagen | 8 |
-| Categorías de estilo | 6 |
+1. **Dirección de arte profesional** con 60 rubros especializados
+2. **Regulador de realidad** único en el mercado
+3. **Análisis inteligente** de imágenes para estilos de texto
+4. **Sistema de caché** eficiente para variaciones
+5. **Consistencia visual** mediante seed fijo
+6. **Bloqueo de texto** robusto para imágenes limpias
+7. **Contexto chileno** específico para el mercado local
 
-### 21.2 Funcionalidades por Categoría
+### 15.2 Áreas de Mejora
 
-| Categoría | Funcionalidades |
-|-----------|-----------------|
-| **Generación** | Imagen, Video, Mejora de foto propia |
-| **Edición** | Texto, Logo, Producto, Filtros |
-| **Análisis** | Detección de industria, Texto automático |
-| **Gestión** | Marcas, Créditos, Calendario |
-| **Exportación** | PNG, MP4, Comparación |
+1. **Generación de video** actualmente deshabilitada
+2. **Persistencia en base de datos** pendiente de implementación
+3. **Modo offline** no disponible actualmente
+4. **Colaboración en tiempo real** no implementada
 
----
+### 15.3 Roadmap Futuro
 
-## 22. 🔄 FLUJOS DE USUARIO
-
-### 22.1 Flujo Completo de Creación
-
-```
-1. Usuario entra a la aplicación
-   ↓
-2. Inicia sesión (si no está logueado)
-   ↓
-3. Selecciona marca (opcional)
-   ↓
-4. Elige modo: AUTO o MANUAL
-   ↓
-5. Ingresa descripción o URL
-   ↓
-6. (Auto) Sistema detecta industria y estilo
-   ↓
-7. (Auto) Usuario selecciona objetivo (Branding/Leads)
-   ↓
-8. (Auto) Sistema genera opciones de texto
-   ↓
-9. Usuario selecciona texto
-   ↓
-10. Elige formato (1:1, 9:16, etc.)
-    ↓
-11. Elige tipo: Imagen, Video, o Estudio de Producto
-    ↓
-12. Clic en "GENERAR"
-    ↓
-13. Sistema procesa y muestra resultado
-    ↓
-14. Usuario edita overlays (texto, logo, producto)
-    ↓
-15. Usuario descarga resultado
-```
-
-### 22.2 Flujo de Mejora HD
-
-```
-1. Usuario tiene imagen draft
-   ↓
-2. Clic en "ESCALAR A HD"
-   ↓
-3. Sistema usa imagen draft como referencia
-   ↓
-4. Genera versión HD con mismo estilo
-   ↓
-5. Muestra comparación Draft vs HD
-   ↓
-6. Usuario descarga versión HD
-```
+- [ ] Implementación completa de video con VEO
+- [ ] Sistema de colaboración multiusuario
+- [ ] Templates personalizables
+- [ ] Integración con más plataformas de redes sociales
+- [ ] Modo batch para generación masiva
+- [ ] API pública para integraciones
 
 ---
 
-## 23. 🎯 CASOS DE USO
-
-### 23.1 Caso 1: Tienda de Ropa
-
-```
-Entrada: "Tienda de ropa femenina en Santiago, precios accesibles, tendencia 2025"
-Modo: AUTO
-Industria Detectada: retail_sale
-Texto Generado: "Nueva Colección 2025 - Hasta 40% DCTO"
-Formato: 1:1 (Instagram)
-Resultado: Flyer con modelo en tienda, texto superpuesto
-```
-
-### 23.2 Caso 2: Restaurante
-
-```
-Entrada: "Restaurante de sushi premium en Providencia"
-Modo: AUTO
-Industria Detectada: gastronomy
-Texto Generado: "Sushi Premium - Reserva Tu Mesa"
-Formato: 9:16 (Stories)
-Resultado: Close-up de sushi con iluminación dorada
-```
-
-### 23.3 Caso 3: Gimnasio
-
-```
-Entrada: "Gimnasio funcional en Maipú, clases grupales"
-Modo: AUTO
-Industria Detectada: sport_gritty
-Texto Generado: "Transforma Tu Cuerpo Hoy"
-Formato: 4:5 (Instagram Feed)
-Resultado: Atleta sudando con iluminación dramática
-```
-
-### 23.4 Caso 4: Video Promocional
-
-```
-Entrada: "Bar de tragos en Bellavista, ambiente nocturno"
-Modo: AUTO (Video)
-Industria Detectada: urban_night
-Estilo de Video: video_urban_night
-Formato: 9:16
-Resultado: Video de 6 segundos con DJ y neón
-```
-
----
-
-## 24. 🔐 SEGURIDAD
-
-### 24.1 Autenticación
-
-- Supabase Auth con JWT
-- Tokens almacenados de forma segura
-- Refresh token automático
-
-### 24.2 Base de Datos
-
-- RLS (Row Level Security) habilitado
-- Acceso solo a datos propios
-- Validación en el servidor
-
-### 24.3 API
-
-- Claves de API en variables de entorno
-- Rate limiting (por implementar)
-- Validación de inputs
-
----
-
-## 25. 📊 LIMITACIONES Y MEJORAS
-
-### 25.1 Limitaciones Actuales
-
-| Limitación | Descripción |
-|------------|-------------|
-| Cuota VEO | Límite de generación de video |
-| SharedArrayBuffer | No funciona en todos los navegadores |
-| Tamaño de imagen | Máximo 10MB para subida |
-| Procesamiento video | Solo en navegadores modernos |
-
-### 25.2 Mejoras Planificadas
-
-| Mejora | Prioridad |
-|--------|-----------|
-| Más estilos de video | Media |
-| Editor de video avanzado | Alta |
-| Templates por industria | Media |
-| Colaboración multi-usuario | Baja |
-| Integración con redes sociales | Media |
-
----
-
-## 26. 📚 DOCUMENTACIÓN ADICIONAL
-
-### Archivos de Documentación
-
-| Archivo | Descripción |
-|---------|-------------|
-| `PROMPTS-COMPLETOS-ESTUDIO-56.md` | Prompts completos del sistema |
-| `README.md` | Documentación general |
-| `GUIA-DETALLADA-SUPABASE.md` | Guía de Supabase |
-| `SOLUCION-COMPLETA-FINAL.md` | Solución de problemas |
-
----
-
-## 27. 🛠️ TROUBLESHOOTING
-
-### 27.1 Problemas Comunes
-
-| Problema | Solución |
-|----------|----------|
-| Imagen en negro | Sistema de diagnóstico automático |
-| Video no descarga | Verificar soporte SharedArrayBuffer |
-| Estilo incorrecto | Verificar palabras clave en descripción |
-| Texto no aparece | Verificar que overlayText no esté vacío |
-
-### 27.2 Verificación de Configuración
-
-```javascript
-// Verificar en consola del navegador
-console.log('crossOriginIsolated:', window.crossOriginIsolated);
-// Debe ser: true
-```
-
----
-
-## 28. 📈 FUTURO DE LA APLICACIÓN
-
-### 28.1 Roadmap
-
-| Versión | Funcionalidades |
-|---------|-----------------|
-| v2.1 | Más estilos de video |
-| v2.2 | Editor de video avanzado |
-| v2.3 | Integración con Instagram |
-| v2.4 | Team collaboration |
-| v3.0 | AI Agent personalizado |
-
-### 28.2 Integraciones Futuras
-
-- Instagram API (publicación directa)
-- WhatsApp Business API
-- Shopify (productos automáticos)
-- Canva (exportación)
-
----
-
-## 29. 👥 EQUIPO DE DESARROLLO
-
-### Roles
-
-- **Desarrollo Frontend**: React, TypeScript, Tailwind
-- **Desarrollo Backend**: Supabase, Node.js
-- **IA/ML**: Google Gemini API, VEO
-- **DevOps**: Netlify, CI/CD
-
----
-
-## 30. 📝 NOTAS DE VERSIÓN
-
-### v2.0.0 (Actual)
-
-✅ Sistema de generación de imágenes HD
-✅ Generación de video con VEO 3.1
-✅ Modo automático con detección de industria
-✅ Sistema de marcas múltiples
-✅ Calendario comercial chileno
-✅ Editor de overlays avanzado
-✅ Procesamiento de video con FFmpeg.wasm
-✅ Sistema de créditos
-✅ Comparación Draft vs HD
-
-### v1.x (Anterior)
-
-✅ Versión inicial
-✅ Generación básica de flyers
-✅ Autenticación Supabase
-
----
-
-## 31. 🔗 ENLACES ÚTILES
-
-- **Producción**: https://estudio56.netlify.app
-- **Documentación Gemini**: https://ai.dev/google/gemini
-- **Supabase**: https://supabase.com
-- **Netlify**: https://netlify.com
-
----
-
-## 32. 📊 RESUMEN TÉCNICO FINAL
-
-### Stack Completo
-
-```
-Frontend: React + TypeScript + Vite + Tailwind CSS
-Backend: Supabase (PostgreSQL + Auth + Storage)
-IA: Google Gemini (Imagenes) + Google VEO (Videos)
-Hosting: Netlify
-```
-
-### APIs Utilizadas
-
-```
-1. Google Gemini API (imagen generation)
-2. Google VEO API (video generation)
-3. Supabase Auth (autenticación)
-4. Supabase Database (datos)
-5. Supabase Storage (archivos)
-```
-
-### Funcionalidades Clave
-
-```
-✅ 29 estilos de imagen
-✅ 25 estilos de video
-✅ 8 formatos de imagen
-✅ Modo auto/manual
-✅ Sistema de marcas
-✅ Calendario comercial
-✅ Editor de overlays
-✅ Procesamiento de video
-✅ Sistema de créditos
-✅ Comparación Draft/HD
-```
-
-### Métricas de Rendimiento
-
-```
-Tiempo de generación imagen: 5-15 segundos
-Tiempo de generación video: 30-120 segundos
-Tiempo de mejora HD: 10-20 segundos
-Procesamiento video local: 10-30 segundos
-```
-
----
-
-**Documento generado**: 2026-01-03
-**Versión del documento**: 1.0
-**Autor**: Sistema de Documentación Estudio 56
-
----
-
-*Este documento contiene información técnica detallada sobre la aplicación Estudio 56. Para actualizaciones, consultar el repositorio oficial.*
+**Documento generado el 5 de Enero de 2026**  
+**Aplicación: Estudio 56 v2.0**  
+**Tecnologías: React, TypeScript, Google Gemini API, Supabase**

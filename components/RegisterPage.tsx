@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseService';
+
+// ============================================
+// 🛡️ TURNSTILE CAPTCHA - Protección contra Bots
+// ============================================
+declare global {
+  interface Window {
+    turnstile: any;
+  }
+}
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,11 +22,78 @@ export const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
+
+  // Cargar script de Turnstile
+  useEffect(() => {
+    const loadTurnstile = () => {
+      if (window.turnstile) {
+        setTurnstileLoaded(true);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      script.async = true;
+      script.onload = () => {
+        setTurnstileLoaded(true);
+      };
+      document.head.appendChild(script);
+    };
+
+    loadTurnstile();
+  }, []);
+
+  // Inicializar Turnstile cuando el script esté cargado
+  useEffect(() => {
+    if (!turnstileLoaded || !turnstileContainerRef.current) return;
+
+    const renderTurnstile = () => {
+      if (window.turnstile && turnstileContainerRef.current) {
+        // Limpiar container antes de renderizar
+        turnstileContainerRef.current.innerHTML = '';
+        
+        window.turnstile.render(turnstileContainerRef.current, {
+          sitekey: import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAAALlY2f3',
+          theme: 'dark',
+          callback: (token: string) => {
+            console.log('✅ Turnstile token received');
+            setCaptchaToken(token);
+            setCaptchaError(null);
+          },
+          'error-callback': (errorCode: string) => {
+            console.warn('⚠️ Turnstile error:', errorCode);
+            setCaptchaError('Error de verificación. Por favor intenta de nuevo.');
+            setCaptchaToken(null);
+          },
+          'expired-callback': () => {
+            console.warn('⚠️ Turnstile expired');
+            setCaptchaToken(null);
+            setCaptchaError('La verificación expiró. Por favor completa de nuevo.');
+          }
+        });
+      }
+    };
+
+    // Pequeño delay para asegurar que el DOM esté listo
+    const timer = setTimeout(renderTurnstile, 100);
+    return () => clearTimeout(timer);
+  }, [turnstileLoaded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // 🛡️ Validar Captcha antes de procesar
+    if (!captchaToken) {
+      setCaptchaError('Por favor completa la verificación de seguridad.');
+      setLoading(false);
+      return;
+    }
 
     try {
       console.log('🔄 Iniciando proceso de registro...');
@@ -43,6 +119,12 @@ export const RegisterPage: React.FC = () => {
       if (error) {
         console.error('❌ Error en registro:', error);
         setError(`Error al registrar: ${error.message}`);
+        
+        // Resetear captcha en caso de error
+        if (window.turnstile && turnstileContainerRef.current) {
+          window.turnstile.reset(turnstileContainerRef.current);
+        }
+        setCaptchaToken(null);
         return;
       }
 
@@ -86,6 +168,12 @@ Serás redirigido al login.`);
     } catch (err: any) {
       console.error('❌ Error general en registro:', err);
       setError(`Error inesperado: ${err.message || 'Error desconocido'}`);
+      
+      // Resetear captcha en caso de error
+      if (window.turnstile && turnstileContainerRef.current) {
+        window.turnstile.reset(turnstileContainerRef.current);
+      }
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -235,10 +323,22 @@ Serás redirigido al login.`);
                     />
                 </div>
 
+                {/* 🛡️ TURNSTILE CAPTCHA */}
+                <div className="mt-4">
+                  <div
+                    ref={turnstileContainerRef}
+                    className="flex justify-center"
+                    style={{ minHeight: '65px' }}
+                  />
+                  {captchaError && (
+                    <p className="text-red-400 text-xs mt-2 text-center">{captchaError}</p>
+                  )}
+                </div>
+
                 <button
                     type="submit"
-                    disabled={loading || !formData.name || !formData.businessName || !formData.email || !formData.password}
-                    className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+                    disabled={loading || !formData.name || !formData.businessName || !formData.email || !formData.password || !captchaToken}
+                    className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
                 >
                     {loading ? (
                         <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
