@@ -1044,26 +1044,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               ))}
             </div>
             
-            {/* Preview del estilo seleccionado */}
-            {storyArtVisualStyle && (
-              <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-3">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">{storyArtVisualStyle.icon}</div>
-                  <div className="flex-1">
-                    <div className="text-white font-medium text-sm">
-                      {storyArtVisualStyle.name}
-                    </div>
-                    <div className="text-purple-300 text-xs mb-2">
-                      {storyArtVisualStyle.category}
-                    </div>
-                    <div className="text-white/60 text-[10px] leading-relaxed">
-                      {storyArtVisualStyle.prompt.substring(0, 150)}...
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* Mensaje de feedback */}
             {artDirectionFeedback && (
               <div className="text-[10px] text-green-400 text-center">
