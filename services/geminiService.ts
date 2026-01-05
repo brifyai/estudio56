@@ -2855,3 +2855,19 @@ export const editUtils = {
   VISUAL_CONSISTENCY_FILTER,
   EDIT_MAINTENANCE_RULES
 };
+
+// ============================================
+// FUNCIÓN DUMMY PARA COMPATIBILIDAD CON BUILD
+// Video generation está deshabilitado temporalmente
+// ============================================
+export const generateFlyerVideo = async (
+  prompt: string,
+  videoStyleKey: string,
+  aspectRatio: string,
+  imageQuality: string,
+  hasProductOverlay: boolean,
+  imageDataUrl?: string
+): Promise<string> => {
+  console.warn('⚠️ [generateFlyerVideo] Video generation is currently disabled');
+  throw new Error('Video generation is temporarily unavailable. Please use image generation instead.');
+};

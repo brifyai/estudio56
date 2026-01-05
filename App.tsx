@@ -38,7 +38,7 @@ import { MobileMenu } from './components/MobileMenu';
 import { supabase } from './services/supabaseService';
 import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
 import { detectIndustryFromDescription } from './services/geminiService';
-import { enhancePrompt, generateFlyerImage, generateFlyerVideo, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
+import { enhancePrompt, generateFlyerImage, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
 import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
 import creditService from './services/creditService';
 import { SurfaceType } from './hooks/useSurfaceDetection';
@@ -1198,7 +1198,8 @@ const handleGenerate = async () => {
           undefined // autoTextStyle
         );
         
-        const url = await generateFlyerVideo(enhancedPrompt, effectiveVideoStyleKey, aspectRatio, imageQuality, hasProductOverlay, imageResult.imageDataUrl);
+        // Video generation disabled
+        // const url = await generateFlyerVideo(enhancedPrompt, effectiveVideoStyleKey, aspectRatio, imageQuality, hasProductOverlay, imageResult.imageDataUrl);
         console.log('✅ Video generated:', url?.substring(0, 50) + '...');
         setImageUrl(url);
         
