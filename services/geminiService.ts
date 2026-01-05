@@ -132,15 +132,14 @@ const NEGATIVE_TEXT_SHIELD = "text, typography, watermark, logo, subtitles, capt
 // 🛡️ BLOQUEO DE TEXTO ESPECÍFICO PARA VIDEOS - Más agresivo para prevenir texto en movimiento
 const VIDEO_TEXT_BLOCK = `
 VIDEO_TEXT_BLOCK_STRICT:
-- ABSOLUTELY NO TEXT OF ANY KIND in the video frame
-- NO text on walls, signs, menus, products, clothing, or any surface
-- NO superimposed text, titles, or captions
-- NO on-screen graphics with words or letters
-- NO branding text or logos
-- NO price tags or labels with writing
-- If text appears, the video is INVALID
-- Pure video content only - no typography, no graphics, no text overlays
-- Walls must be blank, signs must be empty, products must be plain
+- FORBIDDEN: text, letters, words, numbers, symbols, characters of any kind
+- FORBIDDEN: text on walls, signs, menus, products, clothing, surfaces
+- FORBIDDEN: superimposed text, titles, captions, on-screen graphics
+- FORBIDDEN: branding text, logos, price tags, labels with writing
+- MANDATORY: Blank walls, empty signs, plain products, no writing anywhere
+- MANDATORY: Pure video content only - NO typography, NO graphics, NO text overlays
+- This is a RAW VIDEO, not a finished advertisement - NO text elements
+- Zero tolerance: Any text in the video = FAILED generation
 `.trim();
 
 // Regla de "Cámara Limpia" - Fotografía pura sin elementos gráficos
@@ -1557,15 +1556,17 @@ export const generateImage = async (
     let finalPrompt: string;
     
     // ============================================
-    // MODO STORY ART: Usar Dirección de Arte Profesional
+    // MODO STORY ART: Pasar artDirectionId para que generateFlyerImage maneje la dirección de arte
+    // NO aplicar buildAgencyPrompt aquí - generateFlyerImage ya lo hace internamente
     // ============================================
     if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
       console.log(`🎬 [Story Art] Usando Dirección de Arte Profesional - Rubro ID: ${artDirectionId}`);
       
-      // Usar buildAgencyPrompt para transformar el prompt con la dirección de arte profesional
-      finalPrompt = buildAgencyPrompt(prompt, artDirectionId);
+      // NO transformar el prompt aquí - generateFlyerImage lo hará correctamente
+      // Pasar el prompt original para que buildAgencyPrompt se aplique UNA sola vez
+      finalPrompt = prompt;
       
-      console.log('🎨 [Story Art] Prompt transformado con buildAgencyPrompt:', finalPrompt.substring(0, 200) + '...');
+      console.log('🎨 [Story Art] Prompt original pasado a generateFlyerImage (buildAgencyApply se aplicará allá)');
     } else {
       // Modo estándar: Mejorar el prompt genérico
       const enhancedPrompt = await enhancePrompt(prompt, styleKey);
@@ -1582,7 +1583,9 @@ export const generateImage = async (
       false, // hasProductOverlay
       false, // enableIntelligentTextStyles
       undefined, // autoExtractedText
-      undefined // autoTextStyle
+      undefined, // autoTextStyle
+      undefined, // draftImageForHD
+      artDirectionId // PASAR artDirectionId para usar dirección de arte real
     );
     
     return {
@@ -1735,25 +1738,37 @@ export const generateFlyerImage = async (
   
   console.log(`🔍 [generateFlyerImage] artDirectionId recibido: ${artDirectionId} | styleKey: ${styleKey}`);
   
+  // ============================================
+  // DETECTAR SI EL PROMPT YA TIENE REGLAS DE STORY ART
+  // ============================================
+  const HAS_STORY_ART_RULES = enhancedDescription.includes('Full-height 9:16') ||
+                               enhancedDescription.includes('SUBJECT SIZE:') ||
+                               enhancedDescription.includes('SAFE ZONES:');
+  
   if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
     // Story Art: Usar dirección de arte específica del rubro
     const artConfig = getArtDirectionById(artDirectionId);
     console.log(`🎨 [Story Art] getArtDirectionById(${artDirectionId}):`, artConfig ? artConfig.rubro : 'NULL');
+    console.log(`🔍 [Story Art] Prompt ya tiene reglas de Story Art: ${HAS_STORY_ART_RULES}`);
     
     if (artConfig) {
       activeStylePrompt = artConfig.prompt;
       activeStyleLabel = artConfig.rubro;
       console.log(`✅ [Story Art] Usando dirección de arte: ${artConfig.rubro} (ID: ${artDirectionId})`);
       
-      // CRITICAL FIX: Transformar el enhancedDescription con buildAgencyPrompt
-      // Esto asegura que el prompt enviado a Gemini incluya la capa de agencia completa
-      const oldPrompt = enhancedDescription;
-      enhancedDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
-      console.log('🎯 [Story Art] Prompt transformado con buildAgencyPrompt:', {
-        oldPrompt: oldPrompt.substring(0, 100) + '...',
-        newPrompt: enhancedDescription.substring(0, 100) + '...',
-        lengthDiff: enhancedDescription.length - oldPrompt.length
-      });
+      // SOLO aplicar buildAgencyPrompt si el prompt NO tiene las reglas de Story Art
+      // Esto evita duplicación cuando generatePackDual o generateFlyerVideo ya aplicaron buildAgencyPrompt
+      if (!HAS_STORY_ART_RULES) {
+        const oldPrompt = enhancedDescription;
+        enhancedDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
+        console.log('🎯 [Story Art] Prompt transformado con buildAgencyPrompt:', {
+          oldPrompt: oldPrompt.substring(0, 100) + '...',
+          newPrompt: enhancedDescription.substring(0, 100) + '...',
+          lengthDiff: enhancedDescription.length - oldPrompt.length
+        });
+      } else {
+        console.log('⚠️ [Story Art] Prompt ya tiene reglas de Story Art - NO aplicando buildAgencyPrompt de nuevo');
+      }
     } else {
       // Fallback a estilo normal si no encuentra la configuración
       const safeStyleConfig = styleConfig || { label: 'Professional', english_prompt: 'Professional commercial style' };
@@ -2102,17 +2117,18 @@ export const generateFlyerVideo = async (
       let seed: number;
       
       // ============================================
-      // MODO STORY ART: Usar Dirección de Arte Profesional
+      // MODO STORY ART: Aplicar buildAgencyPrompt UNA SOLA VEZ aquí
+      // y pasar el prompt transformado a generateFlyerImage y generateFlyerVideoVEO
       // ============================================
       let finalDescription = enhancedDescription;
       
       if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
         console.log(`🎬 [Story Art Video] Usando Dirección de Arte Profesional - Rubro ID: ${artDirectionId}`);
         
-        // Usar el motor de Dirección de Arte Profesional para video
+        // APLICAR buildAgencyPrompt UNA SOLA VEZ aquí
         finalDescription = buildAgencyPrompt(enhancedDescription, artDirectionId);
         
-        console.log('🎯 [Story Art Video] Prompt de agencia generado:', finalDescription.substring(0, 150) + '...');
+        console.log('🎯 [Story Art Video] Prompt transformado con buildAgencyPrompt:', finalDescription.substring(0, 150) + '...');
       }
       
       if (draftImageUrl && quality === 'hd') {
@@ -2122,20 +2138,24 @@ export const generateFlyerVideo = async (
         seed = Math.floor(Math.random() * 2000000000);
       } else {
         // Generar nueva imagen (caso normal: draft o HD sin draft previo)
-        seed = Math.floor(Math.random() * 2000000000);
-        console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
-        const imageResult = await generateFlyerImage(
-          finalDescription,
-          styleKey,
-          aspectRatio,
-          quality === 'draft' ? 'draft' : 'hd',
-          seed,
-          undefined, // customStylePrompt
-          hasProductOverlay,
-          false, // enableIntelligentTextStyles
-          undefined, // autoExtractedText
-          undefined // autoTextStyle
-        );
+          seed = Math.floor(Math.random() * 2000000000);
+          console.log('📸 [generateFlyerVideo] Paso 1: Generando imagen base...');
+          // NOTA: NO pasar artDirectionId aquí porque ya aplicamos buildAgencyPrompt a finalDescription
+          // Si pasamos artDirectionId, generateFlyerImage aplicará buildAgencyPrompt de nuevo (DUPLICACIÓN)
+          const imageResult = await generateFlyerImage(
+            finalDescription,
+            styleKey,
+            aspectRatio,
+            quality === 'draft' ? 'draft' : 'hd',
+            seed,
+            undefined, // customStylePrompt
+            hasProductOverlay,
+            false, // enableIntelligentTextStyles
+            undefined, // autoExtractedText
+            undefined, // autoTextStyle
+            undefined, // draftImageForHD
+            undefined // NO pasar artDirectionId - ya aplicamos buildAgencyPrompt arriba
+          );
         
         if (!imageResult.imageDataUrl) {
           throw new Error("No se pudo generar la imagen base para el video");
@@ -2579,18 +2599,25 @@ export const generatePackDual = async (
     console.log('✅ [Pack Dual] Rubro:', artDirectionConfig.rubro);
     
     // ============================================
+    // APLICAR buildAgencyPrompt UNA SOLA VEZ para garantizar consistencia
+    // ============================================
+    const transformedPrompt = buildAgencyPrompt(prompt, artDirectionId);
+    console.log('🎨 [Pack Dual] Prompt transformado una sola vez:', transformedPrompt.substring(0, 100) + '...');
+    
+    // ============================================
     // GENERACIÓN SIMULTÁNEA CON Promise.all()
     // ============================================
     const [imageResult, videoUrl] = await Promise.all([
-      // Generar imagen estática con Dirección de Arte
-      generateImage(prompt, aspectRatio, {
+      // Generar imagen estática - NO pasar artDirectionId porque ya transformamos el prompt
+      generateImage(transformedPrompt, aspectRatio, {
         styleKey: 'brand_identity',
         quality,
-        artDirectionId
+        artDirectionId: undefined // Ya aplicamos buildAgencyPrompt arriba
       }),
       
-      // Generar video con Dirección de Arte
-      generateFlyerVideo(prompt, 'brand_identity', aspectRatio, quality, false, undefined, artDirectionId)
+      // Generar video - NO pasar artDirectionId porque ya aplicamos buildAgencyPrompt arriba
+      // Si pasamos artDirectionId, generateFlyerVideo aplicará buildAgencyPrompt de nuevo (DUPLICACIÓN)
+      generateFlyerVideo(transformedPrompt, 'brand_identity', aspectRatio, quality, false, undefined, undefined)
     ]);
     
     // Verificar resultados
@@ -2668,15 +2695,23 @@ export const generateVideoDraft = async (
   const seed = Math.floor(Math.random() * 2000000000);
   
   try {
+    // ============================================
+    // APLICAR buildAgencyPrompt UNA SOLA VEZ para garantizar consistencia
+    // Esto evita que la imagen y el video tengan reglas duplicadas o diferentes
+    // ============================================
+    const transformedPrompt = buildAgencyPrompt(prompt, artDirectionId);
+    console.log('🎨 [VideoDraft] Prompt transformado con buildAgencyPrompt:', transformedPrompt.substring(0, 100) + '...');
+    
     // Generar imagen base para el video (más económica que generar video directamente)
+    // NO pasar artDirectionId porque ya aplicamos buildAgencyPrompt arriba
     const imageResult = await generateImage(
-      prompt,
+      transformedPrompt,
       aspectRatio,
       {
         styleKey: 'brand_identity',
         quality: 'draft',
         seed,
-        artDirectionId
+        artDirectionId: undefined // Ya aplicamos buildAgencyPrompt
       }
     );
     
@@ -2685,9 +2720,9 @@ export const generateVideoDraft = async (
     }
     
     // Generar video con parámetros económicos (steps reducidos)
-    // El estilo de video se determina automáticamente desde el artDirection
+    // Usar el mismo prompt transformado para consistencia visual
     const videoUrl = await generateFlyerVideoVEO(
-      prompt,
+      transformedPrompt,
       'brand_identity',
       aspectRatio,
       'draft', // Calidad draft
