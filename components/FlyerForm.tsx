@@ -137,6 +137,19 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [progressPercent, setProgressPercent] = useState(0);
   const [progressMessage, setProgressMessage] = useState('Iniciando...');
   
+  // NEW: Refs para que el intervalo pueda leer valores actualizados
+  const progressPercentRef = useRef(0);
+  const progressMessageRef = useRef('Iniciando...');
+  
+  // Mantener refs sincronizados con estados
+  useEffect(() => {
+    progressPercentRef.current = progressPercent;
+  }, [progressPercent]);
+  
+  useEffect(() => {
+    progressMessageRef.current = progressMessage;
+  }, [progressMessage]);
+  
   // NEW: Estados para objetivo de marketing
   const [marketingObjective, setMarketingObjective] = useState<'branding' | 'leads' | null>(null);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
@@ -365,7 +378,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         if (Swal.isVisible()) {
           Swal.close();
         }
-      }, 1000);
+      }, 1500);
     }
   }, [status.message, isLoading, imageUrl, showProgressAlert]);
 
@@ -1258,17 +1271,20 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     background: '#1a1a1a',
                     color: '#ffffff',
                     didOpen: () => {
-                      // Intervalo para actualizar progreso cada 100ms
+                      // Intervalo para actualizar progreso cada 100ms usando refs
                       const intervalId = setInterval(() => {
                         const progressBar = document.getElementById('progress-bar');
                         const progressText = document.getElementById('progress-text');
                         const progressPercentEl = document.getElementById('progress-percent');
-                        if (progressBar) progressBar.style.width = progressPercent + '%';
-                        if (progressText) progressText.textContent = progressMessage;
-                        if (progressPercentEl) progressPercentEl.textContent = Math.round(progressPercent) + '%';
+                        const currentPercent = progressPercentRef.current;
+                        const currentMessage = progressMessageRef.current;
+                        
+                        if (progressBar) progressBar.style.width = currentPercent + '%';
+                        if (progressText) progressText.textContent = currentMessage;
+                        if (progressPercentEl) progressPercentEl.textContent = Math.round(currentPercent) + '%';
                         
                         // Cerrar cuando llegue a 100%
-                        if (progressPercent >= 100) {
+                        if (currentPercent >= 100) {
                           clearInterval(intervalId);
                           if (Swal.isVisible()) {
                             Swal.close();
