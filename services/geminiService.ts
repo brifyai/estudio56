@@ -2005,8 +2005,8 @@ const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
   if (quality === 'draft') {
-    // Use same model family as HD for consistency
-    const model = 'gemini-2.5-flash-image';
+    // Draft: Use Gemini 2.0 for fast generation
+    const model = 'gemini-2.0-flash-exp';
     
     try {
         // Use same seed, same prompt structure, just different model variant
@@ -2040,8 +2040,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       );
     }
     
-    // HD: Use pro model with same seed and prompt structure (fallback)
-    const model = 'gemini-3-pro-image-preview';
+    // HD: Use Gemini 3.0 for high quality
+    const model = 'gemini-3.0-flash-exp';
     
     try {
         // Same seed, same prompt structure - only quality settings differ
