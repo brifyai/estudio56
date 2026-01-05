@@ -1786,6 +1786,8 @@ const handleGenerate = async () => {
                               surfaceType={surfaceType}
                               onSurfaceTypeChange={setSurfaceType}
                               autoDetectedSurface={autoDetectedSurface}
+                              // NEW: Para evitar comparación automática durante generación de realidad
+                              isGeneratingReality={isGeneratingReality}
                           />
                       </div>
                     </div>
@@ -1967,6 +1969,8 @@ const handleGenerate = async () => {
                     surfaceType={surfaceType}
                     onSurfaceTypeChange={setSurfaceType}
                     autoDetectedSurface={autoDetectedSurface}
+                    // NEW: Para evitar comparación automática durante generación de realidad
+                    isGeneratingReality={isGeneratingReality}
                 />
           </div>
           

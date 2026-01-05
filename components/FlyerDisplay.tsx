@@ -57,6 +57,8 @@ interface FlyerDisplayProps {
   surfaceType?: SurfaceType;
   onSurfaceTypeChange?: (surface: SurfaceType) => void;
   autoDetectedSurface?: SurfaceType | null;
+  // NEW: Para evitar comparación automática durante generación de realidad
+  isGeneratingReality?: boolean;
 }
 
 export interface TextStyleOptions {
@@ -109,7 +111,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // Visual Mimicry props
   surfaceType: surfaceTypeProp = 'default',
   onSurfaceTypeChange,
-  autoDetectedSurface = null
+  autoDetectedSurface = null,
+  // NEW: Para evitar comparación automática durante generación de realidad
+  isGeneratingReality = false
 }) => {
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -364,13 +368,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   }, [logoUrl, logoColor]);
   
   // Auto-show comparison when HD image is generated - solo la primera vez
+  // NEW: No abrir comparación si isGeneratingReality es true (evita abrir durante variaciones de realidad)
   useEffect(() => {
-    if (draftImageUrl && hdImageUrl && !showComparison && !hasShownComparison.current) {
+    if (draftImageUrl && hdImageUrl && !showComparison && !hasShownComparison.current && !isGeneratingReality) {
       console.log('🎯 Auto-mostrando comparación Draft vs HD (imagen)');
       hasShownComparison.current = true;
       setShowComparison(true);
     }
-  }, [draftImageUrl, hdImageUrl, showComparison]);
+  }, [draftImageUrl, hdImageUrl, showComparison, isGeneratingReality]);
   
   // Auto-show video comparison when HD video is generated - solo la primera vez
   useEffect(() => {
