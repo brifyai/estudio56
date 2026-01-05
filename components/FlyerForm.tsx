@@ -326,13 +326,16 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     }
   }, [mediaType, styleKey, setStyleKey]);
 
-  // NEW: Cerrar SweetAlert cuando termina la generación
+  // NEW: Cerrar SweetAlert cuando termina la generación (solo si no se cerró ya)
   useEffect(() => {
     if (!isLoading && Swal.isVisible()) {
-      // Cerrar la alerta después de un pequeño delay para que el usuario vea el 100%
-      setTimeout(() => {
-        Swal.close();
-      }, 500);
+      // El intervalo ya maneja el cierre a 100%, esto es backup
+      const timer = setTimeout(() => {
+        if (Swal.isVisible()) {
+          Swal.close();
+        }
+      }, 200);
+      return () => clearTimeout(timer);
     }
   }, [isLoading]);
 
@@ -1201,8 +1204,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={async () => {
                 // Mostrar alerta de progreso si es imagen y calidad draft
                 if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
-                  // Mostrar SweetAlert2 con progreso sincronizado con generación real
-                  Swal.fire({
+                  // Mostrar SweetAlert2 con progreso sincronizado real
+                  const swalInstance = Swal.fire({
                       title: '🎨 Generando imagen en borrador',
                       html: `
                         <div style="text-align: left; margin-top: 20px;">
@@ -1211,7 +1214,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                             <span id="progress-percent">0%</span>
                           </div>
                           <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
-                            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.5s ease;"></div>
+                            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease;"></div>
                           </div>
                         </div>
                       `,
@@ -1220,33 +1223,46 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                       showConfirmButton: false,
                       background: '#1a1a1a',
                       color: '#ffffff',
-                      didOpen: () => {
-                        // Animar progreso sincronizado con generación real (~8 segundos)
-                        let percent = 0;
-                        const messages = [
-                          'Analizando contexto...',
-                          'Construyendo prompt...',
-                          'Generando píxeles...',
-                          'Aplicando estilos...',
-                          'Finalizando...'
-                        ];
-                        // 8 segundos total = 800ms por cada 12.5% (64ms por 1%)
-                        const interval = setInterval(() => {
-                          percent += 1;
-                          if (percent > 100) percent = 100;
-                          const messageIndex = Math.min(Math.floor(percent / 25), messages.length - 1);
-                          const progressBar = document.getElementById('progress-bar');
-                          const progressText = document.getElementById('progress-text');
-                          const progressPercent = document.getElementById('progress-percent');
-                          if (progressBar) progressBar.style.width = percent + '%';
-                          if (progressText) progressText.textContent = messages[messageIndex];
-                          if (progressPercent) progressPercent.textContent = percent + '%';
-                          if (percent === 100) {
-                            clearInterval(interval);
-                          }
-                        }, 80); // 80ms por 1% = ~8 segundos para 100%
+                      willClose: () => {
+                        clearInterval(progressInterval);
                       }
                     });
+  
+                  let percent = 0;
+                  const messages = [
+                    'Analizando contexto...',
+                    'Construyendo prompt...',
+                    'Generando píxeles...',
+                    'Aplicando estilos...',
+                    'Finalizando...'
+                  ];
+                  
+                  // Intervalo que avanza solo mientras isLoading es true
+                  const progressInterval = setInterval(() => {
+                    // Solo avanzar si isLoading es true (todavía generando)
+                    if (isLoading) {
+                      percent += 2; // 2% por tick
+                      if (percent > 95) percent = 95; // Máximo 95% mientras carga
+                    } else {
+                      // Si terminó, mostrar 100%
+                      percent = 100;
+                      clearInterval(progressInterval);
+                    }
+                    
+                    const messageIndex = Math.min(Math.floor(percent / 25), messages.length - 1);
+                    const progressBar = document.getElementById('progress-bar');
+                    const progressText = document.getElementById('progress-text');
+                    const progressPercent = document.getElementById('progress-percent');
+                    if (progressBar) progressBar.style.width = percent + '%';
+                    if (progressText) progressText.textContent = messages[messageIndex];
+                    if (progressPercent) progressPercent.textContent = Math.round(percent) + '%';
+                    
+                    // Cerrar cuando llegue a 100%
+                    if (percent >= 100 && Swal.isVisible()) {
+                      clearInterval(progressInterval);
+                      Swal.close();
+                    }
+                  }, 100); // Update cada 100ms
                 }
                 // Ejecutar generación normal
                 onSubmit();
