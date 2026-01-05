@@ -31,10 +31,13 @@ export const estudioAlerts = {
   progress: (initialMessage: string = 'Iniciando...') => {
     let percent = 0;
     let message = initialMessage;
+    let lastUpdate = Date.now();
+    let isAutoAdvancing = true;
     
     const updateProgress = (newPercent: number, newMessage: string) => {
       percent = newPercent;
       message = newMessage;
+      lastUpdate = Date.now();
       
       // Actualizar elementos del DOM si el modal está abierto
       const progressBar = document.querySelector('#progress-bar') as HTMLElement;
@@ -64,17 +67,22 @@ export const estudioAlerts = {
       showConfirmButton: false,
       allowOutsideClick: false,
       didOpen: () => {
-        // Iniciar intervalo de actualización automática
+        // Iniciar intervalo de actualización sincronizada
         const intervalId = setInterval(() => {
+          const now = Date.now();
+          const timeSinceUpdate = now - lastUpdate;
+          
+          // Solo avanzar automáticamente si han pasado más de 3 segundos sin actualización manual
+          // y si hay llamadas manuales esperadas (percent < 70)
           if (percent >= 100) {
             clearInterval(intervalId);
             Swal.close();
             return;
           }
           
-          // Si no hay actualización, avanzar automáticamente
-          if (percent < 100) {
-            percent += 2;
+          // Si no hay actualización manual reciente y estamos en rango de progreso automático
+          if (timeSinceUpdate > 3000 && percent < 70 && isAutoAdvancing) {
+            percent = Math.min(percent + 5, 70);
             updateProgress(percent, message || 'Generando imagen...');
           }
         }, 500);
