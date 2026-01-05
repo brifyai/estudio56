@@ -2686,10 +2686,12 @@ export const generatePackDual = async (
     // ============================================
     const [imageResult, videoUrl] = await Promise.all([
       // Generar imagen estática - NO pasar artDirectionId porque ya transformamos el prompt
+      // SÍ pasar storyArtStyleId para aplicar el estilo visual de Story Art
       generateImage(transformedPrompt, aspectRatio, {
         styleKey: 'brand_identity',
         quality,
-        artDirectionId: undefined // Ya aplicamos buildAgencyPrompt arriba
+        artDirectionId: undefined, // Ya aplicamos buildAgencyPrompt arriba
+        storyArtStyleId // Aplicar estilo visual de Story Art
       }),
       
       // Generar video - NO pasar artDirectionId porque ya aplicamos buildAgencyPrompt arriba
