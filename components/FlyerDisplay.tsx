@@ -1740,6 +1740,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       
                       try {
                         // Usar composeAndExport para generar imagen completa con logo y texto
+                        // IMPORTANTE: Pasar visualContainerWidth=320px para que el texto tenga el mismo wrap que en la app
                         const composedImageUrl = await composeAndExport({
                           imageUrl: hdImageUrl,
                           logoUrl: logoUrl,
@@ -1752,7 +1753,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                           aspectRatio: aspectRatio,
                           quality: 'hd',
                           containerWidth: getDimensionsForAspectRatio(aspectRatio, 'hd').width,
-                          containerHeight: getDimensionsForAspectRatio(aspectRatio, 'hd').height
+                          containerHeight: getDimensionsForAspectRatio(aspectRatio, 'hd').height,
+                          visualContainerWidth: 320 // Ancho del contenedor visual en la app
                         });
                         
                         // Descargar la imagen compuesta

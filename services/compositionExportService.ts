@@ -28,6 +28,8 @@ export interface CompositionOptions {
   // Nuevos parámetros para dimensiones exactas
   containerWidth?: number;
   containerHeight?: number;
+  // Ancho del contenedor visual (para calcular escala del texto correctamente)
+  visualContainerWidth?: number;
 }
 
 /**
@@ -150,18 +152,10 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
     // Escalar texto proporcionalmente al tamaño de la imagen
     // Esto asegura que el texto se vea del mismo tamaño relativo en Draft y HD
     // El fontSize original (16px) está diseñado para mostrarse en un contenedor de ~320px
-    // Por lo tanto, el factor de escala debe ser: canvasWidth / 320
-    let scaleFactor: number;
-    
-    if (options.quality === 'hd') {
-      // Para HD: el fontSize de 16px se muestra en un contenedor de 320px en la comparación
-      // Entonces necesitamos escalar a: canvasWidth / 320
-      // Para 1080px: 1080/320 = 3.375
-      scaleFactor = canvasWidth / 320;
-    } else {
-      // Para Draft: canvasWidth ya es ~540px, entonces 540/320 = 1.6875
-      scaleFactor = canvasWidth / 320;
-    }
+    // IMPORTANTE: Usar el ancho del contenedor visual (320px) como referencia, NO el canvas
+    // Esto garantiza que el texto tenga el mismo wrap que en la app
+    const visualContainerWidth = options.visualContainerWidth || 320;
+    const scaleFactor = canvasWidth / visualContainerWidth;
     
     // Usar tamaño de fuente escalado proporcionalmente
     const fontSize = textStyles.fontSize * scaleFactor;
