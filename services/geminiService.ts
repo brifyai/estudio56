@@ -411,6 +411,11 @@ export const generateRealisticFinalPrompt = (config: UserConfig): string => {
   const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
   const industryRubro = artDirectionConfig?.rubro || "General";
   
+  // ============================================
+  // MODO STORY ART: Omitir filtros de realismo SIEMPRE
+  // ============================================
+  const isStoryArtMode = industryId && industryId >= 1 && industryId <= 60;
+  
   // Reglas de composición según formato
   let compositionRule: string;
   if (format === '9:16') {
@@ -432,17 +437,22 @@ export const generateRealisticFinalPrompt = (config: UserConfig): string => {
   // Objetivo y contexto (usando descripción limpia)
   promptParts.push(`OBJECTIVE: Professional visual asset - ${cleanDescription}.`);
   
-// Filtro de realismo local (negocios reales)
-promptParts.push(REAL_BUSINESS_ENVIRONMENT);
+  // ============================================
+  // STORY ART: Omitir filtros de realismo
+  // ============================================
+  if (!isStoryArtMode) {
+    // Filtro de realismo local (negocios reales)
+    promptParts.push(REAL_BUSINESS_ENVIRONMENT);
 
-// Filtro de autenticidad humana (personas reales)
-promptParts.push(HUMAN_AUTHENTICITY_RULES);
+    // Filtro de autenticidad humana (personas reales)
+    promptParts.push(HUMAN_AUTHENTICITY_RULES);
 
-// Física y anatomía (usando constantes existentes)
-promptParts.push(BONE_ANCHOR_RULES);
+    // Física y anatomía (usando constantes existentes)
+    promptParts.push(BONE_ANCHOR_RULES);
 
-// Textura fotográfica cruda
-promptParts.push(RAW_PHOTO_TEXTURE);
+    // Textura fotográfica cruda
+    promptParts.push(RAW_PHOTO_TEXTURE);
+  }
 
 // Dirección de arte
 promptParts.push(`VISUAL_STYLE: ${industryContext}. Natural daylight, matte textures.`);
@@ -496,11 +506,23 @@ export const generateCleanPrompt = (config: UserConfig): string => {
   const artDirectionConfig = getArtDirectionById(industryId);
   const industryContext = artDirectionConfig?.prompt || "Professional commercial style";
   
-return `
-${CLEAN_PLATE_RULE}
+  // ============================================
+  // MODO STORY ART: Omitir filtros de realismo SIEMPRE
+  // ============================================
+  const isStoryArtMode = industryId && industryId >= 1 && industryId <= 60;
+  
+  let filters = '';
+  if (!isStoryArtMode) {
+    filters = `
 ${REAL_BUSINESS_ENVIRONMENT}
 ${HUMAN_AUTHENTICITY_RULES}
 ${RAW_PHOTO_TEXTURE}
+    `;
+  }
+  
+return `
+${CLEAN_PLATE_RULE}
+${filters}
 
 SCENE: ${cleanDescription}
 VISUAL_STYLE: ${industryContext}. Natural daylight, matte textures.
