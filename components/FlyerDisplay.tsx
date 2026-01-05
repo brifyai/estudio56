@@ -373,11 +373,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const displayStyles = textStyles || defaultStyles;
 
   // Inicializar texto del borrador cuando se carga la imagen
+  // IMPORTANTE: Resetear draftOverlayText cuando cambia initialOverlayText
+  // Esto asegura que el texto del borrador se guarde correctamente para comparación HD vs Draft
   useEffect(() => {
-    if (initialOverlayText && !draftOverlayText) {
+    if (initialOverlayText) {
       setDraftOverlayText(initialOverlayText);
     }
-  }, [initialOverlayText, draftOverlayText]);
+  }, [initialOverlayText]);
   
   // Sincronizar texto local cuando cambia overlayText (solo si no está editando)
   useEffect(() => {
