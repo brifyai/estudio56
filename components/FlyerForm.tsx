@@ -7,6 +7,14 @@ import { REALITY_MODE_LABELS, type RealityMode } from '../src/constants/promptMo
 import { ImageAnalysisResult } from '../services/imageAnalysisService';
 import { processMagicMode, MagicModeResult, STYLE_NAMES_ES, detectVideoStyleFromInput, VIDEO_STYLE_NAMES_ES, getVideoStyleFromImageStyle } from '../services/magicModeService';
 import { SurfaceType } from '../hooks/useSurfaceDetection';
+// 🎨 STORY ART STYLES - Importar estilos visuales únicos
+import {
+  STORY_ART_STYLES,
+  getStoryArtStyle,
+  getAllStoryArtStyles,
+  type StoryArtStyle,
+  type StoryArtStyleId
+} from '../src/constants/storyArtStyles';
 
 interface FlyerFormProps {
   styleKey: FlyerStyleKey;
@@ -59,6 +67,10 @@ interface FlyerFormProps {
   selectedSurface?: SurfaceType;
   setSelectedSurface?: (surface: SurfaceType) => void;
   autoDetectedSurface?: SurfaceType | null;
+  
+  // 🎨 Story Art Visual Style props
+  storyArtVisualStyleId?: StoryArtStyleId | null;
+  onStoryArtVisualStyleChange?: (styleId: StoryArtStyleId | null) => void;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -107,7 +119,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // Surface Detection defaults
   selectedSurface = 'default',
   setSelectedSurface = () => {},
-  autoDetectedSurface = null
+  autoDetectedSurface = null,
+  // 🎨 Story Art Visual Style defaults
+  storyArtVisualStyleId: storyArtVisualStyleIdProp = null,
+  onStoryArtVisualStyleChange = () => {}
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -140,6 +155,33 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [isStoryArtModeActive, setIsStoryArtModeActive] = useState(false);
   const [artDirectionApplied, setArtDirectionApplied] = useState(false);
   const [artDirectionFeedback, setArtDirectionFeedback] = useState<string | null>(null);
+  
+  // 🎨 ESTADOS PARA ESTILOS VISUALES STORY ART (7 estilos únicos)
+  // Sincronizar con props del padre
+  const [storyArtVisualStyle, setStoryArtVisualStyle] = useState<StoryArtStyle | null>(() =>
+    storyArtVisualStyleIdProp ? getStoryArtStyle(storyArtVisualStyleIdProp) : null
+  );
+  const [storyArtVisualStyleId, setStoryArtVisualStyleIdLocal] = useState<StoryArtStyleId | null>(() =>
+    storyArtVisualStyleIdProp || null
+  );
+  
+  // Sincronizar estado local con props del padre
+  useEffect(() => {
+    if (storyArtVisualStyleIdProp !== undefined && storyArtVisualStyleIdProp !== null) {
+      setStoryArtVisualStyleIdLocal(storyArtVisualStyleIdProp);
+      setStoryArtVisualStyle(getStoryArtStyle(storyArtVisualStyleIdProp));
+    }
+  }, [storyArtVisualStyleIdProp]);
+  
+  // Handler unificado que actualiza estado local Y notifica al padre
+  const handleStoryArtVisualStyleChange = (styleId: StoryArtStyleId | null) => {
+    setStoryArtVisualStyleIdLocal(styleId);
+    setStoryArtVisualStyle(styleId ? getStoryArtStyle(styleId) : null);
+    onStoryArtVisualStyleChange?.(styleId);
+  };
+  
+  // Obtener todos los estilos visuales Story Art disponibles
+  const availableStoryArtVisualStyles = getAllStoryArtStyles();
   
   // Estados para Estilo de Integración Visual (Surface Detection) - Ahora vienen del padre
   
@@ -945,6 +987,88 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
+
+        {/* 🎨 SELECTOR DE ESTILOS VISUALES STORY ART - 7 ESTILOS ÚNICOS */}
+        {mediaType === 'story_art' && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
+                🎨 Estilo Visual
+              </label>
+              <button
+                onClick={() => {
+                  handleStoryArtVisualStyleChange(null);
+                }}
+                className="text-[10px] text-white/50 hover:text-white/70 transition-colors"
+              >
+                Reiniciar
+              </button>
+            </div>
+            
+            {/* Grid de 7 estilos visuales Story Art */}
+            <div className="grid grid-cols-2 gap-2">
+              {availableStoryArtVisualStyles.map((style) => (
+                <button
+                  key={style.id}
+                  onClick={() => {
+                    handleStoryArtVisualStyleChange(style.id);
+                  }}
+                  className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden text-left
+                    ${storyArtVisualStyleId === style.id
+                      ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
+                      : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/30'
+                    }`}
+                >
+                  {/* Indicador de categoría */}
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-sm">{style.icon}</span>
+                    <span className="text-[8px] font-mono text-white/50 uppercase">{style.category}</span>
+                  </div>
+                  
+                  {/* Nombre del estilo */}
+                  <div className="font-bold text-xs mb-1">{style.name}</div>
+                  
+                  {/* Descripción breve */}
+                  <div className="text-[9px] text-white/60 leading-tight">
+                    {style.description.substring(0, 60)}...
+                  </div>
+                  
+                  {/* Indicador de selección */}
+                  {storyArtVisualStyleId === style.id && (
+                    <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                  )}
+                </button>
+              ))}
+            </div>
+            
+            {/* Preview del estilo seleccionado */}
+            {storyArtVisualStyle && (
+              <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-3">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">{storyArtVisualStyle.icon}</div>
+                  <div className="flex-1">
+                    <div className="text-white font-medium text-sm">
+                      {storyArtVisualStyle.name}
+                    </div>
+                    <div className="text-purple-300 text-xs mb-2">
+                      {storyArtVisualStyle.category}
+                    </div>
+                    <div className="text-white/60 text-[10px] leading-relaxed">
+                      {storyArtVisualStyle.prompt.substring(0, 150)}...
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Mensaje de feedback */}
+            {artDirectionFeedback && (
+              <div className="text-[10px] text-green-400 text-center">
+                {artDirectionFeedback}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 4. OBJETIVO DEL DISEÑO - BRANDING O LEADS (OCULTO PARA VIDEO Y STORY ART) */}
         {mediaType !== 'video' && mediaType !== 'story_art' && (

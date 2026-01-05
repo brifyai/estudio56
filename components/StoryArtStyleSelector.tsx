@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { StoryArtStyleId, StoryArtStyle } from '../types';
-import { STORY_ART_STYLES, STORY_ART_CATEGORIES, getStoryArtStyle } from '../src/constants/storyArtStyles';
+import { STORY_ART_STYLES, STORY_ART_CATEGORIES, getStoryArtStyle } from '../constants/storyArtStyles';
 
 interface StoryArtStyleSelectorProps {
   /** Estilo actualmente seleccionado */

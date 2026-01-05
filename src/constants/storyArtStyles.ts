@@ -1,20 +1,10 @@
 /**
- * 🎨 ESTILOS DE STORY ART - Catálogo de Estilos Visuales
- * 
- * Estos estilos proporcionan diferenciación visual real para Story Art,
- * permitiendo que cada generación sea única y con identidad visual propia.
- * 
- * Cada estilo incluye:
- * - id: Identificador único
- * - name: Nombre legible del estilo
- * - description: Descripción para el usuario
- * - prompt: Prompt técnico para Gemini
- * - negativePrompt: Negative prompt específico
- * - icon: Icono representativo (emoji)
- * - category: Categoría para agrupar estilos
+ * Story Art Visual Styles - 7 estilos únicos para diferenciación visual
+ * Estos estilos se aplican en ADICIÓN a la Dirección de Arte por industria
+ * para crear resultados visualmente distintos en formato Story (9:16)
  */
 
-export type StoryArtStyleId = 
+export type StoryArtStyleId =
   | 'vogue_negative'
   | 'neon_kinetic'
   | 'macro_essence'
@@ -23,245 +13,160 @@ export type StoryArtStyleId =
   | 'marble_sculpture'
   | 'anime_to_real';
 
+export type StoryArtCategory =
+  | 'fashion'
+  | 'urban'
+  | 'product'
+  | 'cinematic'
+  | 'artistic'
+  | 'classic'
+  | 'anime';
+
 export interface StoryArtStyle {
   id: StoryArtStyleId;
   name: string;
   description: string;
+  category: StoryArtCategory;
+  // Prompt técnico que se concatena al prompt principal
   prompt: string;
-  negativePrompt: string;
+  // Prompt técnico (alias para compatibilidad)
+  technicalPrompt?: string;
+  // Prompt visual para mostrar en UI
+  visualPrompt: string;
+  // Colores característicos
+  colors: string[];
+  // Keywords para búsqueda
+  keywords: string[];
+  // Icono emoji para mostrar en UI
   icon: string;
-  category: 'editorial' | 'digital' | 'product' | 'documental' | 'montage' | 'classic' | 'cosplay';
-  color: string; // Color hex para UI
 }
 
-// ============================================
-// CATÁLOGO DE ESTILOS STORY ART
-// ============================================
-
-export const STORY_ART_STYLES: Record<StoryArtStyleId, StoryArtStyle> = {
-  /**
-   * 1. Estilo: "Vogue Negative" (Minimalismo Editorial)
-   * Descripción: Crea un espacio vacío elegante para insertar texto o logos sin tapar al sujeto.
-   */
-  vogue_negative: {
+export const STORY_ART_VISUAL_STYLES: StoryArtStyle[] = [
+  {
     id: 'vogue_negative',
     name: 'Vogue Negative',
-    description: 'Minimalismo editorial con espacio negativo elegante',
-    prompt: `High-end fashion editorial layout. Subject is anchored in the extreme lower third. 70% of the upper frame is intentional negative space with a soft studio gradient. Focus on 'Power Scaling': monumental verticality. High-end lighting with micro-contrasts. Clean, sophisticated composition optimized for text overlay.`,
-    negativePrompt: 'cluttered background, busy composition, low quality, blurry, amateur lighting, harsh shadows, oversaturated colors, cheap aesthetic, watermark, text visible, logo visible',
-    icon: '◻️',
-    category: 'editorial',
-    color: '#2D2D2D'
+    description: 'Espacio negativo bold + tipografía editorial de moda',
+    category: 'fashion',
+    prompt: `, VOGUE EDITORIAL STYLE, bold negative space composition, minimalist fashion typography overlay, high-contrast black and white with selective color, magazine cover aesthetic, clean white space dominating frame, fashion model silhouette, editorial typography, grahphic design elements, supermodel pose, fashion week atmosphere, 9:16 vertical format optimized`,
+    technicalPrompt: `, VOGUE EDITORIAL STYLE, bold negative space composition, minimalist fashion typography overlay, high-contrast black and white with selective color, magazine cover aesthetic, clean white space dominating frame, fashion model silhouette, editorial typography, grahphic design elements, supermodel pose, fashion week atmosphere, 9:16 vertical format optimized`,
+    visualPrompt: 'Espacio negativo bold + tipografía editorial',
+    colors: ['#000000', '#FFFFFF', '#FF0000'],
+    keywords: ['moda', 'vogue', 'editorial', 'minimalista', 'negativo', 'tipografía'],
+    icon: '✨'
   },
-
-  /**
-   * 2. Estilo: "Neon Kinetic" (Energía Digital)
-   * Descripción: Iluminación vibrante que parece saltar de la pantalla, ideal para llamar la atención en el scroll.
-   */
-  neon_kinetic: {
+  {
     id: 'neon_kinetic',
     name: 'Neon Kinetic',
-    description: 'Energía digital con iluminación vibrante',
-    prompt: `Cyber-Pop aesthetic. Volumetric neon lighting (cyan and magenta). Dynamic motion blur on the edges. The subject feels like it's lunging out of the screen. Extreme vertical depth with floating particles. Vibrant, high-energy 9:16 composition. Glowing edges, chromatic aberration, digital art style.`,
-    negativePrompt: 'dull colors, flat lighting, static composition, low energy, amateur, blurry, low quality, oversaturated skin, distorted anatomy, watermark, text visible',
-    icon: '💜',
-    category: 'digital',
-    color: '#FF00FF'
+    description: 'Movimiento cinético + neón saturado + energía urbana',
+    category: 'urban',
+    prompt: `, KINETIC NEON STYLE, saturated neon lighting, kinetic motion blur effects, urban energy, vibrant color gradients, light trails, cyberpunk aesthetic, dynamic movement, glowing neon signs, night city atmosphere, high energy composition, motion blur, 9:16 vertical format optimized`,
+    technicalPrompt: `, KINETIC NEON STYLE, saturated neon lighting, kinetic motion blur effects, urban energy, vibrant color gradients, light trails, cyberpunk aesthetic, dynamic movement, glowing neon signs, night city atmosphere, high energy composition, motion blur, 9:16 vertical format optimized`,
+    visualPrompt: 'Neón saturado + movimiento cinético',
+    colors: ['#FF00FF', '#00FFFF', '#FFFF00', '#FF0080'],
+    keywords: ['neón', 'cinético', 'urbano', 'cyberpunk', 'movimiento', 'saturado'],
+    icon: '🌈'
   },
-
-  /**
-   * 3. Estilo: "Macro Essence" (Detalle de Producto)
-   * Descripción: Se enfoca en texturas y detalles cercanos, convirtiendo un producto común en un objeto de deseo.
-   */
-  macro_essence: {
+  {
     id: 'macro_essence',
     name: 'Macro Essence',
-    description: 'Detalle extremo de producto con texturas',
-    prompt: `Editorial product photography. Extreme close-up (Macro) focused on textures. Hard, dramatic shadows with 45-degree studio lighting. 9:16 vertical magazine style. Intense detail on materials (glass, skin, fabric). Cinematic depth of field. The subject fills 80% of the frame with intricate texture details visible.`,
-    negativePrompt: 'wide shot, small subject, blurry details, flat lighting, amateur photography, low resolution, oversharpened, watermark, text visible, logo visible, busy background',
-    icon: '🔍',
+    description: 'Detalle extremo + texturas + enfoque macro',
     category: 'product',
-    color: '#FFD700'
+    prompt: `, MACRO ESSENCE STYLE, extreme close-up detail, texture-focused, shallow depth of field, bokeh background, product showcase, intricate details, tactile surfaces, professional product photography, studio lighting, macro lens aesthetic, 9:16 vertical format optimized`,
+    technicalPrompt: `, MACRO ESSENCE STYLE, extreme close-up detail, texture-focused, shallow depth of field, bokeh background, product showcase, intricate details, tactile surfaces, professional product photography, studio lighting, macro lens aesthetic, 9:16 vertical format optimized`,
+    visualPrompt: 'Detalle extremo + texturas macro',
+    colors: ['#FFFFFF', '#F5F5F5', '#E0E0E0'],
+    keywords: ['macro', 'detalle', 'textura', 'producto', 'proximidad', 'textura'],
+    icon: '🔍'
   },
-
-  /**
-   * 4. Estilo: "Cinematic Frame" (Cine Documental)
-   * Descripción: Estética de película real, eliminando el "look artificial" de la IA para generar confianza.
-   */
-  cinematic_frame: {
+  {
     id: 'cinematic_frame',
     name: 'Cinematic Frame',
-    description: 'Estética documental cinematográfica',
-    prompt: `Cinematic Raw documentary style. Anamorphic lens distortion at the edges. Natural dramatic lighting with deep blacks. 35mm film grain texture. Desaturated, professional color grading. The subject is captured in an unposed, authentic vertical frame. Film emulation, organic feel, real photography aesthetic.`,
-    negativePrompt: 'artificial looking, plastic textures, oversaturated, perfect skin, posed, studio lighting, low quality, blurry, watermark, text visible, logo visible, 3d render look',
-    icon: '🎬',
-    category: 'documental',
-    color: '#1A1A2E'
+    description: 'Aspect ratio cinematográfico + lighting de película',
+    category: 'cinematic',
+    prompt: `, CINEMATIC FRAME STYLE, anamorphic lens flare, cinematic lighting, film grain, movie scene composition, dramatic shadows, cinematic color grading, shallow depth of field, character-focused, movie poster aesthetic, film photography, 9:16 vertical format optimized`,
+    technicalPrompt: `, CINEMATIC FRAME STYLE, anamorphic lens flare, cinematic lighting, film grain, movie scene composition, dramatic shadows, cinematic color grading, shallow depth of field, character-focused, movie poster aesthetic, film photography, 9:16 vertical format optimized`,
+    visualPrompt: 'Cinematic frame + lighting de película',
+    colors: ['#1A1A2E', '#16213E', '#E94560', '#0F3460'],
+    keywords: ['cinemático', 'película', 'anamorphic', 'drama', 'cine', 'flare'],
+    icon: '🎬'
   },
-
-  /**
-   * 5. Estilo: "Collage Dynamic" (Montaje de Impacto)
-   * Descripción: Divide la pantalla en paneles con diferentes ángulos del mismo sujeto, ideal para mostrar versatilidad.
-   */
-  collage_dynamic: {
+  {
     id: 'collage_dynamic',
     name: 'Collage Dynamic',
-    description: 'Montaje dinámico en múltiples paneles',
-    prompt: `Professional 4-panel split montage. Each panel shows a different angle or moment of the same subject. Cohesive color grading across all panels. Clean, thin white dividers. Dynamic sports or action-oriented composition in 9:16. Each panel is a complete shot with consistent lighting and color.`,
-    negativePrompt: 'single panel, static pose, inconsistent lighting, color mismatch, thick dividers, amateur layout, low quality, blurry, watermark, text visible, mismatched subjects',
-    icon: '▦',
-    category: 'montage',
-    color: '#FF6B35'
+    description: 'Collage artístico + superposición +剪纸 (papel cortado)',
+    category: 'artistic',
+    prompt: `, DYNAMIC COLLAGE STYLE, paper cutout aesthetic, layered composition, mixed media, artistic collage, overlapping elements, hand-cut paper texture, bold graphic shapes, artistic composition, contemporary art style, 9:16 vertical format optimized`,
+    technicalPrompt: `, DYNAMIC COLLAGE STYLE, paper cutout aesthetic, layered composition, mixed media, artistic collage, overlapping elements, hand-cut paper texture, bold graphic shapes, artistic composition, contemporary art style, 9:16 vertical format optimized`,
+    visualPrompt: 'Collage artístico + superposición',
+    colors: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1A535C'],
+    keywords: ['collage', 'arte', 'papel', 'capas', 'superposición', '剪纸'],
+    icon: '🎨'
   },
-
-  /**
-   * 6. Estilo: "Marble Sculpture" (Elegancia Clásica)
-   * Descripción: Transforma cualquier sujeto en una escultura de mármol realista, ideal para conceptos de "perfección" o "legado".
-   */
-  marble_sculpture: {
+  {
     id: 'marble_sculpture',
     name: 'Marble Sculpture',
-    description: 'Elegancia clásica en mármol realista',
-    prompt: `Photorealistic ultra-detailed sculpture made of polished, glowing marble. Smooth reflective surface, emphasizing craftsmanship and artistic depth. Elegant lighting to enhance contours and textures. Fascinating visual effect of carved stone in a vertical gallery setting. Classical art aesthetic with modern photorealistic rendering.`,
-    negativePrompt: 'flat surface, non-reflective, cheap material, plastic look, low detail, amateur sculpture, low quality, blurry, watermark, text visible, modern art style, abstract',
-    icon: '🗿',
+    description: 'Escultura en mármol + textura clásica + elegancia',
     category: 'classic',
-    color: '#F5F5DC'
+    prompt: `, MARBLE SCULPTURE STYLE, classical sculpture aesthetic, marble texture, white marble surfaces, classical beauty, sculptural lighting, museum quality, timeless elegance, neoclassical composition, 9:16 vertical format optimized`,
+    technicalPrompt: `, MARBLE SCULPTURE STYLE, classical sculpture aesthetic, marble texture, white marble surfaces, classical beauty, sculptural lighting, museum quality, timeless elegance, neoclassical composition, 9:16 vertical format optimized`,
+    visualPrompt: 'Escultura en mármol + elegancia clásica',
+    colors: ['#FFFFFF', '#F8F8FF', '#E8E8E8', '#D3D3D3'],
+    keywords: ['mármol', 'escultura', 'clásico', 'elegante', 'blanco', 'museum'],
+    icon: '🗿'
   },
-
-  /**
-   * 7. Estilo: "Anime-to-Real" (Cosplay Pro)
-   * Descripción: Convierte ilustraciones en fotos fotorrealistas con una precisión 1:1 en pose y vestuario.
-   */
-  anime_to_real: {
+  {
     id: 'anime_to_real',
-    name: 'Anime-to-Real',
-    description: 'Conversión fotorrealista de ilustraciones',
-    prompt: `Highly detailed photorealistic cosplay version of the reference illustration. Replicate exact pose, body posture, hand gestures, and facial expression. Maintain the same camera angle and composition. Zero deviation from the original character design but with human textures. Cinematic lighting, film grain, authentic skin texture.`,
-    negativePrompt: 'cartoon style, illustration, anime style, deviation from reference, different pose, different outfit, plastic skin, oversmoothed, low quality, blurry, watermark, text visible',
-    icon: '🎭',
-    category: 'cosplay',
-    color: '#FF69B4'
+    name: 'Anime to Real',
+    description: 'Estilo anime transformado a fotografía real',
+    category: 'anime',
+    prompt: `, ANIME TO REAL STYLE, anime-inspired composition transformed to photorealistic, Japanese animation aesthetic, vibrant colors, character-focused, anime screenshot style, cel shading influence, anime photography, 9:16 vertical format optimized`,
+    technicalPrompt: `, ANIME TO REAL STYLE, anime-inspired composition transformed to photorealistic, Japanese animation aesthetic, vibrant colors, character-focused, anime screenshot style, cel shading influence, anime photography, 9:16 vertical format optimized`,
+    visualPrompt: 'Anime transformado a fotografía real',
+    colors: ['#FF69B4', '#00BFFF', '#FFD700', '#FF4500'],
+    keywords: ['anime', 'japonés', 'animación', 'cel shading', 'manga', 'otaku'],
+    icon: '🎭'
   }
-};
+];
 
-// ============================================
-// AGRUPACIÓN POR CATEGORÍAS
-// ============================================
+// Alias para compatibilidad
+export const STORY_ART_STYLES = STORY_ART_VISUAL_STYLES;
 
-export const STORY_ART_CATEGORIES = {
-  editorial: {
-    label: 'Editorial',
-    description: 'Estilos minimalistas y sofisticados',
-    styles: ['vogue_negative'] as StoryArtStyleId[]
-  },
-  digital: {
-    label: 'Digital',
-    description: 'Estilos vibrantes y modernos',
-    styles: ['neon_kinetic'] as StoryArtStyleId[]
-  },
-  product: {
-    label: 'Producto',
-    description: 'Enfoque en detalles y texturas',
-    styles: ['macro_essence'] as StoryArtStyleId[]
-  },
-  documental: {
-    label: 'Documental',
-    description: 'Estética cinematográfica real',
-    styles: ['cinematic_frame'] as StoryArtStyleId[]
-  },
-  montage: {
-    label: 'Montaje',
-    description: 'Composiciones múltiples',
-    styles: ['collage_dynamic'] as StoryArtStyleId[]
-  },
-  classic: {
-    label: 'Clásico',
-    description: 'Elegancia atemporal',
-    styles: ['marble_sculpture'] as StoryArtStyleId[]
-  },
-  cosplay: {
-    label: 'Cosplay',
-    description: 'Transformación de personajes',
-    styles: ['anime_to_real'] as StoryArtStyleId[]
-  }
-};
-
-// ============================================
-// FUNCIONES DE UTILIDAD
-// ============================================
-
-/**
- * Obtiene un estilo Story Art por ID
- */
-export function getStoryArtStyle(id: StoryArtStyleId): StoryArtStyle | null {
-  return STORY_ART_STYLES[id] || null;
+// Función para obtener un estilo por ID
+export function getStoryArtStyle(styleId: StoryArtStyleId): StoryArtStyle | undefined {
+  return STORY_ART_VISUAL_STYLES.find(style => style.id === styleId);
 }
 
-/**
- * Obtiene todos los estilos disponibles
- */
-export function getAllStoryArtStyles(): StoryArtStyle[] {
-  return Object.values(STORY_ART_STYLES);
+// Función para obtener estilos por categoría
+export function getStoryArtStylesByCategory(category: StoryArtCategory): StoryArtStyle[] {
+  return STORY_ART_VISUAL_STYLES.filter(style => style.category === category);
 }
 
-/**
- * Obtiene estilos por categoría
- */
-export function getStoryArtStylesByCategory(category: string): StoryArtStyle[] {
-  const categoryConfig = STORY_ART_CATEGORIES[category as keyof typeof STORY_ART_CATEGORIES];
-  if (!categoryConfig) return [];
-  
-  return categoryConfig.styles.map(id => STORY_ART_STYLES[id]).filter(Boolean);
+// Función para buscar estilos por keyword
+export function searchStoryArtStyles(query: string): StoryArtStyle[] {
+  const lowerQuery = query.toLowerCase();
+  return STORY_ART_VISUAL_STYLES.filter(style => 
+    style.name.toLowerCase().includes(lowerQuery) ||
+    style.description.toLowerCase().includes(lowerQuery) ||
+    style.keywords.some(keyword => keyword.toLowerCase().includes(lowerQuery))
+  );
 }
 
-/**
- * Construye el prompt completo para Story Art con estilo específico
- */
-export function buildStoryArtPrompt(
-  subject: string,
-  styleId: StoryArtStyleId,
-  artDirectionPrompt?: string
-): string {
+// Función para obtener el prompt técnico completo
+export function getStoryArtTechnicalPrompt(styleId: StoryArtStyleId | null): string {
+  if (!styleId) return '';
   const style = getStoryArtStyle(styleId);
-  if (!style) {
-    return `${subject}. Professional commercial photography, high quality, clean design.`;
-  }
-
-  // Combinar estilo + sujeto + dirección de arte opcional
-  const parts: string[] = [];
-  
-  parts.push(style.prompt);
-  parts.push(`SUBJECT: ${subject}`);
-  
-  // Agregar dirección de arte del rubro si existe
-  if (artDirectionPrompt) {
-    parts.push(`ART_DIRECTION: ${artDirectionPrompt}`);
-  }
-  
-  // Agregar negative prompt
-  parts.push(`NEGATIVE_PROMPT: ${style.negativePrompt}, low quality, blurry, amateur, watermark, text visible, logo visible`);
-  
-  return parts.join('\n\n');
+  return style ? style.prompt : '';
 }
 
-/**
- * Verifica si un ID de estilo es válido
- */
-export function isValidStoryArtStyle(id: string): id is StoryArtStyleId {
-  return id in STORY_ART_STYLES;
+// Función para obtener todos los estilos
+export function getAllStoryArtStyles(): StoryArtStyle[] {
+  return STORY_ART_VISUAL_STYLES;
 }
 
-// ============================================
-// EXPORTACIÓN POR DEFECTO
-// ============================================
-
-export default {
-  styles: STORY_ART_STYLES,
-  categories: STORY_ART_CATEGORIES,
-  getStyle: getStoryArtStyle,
-  getAllStyles: getAllStoryArtStyles,
-  getByCategory: getStoryArtStylesByCategory,
-  buildPrompt: buildStoryArtPrompt,
-  isValid: isValidStoryArtStyle
-};
+// Función para construir prompt con estilo Story Art
+export function buildStoryArtPrompt(basePrompt: string, styleId: StoryArtStyleId | null): string {
+  if (!styleId) return basePrompt;
+  const style = getStoryArtStyle(styleId);
+  if (!style) return basePrompt;
+  return `${basePrompt}${style.prompt}`;
+}

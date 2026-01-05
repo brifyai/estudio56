@@ -1755,6 +1755,11 @@ export const generateFlyerImage = async (
                                enhancedDescription.includes('SUBJECT SIZE:') ||
                                enhancedDescription.includes('SAFE ZONES:');
   
+  // ============================================
+  // DECLARAR activeStoryArtStyleId AL INICIO PARA ESTAR DISPONIBLE EN TODO EL SCOPE
+  // ============================================
+  let activeStoryArtStyleId: StoryArtStyleId | undefined;
+  
   if (artDirectionId && artDirectionId >= 1 && artDirectionId <= 60) {
     // Story Art: Usar dirección de arte específica del rubro + ESTILOS VISUALES ÚNICOS
     const artConfig = getArtDirectionById(artDirectionId);
@@ -1768,8 +1773,6 @@ export const generateFlyerImage = async (
       // Esto es lo que diferencia Story Art de imágenes normales
       // PRIORIDAD: Usar estilo del usuario si está seleccionado, sino auto-seleccionar por rubro
       // ============================================
-      
-      let activeStoryArtStyleId: StoryArtStyleId;
       
       if (storyArtStyleId) {
         // Usar el estilo visual seleccionado por el usuario
@@ -1823,7 +1826,8 @@ export const generateFlyerImage = async (
         activeStyleLabel = `${artConfig.rubro} + ${storyArtStyle.name}`;
         
         // Aplicar buildStoryArtPrompt para integrar el estilo visual en el prompt
-        enhancedDescription = buildStoryArtPrompt(enhancedDescription, storyArtStyleId, artConfig.prompt);
+        // IMPORTANTE: Usar activeStoryArtStyleId (convertir undefined a null para la función)
+        enhancedDescription = buildStoryArtPrompt(enhancedDescription, activeStoryArtStyleId || null);
         console.log(`✅ [Story Art] Estilo visual único aplicado: ${storyArtStyle.name}`);
       } else {
         // Fallback a solo dirección de arte si no hay estilo visual
@@ -1922,6 +1926,23 @@ export const generateFlyerImage = async (
   
 // Build unified prompt that works for both Draft and HD
 // CRITICAL: No text in image - text will be added as overlay
+
+// ============================================
+// MODO STORY ART: Omitir filtros de realismo para permitir estilos visuales distintivos
+// Los estilos como Vogue Negative, Neon Kinetic, Marble Sculpture necesitan libertad artística
+// IMPORTANTE: Solo omitir filtros si hay un estilo visual válido (activeStoryArtStyleId existe)
+// ============================================
+const isStoryArtWithVisualStyle = artDirectionId && activeStoryArtStyleId !== undefined;
+
+let realismFilters = '';
+if (!isStoryArtWithVisualStyle) {
+  // Solo aplicar filtros de realismo en modo normal (no Story Art con estilos visuales)
+  realismFilters = `
+${REAL_BUSINESS_ENVIRONMENT}
+${RAW_PHOTO_TEXTURE}
+  `;
+}
+
 const unifiedPrompt = `
 ${MASTER_STYLE}
 ${compositionPrompt}
@@ -1934,9 +1955,7 @@ VISUAL STYLE SPECS: ${activeStylePrompt}
 SUBJECT DESCRIPTION: ${enhancedDescription}
 ${textIntegrationPrompt}
 ${productPromptSuffix}
-
-${REAL_BUSINESS_ENVIRONMENT}
-${RAW_PHOTO_TEXTURE}
+${realismFilters}
 
 STRICT PROHIBITION - ZERO TOLERANCE:
 1. ABSOLUTELY NO TEXT whatsoever - this is non-negotiable
