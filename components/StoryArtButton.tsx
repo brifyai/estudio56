@@ -257,14 +257,6 @@ export function StoryArtButton({
             </div>
           )}
           
-          {/* Estilo visual seleccionado */}
-          {selectedStoryArtStyle && (
-            <div className="selected-style-badge">
-              <span className="style-badge-icon">✨</span>
-              <span className="style-badge-text">Estilo: {selectedStoryArtStyle.replace(/_/g, ' ')}</span>
-            </div>
-          )}
-          
           {/* Lista de rubros disponibles */}
           {showRubros && (
             <div className="rubros-list">
