@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
+import { estudioAlerts } from './src/lib/alerts';
 import RealitySlider from './components/RealitySlider';
 import RealityComparator from './components/RealityComparator';
 import {
@@ -1231,6 +1232,9 @@ const handleGenerate = async () => {
   const handleUpgradeToHD = async () => {
     if (!currentSpanishPrompt) return;
     const hasProductOverlay = !!productUrl;
+    
+    // Mostrar alerta de progreso HD
+    const progressAlert = estudioAlerts.progress('Iniciando generación HD...');
     try {
         // 💰 DEDUCIR CRÉDITO PARA HD
         const creditDeducted = await creditService.deductCredit(
@@ -1242,6 +1246,7 @@ const handleGenerate = async () => {
         console.log(`💰 Crédito final_image ${creditDeducted ? 'descontado' : 'NO descontado (sin créditos o error)'}`);
 
         setStatus({ isLoading: true, step: 'rendering', message: ':: ESCALANDO_A_PRODUCCION ::' });
+        progressAlert.updateProgress(20, 'Preparando prompt...');
         let url;
         // story_art se maneja igual que image para el upgrade HD
         if (mediaType === 'image' || mediaType === 'story_art') {
@@ -1330,6 +1335,7 @@ const handleGenerate = async () => {
               upgradeArtDirectionId // NEW: artDirectionId para Story Art
             );
             url = result.imageDataUrl;
+            progressAlert.updateProgress(70, 'Renderizando imagen HD...');
             setIntelligentTextStyles(result.intelligentTextStyles);
             setImageAnalysis(result.imageAnalysis);
             setContextualTypography(result.contextualTypography);
@@ -1371,8 +1377,10 @@ const handleGenerate = async () => {
         setImageUrl(url);
         setHdImageUrl(url);
         setIsDraft(false);
+        progressAlert.updateProgress(100, '¡Completado!');
         setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
     } catch (error: any) {
+        progressAlert.close();
         handleError(error);
     }
   };
@@ -1381,7 +1389,11 @@ const handleGenerate = async () => {
     if (!currentSpanishPrompt || !imageUrl) return;
     const hasProductOverlay = !!productUrl;
     try {
+    
+    // Mostrar alerta de progreso Refine
+    const progressAlert = estudioAlerts.progress('Refinando imagen...');
       setStatus({ isLoading: true, step: 'translating', message: ':: REFINANDO_LOGICA_PROMPT ::' });
+      progressAlert.updateProgress(20, 'Analizando prompt...');
       // Para refinar necesitamos el prompt en inglés original, lo regeneramos
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
       const newPrompt = await refineDescription(enhancedPrompt, instruction);
@@ -1392,6 +1404,7 @@ const handleGenerate = async () => {
         step: 'rendering', 
         message: ':: REGENERANDO_ASSET ::' 
       });
+      progressAlert.updateProgress(60, 'Renderizando imagen...');
 
       let url;
       if (mediaType === 'image' || mediaType === 'story_art') {
@@ -1499,8 +1512,10 @@ const handleGenerate = async () => {
          url = refineImageResult.imageDataUrl;
       }
       setImageUrl(url);
+      progressAlert.updateProgress(100, '¡Completado!');
       setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
     } catch (error: any) {
+        progressAlert.close();
         handleError(error);
     }
   };
