@@ -1808,6 +1808,8 @@ const handleGenerate = async () => {
                         seed={seed}
                         onLevelChange={handleRealityChange}
                         disabled={isGeneratingReality}
+                        cachedVariations={realityVariations}
+                        onOpenComparator={() => setShowRealityComparator(true)}
                       />
                       
                       {/* Botón para comparar versiones */}
@@ -2079,6 +2081,8 @@ const handleGenerate = async () => {
          sceneId={sceneId}
          variations={realityVariations}
          currentLevel={realityLevel}
+         originalLevel={2.5} // Siempre comparar con el original (2.5★)
+         seed={seed}
          onSelect={(level) => {
            setRealityLevel(level);
            if (realityVariations[level]) {
@@ -2087,6 +2091,7 @@ const handleGenerate = async () => {
            setShowRealityComparator(false);
          }}
          onClose={() => setShowRealityComparator(false)}
+         originalImage={draftImageUrl || undefined} // Pasar imagen original como ancla
        />
      )}
    </div>

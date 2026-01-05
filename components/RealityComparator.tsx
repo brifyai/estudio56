@@ -9,6 +9,10 @@ interface RealityComparatorProps {
   variations?: Record<number, string>;
   /** Nivel actual seleccionado */
   currentLevel?: RealityLevel;
+  /** Nivel original (ancla) - típicamente 2.5 */
+  originalLevel?: RealityLevel;
+  /** Seed para generar variaciones */
+  seed?: number;
   /** Callback cuando se selecciona un nivel */
   onSelect?: (level: RealityLevel) => void;
   /** Callback cuando se cierra el comparador */
@@ -17,36 +21,46 @@ interface RealityComparatorProps {
   aspectRatio?: '1:1' | '9:16' | '4:5' | '16:9';
   /** Si el comparador está activo */
   isActive?: boolean;
+  /** Imagen original (ancla) para comparación directa */
+  originalImage?: string;
 }
 
 const RealityComparator: React.FC<RealityComparatorProps> = ({
   sceneId,
   variations = {},
   currentLevel = 2.5,
+  originalLevel = 2.5,
+  seed = 0,
   onSelect,
   onClose,
   aspectRatio = '1:1',
-  isActive = true
+  isActive = true,
+  originalImage
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Obtener las dos variaciones para comparar (izquierda y derecha del slider)
-  // Usamos el nivel actual como punto central
+  // Obtener las dos variaciones para comparar
+  // LÓGICA CORREGIDA: Comparar imagen ACTUAL vs imagen ORIGINAL (ancla)
+  // Esto garantiza que siempre haya 2 imágenes para comparar
   const currentLevelNum = parseFloat(currentLevel.toString());
-  const leftLevel = Math.max(1.0, currentLevelNum - 0.5);
-  const rightLevel = Math.min(5.0, currentLevelNum + 0.5);
+  const originalLevelNum = parseFloat(originalLevel.toString());
   
-  const leftVariationUrl = variations[leftLevel] || null;
-  const rightVariationUrl = variations[rightLevel] || null;
+  // La imagen de la izquierda es la ORIGINAL (ancla de Estudio 56)
+  // Prioridad: 1) originalImage prop, 2) variations[originalLevel]
+  const leftVariationUrl = originalImage || variations[originalLevelNum] || null;
+  
+  // La imagen de la derecha es la ACTUAL (cualquier nivel que el usuario haya seleccionado)
+  const rightVariationUrl = variations[currentLevelNum] || null;
   
   // Crear objetos RealityVariation simulados para las funciones helper
+  // leftVariation = ORIGINAL (ancla), rightVariation = ACTUAL (currentLevel)
   const leftVariation: RealityVariation | null = leftVariationUrl ? {
-    id: `var_left_${Date.now()}`,
+    id: `var_original_${Date.now()}`,
     parent_scene_id: sceneId || '',
-    seed: 0,
-    stars: leftLevel as RealityLevel,
+    seed: seed,
+    stars: originalLevelNum as RealityLevel,
     image_url: leftVariationUrl,
     prompt_used: '',
     created_at: new Date(),
@@ -54,10 +68,10 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   } : null;
   
   const rightVariation: RealityVariation | null = rightVariationUrl ? {
-    id: `var_right_${Date.now()}`,
+    id: `var_current_${Date.now()}`,
     parent_scene_id: sceneId || '',
-    seed: 0,
-    stars: rightLevel as RealityLevel,
+    seed: seed,
+    stars: currentLevelNum as RealityLevel,
     image_url: rightVariationUrl,
     prompt_used: '',
     created_at: new Date(),
@@ -247,11 +261,11 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         </p>
       </div>
 
-      {/* 🎯 GENERAR VARIACIÓN FALTANTE SI NECESARIO */}
-      {(!leftVariation || !rightVariation) && onSelect && (
-        <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-          <p className="text-blue-300/80 text-xs text-center">
-            💡 Genera variaciones para comparar todos los niveles de realismo
+      {/* 🎯 INDICADOR DE COMPARACIÓN */}
+      {leftVariation && rightVariation && (
+        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+          <p className="text-green-300/80 text-xs text-center">
+            📊 Comparando: Original ({originalLevelNum}★) vs Actual ({currentLevelNum}★)
           </p>
         </div>
       )}

@@ -36,6 +36,10 @@ interface RealitySliderProps {
   compact?: boolean;
   /** Callback cuando se genera exitosamente */
   onGenerationComplete?: (stars: RealityLevel, imageUrl: string) => void;
+  /** Variaciones cacheadas para mostrar puntos verdes */
+  cachedVariations?: Record<number, string>;
+  /** Callback para abrir el comparador */
+  onOpenComparator?: () => void;
 }
 
 const RealitySlider: React.FC<RealitySliderProps> = ({
@@ -50,7 +54,9 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   disabled = false,
   showHelp = true,
   compact = false,
-  onGenerationComplete
+  onGenerationComplete,
+  cachedVariations = {},
+  onOpenComparator
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -100,6 +106,9 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
 
   // Niveles disponibles
   const levels = getAvailableRealityLevels();
+  
+  // Verificar qué niveles están cacheados
+  const cachedLevels = Object.keys(cachedVariations).map(Number);
 
   if (compact) {
     // Modo compacto para espacios reducidos
@@ -131,27 +140,34 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
             className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
           />
           
-          {/* Indicadores de nivel */}
+          {/* Indicadores de nivel con puntos de caché */}
           <div className="flex justify-between mt-1 px-0.5">
-            {levels.map((level) => (
-              <button
-                key={level}
-                onClick={() => {
-                  setLocalValue(level);
-                  onChange(level);
-                }}
-                disabled={disabled || isGenerating}
-                className={`w-4 h-4 rounded-full text-[8px] flex items-center justify-center transition-all
-                  ${level === localValue 
-                    ? `bg-gradient-to-r ${gradientColor} scale-125` 
-                    : 'bg-gray-600 hover:bg-gray-500'
-                  }
-                  ${disabled || isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-              >
-                {level}
-              </button>
-            ))}
+            {levels.map((level) => {
+              const isCached = cachedLevels.includes(level);
+              return (
+                <button
+                  key={level}
+                  onClick={() => {
+                    setLocalValue(level);
+                    onChange(level);
+                  }}
+                  disabled={disabled || isGenerating}
+                  className={`relative w-4 h-4 rounded-full text-[8px] flex items-center justify-center transition-all
+                    ${level === localValue
+                      ? `bg-gradient-to-r ${gradientColor} scale-125`
+                      : 'bg-gray-600 hover:bg-gray-500'
+                    }
+                    ${disabled || isGenerating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                >
+                  {level}
+                  {/* Punto verde si está cacheado */}
+                  {isCached && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full shadow-[0_0_4px_#22c55e]" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
         
@@ -246,26 +262,47 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         </div>
       </div>
       
-      {/* Botón de Actualizar - llama a onLevelChange para generar la variación */}
-      <button
-        onClick={() => {
-          if (localValue !== value && !disabled && !isGenerating) {
-            onLevelChange?.(localValue);
-          }
-        }}
-        disabled={disabled || isGenerating || localValue === value}
-        className={`w-full py-2 px-4 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2 mb-3
-          ${localValue === value || disabled || isGenerating
-            ? 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
-            : 'bg-blue-500/20 border border-blue-500/50 text-blue-300 hover:bg-blue-500/30 hover:border-blue-500/70'
-          }
-        `}
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        {localValue === value ? 'Sin cambios' : 'Actualizar'}
-      </button>
+      {/* 🎯 BOTONES SEPARADOS: Actualizar vs Comparar */}
+      <div className="flex gap-2 mb-3">
+        {/* Botón Actualizar - Solo cambia la imagen principal */}
+        <button
+          onClick={() => {
+            if (localValue !== value && !disabled && !isGenerating) {
+              onLevelChange?.(localValue);
+            }
+          }}
+          disabled={disabled || isGenerating || localValue === value}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2
+            ${localValue === value || disabled || isGenerating
+              ? 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
+              : 'bg-blue-500/20 border border-blue-500/50 text-blue-300 hover:bg-blue-500/30 hover:border-blue-500/70'
+            }
+          `}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {localValue === value ? 'Sin cambios' : 'Actualizar'}
+        </button>
+        
+        {/* Botón Comparar - Abre el comparador */}
+        <button
+          onClick={onOpenComparator}
+          disabled={disabled || cachedLevels.length < 2}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2
+            ${cachedLevels.length < 2
+              ? 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
+              : 'bg-purple-500/20 border border-purple-500/50 text-purple-300 hover:bg-purple-500/30 hover:border-purple-500/70'
+            }
+          `}
+          title={cachedLevels.length < 2 ? 'Genera al menos 2 variaciones para comparar' : 'Comparar con original'}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Comparar
+        </button>
+      </div>
       
       {/* Ayuda contextual */}
       {showHelp && (
@@ -282,13 +319,25 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         </div>
       )}
       
-      {/* Indicador de caché */}
+      {/* 🎯 INDICADORES DE CACHÉ */}
       {sceneId && (
         <div className="mt-3 flex items-center justify-between text-[10px] text-white/40">
           <span>ID: {sceneId.substring(0, 12)}...</span>
-          <div className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full ${isGenerating ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`} />
-            <span>{isGenerating ? 'Generando...' : 'Listo'}</span>
+          <div className="flex items-center gap-2">
+            {/* Puntos verdes para niveles cacheados */}
+            <div className="flex gap-1">
+              {levels.slice(0, 5).map((level) => {
+                const isCached = cachedLevels.includes(level);
+                return (
+                  <span
+                    key={level}
+                    className={`w-1.5 h-1.5 rounded-full ${isCached ? 'bg-green-500 shadow-[0_0_4px_#22c55e]' : 'bg-gray-700'}`}
+                    title={`Nivel ${level}★: ${isCached ? 'Generado' : 'No generado'}`}
+                  />
+                );
+              })}
+            </div>
+            <span>{isGenerating ? 'Generando...' : `${cachedLevels.length} variaciones`}</span>
           </div>
         </div>
       )}
