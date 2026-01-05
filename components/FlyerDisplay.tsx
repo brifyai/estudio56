@@ -59,6 +59,8 @@ interface FlyerDisplayProps {
   autoDetectedSurface?: SurfaceType | null;
   // NEW: Para evitar comparación automática durante generación de realidad
   isGeneratingReality?: boolean;
+  // NEW: Supresión forzada de comparación
+  suppressComparison?: boolean;
 }
 
 export interface TextStyleOptions {
@@ -113,7 +115,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   onSurfaceTypeChange,
   autoDetectedSurface = null,
   // NEW: Para evitar comparación automática durante generación de realidad
-  isGeneratingReality = false
+  isGeneratingReality = false,
+  // NEW: Supresión forzada de comparación
+  suppressComparison = false
 }) => {
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -368,34 +372,34 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   }, [logoUrl, logoColor]);
   
   // Auto-show comparison when HD image is generated - solo la primera vez
-  // NEW: No abrir comparación si isGeneratingReality es true (evita abrir durante variaciones de realidad)
+  // NEW: No abrir comparación si isGeneratingReality O suppressComparison es true
   useEffect(() => {
-    if (draftImageUrl && hdImageUrl && !showComparison && !hasShownComparison.current && !isGeneratingReality) {
+    if (draftImageUrl && hdImageUrl && !showComparison && !hasShownComparison.current && !isGeneratingReality && !suppressComparison) {
       console.log('🎯 Auto-mostrando comparación Draft vs HD (imagen)');
       hasShownComparison.current = true;
       setShowComparison(true);
     }
-  }, [draftImageUrl, hdImageUrl, showComparison, isGeneratingReality]);
+  }, [draftImageUrl, hdImageUrl, showComparison, isGeneratingReality, suppressComparison]);
   
-  // Auto-show video comparison when HD video is generated - solo la primera vez
-  // NEW: No abrir comparación si isGeneratingReality es true
+  // Auto-show video comparison when HD video generated - solo la primera vez
+  // NEW: No abrir comparación si isGeneratingReality O suppressComparison es true
   useEffect(() => {
-    if (draftVideoUrl && hdVideoUrl && !showVideoComparison && !hasShownVideoComparison.current && !isGeneratingReality) {
+    if (draftVideoUrl && hdVideoUrl && !showVideoComparison && !hasShownVideoComparison.current && !isGeneratingReality && !suppressComparison) {
       console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
       hasShownVideoComparison.current = true;
       setShowVideoComparison(true);
     }
-  }, [draftVideoUrl, hdVideoUrl, showVideoComparison, isGeneratingReality]);
+  }, [draftVideoUrl, hdVideoUrl, showVideoComparison, isGeneratingReality, suppressComparison]);
   
-  // Auto-show comparison when HD video is generated from draft
-  // NEW: No abrir comparación si isGeneratingReality es true
+  // Auto-show comparison when HD video generated from draft
+  // NEW: No abrir comparación si isGeneratingReality O suppressComparison es true
   useEffect(() => {
-    if (draftVideoUrl && hdVideoUrl && !showComparison && !showVideoComparison && !hasShownComparison.current && !isGeneratingReality) {
+    if (draftVideoUrl && hdVideoUrl && !showComparison && !showVideoComparison && !hasShownComparison.current && !isGeneratingReality && !suppressComparison) {
       console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
       hasShownComparison.current = true;
       setShowVideoComparison(true);
     }
-  }, [draftVideoUrl, hdVideoUrl, showComparison, showVideoComparison, isGeneratingReality]);
+  }, [draftVideoUrl, hdVideoUrl, showComparison, showVideoComparison, isGeneratingReality, suppressComparison]);
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const defaultStyles: TextStyleOptions = {

@@ -186,6 +186,8 @@ const Dashboard: React.FC = () => {
   const [showRealityComparator, setShowRealityComparator] = useState(false);
   const [isGeneratingReality, setIsGeneratingReality] = useState(false);
   const [realityGenerationMessage, setRealityGenerationMessage] = useState<string | null>(null);
+  // NEW: Forzar supresión de comparación durante cambios de realidad
+  const [suppressComparison, setSuppressComparison] = useState(false);
   
   // NEW: Estados para estilos manuales del editor de texto
   const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
@@ -1518,6 +1520,7 @@ const handleGenerate = async () => {
     // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN CON REFERENCIA
     console.log('🔄 Generando nueva variación para nivel:', levelKey);
     setIsGeneratingReality(true);
+    setSuppressComparison(true); // 🔒 FORZAR supresión de comparación
     setRealityGenerationMessage(`🎚️ Generando imagen con realismo ${levelKey}★...`);
     setRealityLevel(levelKey);
     
@@ -1601,6 +1604,8 @@ const handleGenerate = async () => {
       setTimeout(() => setRealityGenerationMessage(null), 3000);
     } finally {
       setIsGeneratingReality(false);
+      // NEW: Restaurar suppressComparison después de un delay para permitir que el useEffect se ejecute
+      setTimeout(() => setSuppressComparison(false), 100);
     }
   };
 
@@ -1788,6 +1793,8 @@ const handleGenerate = async () => {
                               autoDetectedSurface={autoDetectedSurface}
                               // NEW: Para evitar comparación automática durante generación de realidad
                               isGeneratingReality={isGeneratingReality}
+                              // NEW: Supresión forzada de comparación durante realidad
+                              suppressComparison={suppressComparison}
                           />
                       </div>
                     </div>
@@ -1971,6 +1978,8 @@ const handleGenerate = async () => {
                     autoDetectedSurface={autoDetectedSurface}
                     // NEW: Para evitar comparación automática durante generación de realidad
                     isGeneratingReality={isGeneratingReality}
+                    // NEW: Supresión forzada de comparación durante realidad
+                    suppressComparison={suppressComparison}
                 />
           </div>
           
