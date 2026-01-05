@@ -1102,27 +1102,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // Loading state
   if (status.isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full w-full font-mono">
-        <div className="w-64 bg-black/50 backdrop-blur border border-white/10 rounded-lg p-4 shadow-2xl">
-          <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-[10px] text-white/30 ml-auto">NUCLEO_ESTUDIO_56</span>
-          </div>
-          <div className="space-y-2">
-            <div className="text-xs text-green-400 flex gap-2">
-              <span>➜</span>
-              <span>Iniciando_Secuencia_Gen()</span>
-            </div>
-            <div className="text-xs text-white/50 flex gap-2">
-              <span>ℹ</span>
-              <span className="animate-pulse">{status.message}</span>
-            </div>
-            <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden mt-4">
-              <div className="h-full bg-blue-500 animate-[shimmer_1s_infinite] w-[60%]"></div>
-            </div>
-          </div>
+      <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="flex items-center gap-2">
+          <span className="text-white/60 text-sm">{status.message}</span>
         </div>
       </div>
     );

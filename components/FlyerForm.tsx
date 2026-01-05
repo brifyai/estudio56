@@ -337,16 +337,19 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     
     // Mapeo de mensajes a progreso
     const messageProgress: Record<string, { percent: number; message: string }> = {
-      ':: ANALIZANDO_CONTEXTO ::': { percent: 10, message: 'Analizando contexto...' },
-      ':: TRADUCIENDO_PROMPT ::': { percent: 20, message: 'Traduciendo prompt...' },
-      ':: GENERANDO_PIXELES_BORRADOR ::': { percent: 30, message: 'Generando píxeles...' },
-      ':: RENDERIZANDO_TEXTURAS_HD ::': { percent: 50, message: 'Renderizando texturas HD...' },
-      ':: APLICANDO_ESTILOS ::': { percent: 70, message: 'Aplicando estilos...' },
-      ':: GENERANDO_POSTER_PRO ::': { percent: 30, message: 'Generando poster...' },
-      ':: RENDERIZANDO_POSTER_ALTA_RESOLUCION ::': { percent: 60, message: 'Renderizando poster HD...' },
+      'Analizando...': { percent: 10, message: 'Analizando contexto...' },
+      'Traduciendo prompt...': { percent: 20, message: 'Traduciendo prompt...' },
+      'Generando diseño...': { percent: 30, message: 'Generando diseño...' },
+      'Renderizando HD...': { percent: 50, message: 'Renderizando HD...' },
+      'Mejorando calidad...': { percent: 70, message: 'Mejorando calidad...' },
+      'Generando poster...': { percent: 30, message: 'Generando poster...' },
+      'Renderizando poster HD...': { percent: 60, message: 'Renderizando poster HD...' },
       'LISTO': { percent: 100, message: '¡Completado!' },
       'COMPLETADO': { percent: 100, message: '¡Completado!' },
       'ACTUALIZADO': { percent: 100, message: '¡Actualizado!' },
+      'Refinando...': { percent: 20, message: 'Refinando diseño...' },
+      'Regenerando...': { percent: 30, message: 'Regenerando...' },
+      'Generando video...': { percent: 30, message: 'Generando video...' },
     };
     
     // Buscar coincidencia con el mensaje actual
