@@ -270,13 +270,20 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         {/* Botón Actualizar - Solo cambia la imagen principal */}
         <button
           type="button"
-          onMouseDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => {
+            console.log('🖱️ [Actualizar] onMouseDown');
+            e.stopPropagation();
+          }}
           onClick={(e) => {
+            console.log('🖱️ [Actualizar] onClick - Abriendo comparador:', !!onOpenComparator);
             e.preventDefault();
             e.stopPropagation();
             e.nativeEvent.stopImmediatePropagation();
             if (localValue !== value && !disabled && !isGenerating) {
+              console.log('🖱️ [Actualizar] Llamando onLevelChange');
               onLevelChange?.(localValue);
+            } else {
+              console.log('🖱️ [Actualizar] No se llama onLevelChange - localValue:', localValue, 'value:', value, 'disabled:', disabled, 'isGenerating:', isGenerating);
             }
           }}
           disabled={disabled || isGenerating || localValue === value}
