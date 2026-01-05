@@ -1549,6 +1549,7 @@ export const generateImage = async (
     quality?: ImageQuality;
     seed?: number;
     artDirectionId?: number; // ID del rubro (1-60) para Story Art
+    storyArtStyleId?: StoryArtStyleId; // Estilo visual de Story Art seleccionado por el usuario
   }
 ): Promise<SimpleImageResult> => {
   try {
@@ -1558,6 +1559,7 @@ export const generateImage = async (
     const quality = options?.quality || 'draft';
     const seed = options?.seed || Math.floor(Math.random() * 1000000);
     const artDirectionId = options?.artDirectionId;
+    const userStoryArtStyleId = options?.storyArtStyleId; // Estilo visual seleccionado por el usuario
     
     let finalPrompt: string;
     
@@ -1591,7 +1593,8 @@ export const generateImage = async (
       undefined, // autoExtractedText
       undefined, // autoTextStyle
       undefined, // draftImageForHD
-      artDirectionId // PASAR artDirectionId para usar dirección de arte real
+      artDirectionId, // PASAR artDirectionId para usar dirección de arte real
+      userStoryArtStyleId // PASAR estilo visual de Story Art seleccionado por el usuario
     );
     
     return {
@@ -1731,7 +1734,8 @@ export const generateFlyerImage = async (
   autoExtractedText?: string, // Text automatically extracted from URL
   autoTextStyle?: string, // Style for automatically extracted text
   draftImageForHD?: string, // Optional draft image to use as reference for HD
-  artDirectionId?: number // NEW: ID del rubro (1-60) para Story Art
+  artDirectionId?: number, // ID del rubro (1-60) para Story Art
+  storyArtStyleId?: StoryArtStyleId // Estilo visual de Story Art seleccionado por el usuario
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
   const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
@@ -1756,48 +1760,59 @@ export const generateFlyerImage = async (
     const artConfig = getArtDirectionById(artDirectionId);
     console.log(`🎨 [Story Art] getArtDirectionById(${artDirectionId}):`, artConfig ? artConfig.rubro : 'NULL');
     console.log(`🔍 [Story Art] Prompt ya tiene reglas de Story Art: ${HAS_STORY_ART_RULES}`);
+    console.log(`🎭 [Story Art] Estilo visual seleccionado por usuario: ${storyArtStyleId || 'NONE (usando automático)'}`);
     
     if (artConfig) {
       // ============================================
       // APLICAR ESTILOS VISUALES ÚNICOS DE STORY ART
       // Esto es lo que diferencia Story Art de imágenes normales
-      // Los estilos visuales se seleccionan por categoría del rubro
+      // PRIORIDAD: Usar estilo del usuario si está seleccionado, sino auto-seleccionar por rubro
       // ============================================
       
-      // Mapear rubro a estilo visual de Story Art
-      const getStoryArtStyleForIndustry = (rubro: string): 'vogue_negative' | 'neon_kinetic' | 'macro_essence' | 'cinematic_frame' | 'collage_dynamic' | 'marble_sculpture' | 'anime_to_real' => {
-        const rubroLower = rubro.toLowerCase();
-        
-        // Belleza, Moda, Wellness → Editorial/Vogue
-        if (rubroLower.includes('belleza') || rubroLower.includes('moda') || rubroLower.includes('wellness') || rubroLower.includes('spa')) {
-          return 'vogue_negative';
-        }
-        // Gaming, Tech, Entretención → Digital/Neon
-        if (rubroLower.includes('gaming') || rubroLower.includes('tech') || rubroLower.includes('entretencion') || rubroLower.includes('noche')) {
-          return 'neon_kinetic';
-        }
-        // Gastronomía, Joyas, Producto → Producto/Macro
-        if (rubroLower.includes('gastronom') || rubroLower.includes('joyas') || rubroLower.includes('comida') || rubroLower.includes('retail')) {
-          return 'macro_essence';
-        }
-        // Fitness, Deportes, Salud → Documental/Cinematic
-        if (rubroLower.includes('fitness') || rubroLower.includes('deporte') || rubroLower.includes('salud') || rubroLower.includes('gym')) {
-          return 'cinematic_frame';
-        }
-        // Eventos, Entretención, Kids → Montaje/Collage
-        if (rubroLower.includes('evento') || rubroLower.includes('fiesta') || rubroLower.includes('niños') || rubroLower.includes('infantil')) {
-          return 'collage_dynamic';
-        }
-        // Lujo, Premium, Inmobiliaria → Clásico/Marble
-        if (rubroLower.includes('lujo') || rubroLower.includes('premium') || rubroLower.includes('inmobili') || rubroLower.includes('auto')) {
-          return 'marble_sculpture';
-        }
-        // Por defecto → Cinematic Frame (más versátil)
-        return 'cinematic_frame';
-      };
+      let activeStoryArtStyleId: StoryArtStyleId;
       
-      const storyArtStyleId = getStoryArtStyleForIndustry(artConfig.rubro);
-      const storyArtStyle = getStoryArtStyle(storyArtStyleId);
+      if (storyArtStyleId) {
+        // Usar el estilo visual seleccionado por el usuario
+        activeStoryArtStyleId = storyArtStyleId;
+        console.log(`✅ [Story Art] Usando estilo visual seleccionado por usuario: ${storyArtStyleId}`);
+      } else {
+        // Auto-seleccionar estilo visual basado en el rubro
+        const getStoryArtStyleForIndustry = (rubro: string): 'vogue_negative' | 'neon_kinetic' | 'macro_essence' | 'cinematic_frame' | 'collage_dynamic' | 'marble_sculpture' | 'anime_to_real' => {
+          const rubroLower = rubro.toLowerCase();
+          
+          // Belleza, Moda, Wellness → Editorial/Vogue
+          if (rubroLower.includes('belleza') || rubroLower.includes('moda') || rubroLower.includes('wellness') || rubroLower.includes('spa')) {
+            return 'vogue_negative';
+          }
+          // Gaming, Tech, Entretención → Digital/Neon
+          if (rubroLower.includes('gaming') || rubroLower.includes('tech') || rubroLower.includes('entretencion') || rubroLower.includes('noche')) {
+            return 'neon_kinetic';
+          }
+          // Gastronomía, Joyas, Producto → Producto/Macro
+          if (rubroLower.includes('gastronom') || rubroLower.includes('joyas') || rubroLower.includes('comida') || rubroLower.includes('retail')) {
+            return 'macro_essence';
+          }
+          // Fitness, Deportes, Salud → Documental/Cinematic
+          if (rubroLower.includes('fitness') || rubroLower.includes('deporte') || rubroLower.includes('salud') || rubroLower.includes('gym')) {
+            return 'cinematic_frame';
+          }
+          // Eventos, Entretención, Kids → Montaje/Collage
+          if (rubroLower.includes('evento') || rubroLower.includes('fiesta') || rubroLower.includes('niños') || rubroLower.includes('infantil')) {
+            return 'collage_dynamic';
+          }
+          // Lujo, Premium, Inmobiliaria → Clásico/Marble
+          if (rubroLower.includes('lujo') || rubroLower.includes('premium') || rubroLower.includes('inmobili') || rubroLower.includes('auto')) {
+            return 'marble_sculpture';
+          }
+          // Por defecto → Cinematic Frame (más versátil)
+          return 'cinematic_frame';
+        };
+        
+        activeStoryArtStyleId = getStoryArtStyleForIndustry(artConfig.rubro);
+        console.log(`🎲 [Story Art] Estilo visual auto-seleccionado para rubro: ${activeStoryArtStyleId}`);
+      }
+      
+      const storyArtStyle = getStoryArtStyle(activeStoryArtStyleId);
       
       if (storyArtStyle) {
         console.log(`🎭 [Story Art] Aplicando estilo visual único: ${storyArtStyle.name} (${storyArtStyle.category})`);
@@ -2637,13 +2652,15 @@ export interface PackDualResult {
  * @param artDirectionId - ID del rubro (1-60) para Dirección de Arte
  * @param aspectRatio - Proporción de la imagen (recomendado: 9:16)
  * @param quality - Calidad ('draft' o 'hd')
+ * @param storyArtStyleId - Estilo visual de Story Art seleccionado por el usuario
  * @returns PackDualResult con imagen y video generados
  */
 export const generatePackDual = async (
   prompt: string,
   artDirectionId: number,
   aspectRatio: AspectRatio = '9:16',
-  quality: ImageQuality = 'draft'
+  quality: ImageQuality = 'draft',
+  storyArtStyleId?: StoryArtStyleId
 ): Promise<PackDualResult> => {
   console.log('🎬 [Pack Dual] Iniciando generación simultánea de imagen y video...');
   console.log('📋 [Pack Dual] ArtDirection ID:', artDirectionId, '| Quality:', quality);
@@ -2718,9 +2735,12 @@ export const generatePackDual = async (
  */
 export const quickPackDual = async (
   prompt: string,
-  artDirectionId: number
+  artDirectionId: number,
+  aspectRatio?: AspectRatio,
+  quality?: ImageQuality,
+  storyArtStyleId?: StoryArtStyleId
 ): Promise<PackDualResult> => {
-  return generatePackDual(prompt, artDirectionId, '9:16', 'draft');
+  return generatePackDual(prompt, artDirectionId, aspectRatio || '9:16', quality || 'draft', storyArtStyleId);
 };
 
 // ============================================
@@ -2742,12 +2762,14 @@ export interface VideoDraftResult {
  * @param prompt - Descripción del producto/servicio
  * @param artDirectionId - ID del rubro (1-60)
  * @param aspectRatio - Proporción de la imagen
+ * @param storyArtStyleId - Estilo visual de Story Art seleccionado por el usuario
  * @returns VideoDraftResult con ID único y URLs del draft
  */
 export const generateVideoDraft = async (
   prompt: string,
   artDirectionId: number,
-  aspectRatio: AspectRatio = '9:16'
+  aspectRatio: AspectRatio = '9:16',
+  storyArtStyleId?: StoryArtStyleId
 ): Promise<VideoDraftResult> => {
   console.log('🎬 [VideoDraft] Generando video DRAFT económico...');
   
@@ -2764,6 +2786,7 @@ export const generateVideoDraft = async (
     
     // Generar imagen base para el video (más económica que generar video directamente)
     // NO pasar artDirectionId porque ya aplicamos buildAgencyPrompt arriba
+    // SÍ pasar storyArtStyleId para aplicar el estilo visual de Story Art
     const imageResult = await generateImage(
       transformedPrompt,
       aspectRatio,
@@ -2771,7 +2794,8 @@ export const generateVideoDraft = async (
         styleKey: 'brand_identity',
         quality: 'draft',
         seed,
-        artDirectionId: undefined // Ya aplicamos buildAgencyPrompt
+        artDirectionId: undefined, // Ya aplicamos buildAgencyPrompt
+        storyArtStyleId // Aplicar estilo visual de Story Art
       }
     );
     

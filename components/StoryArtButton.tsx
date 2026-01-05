@@ -173,10 +173,13 @@ export function StoryArtButton({
     setFeedbackMessage('🎬 Generando tu Kit de Agencia...');
 
     try {
-      // Usar quickPackDual para generación rápida
+      // Usar quickPackDual para generación rápida con el estilo visual seleccionado
       const result = await quickPackDual(
         `${subject} ${details || ''}`.trim(),
-        industryId
+        industryId,
+        undefined, // aspectRatio (default 9:16)
+        undefined, // quality (default draft)
+        selectedStoryArtStyle // Pasar estilo visual de Story Art
       );
 
       if (result.success && result.imageUrl && result.videoUrl) {
@@ -210,7 +213,7 @@ export function StoryArtButton({
 
     try {
       const prompt = `${subject} ${details || ''}`.trim();
-      const result = await generateVideoDraft(prompt, industryId, '9:16');
+      const result = await generateVideoDraft(prompt, industryId, '9:16', selectedStoryArtStyle);
       
       setVideoDraftResult(result);
       setHdVideoUrl(null); // Reset HD
@@ -266,7 +269,7 @@ export function StoryArtButton({
 
     try {
       const prompt = `${subject} ${details || ''}`.trim();
-      const draftResult = await generateVideoDraft(prompt, industryId, '9:16');
+      const draftResult = await generateVideoDraft(prompt, industryId, '9:16', selectedStoryArtStyle);
       
       // Convertir inmediatamente a HD
       const hdUrl = await handleConvertToHD();
