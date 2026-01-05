@@ -103,9 +103,10 @@ export const estudioAlerts = {
             return;
           }
           
-          // Si no hay actualización manual reciente y estamos en rango de progreso automático
-          if (timeSinceUpdate > 3000 && percent < 70 && isAutoAdvancing) {
-            percent = Math.min(percent + 5, 70);
+          // Si no hay actualización manual reciente, avanzar automáticamente
+          // ELIMINADO: límite del 70% para que pueda llegar a 100% si no hay más mensajes
+          if (timeSinceUpdate > 3000 && isAutoAdvancing) {
+            percent = Math.min(percent + 5, 100);
             updateProgress(percent, message || 'Generando imagen...');
           }
         }, 500);

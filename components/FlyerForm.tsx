@@ -363,6 +363,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       'Analizando...': { percent: 10, message: 'Analizando contexto...' },
       'Traduciendo prompt...': { percent: 20, message: 'Traduciendo prompt...' },
       'Generando diseño...': { percent: 30, message: 'Generando diseño...' },
+      'Generando imagen en borrador': { percent: 40, message: 'Generando pixels...' },
       'Renderizando HD...': { percent: 50, message: 'Renderizando HD...' },
       'Mejorando calidad...': { percent: 70, message: 'Mejorando calidad...' },
       'Generando poster...': { percent: 30, message: 'Generando poster...' },
@@ -373,6 +374,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       'Refinando...': { percent: 20, message: 'Refinando diseño...' },
       'Regenerando...': { percent: 30, message: 'Regenerando...' },
       'Generando video...': { percent: 30, message: 'Generando video...' },
+      'Generando pixels...': { percent: 50, message: 'Renderizando...' },
+      'Renderizando...': { percent: 60, message: 'Finalizando...' },
     };
     
     // Buscar coincidencia con el mensaje actual
@@ -392,8 +395,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       console.log('📊 Esperando mensajes de estado...');
     }
     
-    // Si isLoading es false y hay imagen, completar al 100% y cerrar alerta
-    if (!isLoading && imageUrl) {
+    // Si hay imagen, completar al 100% y cerrar alerta (INDEPENDIENTE de isLoading)
+    if (imageUrl) {
       // Verificar nuevamente que la alerta esté visible antes de cerrar
       if (progressAlertRef.current.isVisible()) {
         progressAlertRef.current.updateProgress(100, '¡Completado!');
@@ -403,6 +406,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       }
     }
   }, [status.message, isLoading, imageUrl]);
+
+  // NEW: Fallback de seguridad - cerrar alerta después de timeout si imageUrl aparece
+  useEffect(() => {
+    if (imageUrl && progressAlertRef.current?.isVisible()) {
+      console.log('📊 Fallback: cerrando alerta por imageUrl disponible');
+      progressAlertRef.current.updateProgress(100, '¡Completado!');
+    }
+  }, [imageUrl]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {
