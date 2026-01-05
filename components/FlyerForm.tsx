@@ -39,6 +39,8 @@ interface FlyerFormProps {
   setWorkMode: (mode: 'auto' | 'manual') => void; // NEW: Setter para modo de trabajo
   onSubmit: () => void;
   isLoading: boolean;
+  status?: { message: string }; // NEW: Status del padre para progreso
+  imageUrl?: string | null; // NEW: URL de imagen para detectar cuando termina
   imageQuality: ImageQuality;
   setImageQuality: (q: ImageQuality) => void;
   onStyleDetected: (styleDescription: string, detectedText?: string, textStyle?: string) => void; // UPDATED: Include detected text
@@ -96,6 +98,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   setWorkMode, // NEW: Setter para modo de trabajo
   onSubmit,
   isLoading,
+  status = { message: '' },
+  imageUrl = null,
   imageQuality,
   setImageQuality,
   onStyleDetected,
@@ -128,12 +132,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  // NEW: Estados para alerta de progreso de generación
-  const [generationProgress, setGenerationProgress] = useState<{ show: boolean; percent: number; message: string }>({
-    show: false,
-    percent: 0,
-    message: ''
-  });
+  // NEW: Estados para controlar alerta de progreso
+  const [showProgressAlert, setShowProgressAlert] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('Iniciando...');
   
   // NEW: Estados para objetivo de marketing
   const [marketingObjective, setMarketingObjective] = useState<'branding' | 'leads' | null>(null);
@@ -325,6 +327,47 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       console.log('🎬 Estilo convertido de imagen a video:', videoStyle);
     }
   }, [mediaType, styleKey, setStyleKey]);
+
+  // NEW: Actualizar progreso basado en status.message del padre
+  useEffect(() => {
+    if (!showProgressAlert) return;
+    
+    // Mapeo de mensajes a progreso
+    const messageProgress: Record<string, { percent: number; message: string }> = {
+      ':: ANALIZANDO_CONTEXTO ::': { percent: 10, message: 'Analizando contexto...' },
+      ':: TRADUCIENDO_PROMPT ::': { percent: 20, message: 'Traduciendo prompt...' },
+      ':: GENERANDO_PIXELES_BORRADOR ::': { percent: 30, message: 'Generando píxeles...' },
+      ':: RENDERIZANDO_TEXTURAS_HD ::': { percent: 50, message: 'Renderizando texturas HD...' },
+      ':: APLICANDO_ESTILOS ::': { percent: 70, message: 'Aplicando estilos...' },
+      ':: GENERANDO_POSTER_PRO ::': { percent: 30, message: 'Generando poster...' },
+      ':: RENDERIZANDO_POSTER_ALTA_RESOLUCION ::': { percent: 60, message: 'Renderizando poster HD...' },
+      'LISTO': { percent: 100, message: '¡Completado!' },
+      'COMPLETADO': { percent: 100, message: '¡Completado!' },
+      'ACTUALIZADO': { percent: 100, message: '¡Actualizado!' },
+    };
+    
+    // Buscar coincidencia con el mensaje actual
+    for (const [key, value] of Object.entries(messageProgress)) {
+      if (status.message.includes(key)) {
+        setProgressPercent(value.percent);
+        setProgressMessage(value.message);
+        break;
+      }
+    }
+    
+    // Si isLoading es false y hay imagen, completar al 100%
+    if (!isLoading && imageUrl) {
+      setProgressPercent(100);
+      setProgressMessage('¡Completado!');
+      // Cerrar alerta después de un momento
+      setTimeout(() => {
+        setShowProgressAlert(false);
+        if (Swal.isVisible()) {
+          Swal.close();
+        }
+      }, 1000);
+    }
+  }, [status.message, isLoading, imageUrl, showProgressAlert]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {
@@ -1191,65 +1234,49 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={async () => {
                 // Mostrar alerta de progreso si es imagen y calidad draft
                 if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
-                  // Mostrar SweetAlert2 con progreso sincronizado real
-                  const swalInstance = Swal.fire({
-                      title: '🎨 Generando imagen en borrador',
-                      html: `
-                        <div style="text-align: left; margin-top: 20px;">
-                          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span id="progress-text">Iniciando...</span>
-                            <span id="progress-percent">0%</span>
-                          </div>
-                          <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
-                            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease;"></div>
-                          </div>
-                        </div>
-                      `,
-                      icon: 'info',
-                      allowOutsideClick: false,
-                      showConfirmButton: false,
-                      background: '#1a1a1a',
-                      color: '#ffffff',
-                      willClose: () => {
-                        clearInterval(progressInterval);
-                      }
-                    });
-  
-                  let percent = 0;
-                  const messages = [
-                    'Analizando contexto...',
-                    'Construyendo prompt...',
-                    'Generando píxeles...',
-                    'Aplicando estilos...',
-                    'Finalizando...'
-                  ];
+                  setShowProgressAlert(true);
+                  setProgressPercent(0);
+                  setProgressMessage('Iniciando...');
                   
-                  // Intervalo que avanza solo mientras isLoading es true
-                  const progressInterval = setInterval(() => {
-                    // Solo avanzar si isLoading es true (todavía generando)
-                    if (isLoading) {
-                      percent += 2; // 2% por tick
-                      if (percent > 95) percent = 95; // Máximo 95% mientras carga
-                    } else {
-                      // Si terminó, mostrar 100%
-                      percent = 100;
-                      clearInterval(progressInterval);
+                  // Abrir SweetAlert2
+                  Swal.fire({
+                    title: '🎨 Generando imagen en borrador',
+                    html: `
+                      <div style="text-align: left; margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                          <span id="progress-text">Iniciando...</span>
+                          <span id="progress-percent">0%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
+                          <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease;"></div>
+                        </div>
+                      </div>
+                    `,
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    background: '#1a1a1a',
+                    color: '#ffffff',
+                    didOpen: () => {
+                      // Intervalo para actualizar progreso cada 100ms
+                      const intervalId = setInterval(() => {
+                        const progressBar = document.getElementById('progress-bar');
+                        const progressText = document.getElementById('progress-text');
+                        const progressPercentEl = document.getElementById('progress-percent');
+                        if (progressBar) progressBar.style.width = progressPercent + '%';
+                        if (progressText) progressText.textContent = progressMessage;
+                        if (progressPercentEl) progressPercentEl.textContent = Math.round(progressPercent) + '%';
+                        
+                        // Cerrar cuando llegue a 100%
+                        if (progressPercent >= 100) {
+                          clearInterval(intervalId);
+                          if (Swal.isVisible()) {
+                            Swal.close();
+                          }
+                        }
+                      }, 100);
                     }
-                    
-                    const messageIndex = Math.min(Math.floor(percent / 25), messages.length - 1);
-                    const progressBar = document.getElementById('progress-bar');
-                    const progressText = document.getElementById('progress-text');
-                    const progressPercent = document.getElementById('progress-percent');
-                    if (progressBar) progressBar.style.width = percent + '%';
-                    if (progressText) progressText.textContent = messages[messageIndex];
-                    if (progressPercent) progressPercent.textContent = Math.round(percent) + '%';
-                    
-                    // Cerrar cuando llegue a 100%
-                    if (percent >= 100 && Swal.isVisible()) {
-                      clearInterval(progressInterval);
-                      Swal.close();
-                    }
-                  }, 100); // Update cada 100ms
+                  });
                 }
                 // Ejecutar generación normal
                 onSubmit();
