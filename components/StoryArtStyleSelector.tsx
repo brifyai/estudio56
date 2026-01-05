@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { StoryArtStyleId, StoryArtStyle } from '../types';
-import { STORY_ART_STYLES, STORY_ART_CATEGORIES, getStoryArtStyle } from '../constants/storyArtStyles';
+import { STORY_ART_VISUAL_STYLES, STORY_ART_CATEGORIES, getStoryArtStyleById as getStoryArtStyle, getAllStoryArtStyles } from '../src/constants/storyArtStyles';
 
 interface StoryArtStyleSelectorProps {
   /** Estilo actualmente seleccionado */
@@ -92,9 +92,9 @@ export const StoryArtStyleSelector: React.FC<StoryArtStyleSelectorProps> = ({
         
         {/* Preview del estilo activo */}
         {previewData && (
-          <div 
+          <div
             className="style-preview-card"
-            style={{ borderLeftColor: previewData.color }}
+            style={{ borderLeftColor: previewData.colors[0] }}
           >
             <div className="style-preview-icon">{previewData.icon}</div>
             <div className="style-preview-info">
@@ -111,7 +111,8 @@ export const StoryArtStyleSelector: React.FC<StoryArtStyleSelectorProps> = ({
       {/* Categorías expandibles */}
       <div className="style-categories">
         {Object.entries(STORY_ART_CATEGORIES).map(([key, category]) => {
-          const styles = category.styles.map(id => STORY_ART_STYLES[id]).filter(Boolean);
+          const categoryData = category as { label: string; styles: StoryArtStyleId[] };
+          const styles = categoryData.styles.map(id => getStoryArtStyle(id)).filter(Boolean) as StoryArtStyle[];
           const isExpanded = expandedCategory === key;
           const hasActiveStyle = styles.some(s => s.id === selectedStyle);
 
@@ -143,7 +144,7 @@ export const StoryArtStyleSelector: React.FC<StoryArtStyleSelectorProps> = ({
                       onClick={() => handleStyleClick(style.id)}
                       onKeyDown={(e) => handleKeyDown(e, style.id)}
                       disabled={disabled}
-                      style={{ '--style-color': style.color } as React.CSSProperties}
+                      style={{ '--style-color': style.colors[0] } as React.CSSProperties}
                       title={style.description}
                     >
                       <span className="style-option-icon">{style.icon}</span>
@@ -167,14 +168,14 @@ export const StoryArtStyleSelector: React.FC<StoryArtStyleSelectorProps> = ({
       <div className="style-quick-select">
         <h4>Selección Rápida</h4>
         <div className="style-grid">
-          {Object.values(STORY_ART_STYLES).map((style) => (
+          {getAllStoryArtStyles().map((style) => (
             <button
               key={style.id}
               className={`style-grid-item ${selectedStyle === style.id ? 'selected' : ''}`}
               onClick={() => handleStyleClick(style.id)}
-              style={{ 
-                borderColor: selectedStyle === style.id ? style.color : 'transparent',
-                backgroundColor: selectedStyle === style.id ? `${style.color}15` : 'transparent'
+              style={{
+                borderColor: selectedStyle === style.id ? style.colors[0] : 'transparent',
+                backgroundColor: selectedStyle === style.id ? `${style.colors[0]}15` : 'transparent'
               }}
               title={`${style.name}: ${style.description}`}
             >

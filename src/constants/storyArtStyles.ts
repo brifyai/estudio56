@@ -164,7 +164,7 @@ export const STORY_ART_CATEGORIES: Record<string, { label: string; styles: Story
 };
 
 // Función para obtener un estilo por ID
-export function getStoryArtStyle(styleId: StoryArtStyleId): StoryArtStyle | undefined {
+export function getStoryArtStyleById(styleId: StoryArtStyleId): StoryArtStyle | undefined {
   return STORY_ART_VISUAL_STYLES.find(style => style.id === styleId);
 }
 
@@ -186,7 +186,7 @@ export function searchStoryArtStyles(query: string): StoryArtStyle[] {
 // Función para obtener el prompt técnico completo
 export function getStoryArtTechnicalPrompt(styleId: StoryArtStyleId | null): string {
   if (!styleId) return '';
-  const style = getStoryArtStyle(styleId);
+  const style = getStoryArtStyleById(styleId);
   return style ? style.prompt : '';
 }
 
@@ -198,7 +198,7 @@ export function getAllStoryArtStyles(): StoryArtStyle[] {
 // Función para construir prompt con estilo Story Art
 export function buildStoryArtPrompt(basePrompt: string, styleId: StoryArtStyleId | null): string {
   if (!styleId) return basePrompt;
-  const style = getStoryArtStyle(styleId);
+  const style = getStoryArtStyleById(styleId);
   if (!style) return basePrompt;
   return `${basePrompt}${style.prompt}`;
 }

@@ -9,8 +9,8 @@ import { processMagicMode, MagicModeResult, STYLE_NAMES_ES, detectVideoStyleFrom
 import { SurfaceType } from '../hooks/useSurfaceDetection';
 // 🎨 STORY ART STYLES - Importar estilos visuales únicos
 import {
-  STORY_ART_STYLES,
-  getStoryArtStyle,
+  STORY_ART_VISUAL_STYLES,
+  getStoryArtStyleById as getStoryArtStyle,
   getAllStoryArtStyles,
   type StoryArtStyle,
   type StoryArtStyleId
@@ -70,7 +70,7 @@ interface FlyerFormProps {
   
   // 🎨 Story Art Visual Style props
   storyArtVisualStyleId?: StoryArtStyleId | null;
-  onStoryArtVisualStyleChange?: (styleId: StoryArtStyleId | null) => void;
+  onStoryArtStyleSelected?: (id: StoryArtStyleId | null) => void;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -122,7 +122,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   autoDetectedSurface = null,
   // 🎨 Story Art Visual Style defaults
   storyArtVisualStyleId: storyArtVisualStyleIdProp = null,
-  onStoryArtVisualStyleChange = () => {}
+  onStoryArtStyleSelected = (_id: StoryArtStyleId | null) => {}
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -174,10 +174,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   }, [storyArtVisualStyleIdProp]);
   
   // Handler unificado que actualiza estado local Y notifica al padre
-  const handleStoryArtVisualStyleChange = (styleId: StoryArtStyleId | null) => {
-    setStoryArtVisualStyleIdLocal(styleId);
-    setStoryArtVisualStyle(styleId ? getStoryArtStyle(styleId) : null);
-    onStoryArtVisualStyleChange?.(styleId);
+  const handleStoryArtVisualStyleChange = (newStyleId: StoryArtStyleId | null) => {
+    setStoryArtVisualStyleIdLocal(newStyleId);
+    setStoryArtVisualStyle(newStyleId ? getStoryArtStyle(newStyleId) : null);
+    const callback = onStoryArtStyleSelected as ((id: StoryArtStyleId | null) => void) | undefined;
+    if (callback) {
+      callback(newStyleId);
+    }
   };
   
   // Obtener todos los estilos visuales Story Art disponibles

@@ -2,15 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo } from '../types';
 import { downloadComposedImage, getDimensionsForAspectRatio, composeAndExport } from '../services/compositionExportService';
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
-import {
-  processVideoWithOverlays,
-  downloadProcessedVideo,
-  downloadOriginalVideo,
-  isSharedArrayBufferSupported,
-  loadFFmpeg
-} from '../services/videoPostProcessingService';
 import { useSurfaceDetection, SurfaceType, SURFACE_CONFIGS } from '../hooks/useSurfaceDetection';
-import { StyleFusionSelector } from './StyleFusionSelector';
 import Swal from 'sweetalert2';
 
 interface LogoFilters {
@@ -24,9 +16,6 @@ interface FlyerDisplayProps {
   imageUrl: string | null;
   draftImageUrl?: string | null;
   hdImageUrl?: string | null;
-  // Videos draft/HD
-  draftVideoUrl?: string | null;
-  hdVideoUrl?: string | null;
   status: GenerationStatus;
   aspectRatio: AspectRatio;
   logoUrl: string | null;
@@ -83,9 +72,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   imageUrl,
   draftImageUrl,
   hdImageUrl,
-  // Videos
-  draftVideoUrl,
-  hdVideoUrl,
   status,
   aspectRatio,
   logoUrl,
@@ -197,21 +183,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // Ref para rastrear si ya se mostró la comparación automáticamente (para evitar reopen automático)
   const hasShownComparison = useRef(false);
   
-  // Estado para comparación draft vs HD (VIDEOS)
-  const [showVideoComparison, setShowVideoComparison] = useState(false);
-  
-  // Ref para rastrear si ya se mostró la comparación de video automáticamente
-  const hasShownVideoComparison = useRef(false);
-  
   // Estado para almacenar el canvas recoloreado del logo (useState para forzar re-render)
   const [recoloredLogoUrl, setRecoloredLogoUrl] = useState<string | null>(null);
-  
-  // Estados para procesamiento de video con FFmpeg.wasm
-  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
-  const [processingProgress, setProcessingProgress] = useState(0);
-  const [processingMessage, setProcessingMessage] = useState('');
-  const [videoProcessingError, setVideoProcessingError] = useState<string | null>(null);
-  const [fallbackVideoUrl, setFallbackVideoUrl] = useState<string | null>(null);
   
   // Estados para manejo de errores de media (mobile fix)
   const [mediaError, setMediaError] = useState<{type: 'image' | 'video', url: string} | null>(null);
@@ -220,10 +193,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   
-  // Helper para detectar si es video por extensión de URL
-  const isVideoUrl = (url: string): boolean => {
-    return /\.(mp4|webm|mov|blob:)(?:\?.*)?$/i.test(url) || url.startsWith('blob:');
-  };
   
   // Handler para errores de media con retry automático
   const handleMediaError = useCallback((e: React.SyntheticEvent<HTMLImageElement | HTMLVideoElement, Event>, type: 'image' | 'video') => {
@@ -381,25 +350,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     }
   }, [draftImageUrl, hdImageUrl, showComparison, isGeneratingReality, suppressComparison]);
   
-  // Auto-show video comparison when HD video generated - solo la primera vez
-  // NEW: No abrir comparación si isGeneratingReality O suppressComparison es true
-  useEffect(() => {
-    if (draftVideoUrl && hdVideoUrl && !showVideoComparison && !hasShownVideoComparison.current && !isGeneratingReality && !suppressComparison) {
-      console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
-      hasShownVideoComparison.current = true;
-      setShowVideoComparison(true);
-    }
-  }, [draftVideoUrl, hdVideoUrl, showVideoComparison, isGeneratingReality, suppressComparison]);
-  
-  // Auto-show comparison when HD video generated from draft
-  // NEW: No abrir comparación si isGeneratingReality O suppressComparison es true
-  useEffect(() => {
-    if (draftVideoUrl && hdVideoUrl && !showComparison && !showVideoComparison && !hasShownComparison.current && !isGeneratingReality && !suppressComparison) {
-      console.log('🎯 Auto-mostrando comparación Draft vs HD (video)');
-      hasShownComparison.current = true;
-      setShowVideoComparison(true);
-    }
-  }, [draftVideoUrl, hdVideoUrl, showComparison, showVideoComparison, isGeneratingReality, suppressComparison]);
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
 
   const defaultStyles: TextStyleOptions = {
@@ -1712,7 +1662,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     <div className="relative w-full h-full flex flex-col items-center justify-start animate-fade-in">
 
       {/* CERRAR COMPARACIÓN DE IMÁGENES */}
-      {showComparison && !showVideoComparison && (
+      {showComparison && (
         <div className="absolute top-6 left-4 lg:left-8 z-50">
           <button
             onClick={() => setShowComparison(false)}
@@ -1722,105 +1672,16 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </button>
         </div>
       )}
-      
-      {/* CERRAR COMPARACIÓN DE VIDEOS */}
-      {showVideoComparison && (
-        <div className="absolute top-6 left-4 lg:left-8 z-50">
-          <button
-            onClick={() => setShowVideoComparison(false)}
-            className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
-          >
-            ✕ CERRAR COMPARACIÓN (VIDEO)
-          </button>
-        </div>
-      )}
 
       {/* DRAFT BADGE */}
       {isDraft && !showComparison && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] bg-yellow-500/90 backdrop-blur text-black text-[10px] font-mono font-bold px-3 py-1 rounded-sm">⚡ MODO_BORRADOR</div>
       )}
-      
-      
-      {/* VIDEO COMPARISON BADGE */}
-      {!isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && showVideoComparison && (
-        <div className="absolute top-36 left-1/2 -translate-x-1/2 z-[60]">
-          <div className="bg-purple-500/90 backdrop-blur text-white text-[10px] font-mono font-bold px-3 py-1 rounded-sm">
-            <span>🎬</span> COMPARANDO BORRADOR Y HD (VIDEO)
-          </div>
-        </div>
-      )}
 
       {/* CANVAS - Padding aumentado arriba para que los botones no tapen la imagen */}
       <div className="w-full flex flex-col items-center justify-start px-2 md:px-0 pt-2 md:py-12 relative z-0">
-        {/* VIDEO COMPARISON MODE - SIDE BY SIDE */}
-        {showVideoComparison && !isDraft && typeof draftVideoUrl === 'string' && draftVideoUrl.length > 0 && typeof hdVideoUrl === 'string' && hdVideoUrl.length > 0 && (
-          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">
-            <div className="flex gap-4 lg:gap-8 items-center justify-center w-full h-full max-w-6xl">
-              {/* VIDEO BORRADOR */}
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-yellow-400 text-xs font-mono font-bold">BORRADOR (16fps)</span>
-                </div>
-                <div
-                  className={`relative bg-black rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-yellow-500/30 overflow-hidden
-                    ${aspectRatio === '9:16' ? 'w-[200px] h-[356px]' :
-                      aspectRatio === '1:1' ? 'w-[225px] h-[225px]' :
-                      aspectRatio === '4:5' ? 'w-[200px] h-[250px]' :
-                      'w-[200px] h-[356px]'}`}
-                >
-                  <div className="w-full h-full relative">
-                    <video
-                      src={draftVideoUrl}
-                      className="w-full h-full object-cover opacity-90"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      crossOrigin="anonymous"
-                    />
-                    {/* NOTA: Videos NO tienen overlays superpuestos */}
-                  </div>
-                </div>
-              </div>
-              
-              {/* VS */}
-              <div className="flex flex-col items-center">
-                <span className="text-white/30 text-xl lg:text-3xl font-mono">VS</span>
-              </div>
-              
-              {/* VIDEO HD */}
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-emerald-400 text-xs font-mono font-bold">HD (24fps)</span>
-                </div>
-                <div
-                  className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden
-                    ${aspectRatio === '9:16' ? 'w-[320px] h-[569px]' :
-                      aspectRatio === '1:1' ? 'w-[360px] h-[360px]' :
-                      aspectRatio === '4:5' ? 'w-[320px] h-[400px]' :
-                      'w-[320px] h-[569px]'}`}
-                >
-                  <div className="w-full h-full relative">
-                    <video
-                      src={hdVideoUrl}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      crossOrigin="anonymous"
-                    />
-                    {/* NOTA: Videos NO tienen overlays superpuestos */}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-          </div>
-        )}
-        
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
-        {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && !showVideoComparison && (
+        {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
           <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">
             {/* Contenedor vertical para alinear imágenes y botón */}
             <div className="flex flex-col items-center">
@@ -1962,25 +1823,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <div ref={flyerContainerRef} className="w-full h-full relative flyer-capture-target">
             {(() => {
               const needsCors = imageUrl && !imageUrl.startsWith('blob:');
-              const videoSrc = imageUrl && isVideoUrl(imageUrl);
-              
-              if (videoSrc) {
-                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
-                  return renderMediaPlaceholder();
-                }
-                return (
-                  <video
-                    src={imageUrl}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    crossOrigin={needsCors ? "anonymous" : undefined}
-                    onError={(e) => handleMediaError(e, 'video')}
-                  />
-                );
-              }
               
               if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
                 return renderMediaPlaceholder();
@@ -2131,25 +1973,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <div ref={flyerContainerRef} className="w-full h-full relative">
             {(() => {
               const needsCors = imageUrl && !imageUrl.startsWith('blob:');
-              const videoSrc = imageUrl && isVideoUrl(imageUrl);
-              
-              if (videoSrc) {
-                if (mediaError?.type === 'video' && mediaError.url === imageUrl) {
-                  return renderMediaPlaceholder();
-                }
-                return (
-                  <video
-                    src={imageUrl}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    crossOrigin={needsCors ? "anonymous" : undefined}
-                    onError={(e) => handleMediaError(e, 'video')}
-                  />
-                );
-              }
               
               if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
                 return renderMediaPlaceholder();
@@ -2174,38 +1997,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       </div>
 
-      {/* UI DE PROGRESO DE PROCESAMIENTO DE VIDEO */}
-      {isProcessingVideo && (
-        <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center">
-          <div className="w-80 bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <div className="text-center mb-4">
-              <h3 className="text-white font-bold text-lg mb-1">Procesando Video</h3>
-              <p className="text-white/60 text-sm">{processingMessage}</p>
-            </div>
-            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-                style={{ width: `${processingProgress}%` }}
-              />
-            </div>
-            <div className="text-center mt-2">
-              <span className="text-blue-400 text-sm font-mono">{processingProgress}%</span>
-            </div>
-            <p className="text-white/40 text-xs text-center mt-4">
-              No cierres esta pestaña mientras procesamos tu video
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* SPACER PEQUEÑO - Empuja los controles hacia abajo de la imagen */}
       <div className="h-4" />
       
       {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto - OCULTAR DURANTE COMPARACIÓN */}
-      {!showComparison && !showVideoComparison && (
+      {!showComparison && (
         <div className="w-full max-w-[280px] flex flex-col gap-2">
         {/* Campo de refinamiento */}
         <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl p-2 pr-2.5 pl-3 rounded-xl border border-white/10">
@@ -2247,7 +2043,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           className="w-full max-w-[280px] bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-xs flex items-center justify-center gap-2 mt-3 animate-pulse"
         >
           <span>✨</span>
-          <span>{(draftVideoUrl || isVideoUrl(imageUrl)) ? 'Generar video HD' : 'Generar imagen HD'}</span>
+          <span>Generar imagen HD</span>
         </button>
       )}
       

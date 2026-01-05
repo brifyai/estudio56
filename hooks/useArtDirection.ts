@@ -6,8 +6,8 @@ import {
 } from '../src/services/promptBuilder';
 import { getAllArtDirections, type ArtDirectionConfig, type ArtDirectionInput } from '../src/constants/artDirection';
 import {
-  STORY_ART_STYLES,
-  getStoryArtStyle,
+  STORY_ART_VISUAL_STYLES,
+  getStoryArtStyleById as getStoryArtStyle,
   getAllStoryArtStyles,
   buildStoryArtPrompt,
   type StoryArtStyle,
@@ -156,11 +156,10 @@ export function useArtDirection(options: UseArtDirectionOptions = {}) {
           setStoryArtStyle(style);
           setStoryArtStyleId(styleId);
           
-          // Construir prompt con estilo visual + dirección de arte
+          // Construir prompt con estilo visual (la dirección de arte se aplica en generateFlyerImage)
           finalPrompt = buildStoryArtPrompt(
             `${subject}${details ? `. ${details}` : ''}`,
-            styleId,
-            config.prompt
+            styleId
           );
           
           console.log(`🎨 [Story Art] Prompt construido con estilo: ${style.name}`);

@@ -419,11 +419,13 @@ export interface StoryArtStyle {
   id: StoryArtStyleId;
   name: string;
   description: string;
+  category: 'fashion' | 'urban' | 'product' | 'cinematic' | 'artistic' | 'classic' | 'anime';
   prompt: string;
-  negativePrompt: string;
+  technicalPrompt?: string;
+  visualPrompt: string;
+  colors: string[];
+  keywords: string[];
   icon: string;
-  category: 'editorial' | 'digital' | 'product' | 'documental' | 'montage' | 'classic' | 'cosplay';
-  color: string;
 }
 
 export interface StoryArtCategory {
