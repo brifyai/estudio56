@@ -349,7 +349,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // NEW: Actualizar progreso basado en status.message del padre
   // Este efecto detecta cambios en el mensaje de estado y actualiza la alerta
   useEffect(() => {
+    // Si no hay referencia a la alerta, no hacer nada
     if (!progressAlertRef.current) return;
+    
+    // Verificar si la alerta aún está visible antes de intentar actualizar
+    if (!progressAlertRef.current.isVisible()) {
+      console.log('📊 Alerta ya cerrada, omitiendo actualización');
+      return;
+    }
     
     // Mapeo de mensajes a progreso
     const messageProgress: Record<string, { percent: number; message: string }> = {
@@ -385,10 +392,15 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       console.log('📊 Esperando mensajes de estado...');
     }
     
-    // Si isLoading es false y hay imagen, completar al 100%
+    // Si isLoading es false y hay imagen, completar al 100% y cerrar alerta
     if (!isLoading && imageUrl) {
-      progressAlertRef.current.updateProgress(100, '¡Completado!');
-      console.log('📊 Generación completada');
+      // Verificar nuevamente que la alerta esté visible antes de cerrar
+      if (progressAlertRef.current.isVisible()) {
+        progressAlertRef.current.updateProgress(100, '¡Completado!');
+        console.log('📊 Generación completada, cerrando alerta...');
+      } else {
+        console.log('📊 Generación completada pero alerta ya estaba cerrada');
+      }
     }
   }, [status.message, isLoading, imageUrl]);
 

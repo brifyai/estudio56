@@ -66,13 +66,8 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  */
 export async function composeAndExport(options: CompositionOptions): Promise<string> {
   // Usar dimensiones del contenedor si se proporcionan, sino usar las dimensiones estándar
-  const useCustomDimensions = options.containerWidth && options.containerHeight;
-  const canvasWidth = useCustomDimensions ? options.containerWidth! : getDimensionsForAspectRatio(options.aspectRatio, options.quality).width;
-  const canvasHeight = useCustomDimensions ? options.containerHeight! : getDimensionsForAspectRatio(options.aspectRatio, options.quality).height;
-  
-  // Calcular dimensiones de borrador para referencia de escala
-  const draftDims = getDimensionsForAspectRatio(options.aspectRatio, 'draft');
-  const hdDims = getDimensionsForAspectRatio(options.aspectRatio, 'hd');
+  const canvasWidth = options.containerWidth || getDimensionsForAspectRatio(options.aspectRatio, options.quality).width;
+  const canvasHeight = options.containerHeight || getDimensionsForAspectRatio(options.aspectRatio, options.quality).height;
   
   const canvas = document.createElement('canvas');
   canvas.width = canvasWidth;
@@ -96,9 +91,8 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
       const productImage = await loadImage(options.productUrl);
       
       // Escalar producto proporcionalmente al tamaño de la imagen
-      // Si hay dimensiones personalizadas, usar escala 1:1 (tamaño real)
-      const draftWidth = getDimensionsForAspectRatio(options.aspectRatio, 'draft').width;
-      const scaleFactor = useCustomDimensions ? (canvasWidth / draftWidth) : (canvasWidth / draftWidth);
+      // El width original (120px) está diseñado para mostrarse en un contenedor de ~320px
+      const scaleFactor = canvasWidth / 320;
       
       // Usar tamaño escalado proporcionalmente
       const prodWidth = options.productPosition.width * scaleFactor;
@@ -110,7 +104,7 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
       ctx.globalAlpha = 0.9;
       // Redondear esquinas con clip
       ctx.beginPath();
-      ctx.roundRect(prodX, prodY, prodWidth, prodHeight, 12);
+      ctx.roundRect(prodX, prodY, prodWidth, prodHeight, 12 * scaleFactor);
       ctx.clip();
       ctx.drawImage(productImage, prodX, prodY, prodWidth, prodHeight);
       ctx.restore();
@@ -125,8 +119,8 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
       const logoImage = await loadImage(options.logoUrl);
       
       // Escalar logo proporcionalmente al tamaño de la imagen
-      const draftWidth = getDimensionsForAspectRatio(options.aspectRatio, 'draft').width;
-      const scaleFactor = useCustomDimensions ? (canvasWidth / draftWidth) : (canvasWidth / draftWidth);
+      // El width original (80px) está diseñado para mostrarse en un contenedor de ~320px
+      const scaleFactor = canvasWidth / 320;
       
       // Usar el ancho del logo escalado proporcionalmente
       const logoWidth = options.logoPosition.width * scaleFactor;
@@ -155,20 +149,18 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
     
     // Escalar texto proporcionalmente al tamaño de la imagen
     // Esto asegura que el texto se vea del mismo tamaño relativo en Draft y HD
-    // Solo escalar si las dimensiones personalizadas son diferentes a draft (evitar doble escala)
+    // El fontSize original (16px) está diseñado para mostrarse en un contenedor de ~320px
+    // Por lo tanto, el factor de escala debe ser: canvasWidth / 320
     let scaleFactor: number;
-    if (useCustomDimensions && canvasWidth === draftDims.width && canvasHeight === draftDims.height) {
-      // Dimensiones personalizadas iguales a draft → no escalar
-      scaleFactor = 1;
-    } else if (useCustomDimensions && canvasWidth === hdDims.width && canvasHeight === hdDims.height) {
-      // Dimensiones HD estándar → escalar 2x
-      scaleFactor = 2;
-    } else if (useCustomDimensions) {
-      // Dimensiones personalizadas diferentes → escalar proporcionalmente
-      scaleFactor = canvasWidth / draftDims.width;
+    
+    if (options.quality === 'hd') {
+      // Para HD: el fontSize de 16px se muestra en un contenedor de 320px en la comparación
+      // Entonces necesitamos escalar a: canvasWidth / 320
+      // Para 1080px: 1080/320 = 3.375
+      scaleFactor = canvasWidth / 320;
     } else {
-      // Usar dimensiones estándar según calidad
-      scaleFactor = options.quality === 'hd' ? 2 : 1;
+      // Para Draft: canvasWidth ya es ~540px, entonces 540/320 = 1.6875
+      scaleFactor = canvasWidth / 320;
     }
     
     // Usar tamaño de fuente escalado proporcionalmente

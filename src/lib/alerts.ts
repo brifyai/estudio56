@@ -33,8 +33,13 @@ export const estudioAlerts = {
     let message = initialMessage;
     let lastUpdate = Date.now();
     let isAutoAdvancing = true;
+    let intervalId: NodeJS.Timeout | null = null;
+    let isClosed = false;
     
     const updateProgress = (newPercent: number, newMessage: string) => {
+      // Si ya está cerrado, no hacer nada
+      if (isClosed) return;
+      
       percent = newPercent;
       message = newMessage;
       lastUpdate = Date.now();
@@ -47,6 +52,17 @@ export const estudioAlerts = {
       if (progressBar) progressBar.style.width = `${percent}%`;
       if (progressText) progressText.textContent = message;
       if (progressPercent) progressPercent.textContent = `${Math.round(percent)}%`;
+      
+      // Si llega al 100%, cerrar automáticamente
+      if (percent >= 100 && !isClosed) {
+        setTimeout(() => {
+          if (!isClosed) {
+            isClosed = true;
+            if (intervalId) clearInterval(intervalId);
+            Swal.close();
+          }
+        }, 300);
+      }
     };
     
     Swal.fire({
@@ -68,14 +84,21 @@ export const estudioAlerts = {
       allowOutsideClick: false,
       didOpen: () => {
         // Iniciar intervalo de actualización sincronizada
-        const intervalId = setInterval(() => {
+        intervalId = setInterval(() => {
+          // Si ya está cerrado, no hacer nada
+          if (isClosed) {
+            if (intervalId) clearInterval(intervalId);
+            return;
+          }
+          
           const now = Date.now();
           const timeSinceUpdate = now - lastUpdate;
           
           // Solo avanzar automáticamente si han pasado más de 3 segundos sin actualización manual
           // y si hay llamadas manuales esperadas (percent < 70)
           if (percent >= 100) {
-            clearInterval(intervalId);
+            if (intervalId) clearInterval(intervalId);
+            isClosed = true;
             Swal.close();
             return;
           }
@@ -91,7 +114,13 @@ export const estudioAlerts = {
     
     return {
       updateProgress,
-      close: () => Swal.close(),
+      close: () => {
+        if (!isClosed) {
+          isClosed = true;
+          if (intervalId) clearInterval(intervalId);
+          Swal.close();
+        }
+      },
       setLoading: () => Swal.showLoading(),
       isVisible: () => Swal.isVisible()
     };
