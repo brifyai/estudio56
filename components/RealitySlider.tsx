@@ -1,14 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { RealityLevel } from '../types';
-import { 
-  REALITY_CONFIGS, 
-  getRealityLabel, 
-  getRealityDescription, 
+import Swal from 'sweetalert2';
+import {
+  REALITY_CONFIGS,
+  getRealityLabel,
+  getRealityDescription,
   getRealityIcon,
   getAvailableRealityLevels,
   isRealisticLevel,
   isAspirationalLevel,
-  getRealityCategory 
+  getRealityCategory
 } from '../services/realityMapper';
 
 interface RealitySliderProps {
@@ -286,8 +287,46 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
             e.stopPropagation();
             e.nativeEvent.stopImmediatePropagation();
             if (localValue !== value && !disabled && !isGenerating) {
-              console.log('🖱️ [Actualizar] Llamando onLevelChange');
-              onLevelChange?.(localValue);
+              console.log('🖱️ [Actualizar] Mostrando confirmación...');
+              
+              // Mostrar alerta SweetAlert antes de actualizar
+              const config = REALITY_CONFIGS[localValue];
+              Swal.fire({
+                icon: 'question',
+                title: '¿Actualizar nivel de realismo?',
+                html: `
+                  <div style="text-align: left; padding: 10px;">
+                    <p style="margin-bottom: 8px;">
+                      <strong style="color: #3b82f6;">Nivel actual:</strong> ${value}★ - ${getRealityLabel(value)}
+                    </p>
+                    <p style="margin-bottom: 8px;">
+                      <strong style="color: #22c55e;">Nuevo nivel:</strong> ${localValue}★ - ${getRealityLabel(localValue)}
+                    </p>
+                    <p style="color: #9ca3af; font-size: 12px; margin-top: 12px;">
+                      ${config?.description || ''}
+                    </p>
+                  </div>
+                `,
+                background: '#1a1a1a',
+                color: '#ffffff',
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '✨ Actualizar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                  popup: 'rounded-2xl',
+                  confirmButton: 'rounded-xl px-4 py-2',
+                  cancelButton: 'rounded-xl px-4 py-2'
+                }
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  console.log('🖱️ [Actualizar] Usuario confirmó, llamando onLevelChange');
+                  onLevelChange?.(localValue);
+                } else {
+                  console.log('🖱️ [Actualizar] Usuario canceló');
+                }
+              });
             } else {
               console.log('🖱️ [Actualizar] No se llama onLevelChange - localValue:', localValue, 'value:', value, 'disabled:', disabled, 'isGenerating:', isGenerating);
             }
