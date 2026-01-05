@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
+import { estudioAlerts } from '../src/lib/alerts';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle, PosterStyle } from '../types';
 import { FLYER_STYLES, VIDEO_STYLES, ASPECT_RATIO_LABELS, POSTER_STYLES } from '../constants';
 import { analyzeUrlContent, generatePersuasiveText, INDUSTRY_TEXT_TEMPLATES, detectIndustryFromDescription, enhanceUserImage } from '../services/geminiService';
@@ -132,23 +133,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  // NEW: Estados para controlar alerta de progreso
-  const [showProgressAlert, setShowProgressAlert] = useState(false);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [progressMessage, setProgressMessage] = useState('Iniciando...');
-  
-  // NEW: Refs para que el intervalo pueda leer valores actualizados
-  const progressPercentRef = useRef<{ current: number; lastProgressTime?: number }>({ current: 0, lastProgressTime: undefined });
-  const progressMessageRef = useRef('Iniciando...');
-  
-  // Mantener refs sincronizados con estados
-  useEffect(() => {
-    progressPercentRef.current.current = progressPercent;
-  }, [progressPercent]);
-  
-  useEffect(() => {
-    progressMessageRef.current = progressMessage;
-  }, [progressMessage]);
+  // NEW: Ref para mantener la instancia de la alerta de progreso
+  const progressAlertRef = useRef<{
+    updateProgress: (percent: number, message: string) => void;
+    close: () => void;
+  } | null>(null);
   
   // NEW: Estados para objetivo de marketing
   const [marketingObjective, setMarketingObjective] = useState<'branding' | 'leads' | null>(null);
@@ -342,8 +331,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   }, [mediaType, styleKey, setStyleKey]);
 
   // NEW: Actualizar progreso basado en status.message del padre
+  // Este efecto detecta cambios en el mensaje de estado y actualiza la alerta
   useEffect(() => {
-    if (!showProgressAlert) return;
+    if (!progressAlertRef.current) return;
     
     // Mapeo de mensajes a progreso
     const messageProgress: Record<string, { percent: number; message: string }> = {
@@ -363,8 +353,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     let found = false;
     for (const [key, value] of Object.entries(messageProgress)) {
       if (status.message.includes(key)) {
-        setProgressPercent(value.percent);
-        setProgressMessage(value.message);
+        progressAlertRef.current.updateProgress(value.percent, value.message);
         found = true;
         console.log('📊 Progreso actualizado:', value.message, value.percent + '%');
         break;
@@ -372,38 +361,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     }
     
     // Si no se encontró ningún mensaje conocido y isLoading es true, avanzar progresivamente
-    if (!found && isLoading) {
-      // Si pasan más de 5 segundos sin cambio, avanzar automáticamente
-      const currentTime = Date.now();
-      if (!progressPercentRef.current.lastProgressTime) {
-        progressPercentRef.current.lastProgressTime = currentTime;
-      }
-      
-      const elapsed = currentTime - (progressPercentRef.current.lastProgressTime || currentTime);
-      
-      // Si ya pasó un tiempo significativo, avanzar el progreso
-      if (elapsed > 5000 && progressPercentRef.current.current < 80) {
-        const newPercent = Math.min(progressPercentRef.current.current + 10, 80);
-        setProgressPercent(newPercent);
-        setProgressMessage('Generando imagen...');
-        progressPercentRef.current.lastProgressTime = currentTime;
-        console.log('📊 Progreso automático:', newPercent + '%');
-      }
+    if (!found && isLoading && status.message) {
+      // El intervalo de respaldo ya avanza automáticamente en studioAlerts
+      console.log('📊 Esperando mensajes de estado...');
     }
     
     // Si isLoading es false y hay imagen, completar al 100%
     if (!isLoading && imageUrl) {
-      setProgressPercent(100);
-      setProgressMessage('¡Completado!');
-      // Cerrar alerta después de un momento
-      setTimeout(() => {
-        setShowProgressAlert(false);
-        if (Swal.isVisible()) {
-          Swal.close();
-        }
-      }, 1500);
+      progressAlertRef.current.updateProgress(100, '¡Completado!');
+      console.log('📊 Generación completada');
     }
-  }, [status.message, isLoading, imageUrl, showProgressAlert]);
+  }, [status.message, isLoading, imageUrl]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {
@@ -1270,52 +1238,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               onClick={async () => {
                 // Mostrar alerta de progreso si es imagen y calidad draft
                 if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
-                  setShowProgressAlert(true);
-                  setProgressPercent(0);
-                  setProgressMessage('Iniciando...');
-                  
-                  // Abrir SweetAlert2
-                  Swal.fire({
-                    title: '🎨 Generando imagen en borrador',
-                    html: `
-                      <div style="text-align: left; margin-top: 20px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                          <span id="progress-text">Iniciando...</span>
-                          <span id="progress-percent">0%</span>
-                        </div>
-                        <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
-                          <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease;"></div>
-                        </div>
-                      </div>
-                    `,
-                    icon: 'info',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    background: '#1a1a1a',
-                    color: '#ffffff',
-                    didOpen: () => {
-                      // Intervalo para actualizar progreso cada 100ms usando refs
-                      const intervalId = setInterval(() => {
-                        const progressBar = document.getElementById('progress-bar');
-                        const progressText = document.getElementById('progress-text');
-                        const progressPercentEl = document.getElementById('progress-percent');
-                        const currentPercent = progressPercentRef.current.current;
-                        const currentMessage = progressMessageRef.current;
-                        
-                        if (progressBar) progressBar.style.width = currentPercent + '%';
-                        if (progressText) progressText.textContent = currentMessage;
-                        if (progressPercentEl) progressPercentEl.textContent = Math.round(currentPercent) + '%';
-                        
-                        // Cerrar cuando llegue a 100%
-                        if (currentPercent >= 100) {
-                          clearInterval(intervalId);
-                          if (Swal.isVisible()) {
-                            Swal.close();
-                          }
-                        }
-                      }, 100);
-                    }
-                  });
+                  // Abrir alerta de progreso con SweetAlert2
+                  progressAlertRef.current = estudioAlerts.progress('Iniciando...');
+                  console.log('📊 Alerta de progreso abierta');
                 }
                 // Ejecutar generación normal
                 onSubmit();
@@ -1343,6 +1268,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         </div>
 
       </div>
-   </>
- );
+    </>
+  );
 };
