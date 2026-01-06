@@ -409,15 +409,24 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     }
   }, [status.message, isLoading, imageUrl]);
 
-  // NEW: Fallback de seguridad - cerrar alerta inmediatamente cuando imageUrl aparece
+  // NEW: Fallback de seguridad - cerrar alerta cuando imageUrl aparece
   useEffect(() => {
     // Cerrar alerta cuando cualquiera de las URLs de imagen esté disponible
     const hasImage = imageUrl || draftImageUrl;
     
     if (hasImage && progressAlertRef.current?.isVisible()) {
       console.log('📊 Fallback: cerrando alerta por imagen disponible');
-      // Cerrar inmediatamente sin delay para que la imagen aparezca sin interrupción
-      progressAlertRef.current.close();
+      // Primero actualizar a 100% para mostrar "¡Completado!"
+      progressAlertRef.current.updateProgress(100, '¡Completado!');
+      // Luego cerrar después de un pequeño delay para que el usuario vea el 100%
+      setTimeout(() => {
+        if (progressAlertRef.current?.isVisible()) {
+          progressAlertRef.current.close();
+        }
+        progressAlertRef.current = null;
+      }, 500);
+    } else if (hasImage) {
+      // Si ya estaba cerrada pero hay imagen, limpiar la referencia
       progressAlertRef.current = null;
     }
   }, [imageUrl, draftImageUrl]);
