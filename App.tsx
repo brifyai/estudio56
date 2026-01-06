@@ -1515,6 +1515,10 @@ const handleGenerate = async () => {
         setHdImageUrl(url);
         setIsDraft(false);
         progressAlert.updateProgress(100, '¡Completado!');
+        // Cerrar la alerta después de un breve delay para que el usuario vea el mensaje de completado
+        setTimeout(() => {
+          progressAlert.close();
+        }, 500);
         setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
     } catch (error: any) {
         progressAlert.close();
