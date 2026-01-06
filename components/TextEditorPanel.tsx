@@ -132,12 +132,7 @@ export const TextEditorPanel: React.FC<TextEditorPanelProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2 pb-3 border-b border-white/10">
-        <span className="text-lg">✏️</span>
-        <h3 className="text-sm font-bold text-white uppercase tracking-widest font-mono">Editor de Texto</h3>
-      </div>
+    <div className="space-y-4">
       
       {/* Texto Input */}
       <div className="space-y-2">
