@@ -2006,7 +2006,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   } else {
     // Imágenes: Usar modelos existentes
     if (quality === 'draft') {
-      model = 'gemini-2.0-flash-exp';
+      model = 'gemini-2.5-flash-image';
     } else {
       model = 'gemini-3.0-pro-image-exp';
     }
