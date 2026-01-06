@@ -1420,37 +1420,41 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     
     // ============================================
     // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.5 FLASH IMAGE
-    // El modelo gemini-2.5-flash-image tiene una API específica
+    // El modelo gemini-2.5-flash-image tiene una API específica más simple
     // ============================================
     
-    // Determinar la configuración correcta según el modelo
     const isGemini25Flash = model.includes('gemini-2.5-flash-image');
     
-    let apiConfig: any = {
-      model,
-      contents: { parts: [{ text: finalPrompt }] }
-    };
+    let apiConfig: any;
     
-    // Gemini 2.5 Flash Image tiene una estructura de config diferente
     if (isGemini25Flash) {
-      // Para gemini-2.5-flash-image: solo imageConfig, sin seed en config
-      apiConfig.config = {
-        imageConfig: {
-          aspectRatio: finalAspectRatio,
-          imageSize: imageSize
+      // Para gemini-2.5-flash-image: estructura mínima
+      // NO incluir seed, solo los parámetros requeridos
+      apiConfig = {
+        model,
+        contents: { parts: [{ text: finalPrompt }] },
+        config: {
+          imageConfig: {
+            aspectRatio: finalAspectRatio,
+            imageSize: imageSize
+          }
         }
       };
-      console.log(`📐 [GeminiService] Usando config para ${model}: imageConfig={aspectRatio: ${finalAspectRatio}, imageSize: ${imageSize}}`);
+      console.log(`📐 [GeminiService] Usando config SIMPLE para ${model}`);
     } else {
       // Para otros modelos (gemini-3.0-pro-image-exp): incluir seed
-      apiConfig.config = {
-        seed: seed,
-        imageConfig: {
-          aspectRatio: finalAspectRatio,
-          imageSize: imageSize
+      apiConfig = {
+        model,
+        contents: { parts: [{ text: finalPrompt }] },
+        config: {
+          seed: seed,
+          imageConfig: {
+            aspectRatio: finalAspectRatio,
+            imageSize: imageSize
+          }
         }
       };
-      console.log(`📐 [GeminiService] Usando config para ${model}: seed=${seed}, imageConfig={aspectRatio: ${finalAspectRatio}, imageSize: ${imageSize}}`);
+      console.log(`📐 [GeminiService] Usando config para ${model}: seed=${seed}`);
     }
     
     // Race entre la API y el timeout
