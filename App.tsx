@@ -209,6 +209,7 @@ const Dashboard: React.FC = () => {
   const [showRealityComparator, setShowRealityComparator] = useState(false);
   const [isGeneratingReality, setIsGeneratingReality] = useState(false);
   const [realityGenerationMessage, setRealityGenerationMessage] = useState<string | null>(null);
+  const [isRealityVariation, setIsRealityVariation] = useState(false);
   
   // Refs para gestión de memoria y locks
   const realityLoadingSwalRef = useRef<any>(null);
@@ -923,6 +924,7 @@ const handleGenerate = async () => {
     setRealityImageUrl(null);
     // 🎯 RESETEAR realityLevel a 2.5 y limpiar variaciones al generar nuevo borrador
     setRealityLevel(2.5);
+    setIsRealityVariation(false); // Indicar que es una nueva imagen base
     setRealityVariations({});
     setCurrentSpanishPrompt(''); // Limpiar prompt en español
     const newSeed = Math.floor(Math.random() * 2000000000);
@@ -1719,6 +1721,7 @@ const handleGenerate = async () => {
     // ✅ CORRECCIÓN: Adquirir lock antes de generar
     generationLockRef.current = true;
     setIsGeneratingReality(true);
+    setIsRealityVariation(true); // Indicar que es una variación de realidad
     setRealityGenerationMessage(`🎚️ Generando imagen con realismo ${levelKey}★...`);
     setRealityLevel(levelKey);
     
@@ -1831,6 +1834,7 @@ const handleGenerate = async () => {
       // ✅ CORRECCIÓN: Liberar lock después de generar
       generationLockRef.current = false;
       setIsGeneratingReality(false);
+      setIsRealityVariation(false); // Resetear flag después de generar
       
       // Cerrar alerta de loading cuando termina la generación
       if (realityLoadingSwalRef.current) {
@@ -2059,6 +2063,7 @@ const handleGenerate = async () => {
                         disabled={isGeneratingReality}
                         cachedVariations={realityVariations}
                         onGenerationStart={handleRealityGenerationStart}
+                        isRealityVariation={isRealityVariation}
                         onOpenComparator={() => {
                           // 🎯 ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ ANTES DE ABRIR
                           const originalLevel = 2.5;
