@@ -363,9 +363,10 @@ const Dashboard: React.FC = () => {
   // 🎚️ INICIALIZAR sceneId CUANDO SE GENERA UNA IMAGEN
   // IMPORTANTE: El sceneId DEBE refrescarse cada vez que se genera una nueva imagen
   // para evitar contaminación del caché entre sesiones
+  // ✅ CORRECCIÓN: Solo depender de seed para evitar condición de carrera con imageUrl asíncrono
   useEffect(() => {
-    if (imageUrl) {
-      const newSceneId = `scene_${Date.now()}_${seed || Math.floor(Math.random() * 2000000000)}`;
+    if (seed) {
+      const newSceneId = `scene_${Date.now()}_${seed}`;
       setSceneId(newSceneId);
       console.log('🎚️ SceneId refrescado para nueva imagen:', newSceneId);
       
@@ -373,7 +374,7 @@ const Dashboard: React.FC = () => {
       setRealityVariations({});
       // NOTA: El caché de localStorage ya está validado por sceneId, no es necesario limpiarlo completamente
     }
-  }, [imageUrl, seed]);
+  }, [seed]);
 
   // 🎯 CERRAR ALERTA DE LOADING CUANDO SE GENERA NUEVO BORRADOR
   useEffect(() => {
@@ -1708,6 +1709,7 @@ const handleGenerate = async () => {
     const originalLevel = 2.5;
     if (draftImageUrl) {
       // Guardar siempre, sobrescribiendo si es necesario para asegurar sincronización
+      // ✅ CORRECCIÓN: Eliminar verificación de sceneId que causaba que no se guardara
       setRealityVariations(prev => ({
         ...prev,
         [originalLevel]: draftImageUrl

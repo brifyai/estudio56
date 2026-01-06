@@ -83,7 +83,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
     cached: true
   } : null;
   
-  const rightVariation: RealityVariation | null = rightVariationUrl ? {
+  let rightVariation: RealityVariation | null = rightVariationUrl ? {
     id: `var_current_${Date.now()}`,
     parent_scene_id: sceneId || '',
     seed: seed,
@@ -251,6 +251,8 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   if (leftVariation && !rightVariation) {
     // Usar la misma imagen para ambos lados
     rightVariationUrl = leftVariationUrl;
+    // Recrear rightVariation con la misma imagen
+    rightVariation = leftVariation;
   }
 
   return (
