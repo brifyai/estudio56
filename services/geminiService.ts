@@ -1387,7 +1387,7 @@ export const refineDescription = async (currentDescription: string, userInstruct
 /**
  * Internal Helper to execute the image generation call
  */
-const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: string, seed: number, aspectRatio: AspectRatio, isHD: boolean): Promise<string> => {
+const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: string, seed: number, aspectRatio: AspectRatio, isHD: boolean, imageSize: string = '720p'): Promise<string> => {
     const startTime = Date.now();
     console.log(`🚀 [GeminiService] INICIANDO generación con ${model} (HD: ${isHD}) Seed: ${seed}, AspectRatio: ${aspectRatio}`);
     
@@ -1426,7 +1426,7 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
         seed: seed,
         imageConfig: {
           aspectRatio: finalAspectRatio,
-          ...(isHD ? { imageSize: "1K" } : {})
+          imageSize: imageSize
         }
       }
     });
@@ -1977,23 +1977,56 @@ const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI
 
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
+  // ============================================
+  // MODELOS DIFERENCIADOS POR TIPO DE CONTENIDO Y CALIDAD
+  // ============================================
+  // Videos Draft: gemini-2.5-flash-image + 720p
+  // Videos HD: gemini-3.0-pro-image-exp + 1K
+  // Imágenes: Usar los modelos existentes
+  
+  // Detectar si es estilo de video (contiene prefijo 'video_')
+  const isVideoStyle = styleKey && typeof styleKey === 'string' && styleKey.startsWith('video_');
+  
+  let model: string;
+  let isHDForVideo = false;
+  
+  if (isVideoStyle) {
+    // Videos: Modelos específicos según calidad
+    if (quality === 'draft') {
+      // Video Draft: gemini-2.5-flash-image + 720p
+      model = 'gemini-2.5-flash-image';
+      isHDForVideo = false;
+      console.log('🎬 [Video Draft] Usando gemini-2.5-flash-image + 720p');
+    } else {
+      // Video HD: gemini-3.0-pro-image-exp + 1K
+      model = 'gemini-3.0-pro-image-exp';
+      isHDForVideo = true;
+      console.log('🎬 [Video HD] Usando gemini-3.0-pro-image-exp + 1K');
+    }
+  } else {
+    // Imágenes: Usar modelos existentes
+    if (quality === 'draft') {
+      model = 'gemini-2.0-flash-exp';
+    } else {
+      model = 'gemini-3.0-pro-image-exp';
+    }
+  }
+  
   if (quality === 'draft') {
-    // Draft: Use Gemini 2.0 Flash for standard image generation
-    const model = 'gemini-2.0-flash-exp';
-    
     try {
         // Use same seed, same prompt structure, just different model variant
         // NOTE: Gemini 2.5 Flash doesn't support negative_prompt directly,
         // but we include it in the prompt for better results
         const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, false);
+        // Para videos draft: usar 480p
+        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, false, '480p');
     } catch (error: any) {
         console.warn("Draft generation failed. Retrying with same parameters...", error.message);
         
         // Retry with same seed for consistency
         try {
             const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-            imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, false);
+            imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo);
         } catch (retryError) {
              console.error("Draft retry failed.", retryError);
              throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
@@ -2003,16 +2036,14 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     // HD: Generar imagen COMPLETAMENTE NUEVA sin usar borrador como referencia
     // Esto evita que HD sea idéntico al borrador - la IA genera una nueva imagen
     // con mejor calidad pero misma semilla para consistencia visual
-    console.log('🎯 [HD] Generando imagen nueva de alta calidad (sin referencia de borrador)');
-    
-    // HD: Use Gemini 3.0 Pro for maximum quality
-    const model = 'gemini-3.0-pro-image-exp';
+    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen nueva de alta calidad (sin referencia de borrador)`);
     
     try {
         // Same seed, same prompt structure - only quality settings differ
         // Include guardrails in prompt for better semantic control
         const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, true);
+        // Para videos HD: usar 1K
+        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
     } catch (error: any) {
         if (error.message.includes('SAFETY_BLOCK')) {
              throw new Error("⚠️ La imagen fue bloqueada por filtros de seguridad. Evita mencionar personas reales, celebridades o marcas registradas.");
