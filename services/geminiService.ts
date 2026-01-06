@@ -2022,10 +2022,10 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   if (isVideoStyle) {
     // Videos: Modelos específicos según calidad
     if (quality === 'draft') {
-      // Video Draft: gemini-2.5-flash-image + 720p
-      model = 'gemini-2.5-flash-image';
+      // Video Draft: gemini-2.0-flash-exp (más estable que 2.5)
+      model = 'gemini-2.0-flash-exp';
       isHDForVideo = false;
-      console.log('🎬 [Video Draft] Usando gemini-2.5-flash-image + 720p');
+      console.log('🎬 [Video Draft] Usando gemini-2.0-flash-exp');
     } else {
       // Video HD: gemini-3.0-pro-image-exp + 1K
       model = 'gemini-3.0-pro-image-exp';
@@ -2035,7 +2035,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   } else {
     // Imágenes: Usar modelos existentes
     if (quality === 'draft') {
-      model = 'gemini-2.5-flash-image';
+      // CAMBIADO: gemini-2.0-flash-exp es más estable
+      model = 'gemini-2.0-flash-exp';
     } else {
       model = 'gemini-3.0-pro-image-exp';
     }
