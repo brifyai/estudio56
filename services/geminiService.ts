@@ -1921,26 +1921,17 @@ ${textIntegrationPrompt}
 ${productPromptSuffix}
 ${realismFilters}
 
-STRICT PROHIBITION - ZERO TOLERANCE:
-1. ABSOLUTELY NO TEXT whatsoever - this is non-negotiable
-2. NO letters, numbers, words, symbols, or characters of any kind
-3. NO signs, menus, billboards, posters, banners, labels, or text on objects
-4. NO text on clothing, products, walls, buildings, vehicles, or any surfaces
-5. NO brand names, logos, or text that looks like writing
-6. NO candles, smoke, steam, fog, or water reflections on floors
-7. NO floating people or objects - everything must be grounded
-8. If you include any text, the image will be REJECTED
-9. Text will be professionally added LATER as a separate overlay layer
+NO TEXT: Pure photographic image only. No letters, numbers, words, symbols, signs, menus, billboards, posters, banners, labels, or text on any surfaces. Blank walls, empty signs, plain products. Text will be added separately as overlay.
 
 VISUAL REQUIREMENTS:
 - Clean, blank surfaces where text would normally appear
-- Plain walls, empty signs, blank menus, bare products
 - Focus on textures, lighting, colors, and composition only
 - Natural window daylight, NO cinematic lighting
 - Raw photo quality with visible grain and realistic textures
+- NO candles, smoke, steam, fog, or water reflections on floors
+- NO floating people or objects - everything must be grounded
 
 Generate a COMPLETE VISIBLE IMAGE with rich textures, clear subjects, and proper lighting.
-The image must be 100% TEXT-FREE. Any image containing text will be considered a failure.
 `.replace(/\n/g, ' ').trim();
 
   // ============================================
