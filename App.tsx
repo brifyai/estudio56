@@ -1851,12 +1851,12 @@ const handleGenerate = async () => {
                 )}
                 
                 
-                {/* 🎚️ EDITOR DE REALIDAD - En el menú lateral izquierdo */}
+                {/* EDITOR DE REALIDAD - En el menú lateral izquierdo */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
                     <CollapsibleSection
                       title="Editor de Realidad"
-                      icon="🎚️"
+                      icon=""
                       defaultOpen={false}
                     >
                       <RealitySlider
