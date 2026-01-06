@@ -290,7 +290,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute -top-5 -right-6 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+          className="absolute top-5 left-2 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
         >
           ✕
         </button>
