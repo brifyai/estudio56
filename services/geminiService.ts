@@ -2000,18 +2000,10 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         }
     }
   } else {
-    // HD: Si tenemos imagen de borrador, usar generación basada en referencia
-    if (draftImageForHD && draftImageForHD.trim()) {
-      console.log('🎯 [HD] Usando borrador como referencia para mantener consistencia');
-      return await generateHDFromDraft(
-        draftImageForHD,
-        enhancedDescription,
-        styleKey,
-        aspectRatio,
-        seed,
-        hasProductOverlay
-      );
-    }
+    // HD: Generar imagen COMPLETAMENTE NUEVA sin usar borrador como referencia
+    // Esto evita que HD sea idéntico al borrador - la IA genera una nueva imagen
+    // con mejor calidad pero misma semilla para consistencia visual
+    console.log('🎯 [HD] Generando imagen nueva de alta calidad (sin referencia de borrador)');
     
     // HD: Use Gemini 2.0 Flash for high quality
     const model = 'gemini-2.0-flash-exp';
