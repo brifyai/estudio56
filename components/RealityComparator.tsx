@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { RealityVariation, RealityLevel } from '../types';
-import { getRealityLabel, getRealityIcon, getRealityCategory } from '../services/realityMapper';
+import { getRealityCategory } from '../services/realityMapper';
 
 interface RealityComparatorProps {
   /** ID de la scene para cargar variaciones */
@@ -146,7 +146,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   const renderImage = (variation: RealityVariation | null, isLeft: boolean, onGenerate?: () => void) => {
     if (!variation) {
       return (
-        <div className={`${dimensions.width} ${dimensions.height} bg-gray-800/50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-white/20 relative overflow-hidden`}>
+        <div className={`${dimensions.width} ${dimensions.height} bg-gray-800/50 rounded-[1.5rem] flex flex-col items-center justify-center border-2 border-dashed border-white/20 relative overflow-hidden`}>
           {/* Skeleton Loader Pattern */}
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" style={{ transform: 'skewX(-20deg)' }} />
@@ -178,41 +178,32 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
       <div className="relative">
         <div
           className={`
-            ${dimensions.width} ${dimensions.height} rounded-xl overflow-hidden relative
+            ${dimensions.width} ${dimensions.height} rounded-[1.5rem] overflow-hidden relative
             transition-all duration-300
           `}
         >
           <img
             src={variation.image_url}
-            alt={`${getRealityLabel(variation.stars)} - ${variation.stars} estrellas`}
+            alt={`${variation.stars}★`}
             className="w-full h-full object-cover"
             draggable={false}
           />
           
-          {/* Overlay con info */}
+          {/* Overlay con info - Solo estrellas */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200">
             <div className="absolute bottom-0 left-0 right-0 p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{getRealityIcon(variation.stars)}</span>
-                <span className="text-white font-bold text-sm">
-                  {getRealityLabel(variation.stars)}
-                </span>
-                <span className="text-white/60 text-xs">({variation.stars}★)</span>
-              </div>
-              <p className="text-white/70 text-[10px] line-clamp-2">
-                {variation.prompt_used}
-              </p>
+              <span className="text-white/60 text-xs">({variation.stars}★)</span>
             </div>
           </div>
         </div>
         
-        {/* Botón seleccionar */}
+        {/* Botón seleccionar - Solo estrellas */}
         {onSelect && isLeft && leftVariation && (
           <button
             onClick={() => onSelect(leftVariation.stars)}
             className="mt-3 w-full py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-colors"
           >
-            Seleccionar {getRealityLabel(leftVariation.stars)}
+            {leftVariation.stars}★
           </button>
         )}
         {onSelect && !isLeft && rightVariation && (
@@ -220,7 +211,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
             onClick={() => onSelect(rightVariation.stars)}
             className="mt-3 w-full py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-colors"
           >
-            Seleccionar {getRealityLabel(rightVariation.stars)}
+            {rightVariation.stars}★
           </button>
         )}
       </div>
@@ -230,7 +221,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   // Si no hay variaciones, mostrar estado vacío
   if (!leftVariation && !rightVariation) {
     return (
-      <div className="p-6 bg-black/40 rounded-2xl border border-white/10 text-center">
+      <div className="p-6 bg-black/40 rounded-[1.5rem] border border-white/10 text-center">
         <span className="text-3xl mb-3 block">🔍</span>
         <p className="text-white/60 text-sm">
           Genera variaciones primero para comparar
@@ -253,7 +244,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+              className="w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] transition-colors"
             >
               ✕
             </button>
@@ -263,10 +254,10 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
           Genera más variaciones para comparar
         </p>
 
-        {/* Indicador de modo único */}
+        {/* Indicador de modo único - Solo estrellas */}
         <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
           <p className="text-blue-300/80 text-xs text-center">
-            📷 Imagen Original ({originalLevelNum}★) - {getRealityLabel(originalLevelNum as RealityLevel)}
+            📷 ({originalLevelNum}★)
           </p>
         </div>
 
@@ -294,7 +285,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+            className="w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] transition-colors"
           >
             ✕
           </button>
@@ -304,21 +295,12 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         Arrastra para comparar las diferencias
       </p>
 
-      {/* 🎯 INDICADOR DE COMPARACIÓN */}
-      {leftVariation && rightVariation && (
-        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-          <p className="text-green-300/80 text-xs text-center">
-            📊 Comparando: Original ({originalLevelNum}★) vs Actual ({currentLevelNum}★)
-          </p>
-        </div>
-      )}
-      
       {/* Modo slider de comparación */}
       {leftVariation && rightVariation && (
         <div
           ref={containerRef}
           className={`
-            relative ${dimensions.width} ${dimensions.height} rounded-xl overflow-hidden cursor-ew-resize
+            relative ${dimensions.width} ${dimensions.height} rounded-[1.5rem] overflow-hidden cursor-ew-resize
             border-2 ${getCategoryColor(leftVariation.stars)}
             shadow-[0_0_30px_rgba(0,0,0,0.5)]
             mx-auto
@@ -366,32 +348,26 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
             </div>
           </div>
 
-          {/* Labels en las esquinas */}
+          {/* Labels en las esquinas - Solo estrellas */}
           <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg">
             <span className="text-xs font-bold text-white">
-              {getRealityIcon(leftVariation.stars)} {leftVariation.stars}★
+              {leftVariation.stars}★
             </span>
           </div>
           <div className="absolute top-3 right-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg">
             <span className="text-xs font-bold text-white">
-              {rightVariation.stars}★ {getRealityIcon(rightVariation.stars)}
+              {rightVariation.stars}★
             </span>
           </div>
         </div>
       )}
 
-      {/* Labels de las versiones */}
+      {/* Labels de las versiones - Solo estrellas */}
       <div className="flex justify-between items-center mt-4 gap-4">
         {leftVariation && (
           <div className="flex-1 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <span className="text-sm">{getRealityIcon(leftVariation.stars)}</span>
-              <span className="text-white font-medium text-sm">
-                {getRealityLabel(leftVariation.stars)}
-              </span>
-            </div>
             <span className="text-white/40 text-xs">
-              {leftVariation.stars} estrellas
+              {leftVariation.stars}★
             </span>
           </div>
         )}
@@ -400,20 +376,14 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         
         {rightVariation && (
           <div className="flex-1 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <span className="text-white font-medium text-sm">
-                {getRealityLabel(rightVariation.stars)}
-              </span>
-              <span className="text-sm">{getRealityIcon(rightVariation.stars)}</span>
-            </div>
             <span className="text-white/40 text-xs">
-              {rightVariation.stars} estrellas
+              {rightVariation.stars}★
             </span>
           </div>
         )}
       </div>
 
-      {/* Botones de acción */}
+      {/* Botones de acción - Solo estrellas */}
       {onSelect && (leftVariation || rightVariation) && (
         <div className="flex gap-2 mt-4">
           {leftVariation && (
@@ -421,7 +391,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
               onClick={() => onSelect(leftVariation.stars)}
               className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
             >
-              {getRealityLabel(leftVariation.stars)}
+              {leftVariation.stars}★
             </button>
           )}
           {rightVariation && (
@@ -429,7 +399,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
               onClick={() => onSelect(rightVariation.stars)}
               className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
             >
-              {getRealityLabel(rightVariation.stars)}
+              {rightVariation.stars}★
             </button>
           )}
         </div>
