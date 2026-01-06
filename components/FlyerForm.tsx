@@ -42,6 +42,7 @@ interface FlyerFormProps {
   isLoading: boolean;
   status?: { message: string }; // NEW: Status del padre para progreso
   imageUrl?: string | null; // NEW: URL de imagen para detectar cuando termina
+  draftImageUrl?: string | null; // NEW: URL de imagen draft para cierre de alerta
   imageQuality: ImageQuality;
   setImageQuality: (q: ImageQuality) => void;
   onStyleDetected: (styleDescription: string, detectedText?: string, textStyle?: string) => void; // UPDATED: Include detected text
@@ -101,6 +102,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   isLoading,
   status = { message: '' },
   imageUrl = null,
+  draftImageUrl = null,
   imageQuality,
   setImageQuality,
   onStyleDetected,
@@ -409,17 +411,16 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
 
   // NEW: Fallback de seguridad - cerrar alerta inmediatamente cuando imageUrl aparece
   useEffect(() => {
-    if (imageUrl && progressAlertRef.current?.isVisible()) {
-      console.log('📊 Fallback: cerrando alerta por imageUrl disponible');
-      progressAlertRef.current.updateProgress(100, '¡Completado!');
-      // Cerrar después de un pequeño delay para mostrar el 100%
-      setTimeout(() => {
-        if (progressAlertRef.current?.isVisible()) {
-          progressAlertRef.current.close();
-        }
-      }, 300);
+    // Cerrar alerta cuando cualquiera de las URLs de imagen esté disponible
+    const hasImage = imageUrl || draftImageUrl;
+    
+    if (hasImage && progressAlertRef.current?.isVisible()) {
+      console.log('📊 Fallback: cerrando alerta por imagen disponible');
+      // Cerrar inmediatamente sin delay para que la imagen aparezca sin interrupción
+      progressAlertRef.current.close();
+      progressAlertRef.current = null;
     }
-  }, [imageUrl]);
+  }, [imageUrl, draftImageUrl]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, setter: (s: string) => void) => {
     if (e.target.files?.[0]) {

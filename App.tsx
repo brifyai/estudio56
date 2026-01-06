@@ -854,6 +854,9 @@ const handleGenerate = async () => {
     setHdImageUrl(null);
     // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
     setRealityImageUrl(null);
+    // 🎯 RESETEAR realityLevel a 2.5 y limpiar variaciones al generar nuevo borrador
+    setRealityLevel(2.5);
+    setRealityVariations({});
     setCurrentSpanishPrompt(''); // Limpiar prompt en español
     const newSeed = Math.floor(Math.random() * 2000000000);
     setSeed(newSeed);
@@ -1863,6 +1866,9 @@ const handleGenerate = async () => {
                     // 🎨 Story Art props - Already defined at top of Dashboard
                     storyArtVisualStyleId={storyArtVisualStyleId}
                     onStoryArtStyleSelected={handleStoryArtStyleSelected}
+                    // NEW: URLs de imagen para cierre de alerta
+                    imageUrl={imageUrl}
+                    draftImageUrl={draftImageUrl}
                 />
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
