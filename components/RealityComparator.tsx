@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { RealityVariation, RealityLevel } from '../types';
-import { getRealityCategory } from '../services/realityMapper';
+import { getRealityCategory, getRealityLabel } from '../services/realityMapper';
 
 interface RealityComparatorProps {
   /** ID de la scene para cargar variaciones */
@@ -346,22 +346,28 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         </div>
       )}
 
-      {/* Labels de las versiones - Solo estrellas */}
+      {/* Labels de las versiones - Estrellas con nombre de clasificación */}
       <div className="flex justify-between items-center mt-4 gap-4">
         {leftVariation && (
           <div className="flex-1 text-center">
-            <span className="text-white/40 text-xs">
+            <span className="text-white/40 text-xs block">
               {leftVariation.stars}★
+            </span>
+            <span className="text-white/50 text-[10px]">
+              {getRealityLabel(leftVariation.stars)}
             </span>
           </div>
         )}
         
-        <div className="text-white/30 text-sm font-mono">VS</div>
+        <div className="text-white/30 text-sm font-mono self-start mt-1">VS</div>
         
         {rightVariation && (
           <div className="flex-1 text-center">
-            <span className="text-white/40 text-xs">
+            <span className="text-white/40 text-xs block">
               {rightVariation.stars}★
+            </span>
+            <span className="text-white/50 text-[10px]">
+              {getRealityLabel(rightVariation.stars)}
             </span>
           </div>
         )}
