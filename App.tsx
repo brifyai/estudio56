@@ -2076,6 +2076,22 @@ const handleGenerate = async () => {
                 {/* Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
+                {/* Botón Genera nuevo borrador - Solo visible cuando hay borrador */}
+                {draftImageUrl && (
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+                    <button
+                      onClick={handleGenerate}
+                      disabled={status.isLoading}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Genera nuevo borrador
+                    </button>
+                  </div>
+                )}
+                
                 {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: realityImageUrl → hdImageUrl → draftImageUrl */}
                 {(() => {
                   const displayUrl = realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
