@@ -2081,16 +2081,30 @@ const handleGenerate = async () => {
          </div>
     </main>
 
-      {/* RIGHT PANEL: REALITY COMPARATOR - Panel derecho con comparación de realismos */}
+      {/* RIGHT PANEL: REALITY COMPARATOR - Solo visible cuando el usuario lo activa */}
       <aside className={`
+        ${showRealityComparator ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
         fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300
         lg:relative lg:inset-auto lg:opacity-100 lg:pointer-events-auto
         lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-4 lg:pr-4
       `}>
-        <div className="glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
+        {/* Overlay background solo en mobile portrait */}
+        <div
+          className="absolute inset-0 bg-black/80 lg:hidden touch-none"
+          onClick={() => setShowRealityComparator(false)}
+        />
+        <div className={`glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 ${showRealityComparator ? 'scale-100' : 'scale-95'} lg:scale-100 lg:max-h-full lg:h-full transition-transform duration-300`}>
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b border-white/10">
             <span className="text-xs font-bold">Comparar Realismos</span>
+            <button
+              onClick={() => setShowRealityComparator(false)}
+              className="w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10 lg:hidden"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto">
             <RealityComparator
@@ -2106,8 +2120,9 @@ const handleGenerate = async () => {
                   setImageUrl(realityVariations[level]);
                   setRealityImageUrl(realityVariations[level]);
                 }
+                setShowRealityComparator(false);
               }}
-              onClose={() => {}}
+              onClose={() => setShowRealityComparator(false)}
               originalImage={draftImageUrl || undefined}
             />
           </div>
@@ -2175,45 +2190,6 @@ const handleGenerate = async () => {
        }}
      />
      
-     {/* 🎨 REALITY COMPARATOR - Modal overlay cuando se abre desde el slider */}
-     {showRealityComparator && (
-       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80">
-         <div className="glass-panel rounded-xl w-full max-w-[400px] max-h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
-           {/* Header */}
-           <div className="flex items-center justify-between p-3 border-b border-white/10">
-             <span className="text-xs font-bold">Comparar Realismos</span>
-             <button
-               onClick={() => setShowRealityComparator(false)}
-               className="w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10"
-             >
-               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-               </svg>
-             </button>
-           </div>
-           <div className="flex-1 overflow-y-auto">
-             <RealityComparator
-               sceneId={sceneId}
-               variations={realityVariations}
-               currentLevel={realityLevel}
-               originalLevel={2.5}
-               seed={seed}
-               aspectRatio={aspectRatio}
-               onSelect={(level) => {
-                 setRealityLevel(level);
-                 if (realityVariations[level]) {
-                   setImageUrl(realityVariations[level]);
-                   setRealityImageUrl(realityVariations[level]);
-                 }
-                 setShowRealityComparator(false);
-               }}
-               onClose={() => setShowRealityComparator(false)}
-               originalImage={draftImageUrl || undefined}
-             />
-           </div>
-         </div>
-       </div>
-     )}
 
      {/* LEFT PANEL: CALENDAR - Donde estaba el Comparador de Realismo */}
      <aside className="w-full lg:w-[280px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-2 lg:p-4">
