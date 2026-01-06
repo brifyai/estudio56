@@ -236,8 +236,9 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
     return (
       <div className="relative flex flex-col items-center">
         {/* Header con botón cerrar integrado */}
-        <div className="flex items-center justify-center gap-3 mb-4" style={{ marginTop: '3px' }}>
-          <h3 className="text-white font-bold text-lg mb-0">
+        <div className="flex items-center justify-between w-full mb-4">
+          <div className="w-5" /> {/* Spacer para balance */}
+          <h3 className="text-white font-bold text-lg">
             Vista de Realismo
           </h3>
           {/* Botón cerrar */}
@@ -277,9 +278,10 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   return (
     <div className="relative flex flex-col items-center">
       {/* Header con botón cerrar integrado */}
-      <div className="flex items-center justify-center gap-3 mb-4" style={{ marginTop: '3px' }}>
-        <h3 className="text-white font-bold text-lg mb-0">
-          Comparador de Realismo
+      <div className="flex items-center justify-between w-full mb-4">
+        <div className="w-5" /> {/* Spacer para balance */}
+        <h3 className="text-white font-bold text-lg">
+          Comparar Realismos
         </h3>
         {/* Botón cerrar */}
         {onClose && (

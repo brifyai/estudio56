@@ -2093,9 +2093,9 @@ const handleGenerate = async () => {
             className="absolute inset-0 bg-black/80 lg:hidden touch-none"
             onClick={() => setShowRealityComparator(false)}
           />
-          <div className="glass-panel rounded-xl w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
+          <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
             {/* Header */}
-            <div className="flex items-center justify-between p-3 border-b border-white/10">
+            <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5">
               <span className="text-xs font-bold">Comparar Realismos</span>
               <button
                 onClick={() => setShowRealityComparator(false)}
