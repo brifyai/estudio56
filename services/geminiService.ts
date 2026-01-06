@@ -2199,7 +2199,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
  */
 async function analyzeProductImage(imageDataUrl: string): Promise<string> {
   const ai = getAiClient();
-  const model = "gemini-1.5-flash";
+  const model = "gemini-2.5-flash";
   
   // Extraer base64 del data URL
   const base64Data = imageDataUrl.split(',')[1];
@@ -2305,7 +2305,7 @@ export const enhanceUserImage = async (
     // Paso 3: Generar la nueva imagen
     console.log("✨ Paso 3: Generando imagen mejorada...");
     const ai = getAiClient();
-    const model = "gemini-1.5-pro";
+    const model = "gemini-3.0-pro-image-exp";
     
     const response = await ai.models.generateContent({
       model,
