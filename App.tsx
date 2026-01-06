@@ -212,7 +212,41 @@ const Dashboard: React.FC = () => {
     }
     
     // Mostrar nueva alerta de loading
-    realityLoadingSwalRef.current = estudioAlerts.loading('Generando nueva imagen con nivel de realismo seleccionado...');
+    // Usamos Swal.fire directamente para poder controlar el cierre
+    const { fire, close } = {
+      fire: () => {
+        import('sweetalert2').then((Swal) => {
+          Swal.default.fire({
+            ...{
+              background: '#111827',
+              color: '#ffffff',
+              confirmButtonColor: '#3b82f6',
+              borderRadius: '16px',
+              customClass: {
+                popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
+                title: 'text-2xl font-bold text-white tracking-tight',
+                htmlContainer: 'text-gray-400 text-sm',
+                confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95',
+              },
+              buttonsStyling: true,
+            },
+            title: '🎨 Generando nueva imagen con nivel de realismo seleccionado...',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.default.showLoading();
+            }
+          });
+        });
+      },
+      close: () => {
+        import('sweetalert2').then((Swal) => {
+          Swal.default.close();
+        });
+      }
+    };
+    
+    realityLoadingSwalRef.current = { fire, close };
+    fire();
   }, []);
   // NEW: Estado SEPARADO para variaciones de realidad - NO tocar hdImageUrl
   const [realityImageUrl, setRealityImageUrl] = useState<string | null>(null);
@@ -1573,6 +1607,12 @@ const handleGenerate = async () => {
       // 🎯 GUARDAR EN realityImageUrl - NO en hdImageUrl para evitar comparación automática
       setRealityImageUrl(realityVariations[levelKey]);
       setRealityLevel(levelKey);
+      
+      // Cerrar alerta de loading si existe (cuando viene de caché)
+      if (realityLoadingSwalRef.current) {
+        realityLoadingSwalRef.current.close();
+        realityLoadingSwalRef.current = null;
+      }
       return;
     }
     
