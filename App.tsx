@@ -1997,7 +1997,7 @@ const handleGenerate = async () => {
 
       {/* CENTER: CANVAS - Solo visible en landscape (lg) */}
       <main className={`
-        flex-1 flex-col relative z-10 p-2 lg:p-4 pl-0 overflow-hidden w-full hidden lg:flex
+        flex-1 flex-col relative z-10 p-1 lg:p-2 pl-0 overflow-hidden w-full hidden lg:flex
         items-stretch /* Esto iguala las alturas con el sidebar */
         pb-24 /* Evita solapamiento con el footer */
       `}>
@@ -2090,9 +2090,9 @@ const handleGenerate = async () => {
       {/* RIGHT PANEL: REALITY COMPARATOR - Solo visible cuando el usuario lo activa */}
       {showRealityComparator && (
         <aside className={`
-          fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300
+          fixed inset-0 z-50 flex items-center justify-center p-2 transition-all duration-300
           lg:relative lg:inset-auto lg:z-40
-          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-4 lg:pr-4
+          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-2 lg:pr-2
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
@@ -2198,7 +2198,7 @@ const handleGenerate = async () => {
      
 
      {/* LEFT PANEL: CALENDAR - Donde estaba el Comparador de Realismo */}
-     <aside className="w-full lg:w-[280px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-2 lg:p-4">
+     <aside className="w-full lg:w-[280px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-1 lg:p-2">
        <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
          {/* Header */}
          <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
