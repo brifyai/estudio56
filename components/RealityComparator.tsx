@@ -297,7 +297,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
             relative ${dimensions.width} ${dimensions.height} rounded-[1.5rem] overflow-hidden cursor-ew-resize
             border-2 ${getCategoryColor(leftVariation.stars)}
             shadow-[0_0_30px_rgba(0,0,0,0.5)]
-            mx-auto
+            mx-auto mt-4
           `}
           onMouseDown={handleMouseDown}
           onTouchMove={(e) => {
