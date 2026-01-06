@@ -150,7 +150,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   3.5: {
     stars: 3.5,
     label: "Comercial",
-    description: "DSLR con lente fijo, bokeh suave, ligera corrección de color",
+    description: "Fotografía comercial profesional, iluminación de estudio",
     technicalProfile: "Web / Landing Page",
     lighting: "Professional softbox lighting, balanced exposure, subtle rim light, controlled environment",
     atmosphere: "Clean and polished business setting, professional aesthetic, inviting atmosphere",
