@@ -255,9 +255,9 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         )}
 
         {/* Header */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-4" style={{ marginTop: '3px' }}>
           <h3 className="text-white font-bold text-lg mb-1">
-            🎚️ Vista de Realismo
+            Vista de Realismo
           </h3>
           <p className="text-white/50 text-xs">
             Genera más variaciones para comparar
@@ -290,16 +290,16 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute -top-2 -right-2 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+          className="absolute -top-5 -right-6 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
         >
           ✕
         </button>
       )}
 
       {/* Header */}
-      <div className="text-center mb-4">
+      <div className="text-center mb-4" style={{ marginTop: '3px' }}>
         <h3 className="text-white font-bold text-lg mb-1">
-          🎚️ Comparador de Realismo
+          Comparador de Realismo
         </h3>
         <p className="text-white/50 text-xs">
           Arrastra para comparar las diferencias
