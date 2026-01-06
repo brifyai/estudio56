@@ -230,7 +230,7 @@ const Dashboard: React.FC = () => {
               },
               buttonsStyling: true,
             },
-            title: '🎨 Generando nueva imagen con nivel de realismo seleccionado...',
+            title: 'Generando nueva imagen con nivel de realismo seleccionado...',
             allowOutsideClick: false,
             didOpen: () => {
               Swal.default.showLoading();

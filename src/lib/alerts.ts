@@ -67,7 +67,7 @@ export const estudioAlerts = {
     
     Swal.fire({
       ...commonConfig,
-      title: `🎨 ${message}`,
+      title: message,
       html: `
         <div style="text-align: left; margin-top: 20px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
