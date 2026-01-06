@@ -367,28 +367,6 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         )}
       </div>
 
-      {/* Botones de acción - Solo estrellas */}
-      {onSelect && (leftVariation || rightVariation) && (
-        <div className="flex gap-2 mt-4">
-          {leftVariation && (
-            <button
-              onClick={() => onSelect(leftVariation.stars)}
-              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
-            >
-              {leftVariation.stars}★
-            </button>
-          )}
-          {rightVariation && (
-            <button
-              onClick={() => onSelect(rightVariation.stars)}
-              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all bg-white/10 hover:bg-white/20 text-white border border-white/20"
-            >
-              {rightVariation.stars}★
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Info adicional - Eliminado */}
     </div>
   );
