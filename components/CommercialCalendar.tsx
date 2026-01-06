@@ -374,18 +374,18 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
           </div>
 
           {/* LEYENDA */}
-          <div className="flex flex-wrap gap-1.5 text-[8px] text-white/50 pt-2 border-t border-white/5">
-            <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> F: Festivo
+          <div className="flex flex-col gap-0.5 text-[8px] text-white/50 pt-2 border-t border-white/5">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> F = Festivo - Días festivos nacionales
             </span>
-            <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> C: Consumo
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> C = Consumo - Eventos de consumo masivo
             </span>
-            <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span> M: Marketing
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span> M = Marketing - Días de marketing y campañas comerciales
             </span>
-            <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span> E: Especial
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span> E = Especial - Eventos especiales
             </span>
           </div>
         </div>
@@ -393,18 +393,18 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
       
       {/* LEYENDA SIEMPRE VISIBLE */}
       <div className="px-3 py-2 border-t border-white/5">
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-white/50">
+        <div className="flex flex-col gap-0.5 text-[8px] text-white/50">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-400"></span> F: Festivo
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span> F = Festivo - Días festivos nacionales
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span> C: Consumo
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span> C = Consumo - Eventos de consumo masivo
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-purple-400"></span> M: Marketing
+            <span className="w-2 h-2 rounded-full bg-purple-400"></span> M = Marketing - Días de marketing y campañas comerciales
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-pink-400"></span> E: Especial
+            <span className="w-2 h-2 rounded-full bg-pink-400"></span> E = Especial - Eventos especiales
           </span>
         </div>
       </div>
