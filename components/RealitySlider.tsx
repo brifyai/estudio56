@@ -294,9 +294,6 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
                     <p style="margin-bottom: 8px;">
                       <strong style="color: #22c55e;">Nuevo nivel:</strong> ${localValue}★ - ${getRealityLabel(localValue)}
                     </p>
-                    <p style="color: #9ca3af; font-size: 12px; margin-top: 12px;">
-                      ${config?.description || ''}
-                    </p>
                   </div>
                 `,
                 background: '#1a1a1a',
