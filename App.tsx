@@ -2067,15 +2067,11 @@ const handleGenerate = async () => {
                         onOpenComparator={() => {
                           // 🎯 ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ ANTES DE ABRIR
                           const originalLevel = 2.5;
-                          // Siempre guardar la imagen base, sobrescribiendo si es necesario
-                          if (draftImageUrl) {
+                          if (!realityVariations[originalLevel] && draftImageUrl) {
                             setRealityVariations(prev => ({
                               ...prev,
                               [originalLevel]: draftImageUrl
                             }));
-                            console.log('🎚️ [Comparator] Imagen base guardada en variaciones[2.5]');
-                          } else {
-                            console.warn('🎚️ [Comparator] No hay draftImageUrl disponible');
                           }
                           setShowRealityComparator(true);
                         }}
