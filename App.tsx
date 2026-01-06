@@ -2185,6 +2185,7 @@ const handleGenerate = async () => {
      
      {/* 🎨 REALITY COMPARATOR - Modal de comparación */}
      {showRealityComparator && (
+       <div className="mt-[5px]">
        <RealityComparator
          sceneId={sceneId}
          variations={realityVariations}
@@ -2204,6 +2205,7 @@ const handleGenerate = async () => {
          onClose={() => setShowRealityComparator(false)}
          originalImage={draftImageUrl || undefined} // Pasar imagen original como ancla
        />
+       </div>
      )}
    </div>
  );

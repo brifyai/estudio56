@@ -243,26 +243,25 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   // Esto ocurre cuando el usuario no ha generado variaciones adicionales
   if (leftVariation && !rightVariation) {
     return (
-      <div className="relative">
-        {/* Botón cerrar */}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="absolute -top-2 -right-2 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-          >
-            ✕
-          </button>
-        )}
-
-        {/* Header */}
-        <div className="text-center mb-4" style={{ marginTop: '3px' }}>
-          <h3 className="text-white font-bold text-lg mb-1">
+      <div className="relative flex flex-col items-center">
+        {/* Header con botón cerrar integrado */}
+        <div className="flex items-center justify-center gap-3 mb-4" style={{ marginTop: '3px' }}>
+          <h3 className="text-white font-bold text-lg mb-0">
             Vista de Realismo
           </h3>
-          <p className="text-white/50 text-xs">
-            Genera más variaciones para comparar
-          </p>
+          {/* Botón cerrar */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+            >
+              ✕
+            </button>
+          )}
         </div>
+        <p className="text-white/50 text-xs text-center">
+          Genera más variaciones para comparar
+        </p>
 
         {/* Indicador de modo único */}
         <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -285,26 +284,25 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   }
 
   return (
-    <div className="relative">
-      {/* Botón cerrar */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute top-5 left-2 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-        >
-          ✕
-        </button>
-      )}
-
-      {/* Header */}
-      <div className="text-center mb-4" style={{ marginTop: '3px' }}>
-        <h3 className="text-white font-bold text-lg mb-1">
+    <div className="relative flex flex-col items-center">
+      {/* Header con botón cerrar integrado */}
+      <div className="flex items-center justify-center gap-3 mb-4" style={{ marginTop: '3px' }}>
+        <h3 className="text-white font-bold text-lg mb-0">
           Comparador de Realismo
         </h3>
-        <p className="text-white/50 text-xs">
-          Arrastra para comparar las diferencias
-        </p>
+        {/* Botón cerrar */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs transition-colors"
+          >
+            ✕
+          </button>
+        )}
       </div>
+      <p className="text-white/50 text-xs text-center">
+        Arrastra para comparar las diferencias
+      </p>
 
       {/* 🎯 INDICADOR DE COMPARACIÓN */}
       {leftVariation && rightVariation && (
@@ -317,12 +315,13 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
       
       {/* Modo slider de comparación */}
       {leftVariation && rightVariation && (
-        <div 
+        <div
           ref={containerRef}
           className={`
             relative ${dimensions.width} ${dimensions.height} rounded-xl overflow-hidden cursor-ew-resize
             border-2 ${getCategoryColor(leftVariation.stars)}
             shadow-[0_0_30px_rgba(0,0,0,0.5)]
+            mx-auto
           `}
           onMouseDown={handleMouseDown}
           onTouchMove={(e) => {
