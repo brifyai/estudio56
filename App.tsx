@@ -1248,6 +1248,12 @@ const handleGenerate = async () => {
 
   const handleUpgradeToHD = async () => {
     if (!currentSpanishPrompt) return;
+    
+    // Cerrar Comparador de Realismos si está abierto
+    if (showRealityComparator) {
+      setShowRealityComparator(false);
+    }
+    
     const hasProductOverlay = !!productUrl;
     
     // Mostrar alerta de progreso HD
