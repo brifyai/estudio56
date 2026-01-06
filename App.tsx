@@ -1978,7 +1978,7 @@ const handleGenerate = async () => {
                     {/* Botón desplegable del Editor de Texto */}
                     <CollapsibleSection
                       title="Editor de Texto"
-                      icon="✏️"
+                      icon=""
                       defaultOpen={false}
                     >
                       <TextEditorPanel
@@ -2136,11 +2136,11 @@ const handleGenerate = async () => {
           />
           <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
             {/* Header con título centrado y botón cerrar */}
-            <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5">
+            <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5 relative">
               <span className="text-xs font-bold">Comparar realidad</span>
               <button
                 onClick={() => setShowRealityComparator(false)}
-                className="w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10 lg:hidden"
+                className="absolute right-4 w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10 lg:hidden"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

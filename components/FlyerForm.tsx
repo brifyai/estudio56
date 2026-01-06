@@ -407,11 +407,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     }
   }, [status.message, isLoading, imageUrl]);
 
-  // NEW: Fallback de seguridad - cerrar alerta después de timeout si imageUrl aparece
+  // NEW: Fallback de seguridad - cerrar alerta inmediatamente cuando imageUrl aparece
   useEffect(() => {
     if (imageUrl && progressAlertRef.current?.isVisible()) {
       console.log('📊 Fallback: cerrando alerta por imageUrl disponible');
       progressAlertRef.current.updateProgress(100, '¡Completado!');
+      // Cerrar después de un pequeño delay para mostrar el 100%
+      setTimeout(() => {
+        if (progressAlertRef.current?.isVisible()) {
+          progressAlertRef.current.close();
+        }
+      }, 300);
     }
   }, [imageUrl]);
 
@@ -1281,7 +1287,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 // Mostrar alerta de progreso si es imagen y calidad draft
                 if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
                   // Abrir alerta de progreso con SweetAlert2
-                  progressAlertRef.current = estudioAlerts.progress('Generando imagen en borrador');
+                  const alert = estudioAlerts.progress('Generando imagen en borrador');
+                  progressAlertRef.current = alert;
                   console.log('📊 Alerta de progreso abierta');
                 }
                 // Ejecutar generación normal

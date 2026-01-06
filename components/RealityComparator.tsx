@@ -353,20 +353,20 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
             <span className="text-white/40 text-xs block">
               {leftVariation.stars}★
             </span>
-            <span className="text-white/50 text-[10px]">
+            <span className="text-white/50 text-[10px] block">
               {getRealityLabel(leftVariation.stars)}
             </span>
           </div>
         )}
         
-        <div className="text-white/30 text-sm font-mono self-start mt-1">VS</div>
+        <div className="text-white/30 text-sm font-mono">VS</div>
         
         {rightVariation && (
           <div className="flex-1 text-center">
             <span className="text-white/40 text-xs block">
               {rightVariation.stars}★
             </span>
-            <span className="text-white/50 text-[10px]">
+            <span className="text-white/50 text-[10px] block">
               {getRealityLabel(rightVariation.stars)}
             </span>
           </div>
