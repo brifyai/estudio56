@@ -34,6 +34,7 @@ import {
   type StoryArtStyle
 } from "../src/constants/storyArtStyles";
 import { analyzeVisualMimicry, generateMimicryCSS, generateMimicryClasses, VisualMimicryResult } from "./visualMimicryService";
+import { fixPromptContradictions } from "./promptContradictionFixer";
 
 // ============================================
 // 🛡️ EL ESCUDO DE FÍSICA Y LIMPIEZA - Negative Prompt Absoluto
@@ -1389,7 +1390,24 @@ export const refineDescription = async (currentDescription: string, userInstruct
 const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: string, seed: number, aspectRatio: AspectRatio, isHD: boolean): Promise<string> => {
     const startTime = Date.now();
     console.log(`🚀 [GeminiService] INICIANDO generación con ${model} (HD: ${isHD}) Seed: ${seed}, AspectRatio: ${aspectRatio}`);
-    console.log(`📝 [GeminiService] Prompt (${prompt.length} chars):`, prompt.substring(0, 200) + '...');
+    
+    // ============================================
+    // APLICAR CORRECCIÓN DE CONTRADICCIONES ANTES DE ENVIAR A GEMINI
+    // ============================================
+    const fixResult = fixPromptContradictions(prompt, {
+      realityMode: 'studio',
+      isStoryArt: true
+    });
+    
+    if (fixResult.issues.length > 0) {
+      console.log('🔧 [GeminiService] Correcciones aplicadas:', fixResult.issues.length);
+      fixResult.issues.forEach((issue, i) => {
+        console.log(`   ${i + 1}. [${issue.severity.toUpperCase()}] ${issue.message}`);
+      });
+    }
+    
+    const finalPrompt = fixResult.fixedPrompt;
+    console.log(`📝 [GeminiService] Prompt corregido (${finalPrompt.length} chars):`, finalPrompt.substring(0, 200) + '...');
     
     // Timeout de 30 segundos para generación de imagen compleja
     const timeoutPromise = new Promise((_, reject) => {
@@ -1403,7 +1421,7 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     // Race entre la API y el timeout
     const apiPromise = ai.models.generateContent({
       model,
-      contents: { parts: [{ text: prompt }] },
+      contents: { parts: [{ text: finalPrompt }] },
       config: {
         seed: seed,
         imageConfig: {
