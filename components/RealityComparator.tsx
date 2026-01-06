@@ -389,15 +389,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
         </div>
       )}
 
-      {/* Info adicional */}
-      <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-        <p className="text-blue-300/80 text-[10px] text-center">
-          💡 {isActive 
-            ? 'Usa el slider para comparar las diferencias de iluminación y realismo'
-            : 'Selecciona una versión para continuar con HD'
-          }
-        </p>
-      </div>
+      {/* Info adicional - Eliminado */}
     </div>
   );
 };
