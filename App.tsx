@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
 import { estudioAlerts } from './src/lib/alerts';
+import Swal from 'sweetalert2';
 import RealitySlider from './components/RealitySlider';
 import RealityComparator from './components/RealityComparator';
 import {
@@ -211,38 +212,29 @@ const Dashboard: React.FC = () => {
       realityLoadingSwalRef.current = null;
     }
     
-    // Mostrar nueva alerta de loading
-    // Usamos Swal.fire directamente para poder controlar el cierre
-    const { fire, close } = {
-      fire: () => {
-        import('sweetalert2').then((Swal) => {
-          Swal.default.fire({
-            ...{
-              background: '#111827',
-              color: '#ffffff',
-              confirmButtonColor: '#3b82f6',
-              borderRadius: '16px',
-              customClass: {
-                popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
-                title: 'text-2xl font-bold text-white tracking-tight',
-                htmlContainer: 'text-gray-400 text-sm',
-                confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95',
-              },
-              buttonsStyling: true,
-            },
-            title: 'Generando nueva imagen con nivel de realismo seleccionado...',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.default.showLoading();
-            }
-          });
-        });
-      },
-      close: () => {
-        import('sweetalert2').then((Swal) => {
-          Swal.default.close();
-        });
-      }
+    // Mostrar nueva alerta de loading usando Swal estático
+    const fire = () => {
+      Swal.fire({
+        background: '#111827',
+        color: '#ffffff',
+        confirmButtonColor: '#3b82f6',
+        customClass: {
+          popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
+          title: 'text-2xl font-bold text-white tracking-tight',
+          htmlContainer: 'text-gray-400 text-sm',
+          confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95',
+        },
+        buttonsStyling: true,
+        title: 'Generando nueva imagen con nivel de realismo seleccionado...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+    };
+    
+    const close = () => {
+      Swal.close();
     };
     
     realityLoadingSwalRef.current = { fire, close };
@@ -1608,8 +1600,11 @@ const handleGenerate = async () => {
       setRealityImageUrl(realityVariations[levelKey]);
       setRealityLevel(levelKey);
       
-      // Cerrar alerta de loading si existe (cuando viene de caché)
+      // 🔧 CERRAR ALERTA DE LOADING SI EXISTE (cuando viene de caché)
+      // Esto es crítico: la alerta se mostró en handleRealityGenerationStart
+      // antes de llamar a handleRealityChange, así que debemos cerrarla aquí
       if (realityLoadingSwalRef.current) {
+        console.log('🔒 Cerrando alerta de loading (imagen en caché)');
         realityLoadingSwalRef.current.close();
         realityLoadingSwalRef.current = null;
       }
