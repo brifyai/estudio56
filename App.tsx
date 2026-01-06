@@ -2101,7 +2101,7 @@ const handleGenerate = async () => {
           />
           <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
             {/* Header */}
-            <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5">
+            <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
               <span className="text-xs font-bold">Comparar Realismos</span>
               <button
                 onClick={() => setShowRealityComparator(false)}
@@ -2202,7 +2202,7 @@ const handleGenerate = async () => {
      <aside className="w-full lg:w-[280px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-2 lg:p-4">
        <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
          {/* Header */}
-         <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5">
+         <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
            <span className="text-xs font-bold">Calendario Comercial</span>
          </div>
          <div className="flex-1 overflow-y-auto">
