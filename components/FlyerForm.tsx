@@ -490,92 +490,122 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     if (!urlInput.trim()) return;
     setIsAnalyzing(true);
     
+    // ✅ NUEVO: Mostrar alerta de loading que permanece durante todo el análisis
+    const loadingAlert = Swal.fire({
+      title: '🔍 Analizando URL...',
+      html: `
+        <div style="text-align: center; padding: 10px;">
+          <p style="color: #9ca3af; font-size: 14px;">Extrayendo información de tu negocio</p>
+          <div style="margin-top: 20px;">
+            <div class="swal2-loading"></div>
+          </div>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 15px;">Esto puede tomar unos segundos...</p>
+        </div>
+      `,
+      background: '#111827',
+      color: '#ffffff',
+      confirmButtonColor: '#3b82f6',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
     let timeoutHandle: NodeJS.Timeout;
     
     // Timeout de 15 segundos
     timeoutHandle = setTimeout(() => {
-        console.log("⏰ Timeout alcanzado, cerrando análisis");
-        setIsAnalyzing(false);
-        Swal.fire({
-            title: '⏱️ Análisis lento',
-            text: 'El análisis de la URL está tomando mucho tiempo. Te recomendamos describir tu negocio manualmente para una experiencia más rápida.',
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#3b82f6',
-            background: '#1a1a1a',
-            color: '#ffffff'
-        });
+      console.log("⏰ Timeout alcanzado, cerrando análisis");
+      Swal.close();
+      setIsAnalyzing(false);
+      Swal.fire({
+        title: '⏱️ Análisis lento',
+        text: 'El análisis de la URL está tomando mucho tiempo. Te recomendamos describir tu negocio manualmente para una experiencia más rápida.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#3b82f6',
+        background: '#1a1a1a',
+        color: '#ffffff'
+      });
     }, 15000);
     
     try {
-        console.log("🔍 Iniciando análisis de URL...");
+      console.log("🔍 Iniciando análisis de URL...");
+      
+      const analysis = await analyzeUrlContent(urlInput);
+      
+      // Limpiar timeout
+      clearTimeout(timeoutHandle);
+      
+      // ✅ CERRAR ALERTA DE LOADING ANTES DE MOSTRAR ÉXITO
+      Swal.close();
+      
+      // Mostrar éxito con SweetAlert2 simple
+      await Swal.fire({
+        title: '✅ ¡Completado!',
+        text: 'URL analizada exitosamente',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false,
+        background: '#1a1a1a',
+        color: '#ffffff'
+      });
+      
+      // Si hay englishDescription (para IA), usarla para la generación
+      // La description (español) se muestra al usuario
+      if ((analysis as any).englishDescription) {
+        // Guardar la descripción en español para mostrar al usuario
+        setDescription(analysis.description);
+        // El englishDescription se pasa al padre para que lo use en la generación
+        // Esto se hace a través de onStyleDetected con un flag especial
+        onStyleDetected(analysis.visualStyle || '', analysis.overlayText, analysis.textStyle);
         
-        const analysis = await analyzeUrlContent(urlInput);
-        
-        // Limpiar timeout
-        clearTimeout(timeoutHandle);
-        
-        // Mostrar éxito con SweetAlert2 simple
-        await Swal.fire({
-            title: '¡Completado!',
-            text: 'URL analizada exitosamente',
-            icon: 'success',
-            timer: 1500,
-            showConfirmButton: false
-        });
-        
-        // Si hay englishDescription (para IA), usarla para la generación
-        // La description (español) se muestra al usuario
-        if ((analysis as any).englishDescription) {
-          // Guardar la descripción en español para mostrar al usuario
-          setDescription(analysis.description);
-          // El englishDescription se pasa al padre para que lo use en la generación
-          // Esto se hace a través de onStyleDetected con un flag especial
-          onStyleDetected(analysis.visualStyle || '', analysis.overlayText, analysis.textStyle);
-          
-          // IMPORTANTE: Generar el prompt en español para mostrar
-          // Usar la descripción completa en español del análisis
-          const spanishPrompt = analysis.description || analysis.overlayText || '';
-          if (onSpanishPromptUpdate) {
-            onSpanishPromptUpdate(spanishPrompt);
-          }
-        } else {
-          // Fallback normal
-          setDescription(analysis.description);
-          if (analysis.visualStyle) {
-            onStyleDetected(analysis.visualStyle, analysis.overlayText, analysis.textStyle);
-          }
-          // También pasar el prompt en español en fallback
-          const spanishPrompt = analysis.description || analysis.overlayText || '';
-          if (onSpanishPromptUpdate) {
-            onSpanishPromptUpdate(spanishPrompt);
-          }
+        // IMPORTANTE: Generar el prompt en español para mostrar
+        // Usar la descripción completa en español del análisis
+        const spanishPrompt = analysis.description || analysis.overlayText || '';
+        if (onSpanishPromptUpdate) {
+          onSpanishPromptUpdate(spanishPrompt);
         }
-        setInputMode('text');
-        
+      } else {
+        // Fallback normal
+        setDescription(analysis.description);
+        if (analysis.visualStyle) {
+          onStyleDetected(analysis.visualStyle, analysis.overlayText, analysis.textStyle);
+        }
+        // También pasar el prompt en español en fallback
+        const spanishPrompt = analysis.description || analysis.overlayText || '';
+        if (onSpanishPromptUpdate) {
+          onSpanishPromptUpdate(spanishPrompt);
+        }
+      }
+      setInputMode('text');
+      
     } catch (error: any) {
-        console.error("❌ Error en análisis:", error);
-        clearTimeout(timeoutHandle);
-        
-        let errorMessage = 'Error analizando URL. Verifica que la URL sea válida.';
-        
-        if (urlInput.includes('instagram.com')) {
-            errorMessage = 'Instagram puede requerir análisis manual. Por favor, describe el negocio manualmente.';
-        }
-        
-        // Usar SweetAlert2 para errores
-        Swal.fire({
-            title: '⚠️ Error en análisis',
-            text: errorMessage,
-            icon: 'error',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#ef4444',
-            background: '#1a1a1a',
-            color: '#ffffff'
-        });
-        
+      console.error("❌ Error en análisis:", error);
+      clearTimeout(timeoutHandle);
+      
+      // ✅ CERRAR ALERTA DE LOADING ANTES DE MOSTRAR ERROR
+      Swal.close();
+      
+      let errorMessage = 'Error analizando URL. Verifica que la URL sea válida.';
+      
+      if (urlInput.includes('instagram.com')) {
+        errorMessage = 'Instagram puede requerir análisis manual. Por favor, describe el negocio manualmente.';
+      }
+      
+      // Usar SweetAlert2 para errores
+      Swal.fire({
+        title: '⚠️ Error en análisis',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#ef4444',
+        background: '#1a1a1a',
+        color: '#ffffff'
+      });
+      
     } finally {
-        setIsAnalyzing(false);
+      setIsAnalyzing(false);
     }
   };
 
