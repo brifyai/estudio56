@@ -1864,6 +1864,7 @@ const handleGenerate = async () => {
                         sceneId={sceneId}
                         currentImageUrl={imageUrl}
                         seed={seed}
+          aspectRatio={aspectRatio} // Pasar el aspectRatio actual para mostrar el formato correcto
                         onLevelChange={handleRealityChange}
                         disabled={isGeneratingReality}
                         cachedVariations={realityVariations}
@@ -2159,6 +2160,7 @@ const handleGenerate = async () => {
          currentLevel={realityLevel}
          originalLevel={2.5} // Siempre comparar con el original (2.5★)
          seed={seed}
+          aspectRatio={aspectRatio} // Pasar el aspectRatio actual para mostrar el formato correcto
          onSelect={(level) => {
            setRealityLevel(level);
            if (realityVariations[level]) {
