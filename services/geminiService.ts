@@ -1704,7 +1704,7 @@ export const generateHDFromDraft = async (
 
   try {
     // Usar el modelo HD con la imagen de referencia
-    const model = 'gemini-3-pro-image-preview';
+    const model = 'gemini-3.0-pro-image-exp';
     
     const response = await ai.models.generateContent({
       model,
@@ -1978,8 +1978,8 @@ const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
   if (quality === 'draft') {
-    // Draft: Use Gemini 2.5 for Story Art (best quality/speed balance)
-    const model = 'gemini-2.5-flash-image';
+    // Draft: Use Gemini 2.0 Flash for standard image generation
+    const model = 'gemini-2.0-flash-exp';
     
     try {
         // Use same seed, same prompt structure, just different model variant
@@ -2005,8 +2005,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     // con mejor calidad pero misma semilla para consistencia visual
     console.log('🎯 [HD] Generando imagen nueva de alta calidad (sin referencia de borrador)');
     
-    // HD: Use Gemini 2.0 Flash for high quality
-    const model = 'gemini-2.0-flash-exp';
+    // HD: Use Gemini 3.0 Pro for maximum quality
+    const model = 'gemini-3.0-pro-image-exp';
     
     try {
         // Same seed, same prompt structure - only quality settings differ
