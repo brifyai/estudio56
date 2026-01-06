@@ -112,6 +112,7 @@ const Dashboard: React.FC = () => {
     setDescription('');
     setCustomStylePrompt(undefined);
     setOverlayText('');
+    setUserManuallyAddedText(false);
     setCurrentSpanishPrompt(''); // NEW: Limpiar también el prompt en español
     console.log('🧹 Entrada limpiada - análisis automático removido');
   };
@@ -154,6 +155,15 @@ const Dashboard: React.FC = () => {
   const [productUrl, setProductUrl] = useState<string | null>(null);
   const [overlayText, setOverlayText] = useState<string>('');
   const [overlayStyle, setOverlayStyle] = useState<OverlayStyle>('modern');
+  const [userManuallyAddedText, setUserManuallyAddedText] = useState<boolean>(false);
+  
+  // Handler para actualizar overlayText Y marcar como modificado por usuario
+  const handleSetOverlayText = (text: string) => {
+    setOverlayText(text);
+    if (text.trim()) {
+      setUserManuallyAddedText(true);
+    }
+  };
 
   // ELIMINADO: currentEnhancedPrompt ya no se muestra en UI, solo usamos spanishPrompt
   const [currentSpanishPrompt, setCurrentSpanishPrompt] = useState<string>(''); // Prompt en español para mostrar al usuario
@@ -1061,11 +1071,12 @@ const handleGenerate = async () => {
        console.log('🎨 Generating image with aspectRatio:', aspectRatio, '| mediaType:', mediaType);
        
        // NEW: Determinar si hay texto extraído automáticamente
-       const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
-       const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
+       // SOLO usar overlayText si el usuario lo agregó manualmente, nunca el texto por defecto
+       const autoExtractedText = userManuallyAddedText && overlayText.trim() ? overlayText : undefined;
+       const autoTextStyle = userManuallyAddedText ? "modern and clean" : undefined;
        
        if (autoExtractedText) {
-         console.log('🤖 USANDO TEXTO AUTOMÁTICO EXTRAÍDO:', autoExtractedText);
+         console.log('🤖 USANDO TEXTO MANUAL DEL USUARIO:', autoExtractedText);
        }
        
        // NEW: Determinar artDirectionId para Story Art
@@ -1935,7 +1946,7 @@ const handleGenerate = async () => {
                     onStyleDetected={handleStyleDetected}
                     overlayText={overlayText}
                     overlayStyle={overlayStyle}
-                    setOverlayText={setOverlayText}
+                    setOverlayText={handleSetOverlayText}
                     setOverlayStyle={setOverlayStyle}
                     onOpenGallery={() => setShowGallery(true)}
                     imageAnalysis={imageAnalysis}
@@ -2009,7 +2020,7 @@ const handleGenerate = async () => {
                                 styleKey={styleKey}
                                 videoStyleKey={videoStyleKey}
                                 overlayText={overlayText}
-                                setOverlayText={setOverlayText}
+                                setOverlayText={handleSetOverlayText}
                                 textStyles={manualTextStyles}
                                 setTextStyles={setManualTextStyles}
                                 logoPosition={logoPosition}
@@ -2091,7 +2102,7 @@ const handleGenerate = async () => {
                     >
                       <TextEditorPanel
                         overlayText={overlayText}
-                        setOverlayText={setOverlayText}
+                        setOverlayText={handleSetOverlayText}
                         textStyles={manualTextStyles}
                         setTextStyles={setManualTextStyles}
                         onResetPosition={() => setTextPosition({ x: 50, y: 50 })}
@@ -2245,7 +2256,7 @@ const handleGenerate = async () => {
                       styleKey={styleKey}
                       videoStyleKey={videoStyleKey}
                       overlayText={overlayText}
-                      setOverlayText={setOverlayText}
+                      setOverlayText={handleSetOverlayText}
                       textStyles={manualTextStyles}
                       setTextStyles={setManualTextStyles}
                       logoPosition={logoPosition}
