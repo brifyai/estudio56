@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { RealityLevel } from '../types';
 import Swal from 'sweetalert2';
 import {
@@ -71,20 +71,23 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   const previousImageRef = useRef<string | null>(null);
   const previousValueRef = useRef<RealityLevel>(value);
 
-  // ✅ CORRECCIÓN: Sincronizar valor local y detectar cambios de imagen base
+  // ✅ CORRECCIÓN: Sincronizar valor local SOLO cuando cambia la imagen base (no cuando cambia value del padre)
+  // Esto evita que el slider vuelva a 2.5 después de que el usuario lo mueve
   useEffect(() => {
-    // Si la imagen base cambió completamente, resetear a 2.5
+    // Solo resetear a 2.5 si la imagen base cambió completamente
     if (currentImageUrl && currentImageUrl !== previousImageRef.current) {
       console.log('🎚️ [Slider] Imagen base cambiada, reseteando a 2.5★');
       setLocalValue(2.5);
-    } else {
-      setLocalValue(value);
     }
+    // NO actualizar localValue cuando cambia value del padre - eso causa el bug de reset
     
     // Actualizar referencias
     previousImageRef.current = currentImageUrl;
     previousValueRef.current = value;
-  }, [value, currentImageUrl]);
+  }, [currentImageUrl]);
+
+  // ✅ NOTA: cachedLevels se calcula directamente de cachedVariations (línea 137)
+  // No necesitamos useEffect porque React actualiza automáticamente la variable calculada
 
   // Obtener configuración actual
   const currentConfig = REALITY_CONFIGS[localValue];
@@ -124,8 +127,12 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   // Niveles disponibles
   const levels = getAvailableRealityLevels();
   
-  // Verificar qué niveles están cacheados
-  const cachedLevels = Object.keys(cachedVariations).map(Number);
+  // ✅ USEMEMO: Verificar qué niveles están cacheados (se actualiza cuando cachedVariations cambia)
+  const cachedLevels = useMemo(() => {
+    const cached = Object.keys(cachedVariations).map(Number).sort((a, b) => a - b);
+    console.log('🎚️ [Slider] cachedLevels calculado:', cached);
+    return cached;
+  }, [cachedVariations]);
 
   if (compact) {
     // Modo compacto para espacios reducidos
@@ -351,17 +358,17 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
           {localValue === value ? 'Sin cambios' : 'Actualizar'}
         </button>
         
-        {/* Botón Comparar - Abre el comparador (habilitado con 1+ variación) */}
+        {/* Botón Comparar - Habilitado con 1+ variación (la imagen base siempre está disponible) */}
         <button
           onClick={onOpenComparator}
-          disabled={disabled || cachedLevels.length === 0}
+          disabled={disabled || cachedLevels.length < 1}
           className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-2
-            ${cachedLevels.length === 0
+            ${cachedLevels.length < 1
               ? 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
               : 'bg-purple-500/20 border border-purple-500/50 text-purple-300 hover:bg-purple-500/30 hover:border-purple-500/70'
             }
           `}
-          title={cachedLevels.length === 0 ? 'Genera una imagen primero' : 'Comparar realismos'}
+          title={cachedLevels.length < 1 ? 'Genera una imagen primero' : 'Comparar realismos'}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
