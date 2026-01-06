@@ -372,22 +372,6 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
               );
             })}
           </div>
-
-          {/* LEYENDA */}
-          <div className="flex flex-col gap-0.5 text-[8px] text-white/50 pt-2 border-t border-white/5">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> F = Festivo - Días festivos nacionales
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> C = Consumo - Eventos de consumo masivo
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span> M = Marketing - Días de marketing y campañas comerciales
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span> E = Especial - Eventos especiales
-            </span>
-          </div>
         </div>
       )}
       
