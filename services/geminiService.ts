@@ -1418,18 +1418,43 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     const validAspectRatios: AspectRatio[] = ['1:1', '16:9', '9:16', '4:3', '3:4', '1.91:1', '4:5', '1080x1080', '1080x1920', '1080x1350'];
     const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
     
-    // Race entre la API y el timeout
-    const apiPromise = ai.models.generateContent({
+    // ============================================
+    // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.5 FLASH IMAGE
+    // El modelo gemini-2.5-flash-image tiene una API específica
+    // ============================================
+    
+    // Determinar la configuración correcta según el modelo
+    const isGemini25Flash = model.includes('gemini-2.5-flash-image');
+    
+    let apiConfig: any = {
       model,
-      contents: { parts: [{ text: finalPrompt }] },
-      config: {
+      contents: { parts: [{ text: finalPrompt }] }
+    };
+    
+    // Gemini 2.5 Flash Image tiene una estructura de config diferente
+    if (isGemini25Flash) {
+      // Para gemini-2.5-flash-image: solo imageConfig, sin seed en config
+      apiConfig.config = {
+        imageConfig: {
+          aspectRatio: finalAspectRatio,
+          imageSize: imageSize
+        }
+      };
+      console.log(`📐 [GeminiService] Usando config para ${model}: imageConfig={aspectRatio: ${finalAspectRatio}, imageSize: ${imageSize}}`);
+    } else {
+      // Para otros modelos (gemini-3.0-pro-image-exp): incluir seed
+      apiConfig.config = {
         seed: seed,
         imageConfig: {
           aspectRatio: finalAspectRatio,
           imageSize: imageSize
         }
-      }
-    });
+      };
+      console.log(`📐 [GeminiService] Usando config para ${model}: seed=${seed}, imageConfig={aspectRatio: ${finalAspectRatio}, imageSize: ${imageSize}}`);
+    }
+    
+    // Race entre la API y el timeout
+    const apiPromise = ai.models.generateContent(apiConfig);
 
     const response = await Promise.race([apiPromise, timeoutPromise]) as any;
 
