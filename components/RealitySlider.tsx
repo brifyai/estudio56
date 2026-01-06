@@ -73,27 +73,35 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   const loadingSwalRef = useRef<any>(null);
   const previousImageRef = useRef<string | null>(null);
   const previousValueRef = useRef<RealityLevel>(value);
+  const isFromVariationRef = useRef(false);
 
-  // ✅ CORRECCIÓN: Sincronizar valor local SOLO cuando cambia la imagen base (no cuando es variación de realidad)
-  // Esto evita que el slider vuelva a 2.5 después de que el usuario lo mueve
+  // ✅ CORRECCIÓN COMPLETA: Solo resetear a 2.5 cuando se genera una NUEVA IMAGEN BASE
+  // Las variaciones de realidad NO deben resetear el slider
   useEffect(() => {
-    // Solo resetear a 2.5 si:
-    // 1. La imagen base cambió completamente
-    // 2. NO es una variación de realidad (las variaciones no deben resetear el slider)
+    // Si currentImageUrl cambió
     if (currentImageUrl && currentImageUrl !== previousImageRef.current) {
-      if (isRealityVariation) {
-        console.log('🎚️ [Slider] Variación de realidad generada, manteniendo slider en:', localValue);
+      // Si viene de una variación, NO resetear
+      if (isFromVariationRef.current) {
+        console.log('🎚️ [Slider] Variación generada, manteniendo slider en:', localValue);
+        isFromVariationRef.current = false; // Resetear el ref
       } else {
-        console.log('🎚️ [Slider] Imagen base nueva, reseteando a 2.5★');
+        // Es una nueva imagen base, resetear a 2.5
+        console.log('🎚️ [Slider] Nueva imagen base, reseteando a 2.5★');
         setLocalValue(2.5);
       }
     }
-    // NO actualizar localValue cuando cambia value del padre - eso causa el bug de reset
     
-    // Actualizar referencias
+    // Actualizar referencia
     previousImageRef.current = currentImageUrl;
-    previousValueRef.current = value;
-  }, [currentImageUrl, isRealityVariation, localValue]);
+  }, [currentImageUrl, localValue]);
+
+  // Cuando isRealityVariation se setea a true, marcar el ref
+  useEffect(() => {
+    if (isRealityVariation) {
+      isFromVariationRef.current = true;
+      console.log('🎚️ [Slider] Marcando como variación de realidad');
+    }
+  }, [isRealityVariation]);
 
   // ✅ NOTA: cachedLevels se calcula directamente de cachedVariations (línea 137)
   // No necesitamos useEffect porque React actualiza automáticamente la variable calculada
