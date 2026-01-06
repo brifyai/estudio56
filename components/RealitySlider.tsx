@@ -97,19 +97,17 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
     setLocalValue(newValue);
   }, [disabled, isGenerating]);
 
-  // Manejar cuando el usuario suelta el slider - llama a onLevelChange
+  // Manejar cuando el usuario suelta el slider - NO llama a onLevelChange (solo actualiza visualmente)
+  // La actualización real solo ocurre cuando el usuario hace clic en "Actualizar"
   const handleMouseUp = useCallback(() => {
-    if (localValue !== value && !disabled && !isGenerating) {
-      onLevelChange?.(localValue);
-    }
-  }, [localValue, value, disabled, isGenerating, onLevelChange]);
+    // Solo actualiza el valor local, no llama a onLevelChange
+    console.log('🎚️ [Slider] Usuario soltó el slider en nivel:', localValue);
+  }, [localValue]);
 
-  // Manejar touch end para mobile
+  // Manejar touch end para mobile - igual, solo actualiza visualmente
   const handleTouchEnd = useCallback(() => {
-    if (localValue !== value && !disabled && !isGenerating) {
-      onLevelChange?.(localValue);
-    }
-  }, [localValue, value, disabled, isGenerating, onLevelChange]);
+    console.log('🎚️ [Slider] Usuario terminó touch en nivel:', localValue);
+  }, [localValue]);
 
   // Niveles disponibles
   const levels = getAvailableRealityLevels();
@@ -155,11 +153,8 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
                 <button
                   key={level}
                   onClick={() => {
+                    // Solo actualiza el valor local, la actualización real requiere clic en "Actualizar"
                     setLocalValue(level);
-                    // Solo cambiar si es diferente y llamar a onLevelChange
-                    if (level !== value) {
-                      onLevelChange?.(level);
-                    }
                   }}
                   disabled={disabled || isGenerating}
                   className={`relative w-4 h-4 rounded-full text-[8px] flex items-center justify-center transition-all
