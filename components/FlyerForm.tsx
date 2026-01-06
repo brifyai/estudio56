@@ -501,7 +501,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     
     // ✅ NUEVO: Mostrar alerta de loading que permanece durante todo el análisis
     const loadingAlert = Swal.fire({
-      title: '🔍 Analizando URL...',
+      title: 'Analizando URL...',
       html: `
         <div style="text-align: center; padding: 10px;">
           <p style="color: #9ca3af; font-size: 14px;">Extrayendo información de tu negocio</p>
