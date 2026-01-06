@@ -235,12 +235,8 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   if (leftVariation && !rightVariation) {
     return (
       <div className="relative flex flex-col items-center">
-        {/* Header con botón cerrar integrado */}
-        <div className="flex items-center justify-between w-full mb-4">
-          <div className="w-5" /> {/* Spacer para balance */}
-          <h3 className="text-white font-bold text-lg">
-            Vista de Realismo
-          </h3>
+        {/* Header con solo botón cerrar */}
+        <div className="flex items-center justify-end w-full mb-4">
           {/* Botón cerrar */}
           {onClose && (
             <button
@@ -277,12 +273,8 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
 
   return (
     <div className="relative flex flex-col items-center">
-      {/* Header con botón cerrar integrado */}
-      <div className="flex items-center justify-between w-full mb-4">
-        <div className="w-5" /> {/* Spacer para balance */}
-        <h3 className="text-white font-bold text-lg">
-          Comparar Realismos
-        </h3>
+      {/* Header con solo botón cerrar */}
+      <div className="flex items-center justify-end w-full mb-4">
         {/* Botón cerrar */}
         {onClose && (
           <button
