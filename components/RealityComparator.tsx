@@ -342,17 +342,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
             </div>
           </div>
 
-          {/* Labels en las esquinas - Solo estrellas */}
-          <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg">
-            <span className="text-xs font-bold text-white">
-              {leftVariation.stars}★
-            </span>
-          </div>
-          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur px-2 py-1 rounded-lg">
-            <span className="text-xs font-bold text-white">
-              {rightVariation.stars}★
-            </span>
-          </div>
+          {/* Labels en las esquinas - Eliminados para evitar duplicación */}
         </div>
       )}
 
