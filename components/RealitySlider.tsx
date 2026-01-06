@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { RealityLevel } from '../types';
 import Swal from 'sweetalert2';
 import {
@@ -41,6 +41,8 @@ interface RealitySliderProps {
   cachedVariations?: Record<number, string>;
   /** Callback para abrir el comparador */
   onOpenComparator?: () => void;
+  /** Callback cuando inicia la generación (para cerrar alertas de loading) */
+  onGenerationStart?: () => void;
 }
 
 const RealitySlider: React.FC<RealitySliderProps> = ({
@@ -57,11 +59,15 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   compact = false,
   onGenerationComplete,
   cachedVariations = {},
-  onOpenComparator
+  onOpenComparator,
+  onGenerationStart
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [localValue, setLocalValue] = useState<RealityLevel>(value);
+  
+  // Ref para almacenar la instancia de Swal
+  const loadingSwalRef = useRef<any>(null);
 
   // Sincronizar valor local cuando cambia la prop
   useEffect(() => {
@@ -321,7 +327,12 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
                 }
               }).then((result) => {
                 if (result.isConfirmed) {
-                  console.log('🖱️ [Actualizar] Usuario confirmó, llamando onLevelChange');
+                  console.log('🖱️ [Actualizar] Usuario confirmó, iniciando generación...');
+                  
+                  // Notificar al padre que inicie la generación (mostrará la alerta de loading)
+                  onGenerationStart?.();
+                  
+                  // Llamar al callback para generar la nueva imagen
                   onLevelChange?.(localValue);
                 } else {
                   console.log('🖱️ [Actualizar] Usuario canceló');

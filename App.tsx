@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
 import { estudioAlerts } from './src/lib/alerts';
@@ -197,6 +197,23 @@ const Dashboard: React.FC = () => {
   const [showRealityComparator, setShowRealityComparator] = useState(false);
   const [isGeneratingReality, setIsGeneratingReality] = useState(false);
   const [realityGenerationMessage, setRealityGenerationMessage] = useState<string | null>(null);
+  
+  // Ref para almacenar la instancia de Swal de loading de realidad
+  const realityLoadingSwalRef = useRef<any>(null);
+  
+  // Callback para mostrar alerta de loading cuando inicia generación de realidad
+  const handleRealityGenerationStart = useCallback(() => {
+    console.log('🎚️ [App] Mostrando alerta de loading para generación de realidad...');
+    
+    // Cerrar cualquier alerta anterior
+    if (realityLoadingSwalRef.current) {
+      realityLoadingSwalRef.current.close();
+      realityLoadingSwalRef.current = null;
+    }
+    
+    // Mostrar nueva alerta de loading
+    realityLoadingSwalRef.current = estudioAlerts.loading('Generando nueva imagen con nivel de realismo seleccionado...');
+  }, []);
   // NEW: Estado SEPARADO para variaciones de realidad - NO tocar hdImageUrl
   const [realityImageUrl, setRealityImageUrl] = useState<string | null>(null);
   
@@ -1388,10 +1405,11 @@ const handleGenerate = async () => {
   const handleRefine = async (instruction: string) => {
     if (!currentSpanishPrompt || !imageUrl) return;
     const hasProductOverlay = !!productUrl;
-    try {
     
-    // Mostrar alerta de progreso Refine
+    // Mostrar alerta de progreso Refine (declarar fuera del try para que esté disponible en catch)
     const progressAlert = estudioAlerts.progress('Refinando imagen...');
+    
+    try {
       setStatus({ isLoading: true, step: 'translating', message: ':: REFINANDO_LOGICA_PROMPT ::' });
       progressAlert.updateProgress(20, 'Analizando prompt...');
       // Para refinar necesitamos el prompt en inglés original, lo regeneramos
@@ -1515,8 +1533,8 @@ const handleGenerate = async () => {
       progressAlert.updateProgress(100, '¡Completado!');
       setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
     } catch (error: any) {
-        progressAlert.close();
-        handleError(error);
+      progressAlert.close();
+      handleError(error);
     }
   };
 
@@ -1648,8 +1666,20 @@ const handleGenerate = async () => {
       console.error('❌ Error generando variación de realidad:', error);
       setRealityGenerationMessage('❌ Error al generar imagen');
       setTimeout(() => setRealityGenerationMessage(null), 3000);
+      
+      // Cerrar alerta de loading en caso de error
+      if (realityLoadingSwalRef.current) {
+        realityLoadingSwalRef.current.close();
+        realityLoadingSwalRef.current = null;
+      }
     } finally {
       setIsGeneratingReality(false);
+      
+      // Cerrar alerta de loading cuando termina la generación
+      if (realityLoadingSwalRef.current) {
+        realityLoadingSwalRef.current.close();
+        realityLoadingSwalRef.current = null;
+      }
     }
   };
 
@@ -1864,10 +1894,11 @@ const handleGenerate = async () => {
                         sceneId={sceneId}
                         currentImageUrl={imageUrl}
                         seed={seed}
-          aspectRatio={aspectRatio} // Pasar el aspectRatio actual para mostrar el formato correcto
+                        aspectRatio={aspectRatio} // Pasar el aspectRatio actual para mostrar el formato correcto
                         onLevelChange={handleRealityChange}
                         disabled={isGeneratingReality}
                         cachedVariations={realityVariations}
+                        onGenerationStart={handleRealityGenerationStart}
                         onOpenComparator={() => {
                           // 🎯 ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ ANTES DE ABRIR
                           const originalLevel = 2.5;
