@@ -28,8 +28,8 @@ import {
 // Caché en memoria para variaciones (se pierde al recargar)
 const localCache = new Map<string, RealityVariation[]>();
 
-// Clave para localStorage
-const CACHE_KEY = 'reality_variations_cache';
+// Clave para localStorage - Usar la misma que cacheCleanerService
+export const CACHE_KEY = 'reality_variations_cache';
 
 /**
  * Genera una clave única para el caché basada en sceneId
@@ -40,8 +40,15 @@ const getCacheKey = (sceneId: string): string => {
 
 /**
  * Obtiene las variaciones cacheadas para una scene
+ * Valida que el sceneId coincida para evitar contaminación entre sesiones
  */
 export const getCachedVariations = (sceneId: string): RealityVariation[] => {
+  // ✅ CORRECCIÓN: Validar sceneId antes de procesar
+  if (!sceneId || typeof sceneId !== 'string') {
+    console.warn('⚠️ [Reality] sceneId inválido:', sceneId);
+    return [];
+  }
+  
   const cacheKey = getCacheKey(sceneId);
   
   // Primero intentar localStorage
@@ -51,10 +58,15 @@ export const getCachedVariations = (sceneId: string): RealityVariation[] => {
       const allVariations = JSON.parse(stored);
       const sceneVariations = allVariations[cacheKey] || [];
       
-      // También mantener en memoria
-      localCache.set(cacheKey, sceneVariations);
+      // Filtrar solo variaciones del sceneId actual (validación extra de seguridad)
+      const validVariations = sceneVariations.filter(
+        (v: RealityVariation) => v.parent_scene_id === sceneId
+      );
       
-      return sceneVariations;
+      // También mantener en memoria
+      localCache.set(cacheKey, validVariations);
+      
+      return validVariations;
     }
   } catch (e) {
     console.warn('⚠️ Error leyendo caché de localStorage:', e);
@@ -65,28 +77,34 @@ export const getCachedVariations = (sceneId: string): RealityVariation[] => {
 };
 
 /**
- * Guarda una variación en el caché
+ * Guarda una variación en el caché con validación de sceneId
+ * Cada generación vive en su propio "compartimento" estanco
  */
-export const saveVariationToCache = (variation: RealityVariation): void => {
-  const cacheKey = getCacheKey(variation.parent_scene_id);
+export const saveVariationToCache = (sceneId: string, variation: RealityVariation): void => {
+  const cacheKey = getCacheKey(sceneId);
   
   // Actualizar memoria
   const existing = localCache.get(cacheKey) || [];
-  const existingIndex = existing.findIndex(v => v.stars === variation.stars);
   
-  if (existingIndex >= 0) {
-    existing[existingIndex] = variation;
-  } else {
-    existing.push(variation);
-  }
+  // Filtrar: solo variaciones del mismo sceneId y mismo nivel de estrellas
+  const filtered = existing.filter(
+    (v: RealityVariation) => v.stars !== variation.stars || v.parent_scene_id !== sceneId
+  );
   
-  localCache.set(cacheKey, existing);
+  // Crear variación con sceneId explícito
+  const newVariation = {
+    ...variation,
+    parent_scene_id: sceneId
+  };
+  
+  const updated = [...filtered, newVariation];
+  localCache.set(cacheKey, updated);
   
   // Persistir en localStorage
   try {
     const stored = localStorage.getItem(CACHE_KEY);
     const allVariations = stored ? JSON.parse(stored) : {};
-    allVariations[cacheKey] = existing;
+    allVariations[cacheKey] = updated;
     localStorage.setItem(CACHE_KEY, JSON.stringify(allVariations));
   } catch (e) {
     console.warn('⚠️ Error guardando caché en localStorage:', e);
@@ -134,11 +152,19 @@ export const clearSceneCache = (sceneId: string): void => {
 };
 
 /**
- * Limpia todo el caché
+ * Limpia todo el caché de realidad (útil para reset completo)
  */
-export const clearAllCache = (): void => {
+export const clearAllRealityCache = (): void => {
   localCache.clear();
   localStorage.removeItem(CACHE_KEY);
+  console.log('🧹 Todo el caché de realidad ha sido limpiado');
+};
+
+/**
+ * Limpia todo el caché de variaciones en memoria
+ */
+export const clearMemoryCache = (): void => {
+  localCache.clear();
 };
 
 // ============================================
@@ -235,8 +261,8 @@ export const handleStarsChange = async (
       cached: false
     };
     
-    // Guardar en caché
-    saveVariationToCache(newVariation);
+    // Guardar en caché con sceneId explícito
+    saveVariationToCache(sceneId, newVariation);
     
     // Actualizar estado
     const newState: RealitySliderState = {
@@ -289,7 +315,7 @@ export const generateAllVariations = async (
         cached: false
       };
       
-      saveVariationToCache(variation);
+      saveVariationToCache(sceneId, variation);
       variations.push(variation);
       
       // Pequeño delay entre generaciones para no saturar

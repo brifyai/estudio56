@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle } from './types';
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle, RealityLevel } from './types';
 import { estudioAlerts } from './src/lib/alerts';
 import Swal from 'sweetalert2';
 import RealitySlider from './components/RealitySlider';
@@ -10,6 +10,7 @@ import {
   saveVariationToCache,
   buildGeminiPromptWithReality
 } from './services/realitySliderService';
+import { runAutoCleanup } from './services/cacheCleanerService';
 import {
   getRealityConfig,
   getRealityLabel,
@@ -199,8 +200,10 @@ const Dashboard: React.FC = () => {
   const [isGeneratingReality, setIsGeneratingReality] = useState(false);
   const [realityGenerationMessage, setRealityGenerationMessage] = useState<string | null>(null);
   
-  // Ref para almacenar la instancia de Swal de loading de realidad
+  // Refs para gestión de memoria y locks
   const realityLoadingSwalRef = useRef<any>(null);
+  const generationLockRef = useRef(false); // ✅ CORRECCIÓN: Prevenir generaciones paralelas
+  const previousDraftUrlRef = useRef<string | null>(null);
   
   // Callback para mostrar alerta de loading cuando inicia generación de realidad
   const handleRealityGenerationStart = useCallback(() => {
@@ -242,6 +245,42 @@ const Dashboard: React.FC = () => {
   }, []);
   // NEW: Estado SEPARADO para variaciones de realidad - NO tocar hdImageUrl
   const [realityImageUrl, setRealityImageUrl] = useState<string | null>(null);
+  
+  // Cleanup de alertas y memoria al desmontar el componente
+  useEffect(() => {
+    return () => {
+      // Cerrar cualquier alerta activa si el componente se destruye
+      if (realityLoadingSwalRef.current) {
+        realityLoadingSwalRef.current.close();
+        realityLoadingSwalRef.current = null;
+      }
+      // Liberar URLs de blob para evitar fugas de memoria
+      if (draftImageUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(draftImageUrl);
+      }
+      if (hdImageUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(hdImageUrl);
+      }
+      if (realityImageUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(realityImageUrl);
+      }
+    };
+  }, [draftImageUrl, hdImageUrl, realityImageUrl]);
+
+  // ✅ CORRECCIÓN: Cleanup de URLs de blob durante el uso (no solo al desmontar)
+  useEffect(() => {
+    // Limpiar URL anterior si era blob y cambió
+    if (previousDraftUrlRef.current?.startsWith('blob:') &&
+        previousDraftUrlRef.current !== draftImageUrl) {
+      try {
+        URL.revokeObjectURL(previousDraftUrlRef.current);
+        console.log('🧹 [Memory] URL de blob liberada');
+      } catch (e) {
+        console.warn('⚠️ Error liberando URL de blob:', e);
+      }
+    }
+    previousDraftUrlRef.current = draftImageUrl;
+  }, [draftImageUrl]);
   
   // NEW: Estados para estilos manuales del editor de texto
   const [manualTextStyles, setManualTextStyles] = useState<TextStyleOptions>({
@@ -305,16 +344,34 @@ const Dashboard: React.FC = () => {
     generateDefaultText();
   }, []);
 
-  // 🎚️ INICIALIZAR sceneId CUANDO SE GENERA UNA IMAGEN
-  // Este useEffect garantiza que sceneId se setee cada vez que imageUrl cambia
-  // y no estaba previamente seteado, asegurando que el RealitySlider funcione
+  // 🎚️ LIMPIEZA AUTOMÁTICA DE CACHÉ AL INICIAR LA APP
   useEffect(() => {
-    if (imageUrl && !sceneId) {
+    runAutoCleanup();
+  }, []);
+
+  // 🎚️ INICIALIZAR sceneId CUANDO SE GENERA UNA IMAGEN
+  // IMPORTANTE: El sceneId DEBE refrescarse cada vez que se genera una nueva imagen
+  // para evitar contaminación del caché entre sesiones
+  useEffect(() => {
+    if (imageUrl) {
       const newSceneId = `scene_${Date.now()}_${seed || Math.floor(Math.random() * 2000000000)}`;
       setSceneId(newSceneId);
-      console.log('🎚️ SceneId inicializado por useEffect:', newSceneId);
+      console.log('🎚️ SceneId refrescado para nueva imagen:', newSceneId);
+      
+      // Limpiar variaciones en estado para evitar contaminación
+      setRealityVariations({});
+      // NOTA: El caché de localStorage ya está validado por sceneId, no es necesario limpiarlo completamente
     }
-  }, [imageUrl, sceneId, seed]);
+  }, [imageUrl, seed]);
+
+  // 🎯 CERRAR ALERTA DE LOADING CUANDO SE GENERA NUEVO BORRADOR
+  useEffect(() => {
+    if (imageUrl && status.isLoading === false && status.step === 'complete') {
+      // Cerrar cualquier alerta de Swal que esté abierta
+      Swal.close();
+      console.log('🔒 Alerta de loading cerrada - imagen generada');
+    }
+  }, [imageUrl, status.isLoading, status.step]);
 
   useEffect(() => {
     // Enhanced auth check with better error handling
@@ -1196,11 +1253,25 @@ const handleGenerate = async () => {
         
         // 🎯 GUARDAR IMAGEN ORIGINAL EN CACHÉ DE REALITY para comparación
         // La imagen base (2.5★) siempre debe estar disponible para comparar
-        const originalLevel = 2.5;
+        const originalLevel: RealityLevel = 2.5;
         setRealityVariations(prev => ({
           ...prev,
           [originalLevel]: result.imageDataUrl
         }));
+        
+        // También guardar en localStorage con sceneId para persistencia entre sesiones
+        if (sceneId) {
+          saveVariationToCache(sceneId, {
+            id: `var_original_${Date.now()}`,
+            parent_scene_id: sceneId,
+            seed: newSeed,
+            stars: originalLevel,
+            image_url: result.imageDataUrl,
+            prompt_used: enhancedPrompt,
+            created_at: new Date(),
+            cached: true
+          });
+        }
         
         // NEW: Guardar generación en base de datos (image y story_art)
         if (imageQuality === 'draft' && (mediaType === 'image' || mediaType === 'story_art')) {
@@ -1590,6 +1661,12 @@ const handleGenerate = async () => {
   const handleRealityChange = async (newLevel: number) => {
     console.log('🎚️ Reality Slider cambiado a:', newLevel);
     
+    // ✅ CORRECCIÓN: Verificar lock de generación para evitar race conditions
+    if (generationLockRef.current) {
+      console.log('⏳ [Reality] Generación en progreso, ignorando cambio rápido');
+      return;
+    }
+    
     // Si es el mismo nivel, no hacer nada
     if (newLevel === realityLevel) return;
     
@@ -1627,6 +1704,9 @@ const handleGenerate = async () => {
     
     // 2. SI NO ESTÁ EN CACHÉ, GENERAR NUEVA VARIACIÓN CON REFERENCIA
     console.log('🔄 Generando nueva variación para nivel:', levelKey);
+    
+    // ✅ CORRECCIÓN: Adquirir lock antes de generar
+    generationLockRef.current = true;
     setIsGeneratingReality(true);
     setRealityGenerationMessage(`🎚️ Generando imagen con realismo ${levelKey}★...`);
     setRealityLevel(levelKey);
@@ -1644,9 +1724,14 @@ const handleGenerate = async () => {
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
       const realityPrompt = buildGeminiPromptWithReality(enhancedPrompt, realityLevelTyped);
       
-      // 🎯 GENERACIÓN CON REFERENCIA: Mantenemos el local exactamente como está,
-      // pero le cambiamos la iluminación/estilo al nivel solicitado
-      const referenceImage = imageUrl || draftImageUrl;
+      // ✅ CORRECCIÓN: Validar que exista referencia antes de generar
+      // 🎯 GENERACIÓN CON REFERENCIA: SIEMPRE usar draftImageUrl (imagen original)
+      // NUNCA usar imageUrl porque puede contener una variación previa
+      // Esto evita la "degradación recursiva" donde la IA interpreta artefactos como intenciones
+      const referenceImage = draftImageUrl || undefined;
+      if (!referenceImage) {
+        console.warn('⚠️ [Reality] No hay imagen de referencia, la calidad puede variar');
+      }
       
       // Determinar artDirectionId para mantener la Dirección de Arte
       // Usamos el mismo mapeo que en handleGenerate para consistencia
@@ -1688,11 +1773,26 @@ const handleGenerate = async () => {
       );
       
       if (result.imageDataUrl) {
-        // Guardar en caché local
+        // Guardar en caché local y en localStorage
+        const levelKeyTyped: RealityLevel = levelKey as RealityLevel;
         setRealityVariations(prev => ({
           ...prev,
-          [levelKey]: result.imageDataUrl
+          [levelKeyTyped]: result.imageDataUrl
         }));
+        
+        // Guardar en localStorage con sceneId explícito
+        if (sceneId) {
+          saveVariationToCache(sceneId, {
+            id: `var_${levelKey}_${Date.now()}`,
+            parent_scene_id: sceneId,
+            seed: seed,
+            stars: levelKeyTyped,
+            image_url: result.imageDataUrl,
+            prompt_used: realityPrompt,
+            created_at: new Date(),
+            cached: true
+          });
+        }
         
         // Actualizar imagen mostrada
         setImageUrl(result.imageDataUrl);
@@ -1717,6 +1817,8 @@ const handleGenerate = async () => {
         realityLoadingSwalRef.current = null;
       }
     } finally {
+      // ✅ CORRECCIÓN: Liberar lock después de generar
+      generationLockRef.current = false;
       setIsGeneratingReality(false);
       
       // Cerrar alerta de loading cuando termina la generación
@@ -2040,7 +2142,7 @@ const handleGenerate = async () => {
       <main className={`
         flex-1 flex-col relative z-10 p-1 lg:p-2 overflow-hidden w-full hidden lg:flex
         items-stretch /* Esto iguala las alturas con el sidebar */
-        pb-24 /* Evita solapamiento con el footer */
+        pr-2 /* Espacio derecho consistente con calendarios */
       `}>
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
           <div className={`
@@ -2086,7 +2188,26 @@ const handleGenerate = async () => {
                 {draftImageUrl && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
                     <button
-                      onClick={handleGenerate}
+                      onClick={() => {
+                        // Mostrar alerta de loading
+                        Swal.fire({
+                          background: '#111827',
+                          color: '#ffffff',
+                          confirmButtonColor: '#3b82f6',
+                          customClass: {
+                            popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
+                            title: 'text-2xl font-bold text-white tracking-tight',
+                            htmlContainer: 'text-gray-400 text-sm',
+                            confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95',
+                          },
+                          buttonsStyling: true,
+                          title: 'Generando nuevo borrador...',
+                          html: '<div class="flex justify-center my-4"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div></div>',
+                          allowOutsideClick: false,
+                          showConfirmButton: false,
+                        });
+                        handleGenerate();
+                      }}
                       disabled={status.isLoading}
                       className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-2"
                     >
@@ -2149,7 +2270,7 @@ const handleGenerate = async () => {
         <aside className={`
           fixed inset-0 z-50 flex items-center justify-center p-2 transition-all duration-300
           lg:relative lg:inset-auto lg:z-40
-          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-2 lg:pr-2
+          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-2 lg:pr-2 lg:pl-2
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
@@ -2256,7 +2377,7 @@ const handleGenerate = async () => {
      
 
      {/* LEFT PANEL: CALENDAR - Donde estaba el Comparador de Realismo */}
-     <aside className="w-full lg:w-[280px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-1 lg:p-2 pl-0 lg:pl-0">
+     <aside className="w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-1 lg:p-2 pl-0 lg:pl-2">
        <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
          {/* Header */}
          <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">

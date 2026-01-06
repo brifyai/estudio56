@@ -47,9 +47,25 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   const currentLevelNum = parseFloat(currentLevel.toString());
   const originalLevelNum = parseFloat(originalLevel.toString());
   
+  // ✅ CORRECCIÓN: Función helper para obtener la imagen original con fallback inteligente
+  const getOriginalVariationUrl = (): string | null => {
+    if (originalImage) return originalImage;
+    
+    // Si no hay originalImage, buscar la variación más cercana a 2.5
+    const availableLevels = Object.keys(variations).map(Number);
+    if (availableLevels.length === 0) return null;
+    
+    // Encontrar el nivel más cercano a 2.5
+    const closestLevel = availableLevels.reduce((prev, curr) => {
+      return Math.abs(curr - 2.5) < Math.abs(prev - 2.5) ? curr : prev;
+    });
+    
+    return variations[closestLevel] || null;
+  };
+  
   // La imagen de la izquierda es la ORIGINAL (ancla de Estudio 56)
-  // Prioridad: 1) originalImage prop, 2) variations[originalLevel]
-  const leftVariationUrl = originalImage || variations[originalLevelNum] || null;
+  // Prioridad: 1) originalImage prop, 2) variations[closest to 2.5]
+  const leftVariationUrl = getOriginalVariationUrl();
   
   // La imagen de la derecha es la ACTUAL (cualquier nivel que el usuario haya seleccionado)
   const rightVariationUrl = variations[currentLevelNum] || null;

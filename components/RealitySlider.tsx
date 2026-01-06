@@ -66,13 +66,25 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [localValue, setLocalValue] = useState<RealityLevel>(value);
   
-  // Ref para almacenar la instancia de Swal
+  // Refs para tracking de cambios
   const loadingSwalRef = useRef<any>(null);
+  const previousImageRef = useRef<string | null>(null);
+  const previousValueRef = useRef<RealityLevel>(value);
 
-  // Sincronizar valor local cuando cambia la prop
+  // ✅ CORRECCIÓN: Sincronizar valor local y detectar cambios de imagen base
   useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+    // Si la imagen base cambió completamente, resetear a 2.5
+    if (currentImageUrl && currentImageUrl !== previousImageRef.current) {
+      console.log('🎚️ [Slider] Imagen base cambiada, reseteando a 2.5★');
+      setLocalValue(2.5);
+    } else {
+      setLocalValue(value);
+    }
+    
+    // Actualizar referencias
+    previousImageRef.current = currentImageUrl;
+    previousValueRef.current = value;
+  }, [value, currentImageUrl]);
 
   // Obtener configuración actual
   const currentConfig = REALITY_CONFIGS[localValue];
