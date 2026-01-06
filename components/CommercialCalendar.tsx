@@ -376,20 +376,38 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
           {/* LEYENDA */}
           <div className="flex flex-wrap gap-1.5 text-[8px] text-white/50 pt-2 border-t border-white/5">
             <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> F
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> F: Festivo
             </span>
             <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> C
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> C: Consumo
             </span>
             <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span> M
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span> M: Marketing
             </span>
             <span className="flex items-center gap-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span> E
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span> E: Especial
             </span>
           </div>
         </div>
       )}
+      
+      {/* LEYENDA SIEMPRE VISIBLE */}
+      <div className="px-3 py-2 border-t border-white/5">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-white/50">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span> F: Festivo
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span> C: Consumo
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-purple-400"></span> M: Marketing
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-pink-400"></span> E: Especial
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
