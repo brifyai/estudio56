@@ -145,6 +145,8 @@ export const creditService = {
   },
 
   // Deduct credits when used
+  // ⚠️ IMPORTANTE: Esta función usa RPC segura en el servidor
+  // NUNCA hacer UPDATE directo desde el frontend
   async deductCredit(
     creditType: string,
     amount: number = 1,
@@ -165,36 +167,8 @@ export const creditService = {
         });
 
       if (error) {
-        console.warn('RPC not available, doing manual deduction');
-        // Fallback: manual deduction
-        const canUse = await this.canUseCredit(creditType, amount);
-        if (!canUse) return false;
-
-        // Get current credits first
-        const { data: currentUser } = await supabase
-          .from('users')
-          .select('credits')
-          .eq('id', session.user.id)
-          .single();
-
-        if (currentUser) {
-          await supabase
-            .from('users')
-            .update({ credits: currentUser.credits - amount })
-            .eq('id', session.user.id);
-
-          // Record transaction
-          await supabase.from('credit_transactions').insert({
-            user_id: session.user.id,
-            type: 'usage',
-            amount: -amount,
-            credit_type: creditType,
-            description: description || null,
-            reference_id: referenceId || null
-          });
-        }
-
-        return true;
+        console.error('Error en RPC deduct_credit:', error);
+        throw error;
       }
 
       return data || false;
@@ -205,6 +179,8 @@ export const creditService = {
   },
 
   // Add credits (for purchases, bonuses, manual adjustments)
+  // ⚠️ IMPORTANTE: Esta función usa RPC segura en el servidor
+  // NUNCA hacer UPDATE directo desde el frontend
   async addCredits(
     creditType: string,
     amount: number,
@@ -225,32 +201,12 @@ export const creditService = {
         });
 
       if (error) {
-        console.warn('RPC not available, doing manual addition');
-        // Fallback: manual addition
-        // Get current credits first
-        const { data: currentUser } = await supabase
-          .from('users')
-          .select('credits')
-          .eq('id', session.user.id)
-          .single();
-
-        if (currentUser) {
-          await supabase
-            .from('users')
-            .update({ credits: currentUser.credits + amount })
-            .eq('id', session.user.id);
-
-          await supabase.from('credit_transactions').insert({
-            user_id: session.user.id,
-            type: transactionType,
-            amount: amount,
-            credit_type: creditType,
-            description: description || null
-          });
-        }
+        console.error('Error en RPC add_credits:', error);
+        throw error;
       }
     } catch (error) {
       console.error('Error adding credits:', error);
+      throw error; // Re-lanzar error para manejo en UI
     }
   },
 

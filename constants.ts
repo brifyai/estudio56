@@ -1600,7 +1600,7 @@ export const VIDEO_STYLES: Record<string, VideoStyleConfig> = {
 // ============================================
 export const VEO_VIDEO_CONFIG: VideoPlanConfig = {
   draft: {
-    model: 'veo-3.1-fast-generate-preview',
+    model: 'veo-2.0-flash-generate-preview',
     resolution: '720p',
     speed: 'fast',
     costMultiplier: 0.3,
@@ -1608,7 +1608,7 @@ export const VEO_VIDEO_CONFIG: VideoPlanConfig = {
     quality: 'standard'
   },
   production: {
-    model: 'veo-3.1-generate-preview',
+    model: 'veo-2.0-generate-preview',
     resolution: '1080p',
     speed: 'standard',
     costMultiplier: 1.0,

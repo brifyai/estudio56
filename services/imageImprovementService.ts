@@ -10,8 +10,8 @@ const getAiClient = () => new GoogleGenAI({
 
 // Modelos disponibles para mejora de imagen (ordenados por preferencia)
 const IMAGE_MODELS = [
-  'gemini-2.5-flash-image',
-  'gemini-2.0-flash-image-exp',
+  'gemini-2.0-flash-exp',
+  'gemini-1.5-flash',
   'gemini-1.5-flash'
 ];
 
@@ -183,7 +183,7 @@ export const regenerateWithStyle = async (
       Transform the visual style while preserving the main subject.
     `.replace(/\n/g, ' ').trim();
     
-    const model = 'gemini-2.5-flash-image';
+    const model = 'gemini-2.0-flash-exp';
     
     const response = await ai.models.generateContent({
       model,

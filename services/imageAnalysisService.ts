@@ -126,23 +126,30 @@ Enfócate en:
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-    const response = await ai.models.generateContent({
-      model,
-      contents: {
-        parts: [
-          { text: analysisPrompt },
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: thumbnailUrl.split(',')[1] // Usar thumbnail en lugar de imagen original
-            }
+  // Timeout de 30 segundos para análisis de imagen
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Timeout de análisis de imagen (30s)')), 30000);
+  });
+
+  const apiPromise = ai.models.generateContent({
+    model,
+    contents: {
+      parts: [
+        { text: analysisPrompt },
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: thumbnailUrl.split(',')[1] // Usar thumbnail en lugar de imagen original
           }
-        ]
-      },
-      config: {
-        responseMimeType: "application/json"
-      }
-    });
+        }
+      ]
+    },
+    config: {
+      responseMimeType: "application/json"
+    }
+  });
+
+  const response = await Promise.race([apiPromise, timeoutPromise]) as any;
 
     const responseText = response.text?.trim();
     if (!responseText) {

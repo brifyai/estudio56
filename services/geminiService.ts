@@ -570,8 +570,9 @@ export const generateMarketingText = async (config: UserConfig): Promise<string>
     const ai = getAiClient();
     const model = "gemini-3-flash-preview";
 
+    // Timeout aumentado a 15s para análisis de texto complejo
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout')), 8000);
+      setTimeout(() => reject(new Error('Timeout')), 15000);
     });
 
     const apiPromise = ai.models.generateContent({
@@ -933,9 +934,9 @@ export const generatePersuasiveText = async (
     const ai = getAiClient();
     const model = "gemini-3-flash-preview";
 
-    // Timeout de 8 segundos
+    // Timeout aumentado a 15s para generación de texto persuasivo
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout')), 8000);
+      setTimeout(() => reject(new Error('Timeout')), 15000);
     });
 
     const apiPromise = ai.models.generateContent({
@@ -1390,11 +1391,17 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     console.log(`🚀 [GeminiService] INICIANDO generación con ${model} (HD: ${isHD}) Seed: ${seed}, AspectRatio: ${aspectRatio}`);
     console.log(`📝 [GeminiService] Prompt (${prompt.length} chars):`, prompt.substring(0, 200) + '...');
     
+    // Timeout de 30 segundos para generación de imagen compleja
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout de generación de imagen (30s)')), 30000);
+    });
+    
     // Ensure aspectRatio is in the correct format for Gemini API
     const validAspectRatios: AspectRatio[] = ['1:1', '16:9', '9:16', '4:3', '3:4', '1.91:1', '4:5', '1080x1080', '1080x1920', '1080x1350'];
     const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
     
-    const response = await ai.models.generateContent({
+    // Race entre la API y el timeout
+    const apiPromise = ai.models.generateContent({
       model,
       contents: { parts: [{ text: prompt }] },
       config: {
@@ -1405,6 +1412,8 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
         }
       }
     });
+
+    const response = await Promise.race([apiPromise, timeoutPromise]) as any;
 
     const candidates = response.candidates;
     if (!candidates || candidates.length === 0) throw new Error("API retornó 0 candidatos.");
@@ -1995,8 +2004,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       );
     }
     
-    // HD: Use Gemini 3.0 for high quality
-    const model = 'gemini-3.0-flash-exp';
+    // HD: Use Gemini 2.0 Flash for high quality
+    const model = 'gemini-2.0-flash-exp';
     
     try {
         // Same seed, same prompt structure - only quality settings differ
@@ -2264,7 +2273,7 @@ export const enhanceUserImage = async (
     // Paso 3: Generar la nueva imagen
     console.log("✨ Paso 3: Generando imagen mejorada...");
     const ai = getAiClient();
-    const model = "gemini-3-pro-image-preview";
+    const model = "gemini-1.5-pro";
     
     const response = await ai.models.generateContent({
       model,
@@ -2459,7 +2468,7 @@ export const generateImageEdit = async (
     const editSeed = seed || Math.floor(Math.random() * 2000000000);
     
     const ai = getAiClient();
-    const model = 'gemini-3-pro-image-preview';
+    const model = 'gemini-1.5-pro';
     
     console.log('🔄 [ImageEdit] Enviando edición a Gemini con contexto...');
     
@@ -2553,7 +2562,7 @@ export const generateVideoEdit = async (
     const editSeed = seed || Math.floor(Math.random() * 2000000000);
     
     const ai = getAiClient();
-    const model = 'veo-3.1-generate-preview';
+    const model = 'veo-2.0-generate-preview';
     
     console.log('🔄 [VideoEdit] Enviando edición a VEO con contexto...');
     
