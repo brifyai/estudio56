@@ -68,7 +68,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   const leftVariationUrl = getOriginalVariationUrl();
   
   // La imagen de la derecha es la ACTUAL (cualquier nivel que el usuario haya seleccionado)
-  const rightVariationUrl = variations[currentLevelNum] || null;
+  let rightVariationUrl = variations[currentLevelNum] || null;
   
   // Crear objetos RealityVariation simulados para las funciones helper
   // leftVariation = ORIGINAL (ancla), rightVariation = ACTUAL (currentLevel)
@@ -246,45 +246,11 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
     );
   }
 
-  // 🎯 NUEVO: Si solo hay una variación (izquierda), mostrar en modo "solo vista"
-  // Esto ocurre cuando el usuario no ha generado variaciones adicionales
+  // 🎯 Si solo hay una variación, DUPLICARLA para comparación (mismo nivel)
+  // Esto permite ver la imagen aunque solo haya una variación
   if (leftVariation && !rightVariation) {
-    return (
-      <div className="relative flex flex-col items-center">
-        {/* Header con solo botón cerrar */}
-        <div className="flex items-center justify-end w-full mb-4">
-          {/* Botón cerrar */}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] transition-colors"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        <p className="text-white/50 text-xs text-center">
-          Genera más variaciones para comparar
-        </p>
-
-        {/* Indicador de modo único - Solo estrellas */}
-        <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-          <p className="text-blue-300/80 text-xs text-center">
-            📷 ({originalLevelNum}★)
-          </p>
-        </div>
-
-        {/* Mostrar solo la imagen izquierda */}
-        {renderImage(leftVariation, true, undefined)}
-
-        {/* Info adicional */}
-        <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-          <p className="text-yellow-300/80 text-[10px] text-center">
-            💡 Genera variaciones en el slider para comparar diferentes niveles de realismo
-          </p>
-        </div>
-      </div>
-    );
+    // Usar la misma imagen para ambos lados
+    rightVariationUrl = leftVariationUrl;
   }
 
   return (
