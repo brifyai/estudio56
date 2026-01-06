@@ -233,6 +233,8 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
           step="0.5"
           value={localValue}
           onChange={handleChange}
+          onMouseUp={handleMouseUp}
+          onTouchEnd={handleTouchEnd}
           disabled={disabled || isGenerating}
           className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
           style={{
@@ -245,17 +247,6 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
               #eab308 100%)`
           }}
         />
-        
-        {/* Indicador de posición actual */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center pointer-events-none transition-all"
-          style={{
-            left: `${((localValue - 1) / 4) * 100}%`,
-            transform: 'translate(-50%, -50%)'
-          }}
-        >
-          <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${gradientColor}`} />
-        </div>
       </div>
       
       {/* Labels de los extremos */}
