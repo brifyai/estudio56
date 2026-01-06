@@ -19,10 +19,9 @@ export const LandingPage: React.FC = () => {
       
       {/* NAV */}
       <nav className="flex justify-between items-center p-6 border-b border-white/10 bg-black/50 backdrop-blur sticky top-0 z-50">
-        <div className="text-xl font-black tracking-tighter flex items-center gap-2">
+        <div className="text-xl font-bold tracking-tighter flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           <span className="text-3xl">🤡</span>
-          <span className="line-through text-white/40 decoration-red-500">Diseño Feo</span>
-          <span className="text-green-400">Estudio 56</span>
+          <span className="text-green-400 uppercase">Estudio 56</span>
         </div>
         <button onClick={() => navigate('/iniciar-sesion')} className="bg-white text-black font-bold px-4 py-2 rounded-full hover:scale-105 transition-transform text-sm">
           Entrar a la Matrix
