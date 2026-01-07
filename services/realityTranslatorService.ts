@@ -1,13 +1,14 @@
 /**
  * 🎚️ SERVICIO DE TRADUCCIÓN DE REALIDAD
- * 
+ *
  * Este servicio traduce el valor numérico de estrellas (1-5) a términos
  * técnicos de fotografía que Gemini e Imagen 3 pueden interpretar directamente.
- * 
+ *
  * Cada nivel tiene descriptores específicos para lograr cambios visuales drásticos.
  */
 
 import { RealityLevel } from '../types';
+import { REALITY_CONFIGS, getRealityCategory as getRealityCat } from './realityMapper';
 
 /**
  * Descriptores técnicos por nivel de realidad
@@ -143,31 +144,59 @@ NEGATIVE_PROMPT: ${getNegativePromptForLevel(levelKey)}
 };
 
 /**
- * Prompt negativo específico por nivel
+ * Prompt negativo específico por nivel - CON BLOQUEO DE TEXTO INAMOVIBLE
+ * El bloqueo de texto siempre va primero y se repite para máxima efectividad
  */
 export const getNegativePromptForLevel = (stars: number): string => {
+  // BLOQUEO INAMOVIBLE DE TEXTO - Prioridad absoluta
+  const textBlock = 'text, letters, words, typography, signature, watermark, text overlay, captions, titles, menu boards, price tags, signs, billboards, posters, written characters';
+  
   if (stars <= 1.5) {
-    return 'professional lighting, studio, sharp focus, clean lens, high dynamic range, artistic bokeh, balanced colors, 4k, high quality, perfect exposure, professional camera, airbrushed skin, perfect makeup';
+    // Nivel CRUDO: Forzamos look "bajo" pero SIN texto
+    return `${textBlock}, professional lighting, studio setup, softbox, bokeh, 4k, 8k, cinematic, retouched, perfect skin, clean, high quality, high quality, high quality`;
   } else if (stars <= 2.5) {
-    return 'luxury, marble, cinematic, dramatic shadows, fashion model look, airbrushed skin, perfect symmetry, expensive decor, studio flash, hotel lobby, candles, smoke, steam, fog, luxury resort, professional retouch';
+    // Nivel AUTÉNTICO: Bloqueamos fantasía de catálogo
+    return `${textBlock}, luxury, marble, cinematic, dramatic shadows, fashion model look, airbrushed skin, perfect symmetry, expensive decor, studio flash, hotel lobby, candles, smoke, steam, fog, luxury resort, professional retouch`;
   } else if (stars <= 3.5) {
-    return 'digital noise, blurry, messy, dirty floor, trash, poor lighting, low resolution, cheap furniture, shaky camera, amateur photography, grainy, compression artifacts, smartphone photo, casual snapshot';
+    // Nivel PROFESIONAL: Bloqueamos imperfecciones
+    return `${textBlock}, digital noise, blurry, messy, dirty floor, trash, poor lighting, low resolution, cheap furniture, shaky camera, amateur photography, grainy, compression artifacts, smartphone photo, casual snapshot`;
   } else if (stars <= 4.5) {
-    return 'scuffed walls, sweat, realistic clutter, average body type, raw textures, everyday look, flat lighting, amateur photography, basic equipment, cheap materials, natural imperfections, visible pores, unretouched';
+    // Nivel ASPIRACIONAL: Bloqueamos lo "común"
+    return `${textBlock}, scuffed walls, sweat, realistic clutter, average body type, raw textures, everyday look, flat lighting, amateur photography, basic equipment, cheap materials, natural imperfections, visible pores, unretouched`;
   } else {
-    return 'poverty, real life, basic equipment, cheap materials, natural skin imperfections, handheld camera, natural mess, everyday objects, average people, poor lighting, amateur, smartphone photo, casual snapshot';
+    // Nivel LUJO: Perfection absoluta
+    return `${textBlock}, poverty, real life, basic equipment, cheap materials, natural skin imperfections, handheld camera, natural mess, everyday objects, average people, poor lighting, amateur, smartphone photo, casual snapshot`;
   }
 };
 
 /**
- * Obtiene la categoría de realidad para un nivel
+ * Genera el prefijo de fuerza para el prompt - El orden es clave: Realidad > Sujeto > Escudo Anti-Texto
  */
-export const getRealityCategory = (stars: number): string => {
-  if (stars <= 1.5) return 'crudo';
-  if (stars <= 2.5) return 'autentico';
-  if (stars <= 3.5) return 'profesional';
-  if (stars <= 4.5) return 'aspiracional';
-  return 'lujo';
+export const getRealityPrefix = (stars: number): string => {
+  const levelKey = Math.round(stars * 2) / 2;
+  const config = REALITY_CONFIGS[levelKey];
+  
+  return `[MODE: ${config.label.toUpperCase()} PHOTO]`;
+};
+
+/**
+ * Genera el prompt final con prefijo de fuerza y bloqueo de texto al inicio
+ */
+export const buildPowerPrompt = (basePrompt: string, stars: number): string => {
+  const prefix = getRealityPrefix(stars);
+  const negative = getNegativePromptForLevel(stars);
+  const levelKey = Math.round(stars * 2) / 2;
+  const config = REALITY_CONFIGS[levelKey];
+  
+  return `
+    ${prefix} A raw, authentic photography of ${basePrompt}.
+    STERN RULES: NO TEXT, NO LETTERS, NO TYPOGRAPHY.
+    ${config.lighting}
+    ${config.atmosphere}
+    ${config.camera}
+    ${config.human}
+    AVOID: ${negative}
+  `.trim();
 };
 
 /**

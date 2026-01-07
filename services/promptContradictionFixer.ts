@@ -201,23 +201,46 @@ export function fixPromptContradictions(
     }
   }
 
-  // 3. Si estamos en modo "realist", remover términos profesionales
+  // 3. Si estamos en modo "realist" (nivel <= 2.5), PROTEGEMOS los términos de look "crudo"
+  // NO removemos términos como "blurry", "noise", "grainy" porque son intencionales para el look CCTV/Celular
   if (context?.realityMode === 'realist') {
-    const realistConflictingTerms = [
-      'glossy finish',
-      'studio lighting',
-      'professional photography',
-      'high-end',
-      'cinematic',
-      'bokeh',
-      'softbox'
+    // En modo realist, solo removemos términos que contradicen el objetivo pero MANTENEMOS los de "baja calidad"
+    const realistAllowedTerms = [
+      'grainy',
+      'noise',
+      'blurry',
+      'grain',
+      'noise',
+      'compression artifacts',
+      'low resolution',
+      'authentic',
+      'candid',
+      'candid look',
+      'documentary'
     ];
-
-    for (const term of realistConflictingTerms) {
+    
+    // NO hacer nada - los términos de "baja calidad" son intencionales en modo realist
+    console.log('🎚️ [PromptFixer] Modo realist - protegiendo términos de look auténtico');
+  }
+  
+  // 3.5. Si el nivel de realidad es muy bajo (<= 2.5), proteger específicamente los términos CCTV/Celular
+  if (context?.realityMode === 'realist') {
+    const lowRealityProtectedTerms = [
+      'security camera',
+      'CCTV',
+      'smartphone photo',
+      'amateur',
+      'snapshot',
+      'auto white balance',
+      'mixed lighting',
+      'visible noise',
+      'deep focus'
+    ];
+    
+    for (const term of lowRealityProtectedTerms) {
       const regex = new RegExp(`\\b${term}\\b`, 'gi');
       if (regex.test(fixedPrompt)) {
-        fixedPrompt = fixedPrompt.replace(regex, '');
-        warnings.push(`Término "${term}" removido por ser incompatible con modo "realist"`);
+        console.log(`🎚️ [PromptFixer] Término protegido para nivel bajo: "${term}"`);
       }
     }
   }

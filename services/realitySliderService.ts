@@ -373,6 +373,15 @@ export const getOptimalGenerationOrder = (
 // ============================================
 
 /**
+ * Determina si se debe usar la imagen de referencia
+ * Si el nivel de realidad es < 3.0, descartamos la referencia para forzar Text-to-Image puro
+ * Esto evita que la IA se "pegue" al estilo profesional de la imagen anterior
+ */
+export const shouldUseReferenceImage = (stars: RealityLevel): boolean => {
+  return stars >= 3.0;
+};
+
+/**
  * Construye el prompt final para Gemini con el nivel de realidad
  */
 export const buildGeminiPromptWithReality = (
@@ -392,6 +401,33 @@ export const buildGeminiPromptWithReality = (
   fullPrompt += `\n\nSTRICT_AVOID: ${negativePrompt}`;
   
   return fullPrompt;
+};
+
+/**
+ * Genera el prompt de "fuerza" con prefijo MODE al inicio
+ * El orden es clave: Realidad > Sujeto > Escudo Anti-Texto
+ */
+export const buildPowerPromptWithReality = (
+  basePrompt: string,
+  stars: RealityLevel
+): string => {
+  const levelKey: RealityLevel = Math.round(stars * 2) / 2 as RealityLevel;
+  const config = getRealityConfig(levelKey);
+  const negativePrompt = getRealityConfig(stars).negative;
+  
+  // El bloqueo de texto siempre va primero en las reglas negativas
+  const textBlock = 'text, letters, words, typography, signature, watermark, text overlay, captions, titles, menu boards, price tags, signs, billboards, posters, written characters';
+  
+  return `
+    [MODE: ${config.label.toUpperCase()} PHOTO]
+    A raw, authentic photography of ${basePrompt}.
+    STERN RULES: NO TEXT, NO LETTERS, NO TYPOGRAPHY.
+    ${config.lighting}
+    ${config.atmosphere}
+    ${config.camera}
+    ${config.human}
+    AVOID: ${textBlock}, ${negativePrompt}
+  `.trim();
 };
 
 /**

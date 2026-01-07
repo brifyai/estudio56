@@ -8,7 +8,9 @@ import RealityComparator from './components/RealityComparator';
 import {
   getCachedVariation,
   saveVariationToCache,
-  buildGeminiPromptWithReality
+  buildGeminiPromptWithReality,
+  buildPowerPromptWithReality,
+  shouldUseReferenceImage
 } from './services/realitySliderService';
 import { runAutoCleanup } from './services/cacheCleanerService';
 import {
@@ -1740,16 +1742,19 @@ const handleGenerate = async () => {
       
       console.log('🎨 Configuración de realidad:', { level: levelKey, label: realityLabel, category: realityCategory });
       
-      // Construir prompt con realidad aumentada
+      // 🎯 NUEVA LÓGICA: Construir prompt de fuerza con prefijo MODE
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
-      const realityPrompt = buildGeminiPromptWithReality(enhancedPrompt, realityLevelTyped);
+      const realityPrompt = buildPowerPromptWithReality(enhancedPrompt, realityLevelTyped);
       
-      // ✅ CORRECCIÓN: Validar que exista referencia antes de generar
-      // 🎯 GENERACIÓN CON REFERENCIA: SIEMPRE usar draftImageUrl (imagen original)
-      // NUNCA usar imageUrl porque puede contener una variación previa
-      // Esto evita la "degradación recursiva" donde la IA interpreta artefactos como intenciones
-      const referenceImage = draftImageUrl || undefined;
-      if (!referenceImage) {
+      // ✅ CORRECCIÓN CRÍTICA: Si nivel < 3.0, descartamos la imagen de referencia
+      // para forzar Text-to-Image puro y evitar que la IA herede el "look profesional"
+      const useReference = shouldUseReferenceImage(realityLevelTyped);
+      const referenceImage = useReference ? (draftImageUrl || undefined) : undefined;
+      
+      if (!useReference) {
+        console.log('🎚️ [Reality] Nivel < 3.0 - Descartando imagen de referencia para forzar Text-to-Image puro');
+      }
+      if (!referenceImage && useReference) {
         console.warn('⚠️ [Reality] No hay imagen de referencia, la calidad puede variar');
       }
       
