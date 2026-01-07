@@ -2284,22 +2284,94 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         }
     }
   } else {
-    // HD: Generar imagen COMPLETAMENTE NUEVA sin usar borrador como referencia
-    // Esto evita que HD sea idéntico al borrador - la IA genera una nueva imagen
-    // con mejor calidad pero misma semilla para consistencia visual
-    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen nueva de alta calidad (sin referencia de borrador)`);
+    // HD: Usar Image-to-Image con el borrador como referencia para mantener consistencia visual
+    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen HD basada en borrador como referencia`);
     
-    try {
-        // Same seed, same prompt structure - only quality settings differ
-        // Include guardrails in prompt for better semantic control
+    if (draftImageForHD) {
+      // Usar img2img: mejorar el borrador existente
+      console.log('🖼️ [HD] Usando Image-to-Image con borrador como referencia');
+      
+      try {
+        // Convertir data URL a base64
+        const base64Data = draftImageForHD.split(',')[1];
+        
+        // Prompt específico para mejorar la imagen existente
+        const enhancementPrompt = `
+          ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and overall visual appeal while maintaining EXACTLY the same composition, layout, and elements.
+          
+          CRITICAL RULES:
+          1. Keep the SAME composition, subject placement, and layout as the reference image
+          2. Improve lighting, shadows, and overall visual quality
+          3. Add more detail and texture to all elements
+          4. Maintain the same color palette and mood
+          5. Do NOT change the composition or add/remove elements
+          6. Do NOT add any text to the image
+          7. Output must be the same aspect ratio: ${aspectRatio}
+          
+          ${unifiedPrompt}
+        `.replace(/\n/g, ' ').trim();
+        
+        // Usar Gemini con imagen de referencia
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash-image', // Usar modelo que soporta img2img
+          contents: {
+            parts: [
+              { text: enhancementPrompt },
+              {
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: base64Data
+                }
+              }
+            ]
+          },
+          config: {
+            seed: consistencySeed,
+            imageConfig: {
+              aspectRatio: aspectRatio,
+              imageSize: "1K"
+            }
+          }
+        });
+
+        const candidates = response.candidates;
+        if (!candidates || candidates.length === 0) throw new Error("API retornó 0 candidatos.");
+
+        const parts = candidates[0].content?.parts;
+        if (!parts || parts.length === 0) throw new Error("Respuesta vacía.");
+
+        // Buscar la imagen generada
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i];
+          if (part.inlineData && part.inlineData.data) {
+            let base64Result = part.inlineData.data.replace(/\s/g, '');
+            imageDataUrl = `data:image/jpeg;base64,${base64Result}`;
+            console.log('✅ [HD] Imagen HD generada exitosamente con img2img');
+            break;
+          }
+        }
+        
+        if (!imageDataUrl) {
+          throw new Error("No se encontraron datos de imagen en la respuesta HD");
+        }
+      } catch (img2imgError: any) {
+        console.warn('⚠️ [HD] img2img falló, intentando con txt2img:', img2imgError.message);
+        // Fallback a txt2img si img2img falla
         const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-        // Para videos HD: usar 1K
         imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
-    } catch (error: any) {
+      }
+    } else {
+      // Fallback: Generar imagen nueva si no hay borrador de referencia
+      console.log('⚠️ [HD] No hay borrador de referencia, generando imagen nueva');
+      try {
+        const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
+        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
+      } catch (error: any) {
         if (error.message.includes('SAFETY_BLOCK')) {
              throw new Error("⚠️ La imagen fue bloqueada por filtros de seguridad. Evita mencionar personas reales, celebridades o marcas registradas.");
         }
         throw error;
+      }
     }
   }
 
