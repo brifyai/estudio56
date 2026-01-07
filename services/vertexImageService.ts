@@ -2,8 +2,7 @@
  * 🎯 Vertex AI Image Generation Service - Estudio 56
  * 
  * Usa los modelos correctos de Imagen a través de Vertex AI:
- * - Draft: imagen-3.0-fast-001 (bajo costo, rápido)
- * - HD: imagen-3.0-pro-001 (alta fidelidad)
+ * - Draft/HD: imagen-3.0-capability-001 (modelo actualizado)
  * 
  * IMPORTANTE: Gemini 2.0 Flash es SOLO para razonamiento, NO para imágenes.
  */
@@ -66,8 +65,8 @@ export const generateImageWithVertex = async (
   const startTime = Date.now();
   
   // Seleccionar el modelo correcto según calidad
-  const model = quality === 'draft' ? MODELS.DRAFT_ENGINE : MODELS.HD_ENGINE;
-  const modelDisplayName = quality === 'draft' ? 'Imagen 3 Fast' : 'Imagen 3 Pro';
+  const model = MODELS.DRAFT_ENGINE; // Usar el mismo modelo para draft y HD
+  const modelDisplayName = 'Imagen 3 Capability';
   
   console.log(`🎨 [VertexImage] Generando con ${modelDisplayName} (${model})`);
   console.log(`📐 Aspect Ratio: ${aspectRatio}`);
@@ -175,7 +174,7 @@ export const handleVertexImageGeneration = async (config: VertexImageConfig) => 
   
   // Verificar que usamos modelos de Imagen, NO Gemini
   if (model.includes('gemini') && !model.includes('imagen')) {
-    throw new Error('ERROR: No usar modelos Gemini para generación de imágenes. Usar imagen-3.0-fast-001 o imagen-3.0-pro-001');
+    throw new Error('ERROR: No usar modelos Gemini para generación de imágenes. Usar imagen-3.0-capability-001');
   }
   
   // Configuración de la solicitud a Vertex AI
@@ -245,8 +244,8 @@ export const isValidImageModel = (modelId: string): boolean => {
 export const getEstimatedCost = (quality: 'draft' | 'hd'): number => {
   // Precios aproximados en USD
   const costs = {
-    draft: 0.02,  // imagen-3.0-fast-001
-    hd: 0.05      // imagen-3.0-pro-001
+    draft: 0.02,  // imagen-3.0-capability-001
+    hd: 0.02      // imagen-3.0-capability-001
   };
   return costs[quality];
 };

@@ -16,23 +16,22 @@ export const MODELS = {
   ORCHESTRATOR: 'gemini-2.0-flash-001',
   ANALYZER: 'gemini-2.0-flash-001',
   
-  // Imagen 3 Fast - Generación rápida de borradores
+  // Imagen 3 Capability - Generación de imágenes (modelo actualizado)
   // Costo: ~$0.02 USD por imagen
-  // Usado para: Previsualizaciones, slider de realidad
-  DRAFT_ENGINE: 'imagen-3.0-fast-001',
+  // Usado para: Borradores y HD (mismo modelo para ambas calidades)
+  DRAFT_ENGINE: 'imagen-3.0-capability-001',
 
   // ============================================
-// 💎 MODELOS PREMIUM (Pro / Veo)
-// ============================================
+  // 💎 MODELOS PREMIUM (Pro / Veo)
+  // ============================================
 
-// Imagen 3 Pro - Alta fidelidad HD
-// Costo: ~$0.05 USD por imagen
-// Usado para: Versiones finales, exportación HD/4K
-HD_ENGINE: 'imagen-3.0-pro-001',
+  // Imagen 3 Capability - Alta fidelidad HD
+  // Usado para: Versiones finales, exportación HD/4K
+  HD_ENGINE: 'imagen-3.0-capability-001',
 
-// Veo 1.0 - Generación de video
-// Usado para: Motion graphics, video ads
-VIDEO_ENGINE: 'veo-1.0-preview-001'
+  // Veo 1.0 - Generación de video
+  // Usado para: Motion graphics, video ads
+  VIDEO_ENGINE: 'veo-1.0-preview-001'
 } as const;
 
 // ============================================
@@ -76,8 +75,7 @@ export const isProModel = (modelId: string): boolean => {
 export const getModelDisplayName = (modelId: string): string => {
   const names: Record<string, string> = {
     [MODELS.ORCHESTRATOR]: 'Gemini 2.0 Flash',
-    [MODELS.DRAFT_ENGINE]: 'Imagen 3 Fast',
-    [MODELS.HD_ENGINE]: 'Imagen 3 Pro',
+    'imagen-3.0-capability-001': 'Imagen 3 Capability',
     [MODELS.VIDEO_ENGINE]: 'Veo 1.0'
   };
   return names[modelId] || modelId;
