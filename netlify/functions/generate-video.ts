@@ -47,12 +47,38 @@ export const handler: Handler = async (event) => {
       throw new Error("Falta parámetro requerido: prompt");
     }
 
-    // Seleccionar modelo y resolución según calidad
-    const model = VIDEO_MODELS[body.quality]; // Mismo modelo para ambos
-    const size = body.quality === 'hd' ? '1280*720' : '832*480'; // 720P para HD, 480P para draft
+    // Mapear aspectRatio a resoluciones de Alibaba Cloud
+    // 9:16 (vertical/story) y 1:1 (cuadrado) son los formatos principales
+    const aspectRatio = body.aspectRatio || '9:16';
+    let size: string;
+    
+    if (body.quality === 'hd') {
+      // HD: Resoluciones más altas
+      if (aspectRatio === '1:1') {
+        size = '1280*1280'; // Cuadrado HD
+      } else if (aspectRatio === '16:9') {
+        size = '1280*720'; // Horizontal HD
+      } else {
+        // 9:16 (vertical/story) - DEFAULT
+        size = '720*1280'; // Vertical HD
+      }
+    } else {
+      // Draft: Resoluciones más bajas
+      if (aspectRatio === '1:1') {
+        size = '832*832'; // Cuadrado draft
+      } else if (aspectRatio === '16:9') {
+        size = '832*480'; // Horizontal draft
+      } else {
+        // 9:16 (vertical/story) - DEFAULT
+        size = '480*832'; // Vertical draft
+      }
+    }
+    
+    const model = VIDEO_MODELS[body.quality];
     const duration = body.duration || 5; // 5 segundos por defecto
     
     console.log('🎯 [Alibaba Video] Modelo seleccionado:', model);
+    console.log('📐 [Alibaba Video] Aspect Ratio:', aspectRatio);
     console.log('📐 [Alibaba Video] Resolución (size):', size);
     console.log('⏱️ [Alibaba Video] Duración:', duration, 'segundos');
 
