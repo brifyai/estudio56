@@ -47,13 +47,24 @@ export const handler: Handler = async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('❌ Error de Google:', data);
       return { statusCode: response.status, body: JSON.stringify(data) };
     }
 
+    // VERIFICACIÓN CLAVE: Google devuelve un array "predictions"
+    if (!data.predictions || data.predictions.length === 0) {
+      throw new Error("Google no devolvió ninguna imagen en las predicciones");
+    }
+
+    // Extraemos el Base64 (Google usa la propiedad 'bytesBase64Encoded')
+    const base64Image = data.predictions[0].bytesBase64Encoded;
+
     return {
       statusCode: 200,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        url: `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`
+        // Enviamos el Base64 formateado para que el navegador lo entienda
+        url: `data:image/png;base64,${base64Image}`
       }),
     };
 
