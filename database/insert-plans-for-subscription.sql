@@ -1,28 +1,26 @@
--- Insertar planes si no existen (para suscripciones MercadoPago)
+-- Insertar planes con UUIDs válidos para suscripciones MercadoPago
 -- Ejecutar en Supabase SQL Editor
 
--- Verificar si existen los planes
-SELECT id, name, price FROM user_plans ORDER BY price;
+-- Verificar estructura de la tabla
+SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'user_plans';
 
--- Insertar plan "GRATIS" si no existe
-INSERT INTO user_plans (id, name, price, credits_per_month, features, created_at, updated_at)
-SELECT 'GRATIS', 'GRATIS', 0, 5, ARRAY['3 Borradores/día (Imagen)', 'Solo Visualización', 'Sin Créditos HD', 'Sin Video'], NOW(), NOW()
-WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE id = 'GRATIS');
+-- Generar UUIDs para los planes
+-- Estos son UUIDs válidos generados para cada plan
 
--- Insertar plan "ESTOY PARTIENDO" si no existe
+-- Insertar plan "ESTOY PARTIENDO" (UUID: 11111111-1111-1111-1111-111111111111)
 INSERT INTO user_plans (id, name, price, credits_per_month, features, created_at, updated_at)
-SELECT 'ESTOY PARTIENDO', 'ESTOY PARTIENDO', 14990, 40, ARRAY['40 Créditos HD', '200 Borradores', 'Videos HD (10 créditos)', 'Sin carga de productos'], NOW(), NOW()
-WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE id = 'ESTOY PARTIENDO');
+SELECT '11111111-1111-1111-1111-111111111111', 'ESTOY PARTIENDO', 14990, 40, ARRAY['40 Créditos HD', '200 Borradores', 'Videos HD (10 créditos)', 'Sin carga de productos'], NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE name = 'ESTOY PARTIENDO');
 
--- Insertar plan "JEFE PYME" si no existe
+-- Insertar plan "JEFE PYME" (UUID: 22222222-2222-2222-2222-222222222222)
 INSERT INTO user_plans (id, name, price, credits_per_month, features, created_at, updated_at)
-SELECT 'JEFE PYME', 'JEFE PYME', 44990, 150, ARRAY['150 Créditos HD', '750 Borradores', 'Videos HD (10 créditos)', 'Carga de Productos PNG'], NOW(), NOW()
-WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE id = 'JEFE PYME');
+SELECT '22222222-2222-2222-2222-222222222222', 'JEFE PYME', 44990, 150, ARRAY['150 Créditos HD', '750 Borradores', 'Videos HD (10 créditos)', 'Carga de Productos PNG'], NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE name = 'JEFE PYME');
 
--- Insertar plan "AGENCIA" si no existe
+-- Insertar plan "AGENCIA" (UUID: 33333333-3333-3333-3333-333333333333)
 INSERT INTO user_plans (id, name, price, credits_per_month, features, created_at, updated_at)
-SELECT 'AGENCIA', 'AGENCIA', 139990, 500, ARRAY['500 Créditos HD', '2500 Borradores', 'Licencia Comercial', 'Soporte Humano'], NOW(), NOW()
-WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE id = 'AGENCIA');
+SELECT '33333333-3333-3333-3333-333333333333', 'AGENCIA', 139990, 500, ARRAY['500 Créditos HD', '2500 Borradores', 'Licencia Comercial', 'Soporte Humano'], NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM user_plans WHERE name = 'AGENCIA');
 
 -- Verificar que los planes fueron insertados
 SELECT id, name, price, credits_per_month FROM user_plans ORDER BY price;
