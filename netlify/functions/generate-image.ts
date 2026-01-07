@@ -67,22 +67,39 @@ export const handler: Handler = async (event) => {
     console.log('🌐 [DEBUG] URL de Vertex AI:', url.substring(0, 80) + '...');
 
     console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        instances: [{ prompt: cleanPrompt }],
-        parameters: {
-          sampleCount: 1,
-          aspectRatio: body.aspectRatio || '9:16',
-          outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 },
-          safetySetting: "BLOCK_ONLY_HIGH"
-        }
-      }),
-    });
+    
+    // Timeout de 20 segundos (menor que el timeout de Netlify de 26s)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instances: [{ prompt: cleanPrompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: body.aspectRatio || '9:16',
+            outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 },
+            safetySetting: "BLOCK_ONLY_HIGH"
+          }
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        console.error('❌ [DEBUG] Timeout: Vertex AI tardó más de 20 segundos');
+        throw new Error("Timeout: Vertex AI tardó más de 20 segundos. La operación fue cancelada.");
+      }
+      throw fetchError;
+    }
 
     console.log('✅ [DEBUG] Respuesta de Vertex AI recibida. Status:', response.status);
     
