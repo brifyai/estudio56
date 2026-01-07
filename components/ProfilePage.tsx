@@ -386,15 +386,15 @@ export const ProfilePage: React.FC = () => {
                 <div className="bg-black/30 rounded-2xl p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-white/60">Precio mensual</span>
-                    <span className="text-white font-medium">${userProfile.user_plans.price.toLocaleString('es-CL')}</span>
+                    <span className="text-white font-medium">${(userProfile.user_plans.price || 0).toLocaleString('es-CL')}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/60">IVA {userProfile.user_plans.iva_percentage}%</span>
-                    <span className="text-white/50 text-sm">+${userProfile.user_plans.iva_amount.toLocaleString('es-CL')}</span>
+                    <span className="text-white/60">IVA {userProfile.user_plans.iva_percentage || 19}%</span>
+                    <span className="text-white/50 text-sm">+${(userProfile.user_plans.iva_amount || 0).toLocaleString('es-CL')}</span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-white/10">
                     <span className="text-white/80 font-medium">Total mensual</span>
-                    <span className="text-white font-bold text-xl">${userProfile.user_plans.price_with_iva.toLocaleString('es-CL')}</span>
+                    <span className="text-white font-bold text-xl">${(userProfile.user_plans.price_with_iva || 0).toLocaleString('es-CL')}</span>
                   </div>
                 </div>
               )}
