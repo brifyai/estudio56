@@ -60,11 +60,11 @@ export const handler: Handler = async (event) => {
 
     console.log('📝 Creating subscription for:', { userId, planId });
 
-    // Get plan details from database
+    // Get plan details from database (search by name, not id)
     const { data: plan, error: planError } = await supabase
       .from('user_plans')
       .select('*')
-      .eq('id', planId)
+      .eq('name', planId)
       .single();
 
     if (planError || !plan) {
