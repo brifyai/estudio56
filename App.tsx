@@ -1343,9 +1343,27 @@ const handleGenerate = async () => {
             message: ':: GENERANDO_VIDEO_0% ::'
           });
           
+          // IMPORTANTE: Remover cualquier mención de texto del prompt para videos
+          // Los videos NO deben tener texto superpuesto (se agrega después en la UI)
+          const videoPrompt = enhancedPrompt
+            .replace(/with text[^.]*\./gi, '.')
+            .replace(/text overlay[^.]*\./gi, '.')
+            .replace(/typography[^.]*\./gi, '.')
+            .replace(/words[^.]*\./gi, '.')
+            .replace(/letters[^.]*\./gi, '.')
+            .replace(/font[^.]*\./gi, '.')
+            .replace(/headline[^.]*\./gi, '.')
+            .replace(/title[^.]*\./gi, '.')
+            .replace(/caption[^.]*\./gi, '.')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          console.log('📝 [Video] Prompt original length:', enhancedPrompt.length);
+          console.log('📝 [Video] Prompt sin texto length:', videoPrompt.length);
+          
           const videoUrl = await generateVideoAndWait(
             {
-              prompt: enhancedPrompt,
+              prompt: videoPrompt, // ← Usar prompt sin texto
               // ← NO requiere imageUrl (T2V genera directamente desde prompt)
               quality: imageQuality === 'draft' ? 'draft' : 'hd', // ← 'draft' (480P) o 'hd' (720P)
               aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1',
