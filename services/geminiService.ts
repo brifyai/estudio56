@@ -2105,10 +2105,10 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       console.log('🎬 [Video HD] Usando gemini-3.0-pro-image-exp + 1K');
     }
   } else {
-    // Imágenes: Usar modelos existentes
+    // Imágenes: Usar modelos específicos para generación de imágenes
     if (quality === 'draft') {
-      // CAMBIADO: gemini-2.0-flash-exp es más estable
-      model = 'gemini-2.0-flash-exp';
+      // gemini-2.5-flash-image es el modelo correcto para imágenes draft
+      model = 'gemini-2.5-flash-image';
     } else {
       model = 'gemini-3.0-pro-image-exp';
     }
@@ -2116,19 +2116,24 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   
   if (quality === 'draft') {
     try {
-        // Use same seed, same prompt structure, just different model variant
-        // NOTE: Gemini 2.5 Flash doesn't support negative_prompt directly,
-        // but we include it in the prompt for better results
-        const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-        // Para videos draft: usar 480p
-        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, false, '480p');
+        // Para draft: usar prompt SIMPLIFICADO para evitar SAFETY_BLOCK
+        // Extraer solo el sujeto principal del prompt
+        const subjectMatch = enhancedDescription.match(/^[^.]+/)?.[0] || enhancedDescription;
+        const simplifiedPrompt = buildSimplifiedPrompt(subjectMatch.trim(), activeStyleLabel.toLowerCase(), '9:16');
+        
+        console.log(`📝 [Draft] Prompt original: ${unifiedPrompt.substring(0, 100)}...`);
+        console.log(`📝 [Draft] Prompt simplificado: ${simplifiedPrompt}`);
+        
+        // Para imágenes draft: usar 480p
+        imageDataUrl = await executeImageGeneration(ai, model, simplifiedPrompt, consistencySeed, aspectRatio, false, '480p');
     } catch (error: any) {
         console.warn("Draft generation failed. Retrying with same parameters...", error.message);
         
-        // Retry with same seed for consistency
+        // Retry con prompt aún más simple
         try {
-            const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-            imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo);
+            const ultraSimplePrompt = `Professional photo of a ${activeStyleLabel.toLowerCase()} business scene. 9:16 vertical format. Clean commercial photography.`;
+            console.log(`📝 [Draft Retry] Prompt ultra-simple: ${ultraSimplePrompt}`);
+            imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
         } catch (retryError) {
              console.error("Draft retry failed.", retryError);
              throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
