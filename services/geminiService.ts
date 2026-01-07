@@ -1744,32 +1744,41 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
         const simplifiedPrompt = buildSimplifiedPrompt(subject, 'professional commercial', finalAspectRatio);
         console.log(`📝 [GeminiService] Retry con prompt simplificado: ${simplifiedPrompt}`);
         
-        // Reintentar con prompt simplificado
-        const retryApiConfig = {
-          ...apiConfig,
-          contents: [{ role: 'user', parts: [{ text: simplifiedPrompt }] }]
-        };
-        
-        const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
-        
-        const retryCandidates = retryResponse.candidates;
-        if (!retryCandidates || retryCandidates.length === 0) {
-          throw new Error("Retry también falló: API retornó 0 candidatos.");
-        }
+        // 🎯 REINTENTAR SEGÚN EL TIPO DE MODELO
+        if (isImagenModel) {
+          // Para modelos de imagen: usar Vertex AI directamente
+          console.log(`📡 [GeminiService] Retry con Vertex AI para ${model}`);
+          const imageUrl = await generateWithVertexAI(model, simplifiedPrompt, finalAspectRatio, imageSize, seed);
+          console.log('✅ [GeminiService] Retry exitoso con Vertex AI');
+          return imageUrl;
+        } else {
+          // Para modelos Gemini: usar API estándar
+          const retryApiConfig = {
+            ...apiConfig,
+            contents: [{ role: 'user', parts: [{ text: simplifiedPrompt }] }]
+          };
+          
+          const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
+          
+          const retryCandidates = retryResponse.candidates;
+          if (!retryCandidates || retryCandidates.length === 0) {
+            throw new Error("Retry también falló: API retornó 0 candidatos.");
+          }
 
-        const retryParts = retryCandidates[0].content?.parts;
-        if (!retryParts || retryParts.length === 0) {
-          throw new Error("Retry también falló: Respuesta vacía.");
-        }
+          const retryParts = retryCandidates[0].content?.parts;
+          if (!retryParts || retryParts.length === 0) {
+            throw new Error("Retry también falló: Respuesta vacía.");
+          }
 
-        // Buscar imagen en la respuesta del retry
-        for (let i = 0; i < retryParts.length; i++) {
-          const part = retryParts[i];
-          if (part.inlineData && part.inlineData.data) {
-            let base64Data = part.inlineData.data.replace(/\s/g, '');
-            const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
-            console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
-            return imageDataUrl;
+          // Buscar imagen en la respuesta del retry
+          for (let i = 0; i < retryParts.length; i++) {
+            const part = retryParts[i];
+            if (part.inlineData && part.inlineData.data) {
+              let base64Data = part.inlineData.data.replace(/\s/g, '');
+              const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
+              console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
+              return imageDataUrl;
+            }
           }
         }
         
