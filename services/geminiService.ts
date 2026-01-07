@@ -1385,15 +1385,38 @@ export const refineDescription = async (currentDescription: string, userInstruct
 };
 
 /**
+ * Genera un prompt SIMPLIFICADO para evitar SAFETY_BLOCK
+ * Los prompts muy largos o con muchas restricciones activan los filtros de Gemini
+ */
+const buildSimplifiedPrompt = (subject: string, style: string, aspectRatio: string): string => {
+  // Prompt mínimo y directo, sin reglas extensas ni "escudos"
+  return `Professional photo of ${subject}. ${style} style. ${aspectRatio} vertical format. Clean commercial photography.`;
+};
+
+/**
  * Internal Helper to execute the image generation call
  */
 const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: string, seed: number, aspectRatio: AspectRatio, isHD: boolean, imageSize: string = '720p'): Promise<string> => {
-    const startTime = Date.now();
-    console.log(`🚀 [GeminiService] INICIANDO generación con ${model} (HD: ${isHD}) Seed: ${seed}, AspectRatio: ${aspectRatio}`);
-    
-    // ============================================
-    // APLICAR CORRECCIÓN DE CONTRADICCIONES ANTES DE ENVIAR A GEMINI
-    // ============================================
+  const startTime = Date.now();
+  console.log(`🚀 [GeminiService] INICIANDO generación con ${model} (HD: ${isHD}) Seed: ${seed}, AspectRatio: ${aspectRatio}`);
+  
+  // ============================================
+  // DETECTAR SI EL PROMPT ES DEMASIADO LARGO (causa común de SAFETY_BLOCK)
+  // Si el prompt tiene más de 1500 caracteres, usar versión simplificada
+  // ============================================
+  let finalPrompt = prompt;
+  let useSimplified = false;
+  
+  if (prompt.length > 1500) {
+    console.warn(`⚠️ [GeminiService] Prompt muy largo (${prompt.length} chars), usando versión simplificada`);
+    useSimplified = true;
+    // Extraer el sujeto principal y usar estilo genérico
+    const subjectMatch = prompt.match(/SUBJECT:\s*([^\n]+)/i) || prompt.match(/OBJECTIVE:\s*([^\n]+)/i);
+    const subject = subjectMatch ? subjectMatch[1].trim() : 'local business scene';
+    finalPrompt = buildSimplifiedPrompt(subject, 'professional commercial', '9:16');
+    console.log(`📝 [GeminiService] Prompt simplificado: ${finalPrompt.substring(0, 100)}...`);
+  } else {
+    // Aplicar corrección de contradicciones solo si no es simplificado
     const fixResult = fixPromptContradictions(prompt, {
       realityMode: 'studio',
       isStoryArt: true
@@ -1401,65 +1424,64 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     
     if (fixResult.issues.length > 0) {
       console.log('🔧 [GeminiService] Correcciones aplicadas:', fixResult.issues.length);
-      fixResult.issues.forEach((issue, i) => {
-        console.log(`   ${i + 1}. [${issue.severity.toUpperCase()}] ${issue.message}`);
-      });
     }
     
-    const finalPrompt = fixResult.fixedPrompt;
+    finalPrompt = fixResult.fixedPrompt;
     console.log(`📝 [GeminiService] Prompt corregido (${finalPrompt.length} chars):`, finalPrompt.substring(0, 200) + '...');
-    
-    // Timeout de 30 segundos para generación de imagen compleja
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Timeout de generación de imagen (30s)')), 30000);
-    });
-    
-    // Ensure aspectRatio is in the correct format for Gemini API
-    const validAspectRatios: AspectRatio[] = ['1:1', '16:9', '9:16', '4:3', '3:4', '1.91:1', '4:5', '1080x1080', '1080x1920', '1080x1350'];
-    const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
-    
-    // ============================================
-    // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.5 FLASH IMAGE
-    // El modelo gemini-2.5-flash-image tiene una API específica más simple
-    // ============================================
-    
-    const isGemini25Flash = model.includes('gemini-2.5-flash-image');
-    
-    let apiConfig: any;
-    
-    if (isGemini25Flash) {
-      // Para gemini-2.5-flash-image: estructura mínima
-      // NO incluir seed, solo los parámetros requeridos
-      apiConfig = {
-        model,
-        contents: { parts: [{ text: finalPrompt }] },
-        config: {
-          imageConfig: {
-            aspectRatio: finalAspectRatio,
-            imageSize: imageSize
-          }
+  }
+  
+  // Timeout de 30 segundos para generación de imagen compleja
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Timeout de generación de imagen (30s)')), 30000);
+  });
+  
+  // Ensure aspectRatio is in the correct format for Gemini API
+  const validAspectRatios: AspectRatio[] = ['1:1', '16:9', '9:16', '4:3', '3:4', '1.91:1', '4:5', '1080x1080', '1080x1920', '1080x1350'];
+  const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
+  
+  // ============================================
+  // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.5 FLASH IMAGE
+  // El modelo gemini-2.5-flash-image tiene una API específica más simple
+  // ============================================
+  
+  const isGemini25Flash = model.includes('gemini-2.5-flash-image');
+  
+  let apiConfig: any;
+  
+  if (isGemini25Flash) {
+    // Para gemini-2.5-flash-image: estructura mínima
+    // NO incluir seed, solo los parámetros requeridos
+    apiConfig = {
+      model,
+      contents: { parts: [{ text: finalPrompt }] },
+      config: {
+        imageConfig: {
+          aspectRatio: finalAspectRatio,
+          imageSize: imageSize
         }
-      };
-      console.log(`📐 [GeminiService] Usando config SIMPLE para ${model}`);
-    } else {
-      // Para otros modelos (gemini-3.0-pro-image-exp): incluir seed
-      apiConfig = {
-        model,
-        contents: { parts: [{ text: finalPrompt }] },
-        config: {
-          seed: seed,
-          imageConfig: {
-            aspectRatio: finalAspectRatio,
-            imageSize: imageSize
-          }
+      }
+    };
+    console.log(`📐 [GeminiService] Usando config SIMPLE para ${model}`);
+  } else {
+    // Para otros modelos (gemini-3.0-pro-image-exp): incluir seed
+    apiConfig = {
+      model,
+      contents: { parts: [{ text: finalPrompt }] },
+      config: {
+        seed: seed,
+        imageConfig: {
+          aspectRatio: finalAspectRatio,
+          imageSize: imageSize
         }
-      };
-      console.log(`📐 [GeminiService] Usando config para ${model}: seed=${seed}`);
-    }
-    
-    // Race entre la API y el timeout
-    const apiPromise = ai.models.generateContent(apiConfig);
+      }
+    };
+    console.log(`📐 [GeminiService] Usando config para ${model}: seed=${seed}`);
+  }
+  
+  // Race entre la API y el timeout
+  const apiPromise = ai.models.generateContent(apiConfig);
 
+  try {
     const response = await Promise.race([apiPromise, timeoutPromise]) as any;
 
     const candidates = response.candidates;
@@ -1578,7 +1600,57 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     }
 
     throw new Error("La API respondió, pero no generó datos de imagen válidos.");
-  };
+  } catch (error: any) {
+    // ============================================
+    // RETRY CON PROMPT SIMPLIFICADO SI HAY SAFETY_BLOCK O ERROR
+    // ============================================
+    if ((error.message?.includes('SAFETY_BLOCK') || error.message?.includes('invalid argument') || error.message?.includes('400')) && !useSimplified) {
+      console.warn(`⚠️ [GeminiService] Error inicial, reintentando con prompt simplificado...`);
+      
+      // Extraer sujeto del prompt original
+      const subjectMatch = prompt.match(/SUBJECT:\s*([^\n]+)/i) || prompt.match(/OBJECTIVE:\s*([^\n]+)/i) || prompt.match(/SCENE:\s*([^\n]+)/i);
+      const subject = subjectMatch ? subjectMatch[1].trim() : 'professional business scene';
+      
+      // Usar prompt simplificado
+      const simplifiedPrompt = buildSimplifiedPrompt(subject, 'professional commercial', finalAspectRatio);
+      console.log(`📝 [GeminiService] Retry con prompt simplificado: ${simplifiedPrompt}`);
+      
+      // Reintentar con prompt simplificado
+      const retryApiConfig = {
+        ...apiConfig,
+        contents: { parts: [{ text: simplifiedPrompt }] }
+      };
+      
+      const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
+      
+      const retryCandidates = retryResponse.candidates;
+      if (!retryCandidates || retryCandidates.length === 0) {
+        throw new Error("Retry también falló: API retornó 0 candidatos.");
+      }
+
+      const retryParts = retryCandidates[0].content?.parts;
+      if (!retryParts || retryParts.length === 0) {
+        throw new Error("Retry también falló: Respuesta vacía.");
+      }
+
+      // Buscar imagen en la respuesta del retry
+      for (let i = 0; i < retryParts.length; i++) {
+        const part = retryParts[i];
+        if (part.inlineData && part.inlineData.data) {
+          let base64Data = part.inlineData.data.replace(/\s/g, '');
+          const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
+          console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
+          return imageDataUrl;
+        }
+      }
+      
+      throw new Error("Retry con prompt simplificado no generó imagen válida.");
+    }
+    
+    // Si ya usamos simplificado o es otro error, relanzar
+    throw error;
+  }
+};
 
 
 /**
