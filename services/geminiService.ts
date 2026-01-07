@@ -2327,17 +2327,18 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   } else {
     // ============================================
     // 🎯 IMÁGENES: USAR MODELOS DE IMAGEN (NO Gemini)
-    // Para draft Y para videos draft, usar imagen-3.0-fast-001
+    // Draft: imagen-3.0-fast-001 (garantizado disponible)
+    // HD: imagen-4.0-generate-001 (mejor calidad, habilitar en Model Garden)
     // gemini-2.0-flash-exp NO tiene capacidades de generación de imágenes
     // ============================================
     if (quality === 'draft') {
-      // Draft: imagen-3.0-fast-001 (modelo disponible)
+      // Draft: imagen-3.0-fast-001 (modelo rápido y disponible)
       model = 'imagen-3.0-fast-001';
       console.log('🖼️ [Image Draft] Usando imagen-3.0-fast-001');
     } else {
-      // HD: imagen-3.0-fast-001 (mismo modelo para draft y HD)
-      model = 'imagen-3.0-fast-001';
-      console.log('💎 [Image HD] Usando imagen-3.0-fast-001');
+      // HD: imagen-4.0-generate-001 (mejor calidad)
+      model = 'imagen-4.0-generate-001';
+      console.log('💎 [Image HD] Usando imagen-4.0-generate-001 (habilitado en Model Garden)');
     }
   }
   

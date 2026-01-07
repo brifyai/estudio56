@@ -16,21 +16,18 @@ export const MODELS = {
   ORCHESTRATOR: 'gemini-2.0-flash-001',
   ANALYZER: 'gemini-2.0-flash-001',
   
-  // Imagen 3 Generate - Generación de imágenes (modelo disponible en el proyecto)
+  // Imagen 3 Fast - Generación de imágenes (garantizado disponible)
   // Costo: ~$0.02 USD por imagen
-  // Usado para: Borradores y HD (mismo modelo para ambas calidades)
   DRAFT_ENGINE: 'imagen-3.0-fast-001',
 
   // ============================================
   // 💎 MODELOS PREMIUM (Pro / Veo)
   // ============================================
 
-  // Imagen 3 Generate - Alta fidelidad HD
-  // Usado para: Versiones finales, exportación HD/4K
-  HD_ENGINE: 'imagen-3.0-fast-001',
+  // Imagen 4 Generate - Alta fidelidad HD (habilitar en Model Garden)
+  HD_ENGINE: 'imagen-4.0-generate-001',
 
   // Veo 1.0 - Generación de video
-  // Usado para: Motion graphics, video ads
   VIDEO_ENGINE: 'veo-1.0-preview-001'
 } as const;
 
@@ -76,6 +73,8 @@ export const getModelDisplayName = (modelId: string): string => {
   const names: Record<string, string> = {
     [MODELS.ORCHESTRATOR]: 'Gemini 2.0 Flash',
     'imagen-3.0-fast-001': 'Imagen 3 Fast',
+    'imagen-4.0-generate-001': 'Imagen 4 Generate',
+    'imagen-4.0-ultra-generate-001': 'Imagen 4 Ultra',
     [MODELS.VIDEO_ENGINE]: 'Veo 1.0'
   };
   return names[modelId] || modelId;
