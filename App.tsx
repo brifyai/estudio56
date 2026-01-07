@@ -2198,8 +2198,8 @@ const handleGenerate = async () => {
                 {/* Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
-                {/* Botón Genera nuevo borrador - Solo visible cuando hay borrador */}
-                {draftImageUrl && (
+                {/* Botón Genera nuevo borrador - Solo visible cuando hay borrador y NO está el comparador abierto */}
+                {draftImageUrl && !showRealityComparator && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
                     <button
                       onClick={() => {
@@ -2292,16 +2292,16 @@ const handleGenerate = async () => {
             onClick={() => setShowRealityComparator(false)}
           />
           <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
-            {/* Header con título centrado y botón cerrar */}
-            <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5 relative">
-              <span className="text-xs font-bold">Comparar realidad</span>
+            {/* Botón cerrar centrado */}
+            <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
               <button
                 onClick={() => setShowRealityComparator(false)}
-                className="absolute right-4 w-6 h-6 flex items-center justify-center rounded bg-white/5 hover:bg-white/10 lg:hidden"
+                className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
+                <span className="text-xs font-medium">Cerrar comparación</span>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
