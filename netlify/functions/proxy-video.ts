@@ -11,6 +11,19 @@ export const handler: Handler = async (event) => {
   console.log('🎥 [Video Proxy] HTTP Method:', event.httpMethod);
   console.log('🎥 [Video Proxy] ===========================================');
   
+  // Manejar CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+      body: '',
+    };
+  }
+  
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -44,22 +57,45 @@ export const handler: Handler = async (event) => {
     console.log('📊 [Video Proxy] Content-Type:', response.headers.get('content-type'));
     console.log('📊 [Video Proxy] Content-Length:', response.headers.get('content-length'));
     
+    const contentLength = response.headers.get('content-length');
+    const sizeInMB = contentLength ? (parseInt(contentLength) / 1024 / 1024).toFixed(2) : 'unknown';
+    console.log('📊 [Video Proxy] Tamaño del video:', sizeInMB, 'MB');
+    
     // Obtener el video como buffer
     const videoBuffer = await response.arrayBuffer();
     const videoBase64 = Buffer.from(videoBuffer).toString('base64');
     
     console.log('✅ [Video Proxy] Video convertido a base64');
-    console.log('📊 [Video Proxy] Tamaño:', videoBase64.length, 'caracteres');
+    console.log('📊 [Video Proxy] Tamaño base64:', (videoBase64.length / 1024 / 1024).toFixed(2), 'MB');
+    
+    // Verificar límite de Netlify (6 MB)
+    const base64SizeMB = videoBase64.length / 1024 / 1024;
+    if (base64SizeMB > 5.5) {
+      console.warn('⚠️ [Video Proxy] Video muy grande:', base64SizeMB.toFixed(2), 'MB (límite: 6 MB)');
+      console.warn('⚠️ [Video Proxy] Retornando URL directa de Alibaba Cloud');
+      
+      // Si el video es muy grande, retornar la URL directa con instrucciones
+      return {
+        statusCode: 307, // Temporary Redirect
+        headers: {
+          'Location': videoUrl,
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: '',
+      };
+    }
 
     // Retornar el video con headers CORS correctos
     return {
       statusCode: 200,
       headers: {
         'Content-Type': response.headers.get('content-type') || 'video/mp4',
+        'Content-Length': contentLength || videoBuffer.byteLength.toString(),
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Cache-Control': 'public, max-age=86400', // Cache por 24 horas
+        'Accept-Ranges': 'bytes',
       },
       body: videoBase64,
       isBase64Encoded: true,
