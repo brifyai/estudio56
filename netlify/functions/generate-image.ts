@@ -69,12 +69,12 @@ export const handler: Handler = async (event) => {
         version: 'v1beta1'
       },
       'imagen-3.0-capability-001': {
-        endpoint: 'imagen-3-0-generate-002',
-        version: 'v1'
+        endpoint: 'imagen-3-0-fast-generate',
+        version: 'v1beta1'
       },
       'imagen-3.0-generate-002': {
-        endpoint: 'imagen-3-0-generate-002',
-        version: 'v1'
+        endpoint: 'imagen-3-0-fast-generate',
+        version: 'v1beta1'
       },
       'imagen-4.0-fast-generate-001': {
         endpoint: 'imagen-4-0-fast-generate-001',
@@ -90,7 +90,7 @@ export const handler: Handler = async (event) => {
       }
     };
     
-    const modelConfig = modelMap[body.model] || modelMap['imagen-3.0-generate-002'];
+    const modelConfig = modelMap[body.model] || modelMap['imagen-3.0-fast-001'];
     const vertexModel = modelConfig.endpoint;
     const apiVersion = modelConfig.version;
     

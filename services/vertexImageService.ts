@@ -1,9 +1,9 @@
 /**
  * 🎯 Vertex AI Image Generation Service - Estudio 56
- * 
+ *
  * Usa los modelos correctos de Imagen a través de Vertex AI:
- * - Draft/HD: imagen-3.0-capability-001 (modelo actualizado)
- * 
+ * - Draft/HD: imagen-3.0-fast-001
+ *
  * IMPORTANTE: Gemini 2.0 Flash es SOLO para razonamiento, NO para imágenes.
  */
 
@@ -174,7 +174,7 @@ export const handleVertexImageGeneration = async (config: VertexImageConfig) => 
   
   // Verificar que usamos modelos de Imagen, NO Gemini
   if (model.includes('gemini') && !model.includes('imagen')) {
-    throw new Error('ERROR: No usar modelos Gemini para generación de imágenes. Usar imagen-3.0-capability-001');
+    throw new Error('ERROR: No usar modelos Gemini para generación de imágenes. Usar imagen-3.0-fast-001');
   }
   
   // Configuración de la solicitud a Vertex AI
@@ -244,8 +244,8 @@ export const isValidImageModel = (modelId: string): boolean => {
 export const getEstimatedCost = (quality: 'draft' | 'hd'): number => {
   // Precios aproximados en USD
   const costs = {
-    draft: 0.02,  // imagen-3.0-capability-001
-    hd: 0.02      // imagen-3.0-capability-001
+    draft: 0.02,  // imagen-3.0-fast-001
+    hd: 0.02      // imagen-3.0-fast-001
   };
   return costs[quality];
 };

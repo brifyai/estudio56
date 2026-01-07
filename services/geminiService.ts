@@ -708,7 +708,7 @@ const getAiClient = () => new GoogleGenAI({
 
 // ============================================
 // 🎯 VERTEX AI HELPER PARA MODELOS DE IMAGEN
-// Los modelos de imagen (imagen-3.0-capability-001) requieren Vertex AI
+// Los modelos de imagen (imagen-3.0-fast-001) requieren Vertex AI
 // ============================================
 const generateWithVertexAI = async (
   model: string,
@@ -1535,7 +1535,7 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
   
   if (isImagenModel) {
     // ============================================
-    // 🎯 MODELOS DE IMAGEN (imagen-3.0-capability-001)
+    // 🎯 MODELOS DE IMAGEN (imagen-3.0-fast-001)
     // Usan Vertex AI API, estructura diferente
     // ============================================
     apiConfig = {
@@ -1764,7 +1764,7 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       // ============================================
       // RETRY CON PROMPT SIMPLIFICADO SI HAY SAFETY_BLOCK O ERROR
       // ============================================
-      // Para modelos de imagen (imagen-3.0-capability-001), el retry SIEMPRE debe ejecutarse
+      // Para modelos de imagen (imagen-3.0-fast-001), el retry SIEMPRE debe ejecutarse
       // porque Vertex AI puede fallar por timeout, rate limit, o errores de red
       // IMPORTANTE: Para modelos de imagen, siempre reintentamos aunque ya haya sido simplificado
       // MODIFICADO: Ahora siempre reintentamos para modelos de imagen, sin importar si useSimplified
@@ -2307,8 +2307,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   // ============================================
   // 🎯 ARQUITECTURA CORRECTA: Modelos de Imagen (NO Gemini)
   // ============================================
-  // Draft: imagen-3.0-capability-001 (modelo actualizado)
-  // HD: imagen-3.0-capability-001 (mismo modelo para ambas calidades)
+  // Draft: imagen-3.0-fast-001 (modelo disponible)
+  // HD: imagen-3.0-fast-001 (mismo modelo para ambas calidades)
   // Gemini 2.0 Flash: SOLO para razonamiento, NO para imágenes
   // ============================================
   
@@ -2327,17 +2327,17 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   } else {
     // ============================================
     // 🎯 IMÁGENES: USAR MODELOS DE IMAGEN (NO Gemini)
-    // Para draft Y para videos draft, usar imagen-3.0-capability-001
+    // Para draft Y para videos draft, usar imagen-3.0-fast-001
     // gemini-2.0-flash-exp NO tiene capacidades de generación de imágenes
     // ============================================
     if (quality === 'draft') {
-      // Draft: imagen-3.0-capability-001 (modelo actualizado y disponible)
-      model = 'imagen-3.0-capability-001';
-      console.log('🖼️ [Image Draft] Usando imagen-3.0-capability-001 (modelo actualizado)');
+      // Draft: imagen-3.0-fast-001 (modelo disponible)
+      model = 'imagen-3.0-fast-001';
+      console.log('🖼️ [Image Draft] Usando imagen-3.0-fast-001');
     } else {
-      // HD: imagen-3.0-capability-001 (mismo modelo para draft y HD)
-      model = 'imagen-3.0-capability-001';
-      console.log('💎 [Image HD] Usando imagen-3.0-capability-001 (modelo actualizado)');
+      // HD: imagen-3.0-fast-001 (mismo modelo para draft y HD)
+      model = 'imagen-3.0-fast-001';
+      console.log('💎 [Image HD] Usando imagen-3.0-fast-001');
     }
   }
   
