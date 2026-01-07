@@ -27,12 +27,64 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
   const [loadingEquivalences, setLoadingEquivalences] = useState(true);
   const [processingRecharge, setProcessingRecharge] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [userCredits, setUserCredits] = useState<number>(0);
+  const [userPlanName, setUserPlanName] = useState<string>('');
+  const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
       loadEquivalences();
+      loadUserData();
     }
   }, [isOpen]);
+
+  const loadUserData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: user } = await supabase
+          .from('users')
+          .select('credits, user_plans(*)')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (user) {
+          setUserCredits(user.credits || 0);
+          // user_plans es un array, obtener el primer elemento
+          const userPlans = user.user_plans as any[];
+          const planName = userPlans?.[0]?.name || 'GRATIS';
+          setUserPlanName(planName);
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando datos del usuario:', error);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
+  // Calcular si el usuario tiene pocos créditos (menos de 20% del plan)
+  const getLowCreditsWarning = () => {
+    const planCredits: Record<string, number> = {
+      'ESTOY PARTIENDO': 40,
+      'JEFE PYME': 150,
+      'AGENCIA': 500,
+      'GRATIS': 0
+    };
+    const maxCredits = planCredits[userPlanName] || 0;
+    const percentage = maxCredits > 0 ? (userCredits / maxCredits) * 100 : 100;
+    
+    if (percentage <= 20 && maxCredits > 0) {
+      return {
+        show: true,
+        message: `⚠️ Te quedan solo ${userCredits} créditos (${Math.round(percentage)}%). ¡Renueva ahora para no quedarte sin generar!`,
+        type: 'warning'
+      };
+    }
+    return { show: false, message: '', type: 'warning' };
+  };
+
+  const lowCreditsWarning = getLowCreditsWarning();
 
   const loadEquivalences = async () => {
     try {
@@ -182,6 +234,31 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
           <p className="text-white/40 text-base max-w-2xl mx-auto font-light">
             Infraestructura de diseño de nivel empresarial, accesible para todos.
           </p>
+          
+          {/* ADVERTENCIA DE CRÉDITOS BAJOS */}
+          {lowCreditsWarning.show && (
+            <div className={`mt-4 p-3 rounded-xl max-w-xl mx-auto ${
+              lowCreditsWarning.type === 'warning'
+                ? 'bg-orange-500/20 border border-orange-500/50'
+                : 'bg-red-500/20 border border-red-500/50'
+            }`}>
+              <p className="text-sm text-white">
+                {lowCreditsWarning.message}
+              </p>
+            </div>
+          )}
+          
+          {/* INFO DEL USUARIO */}
+          {!loadingUser && (
+            <div className="mt-4 flex items-center justify-center gap-4 text-sm text-white/60">
+              <span className="bg-white/10 px-3 py-1 rounded-lg">
+                Plan: <span className="text-white font-bold">{userPlanName}</span>
+              </span>
+              <span className="bg-white/10 px-3 py-1 rounded-lg">
+                Créditos: <span className="text-green-400 font-bold">{userCredits}</span>
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-8 pb-4">
