@@ -1215,7 +1215,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     setMarketingObjective('branding');
                     await handleGenerateTextOptions('branding');
                   }}
-                  className="p-4 rounded-xl border-2 border-purple-500/30 bg-gradient-to-r from-purple-900/20 to-pink-900/20 hover:border-purple-400/50 transition-all"
+                  className="p-4 rounded-xl border-2 border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/50 transition-all"
                 >
                   <div className="font-bold text-white text-sm mb-1">BRANDING</div>
                   <div className="text-[10px] text-white/70">Reconocimiento de marca</div>
@@ -1227,7 +1227,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     setMarketingObjective('leads');
                     await handleGenerateTextOptions('leads');
                   }}
-                  className="p-4 rounded-xl border-2 border-green-500/30 bg-gradient-to-r from-green-900/20 to-emerald-900/20 hover:border-green-400/50 transition-all"
+                  className="p-4 rounded-xl border-2 border-white/10 bg-white/5 hover:bg-white/10 hover:border-green-400/50 transition-all"
                 >
                   <div className="font-bold text-white text-sm mb-1">LEADS</div>
                   <div className="text-[10px] text-white/70">Generar conversiones</div>
