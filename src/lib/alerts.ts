@@ -156,6 +156,22 @@ export const estudioAlerts = {
     });
   },
 
+  // Alerta de advertencia
+  warning: (message: string) => {
+    return Swal.fire({
+      ...commonConfig,
+      toast: true,
+      position: 'top-end',
+      icon: 'warning',
+      iconColor: colors.warning,
+      title: message,
+      showConfirmButton: false,
+      timer: 4000,
+      background: colors.surface,
+      timerProgressBar: true,
+    });
+  },
+
   // Cargando (Loading State)
   loading: (title: string = 'Procesando con IA...') => {
     Swal.fire({

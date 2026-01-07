@@ -72,6 +72,7 @@ export const handler: Handler = async (event) => {
     console.log('📝 [DEBUG] Prompt limpio (primeros 100 chars):', cleanPrompt.substring(0, 100));
 
     // URL para generación de video con Veo
+    // Nota: Veo 3.1 usa el método :generateVideos (no :predict)
     const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:generateVideos`;
     console.log('🌐 [DEBUG] URL de Vertex AI:', url);
 
@@ -81,11 +82,15 @@ export const handler: Handler = async (event) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000);
     
-    // Estructura del request para Veo
+    // Estructura del request para Veo 3.1
+    // Documentación: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/video-generation
     const requestBody = {
       prompt: cleanPrompt,
       aspectRatio: body.aspectRatio || '9:16',
-      duration: body.duration || '6s'
+      duration: body.duration || '6s',
+      // Parámetros opcionales para Veo 3.1
+      personGeneration: 'allow_adult',
+      safetySetting: 'block_only_high'
     };
     
     let response: Response;
@@ -111,8 +116,19 @@ export const handler: Handler = async (event) => {
 
     console.log('✅ [DEBUG] Respuesta de Vertex AI recibida. Status:', response.status);
     
-    const data = await response.json();
-    console.log('📊 [DEBUG] Respuesta keys:', Object.keys(data));
+    // Leer el texto de la respuesta primero
+    const responseText = await response.text();
+    console.log('📄 [DEBUG] Respuesta raw (primeros 500 chars):', responseText.substring(0, 500));
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log('📊 [DEBUG] Respuesta keys:', Object.keys(data));
+    } catch (parseError) {
+      console.error('❌ [DEBUG] Error parseando JSON:', parseError);
+      console.error('❌ [DEBUG] Respuesta completa:', responseText);
+      throw new Error(`Error parseando respuesta de Vertex AI: ${responseText.substring(0, 200)}`);
+    }
 
     if (!response.ok) {
       console.error('❌ [DEBUG] Error HTTP de Google:', response.status);
