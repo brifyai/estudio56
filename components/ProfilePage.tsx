@@ -241,361 +241,378 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#030303] text-white">
       {/* Header */}
-      <div className="border-b border-white/5">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+      <div className="border-b border-white/5 bg-gradient-to-r from-blue-900/20 to-purple-900/20">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Perfil de Cuenta</h1>
+            <div>
+              <h1 className="text-3xl font-bold">Perfil de Cuenta</h1>
+              <p className="text-white/50 text-sm mt-1">Gestiona tu información y suscripción</p>
+            </div>
             <button
               onClick={handleLogout}
-              className="text-red-400 hover:text-red-300 transition-colors text-sm"
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors text-sm flex items-center gap-2"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
               Cerrar Sesión
             </button>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Content - Full width */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Top Row - Profile & Plan */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
           {/* Información Personal */}
-          <div className="space-y-6">
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                👤 Información Personal
+          <div className="lg:col-span-2 bg-white/5 rounded-3xl p-8 border border-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-3">
+                <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">👤</span>
+                Información Personal
               </h2>
-              
-              <div className="space-y-4">
-                {isEditing ? (
-                  <>
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-blue-400 hover:text-blue-300 transition-colors text-sm flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Editar
+                </button>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {isEditing ? (
+                <div className="md:col-span-2 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm text-white/60">Nombre</label>
+                      <label className="text-sm text-white/60 mb-2 block">Nombre</label>
                       <input
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:border-blue-500/50 outline-none"
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500/50 outline-none"
                         placeholder="Tu nombre"
                       />
                     </div>
-                    
                     <div>
-                      <label className="text-sm text-white/60">Email</label>
-                      <p className="text-white/50 text-sm">{userProfile.email}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm text-white/60">Negocio</label>
+                      <label className="text-sm text-white/60 mb-2 block">Negocio</label>
                       <input
                         type="text"
                         value={editForm.business_name}
                         onChange={(e) => setEditForm({ ...editForm, business_name: e.target.value })}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white text-sm focus:border-blue-500/50 outline-none"
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-blue-500/50 outline-none"
                         placeholder="Nombre de tu negocio"
                       />
                     </div>
-                    
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={handleSaveProfile}
-                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditForm({ name: userProfile.name || '', business_name: userProfile.business_name || '' });
-                        }}
-                        className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                      >
-                        Cancelar
-                      </button>
+                  </div>
+                  <div>
+                    <label className="text-sm text-white/60 mb-2 block">Email</label>
+                    <p className="text-white/50 text-lg bg-black/20 rounded-xl p-4">{userProfile.email}</p>
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={handleSaveProfile}
+                      className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-colors font-medium"
+                    >
+                      Guardar Cambios
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditForm({ name: userProfile.name || '', business_name: userProfile.business_name || '' });
+                      }}
+                      className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white/5 rounded-2xl p-5">
+                    <label className="text-sm text-white/60 mb-2 block">Nombre</label>
+                    <p className="text-white text-lg font-medium">{userProfile.name || 'No definido'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-5">
+                    <label className="text-sm text-white/60 mb-2 block">Negocio</label>
+                    <p className="text-white text-lg font-medium">{userProfile.business_name || 'No definido'}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-5">
+                    <label className="text-sm text-white/60 mb-2 block">Email</label>
+                    <p className="text-white text-lg font-medium">{userProfile.email}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-5">
+                    <label className="text-sm text-white/60 mb-2 block">Miembro desde</label>
+                    <p className="text-white text-lg font-medium">
+                      {new Date(userProfile.created_at).toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Plan Contratado */}
+          <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-3xl p-8 border border-yellow-500/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            
+            <h2 className="text-xl font-bold flex items-center gap-3 mb-6 relative z-10">
+              <span className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center text-2xl">💎</span>
+              Tu Plan
+            </h2>
+            
+            <div className="space-y-6 relative z-10">
+              <div className="text-center">
+                <span className={`inline-block px-6 py-2 rounded-full text-lg font-bold ${
+                  userProfile.user_plans.name === 'GRATIS'
+                    ? 'bg-gray-500/30 text-gray-300'
+                    : 'bg-yellow-500/30 text-yellow-300'
+                }`}>
+                  {userProfile.user_plans.name}
+                </span>
+              </div>
+              
+              {userProfile.user_plans.price > 0 && (
+                <div className="bg-black/30 rounded-2xl p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60">Precio mensual</span>
+                    <span className="text-white font-medium">${userProfile.user_plans.price.toLocaleString('es-CL')}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60">IVA {userProfile.user_plans.iva_percentage}%</span>
+                    <span className="text-white/50 text-sm">+${userProfile.user_plans.iva_amount.toLocaleString('es-CL')}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                    <span className="text-white/80 font-medium">Total mensual</span>
+                    <span className="text-white font-bold text-xl">${userProfile.user_plans.price_with_iva.toLocaleString('es-CL')}</span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                {userProfile.user_plans.features && userProfile.user_plans.features.slice(0, 4).map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2 text-white/80 text-sm">
+                    <span className="text-green-400">✓</span>
+                    {feature}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="pt-4 space-y-3">
+                <button
+                  onClick={() => window.location.href = '/panel'}
+                  className="w-full bg-yellow-600 hover:bg-yellow-500 text-white py-3 rounded-xl transition-colors font-medium"
+                >
+                  Cambiar Plan
+                </button>
+                <button
+                  onClick={() => window.location.href = '/panel'}
+                  className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors"
+                >
+                  Volver al Panel →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Row - Credits & Usage */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          
+          {/* Contador de Créditos Principal */}
+          <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
+            <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
+              <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
+              Control de Créditos
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Main Credit Display */}
+              <div className="bg-black/30 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-white/60">Créditos Disponibles</span>
+                  <span className="text-5xl font-bold text-blue-400">{userProfile.credits}</span>
+                </div>
+                
+                {/* Monthly Progress */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-white/60">Uso este mes</span>
+                    <span className="text-white">
+                      {monthlyUsage.reduce((acc, u) => acc + u.total_used, 0)} / {userProfile.user_plans.credits_per_month}
+                    </span>
+                  </div>
+                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        getCreditUsagePercentage() > 90
+                          ? 'bg-red-500'
+                          : getCreditUsagePercentage() > 70
+                            ? 'bg-yellow-500'
+                            : 'bg-blue-500'
+                      }`}
+                      style={{ width: `${getCreditUsagePercentage()}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-white/40 text-right">
+                    {Math.round(getCreditUsagePercentage())}% utilizado
+                  </p>
+                </div>
+              </div>
+              
+              {/* Usage by Type */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">📝</span> Borradores
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('draft')}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">🖼️</span> Imágenes HD
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('final_image')}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">🎬</span> Videos
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('video')}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">📦</span> Productos
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('product_upload')}</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => window.location.href = '/panel'}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium mt-4"
+                >
+                  Obtener más créditos
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Transacciones Recientes */}
+          <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-3">
+                <span className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl">📊</span>
+                Transacciones
+              </h2>
+              <button
+                onClick={loadUserProfile}
+                className="text-white/50 hover:text-white transition-colors"
+                title="Actualizar"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
+            
+            {creditTransactions.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-white/50 text-4xl mb-3">📋</div>
+                <p className="text-white/70">Sin transacciones</p>
+                <p className="text-white/50 text-sm mt-2">Usa tus créditos para ver actividad</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {creditTransactions.slice(0, 10).map((transaction) => (
+                  <div key={transaction.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{creditService.getTransactionIcon(transaction.type)}</span>
+                      <div>
+                        <p className="text-white font-medium text-sm">
+                          {creditService.getCreditTypeName(transaction.credit_type)}
+                        </p>
+                        <p className="text-white/50 text-xs">
+                          {new Date(transaction.created_at).toLocaleDateString('es-CL', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <label className="text-sm text-white/60">Nombre</label>
-                      <p className="text-white font-medium">{userProfile.name || 'No definido'}</p>
+                    <div className="text-right">
+                      <p className={`font-bold ${transaction.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {transaction.amount > 0 ? '+' : ''}{transaction.amount}
+                      </p>
+                      <span className="text-xs text-white/50 capitalize">{transaction.type}</span>
                     </div>
-                    
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Row - Payment History */}
+        <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold flex items-center gap-3">
+              <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">💳</span>
+              Historial de Pagos
+            </h2>
+          </div>
+          
+          {payments.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-white/50 text-4xl mb-3">📋</div>
+              <p className="text-white/70">No hay pagos registrados</p>
+              {userProfile.user_plans.name === 'GRATIS' && (
+                <p className="text-white/50 text-sm mt-2">Upgrade tu plan para ver el historial de pagos</p>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {payments.map((payment) => (
+                <div key={payment.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="flex items-start justify-between mb-3">
                     <div>
-                      <label className="text-sm text-white/60">Email</label>
-                      <p className="text-white font-medium">{userProfile.email}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm text-white/60">Negocio</label>
-                      <p className="text-white font-medium">{userProfile.business_name || 'No definido'}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm text-white/60">Miembro desde</label>
-                      <p className="text-white font-medium">
-                        {new Date(userProfile.created_at).toLocaleDateString('es-CL', {
+                      <p className="text-white font-medium">{payment.description || 'Pago de plan'}</p>
+                      <p className="text-white/50 text-sm">
+                        {new Date(payment.created_at).toLocaleDateString('es-CL', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
                         })}
                       </p>
                     </div>
-                    
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
-                    >
-                      ✏️ Editar información
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Plan y Pagos */}
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                💳 Plan Contratado
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60">Plan Actual</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    userProfile.user_plans.name === 'GRATIS' 
-                      ? 'bg-gray-500/20 text-gray-300' 
-                      : 'bg-yellow-500/20 text-yellow-300'
-                  }`}>
-                    {userProfile.user_plans.name}
-                  </span>
-                </div>
-                
-                {userProfile.user_plans.price > 0 && userProfile.user_plans.iva_amount !== undefined && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Precio Neto</span>
-                      <span className="text-white font-medium">${userProfile.user_plans.price.toLocaleString('es-CL')}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">IVA {userProfile.user_plans.iva_percentage}%</span>
-                      <span className="text-white/50 text-sm">+${userProfile.user_plans.iva_amount.toLocaleString('es-CL')}</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                      <span className="text-white/80 font-medium">Total</span>
-                      <span className="text-white font-bold text-lg">${userProfile.user_plans.price_with_iva.toLocaleString('es-CL')}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {userProfile.user_plans.features && userProfile.user_plans.features.length > 0 && (
-                  <div>
-                    <label className="text-sm text-white/60 block mb-2">Características</label>
-                    <ul className="space-y-1">
-                      {userProfile.user_plans.features.map((feature, index) => (
-                        <li key={index} className="text-white/80 text-sm flex items-center gap-2">
-                          <span className="text-green-400">✓</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                <div className="pt-4 border-t border-white/10 space-y-3">
-                  <button
-                    onClick={() => window.location.href = '/panel'}
-                    className="w-full bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                  >
-                    Cambiar Plan
-                  </button>
-                  <button
-                    onClick={() => window.location.href = '/panel'}
-                    className="w-full bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                  >
-                    ← Volver al Panel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Créditos y Transacciones */}
-          <div className="space-y-6">
-            {/* Contador de Créditos */}
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                💰 Control de Créditos
-              </h2>
-              
-              {/* Main Credit Display */}
-              <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl p-4 mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white/60 text-sm">Créditos Disponibles</span>
-                  <span className="text-3xl font-bold text-blue-400">{userProfile.credits}</span>
-                </div>
-                
-                {/* Monthly Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/60">Uso Mensual</span>
-                    <span className="text-white">
-                      {monthlyUsage.reduce((acc, u) => acc + u.total_used, 0)} / {userProfile.user_plans.credits_per_month}
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      payment.status === 'completed'
+                        ? 'bg-green-500/20 text-green-300'
+                        : 'bg-yellow-500/20 text-yellow-300'
+                    }`}>
+                      {payment.status}
                     </span>
                   </div>
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all ${
-                        getCreditUsagePercentage() > 90 
-                          ? 'bg-red-500' 
-                          : getCreditUsagePercentage() > 70 
-                            ? 'bg-yellow-500' 
-                            : 'bg-blue-500'
-                      }`}
-                      style={{ width: `${getCreditUsagePercentage()}%` }}
-                    />
-                  </div>
+                  <p className="text-green-400 font-bold text-xl">${payment.amount.toLocaleString('es-CL')}</p>
                 </div>
-              </div>
-
-              {/* Usage by Type */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                    <span className="text-white/70 text-sm">📝 Borradores</span>
-                    <span className="text-white font-medium">{getUsageByType('draft')}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                    <span className="text-white/70 text-sm">🖼️ Imágenes Finales</span>
-                    <span className="text-white font-medium">{getUsageByType('final_image')}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                    <span className="text-white/70 text-sm">🎬 Videos</span>
-                    <span className="text-white font-medium">{getUsageByType('video')}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                    <span className="text-white/70 text-sm">📦 Subir Productos</span>
-                    <span className="text-white font-medium">{getUsageByType('product_upload')}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-white/10">
-                <button 
-                  onClick={() => window.location.href = '/panel'}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                >
-                  Obtener más créditos
-                </button>
-              </div>
+              ))}
             </div>
-
-            {/* Transacciones de Créditos */}
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  📊 Transacciones de Créditos
-                </h2>
-                <button
-                  onClick={loadUserProfile}
-                  className="text-white/50 hover:text-white text-sm transition-colors"
-                >
-                  🔄 Actualizar
-                </button>
-              </div>
-              
-              {creditTransactions.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-white/50 text-4xl mb-2">📋</div>
-                  <p className="text-white/70">No hay transacciones</p>
-                  <p className="text-white/50 text-sm mt-2">Usa tus créditos para ver el historial</p>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {creditTransactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{creditService.getTransactionIcon(transaction.type)}</span>
-                        <div>
-                          <p className="text-white font-medium text-sm">
-                            {creditService.getCreditTypeName(transaction.credit_type)}
-                          </p>
-                          <p className="text-white/60 text-xs">
-                            {new Date(transaction.created_at).toLocaleDateString('es-CL', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-bold ${transaction.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {transaction.amount > 0 ? '+' : ''}{transaction.amount}
-                        </p>
-                        <span className="text-xs text-white/50 capitalize">{transaction.type}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Historial de Pagos */}
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                💳 Historial de Pagos
-              </h2>
-              
-              {payments.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-white/50 text-4xl mb-2">📋</div>
-                  <p className="text-white/70">No hay pagos registrados</p>
-                  {userProfile.user_plans.name === 'GRATIS' && (
-                    <p className="text-white/50 text-sm mt-2">Upgrade tu plan para ver el historial</p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {payments.map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <div>
-                        <p className="text-white font-medium text-sm">{payment.description || 'Pago de plan'}</p>
-                        <p className="text-white/60 text-xs">
-                          {new Date(payment.created_at).toLocaleDateString('es-CL', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-green-400 font-bold">${payment.amount.toLocaleString('es-CL')}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          payment.status === 'completed' 
-                            ? 'bg-green-500/20 text-green-300' 
-                            : 'bg-yellow-500/20 text-yellow-300'
-                        }`}>
-                          {payment.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Acciones */}
-        <div className="mt-8 pt-8 border-t border-white/10">
-          <div className="flex flex-wrap gap-4">
-            {/* Botón eliminado - solo queda el espacio */}
-          </div>
+          )}
         </div>
       </div>
     </div>
