@@ -1,6 +1,9 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 
+// UUID type alias
+type UUID = string;
+
 // Inicializar Supabase
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,

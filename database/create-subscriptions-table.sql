@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  plan_id VARCHAR(50) NOT NULL REFERENCES user_plans(id),
+  plan_id UUID NOT NULL REFERENCES user_plans(id),
   mp_preapproval_id VARCHAR(100) UNIQUE NOT NULL,
   status VARCHAR(50) DEFAULT 'pending',
   amount DECIMAL(10, 2) NOT NULL,
