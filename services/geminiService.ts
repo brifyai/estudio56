@@ -1763,12 +1763,13 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       // ============================================
       // Para modelos de imagen (imagen-3.0-fast-001), el retry SIEMPRE debe ejecutarse
       // porque Vertex AI puede fallar por timeout, rate limit, o errores de red
-      const shouldRetry = isImagenModel ||
-                         (error.message?.includes('SAFETY_BLOCK') ||
-                          error.message?.includes('invalid argument') ||
-                          error.message?.includes('400'));
+      // IMPORTANTE: Para modelos de imagen, siempre reintentamos aunque ya haya sido simplificado
+      const isRetryableImagenError = isImagenModel && !useSimplified;
+      const isGeminiRetryable = error.message?.includes('SAFETY_BLOCK') ||
+                                error.message?.includes('invalid argument') ||
+                                error.message?.includes('400');
       
-      if (shouldRetry && !useSimplified) {
+      if (isRetryableImagenError || isGeminiRetryable) {
         console.warn(`⚠️ [GeminiService] Error inicial (${error.message?.substring(0, 100)}...), reintentando con prompt simplificado...`);
         
         // Extraer sujeto del prompt original
