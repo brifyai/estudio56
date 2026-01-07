@@ -22,24 +22,33 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
 -- Enable RLS
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
--- Create policies
-CREATE POLICY IF NOT EXISTS "Users can view their own subscriptions"
-  ON subscriptions FOR SELECT
-  USING (auth.uid() = user_id);
+-- Create policies for RLS
+DO $$
+BEGIN
+  -- Users can view their own subscriptions
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'subscriptions' AND policyname = 'users_can_view_own_subscriptions'
+  ) THEN
+    CREATE POLICY "users_can_view_own_subscriptions" ON subscriptions
+      FOR SELECT USING (auth.uid() = user_id);
+  END IF;
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own subscriptions"
-  ON subscriptions FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  -- Users can insert their own subscriptions
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'subscriptions' AND policyname = 'users_can_insert_own_subscriptions'
+  ) THEN
+    CREATE POLICY "users_can_insert_own_subscriptions" ON subscriptions
+      FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
 
-CREATE POLICY IF NOT EXISTS "Admins can view all subscriptions"
-  ON subscriptions FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE users.id = auth.uid()
-      AND users.role = 'admin'
-    )
-  );
+  -- Users can update their own subscriptions
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'subscriptions' AND policyname = 'users_can_update_own_subscriptions'
+  ) THEN
+    CREATE POLICY "users_can_update_own_subscriptions" ON subscriptions
+      FOR UPDATE USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- Add trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
