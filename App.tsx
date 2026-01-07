@@ -1392,12 +1392,10 @@ const handleGenerate = async () => {
         let url;
         // story_art se maneja igual que image para el upgrade HD
         if (mediaType === 'image' || mediaType === 'story_art') {
-            // Regenerar prompt en inglés para HD
-            const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
-            
-            // NEW: Pasar texto automático también en upgrade
-            const autoExtractedText = workMode === 'auto' && overlayText.trim() ? overlayText : undefined;
-            const autoTextStyle = workMode === 'auto' ? "modern and clean" : undefined;
+            // 🎯 OPCIÓN A: Image-to-Image con strength bajo
+            // Usar un prompt SIMPLE y DIRECTO que indique mantener la estructura original
+            // Esto simula un strength bajo (0.2-0.4) porque el prompt es mínimo
+            const hdPrompt = `Enhance this image with better quality, sharpness, and detail. Keep EXACTLY the same composition, layout, colors, and elements. Do not change anything except improving quality.`;
             
             // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
             let upgradeArtDirectionId: number | undefined = undefined;
@@ -1461,9 +1459,11 @@ const handleGenerate = async () => {
               console.log(`🎨 [Story Art HD] industryId: ${upgradeArtDirectionId}`);
             }
             
-            // NEW: Pasar imagen de borrador como referencia para mantener consistencia
+            // Usar el borrador como referencia para Image-to-Image
+            // El prompt simple simula un strength bajo porque solo pide "mejorar calidad"
+            // sin dar instrucciones complejas que puedan alterar la imagen
             const result = await generateFlyerImage(
-              enhancedPrompt,
+              hdPrompt, // Prompt simple que mantiene estructura
               styleKey,
               aspectRatio,
               'hd',
@@ -1471,9 +1471,9 @@ const handleGenerate = async () => {
               customStylePrompt,
               hasProductOverlay,
               true, // enableIntelligentTextStyles
-              autoExtractedText,
-              autoTextStyle,
-              draftImageUrl || undefined, // Usar borrador como referencia para HD
+              undefined, // No pasar texto automático para HD
+              undefined, // No pasar estilo de texto
+              draftImageUrl || undefined, // Usar borrador como referencia para Image-to-Image
               upgradeArtDirectionId // NEW: artDirectionId para Story Art
             );
             url = result.imageDataUrl;
