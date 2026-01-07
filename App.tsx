@@ -64,6 +64,7 @@ const Dashboard: React.FC = () => {
   const [showBrandPanel, setShowBrandPanel] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [hasShownFreePlanModal, setHasShownFreePlanModal] = useState(false);
   
   // Block body scroll when calendar overlay is open on mobile
   useEffect(() => {
@@ -436,6 +437,17 @@ const Dashboard: React.FC = () => {
               setActivePlan(user.user_plans.name);
               console.log('✅ Plan cargado:', user.user_plans.name);
               console.log('✅ Créditos:', user.credits);
+              
+              // Auto-abrir modal de planes si es plan gratuito y no se ha mostrado antes
+              if (user.user_plans.name === 'GRATIS' && !hasShownFreePlanModal) {
+                // Verificar si ya se mostró el modal en esta sesión
+                const modalShown = localStorage.getItem('freePlanModalShown');
+                if (!modalShown) {
+                  setShowPricing(true);
+                  setHasShownFreePlanModal(true);
+                  localStorage.setItem('freePlanModalShown', 'true');
+                }
+              }
             } else {
               console.log('⚠️ Datos de usuario incompletos, usando plan por defecto');
               setActivePlan('GRATIS');
