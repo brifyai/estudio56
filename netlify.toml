@@ -4,12 +4,12 @@
   functions = "netlify/functions"
 
 [functions]
-  # Configuración global para todas las funciones
-  timeout = 26
+  # Dejamos este bloque vacío o con configuraciones globales de empaquetado
+  node_bundle = true
 
 [functions."generate-image"]
-  # Configuración específica para tu función de imagen
-  node_bundle = true
+  # Aquí es donde el plan Pro busca el tiempo extendido
+  timeout = 26
   external_node_modules = ["google-auth-library"]
 
 [[headers]]
