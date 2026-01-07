@@ -15,7 +15,7 @@
 
 ## 🎬 Modelo Seleccionado (Más Económico)
 
-**Veo 3.1 Fast for Video Generation**
+**Veo 3 Fast for Video Generation**
 - ⚡ Velocidad: 15-30 segundos
 - 💰 Costo: ~$0.05 USD por video
 - 📹 Duración: 6 segundos
@@ -62,7 +62,7 @@ Abre la consola del navegador (F12) y busca:
 
 **Solución**:
 1. Ve a https://console.cloud.google.com/vertex-ai/model-garden
-2. Busca "Veo 3.1 Fast"
+2. Busca "Veo 3 Fast"
 3. Haz clic en "Enable"
 4. Acepta los términos
 5. Espera 2-5 minutos
@@ -117,5 +117,5 @@ Deberías ver:
 ---
 
 **Última actualización**: 7 de enero de 2026
-**Versión**: 1.0.0
-**Modelo de video**: veo-3.1-fast-generate-preview
+**Versión**: 1.0.1
+**Modelo de video**: veo-3-fast-001

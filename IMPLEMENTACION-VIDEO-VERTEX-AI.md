@@ -7,7 +7,7 @@ Se implementó la generación real de videos usando los modelos Veo de Google Cl
 ## 🎬 Modelos de Video Implementados
 
 ### Draft (Rápido y Económico) - RECOMENDADO
-- **Modelo**: `veo-3.1-fast-generate-preview`
+- **Modelo**: `veo-3-fast-001`
 - **Velocidad**: Muy rápida (~15-30 segundos)
 - **Calidad**: Buena para previsualizaciones
 - **Duración**: 6 segundos
@@ -118,7 +118,7 @@ Si la generación de video falla:
 
 ## 💰 Costos Estimados
 
-- **Draft (veo-3.1-fast)**: ~$0.05 USD por video ⭐ MÁS ECONÓMICO
+- **Draft (veo-3-fast-001)**: ~$0.05 USD por video ⭐ MÁS ECONÓMICO
 - **HD (veo-2.0-generate)**: ~$0.30 USD por video
 
 ## 🚀 Próximos Pasos
