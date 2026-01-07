@@ -120,29 +120,29 @@ CREATE POLICY "Users can update own flyers" ON flyers
 CREATE POLICY "Users can delete own flyers" ON flyers
     FOR DELETE USING (auth.uid() = user_id);
 
--- Create RLS policies for payments table
-CREATE POLICY "Users can view own payments" ON payments
+-- Create RLS policies for payments table (use IF NOT EXISTS to avoid errors)
+CREATE POLICY IF NOT EXISTS "Users can view own payments" ON payments
     FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can create own payments" ON payments
+CREATE POLICY IF NOT EXISTS "Users can create own payments" ON payments
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Create RLS policies for credit_recharges table
-CREATE POLICY "Users can view own credit recharges" ON credit_recharges
+CREATE POLICY IF NOT EXISTS "Users can view own credit recharges" ON credit_recharges
     FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can create own credit recharges" ON credit_recharges
+CREATE POLICY IF NOT EXISTS "Users can create own credit recharges" ON credit_recharges
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own credit recharges" ON credit_recharges
+CREATE POLICY IF NOT EXISTS "Users can update own credit recharges" ON credit_recharges
     FOR UPDATE USING (auth.uid() = user_id);
 
 -- Public plans are readable by everyone
-CREATE POLICY "Plans are viewable by everyone" ON user_plans
+CREATE POLICY IF NOT EXISTS "Plans are viewable by everyone" ON user_plans
     FOR SELECT USING (true);
 
 -- Credit equivalences are readable by everyone
-CREATE POLICY "Equivalences are viewable by everyone" ON credit_equivalences
+CREATE POLICY IF NOT EXISTS "Equivalences are viewable by everyone" ON credit_equivalences
     FOR SELECT USING (true);
 
 -- Insert default credit equivalences
