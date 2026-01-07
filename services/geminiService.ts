@@ -2318,22 +2318,17 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   let model: string;
   let isHDForVideo = false;
   
-  if (isVideoStyle) {
-    // Videos: Modelos específicos según calidad
-    if (quality === 'draft') {
-      // Video Draft: gemini-2.0-flash-exp (razonamiento + video)
-      model = 'gemini-2.0-flash-exp';
-      isHDForVideo = false;
-      console.log('🎬 [Video Draft] Usando gemini-2.0-flash-exp');
-    } else {
-      // Video HD: Veo 1.0
-      model = 'veo-1.0-preview-001';
-      isHDForVideo = true;
-      console.log('🎬 [Video HD] Usando veo-1.0-preview-001 + 1K');
-    }
+  if (isVideoStyle && quality !== 'draft') {
+    // Videos HD: Modelos específicos
+    // Video HD: Veo 1.0
+    model = 'veo-1.0-preview-001';
+    isHDForVideo = true;
+    console.log('🎬 [Video HD] Usando veo-1.0-preview-001 + 1K');
   } else {
     // ============================================
     // 🎯 IMÁGENES: USAR MODELOS DE IMAGEN (NO Gemini)
+    // Para draft Y para videos draft, usar imagen-3.0-capability-001
+    // gemini-2.0-flash-exp NO tiene capacidades de generación de imágenes
     // ============================================
     if (quality === 'draft') {
       // Draft: imagen-3.0-capability-001 (modelo actualizado y disponible)
