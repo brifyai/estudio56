@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Check, Sparkles, Zap, Crown, Gift } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
-import { createPaymentPreference, redirectToCheckout } from '../services/paymentService';
+import { redirectToCheckout } from '../services/paymentService';
 
 interface Plan {
   id: string;
@@ -148,7 +148,7 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle subscription plan payment (goes to MercadoPago)
+  // Handle subscription plan payment (goes to MercadoPago with recurring billing)
   const handleSubscribe = async (planId: string) => {
     if (planId === 'GRATIS') {
       setSelectedPlanId(planId);
@@ -168,14 +168,27 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
         return;
       }
 
-      // Create payment preference for subscription
-      const preference = await createPaymentPreference(
-        session.user.id,
-        planId
-      );
+      // Create subscription with MercadoPago Preapproval API
+      const response = await fetch('/.netlify/functions/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.id,
+          planId
+        }),
+      });
 
-      // Redirect to MercadoPago
-      redirectToCheckout(preference.initPoint);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create subscription');
+      }
+
+      const data = await response.json();
+
+      // Redirect to MercadoPago for payment authorization
+      redirectToCheckout(data.initPoint);
     } catch (error) {
       console.error('Error al procesar suscripción:', error);
       alert('Hubo un error al procesar tu suscripción. Por favor intenta nuevamente.');
