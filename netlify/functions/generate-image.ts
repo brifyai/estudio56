@@ -75,7 +75,20 @@ export const handler: Handler = async (event) => {
 
     const data = await response.json();
 
+    // 📊 LOG DETALLADO para debuggear el error de retry
     console.log('📊 [Netlify Function] Respuesta completa de Google:', JSON.stringify(data, null, 2));
+    console.log('🔍 [Netlify Function] Tipo de data:', typeof data);
+    console.log('🔍 [Netlify Function] Keys de data:', Object.keys(data || {}));
+    
+    // Verificar si hay error en la respuesta
+    if (data.error) {
+      console.error('❌ [Netlify Function] Error en respuesta de Google:', data.error);
+    }
+    if (data.predictions && data.predictions.length > 0) {
+      console.log('✅ [Netlify Function] Predicciones encontradas:', data.predictions.length);
+      const pred = data.predictions[0];
+      console.log('🔍 [Netlify Function] Keys de predicción:', Object.keys(pred || {}));
+    }
 
     if (!response.ok) {
       console.error('❌ Error de Google (HTTP):', response.status, data);
