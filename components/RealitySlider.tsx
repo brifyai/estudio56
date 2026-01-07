@@ -75,7 +75,7 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
   const previousValueRef = useRef<RealityLevel>(value);
   const isFromVariationRef = useRef(false);
 
-  // ✅ CORRECCIÓN COMPLETA: Solo resetear a 2.5 cuando se genera una NUEVA IMAGEN BASE
+  // ✅ CORRECCIÓN COMPLETA: Solo resetear a 1.5 cuando se genera una NUEVA IMAGEN BASE
   // Las variaciones de realidad NO deben resetear el slider
   useEffect(() => {
     // Si currentImageUrl cambió
@@ -85,9 +85,9 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         console.log('🎚️ [Slider] Variación generada, manteniendo slider en:', localValue);
         isFromVariationRef.current = false; // Resetear el ref
       } else {
-        // Es una nueva imagen base, resetear a 2.5
-        console.log('🎚️ [Slider] Nueva imagen base, reseteando a 2.5★');
-        setLocalValue(2.5);
+        // Es una nueva imagen base, resetear a 1.5 (Cámara Espía)
+        console.log('🎚️ [Slider] Nueva imagen base, reseteando a 1.5★');
+        setLocalValue(1.5);
       }
     }
     

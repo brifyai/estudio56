@@ -205,7 +205,8 @@ const Dashboard: React.FC = () => {
   const [productPosition, setProductPosition] = useState<{x: number, y: number; width: number; height: number}>({ x: 50, y: 70, width: 120, height: 120 });
   
   // 🎚️ REALITY SLIDER STATES - Sistema de регулятор de realidad
-  const [realityLevel, setRealityLevel] = useState<number>(2.5);
+  // DEFAULT: 1.5 (Cámara Espía) - Look más auténtico y cercano para locales chilenos
+  const [realityLevel, setRealityLevel] = useState<number>(1.5);
   const [sceneId, setSceneId] = useState<string | null>(null);
   const [realityVariations, setRealityVariations] = useState<Record<number, string>>({});
   const [showRealityComparator, setShowRealityComparator] = useState(false);
@@ -925,8 +926,8 @@ const handleGenerate = async () => {
     setHdImageUrl(null);
     // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
     setRealityImageUrl(null);
-    // 🎯 RESETEAR realityLevel a 2.5 y limpiar variaciones al generar nuevo borrador
-    setRealityLevel(2.5);
+    // 🎯 RESETEAR realityLevel a 1.5 (Cámara Espía) y limpiar variaciones al generar nuevo borrador
+    setRealityLevel(1.5);
     setIsRealityVariation(false); // Indicar que es una nueva imagen base
     setRealityVariations({});
     setCurrentSpanishPrompt(''); // Limpiar prompt en español
@@ -1268,8 +1269,8 @@ const handleGenerate = async () => {
         setDraftImageUrl(result.imageDataUrl);
         
         // 🎯 GUARDAR IMAGEN ORIGINAL EN CACHÉ DE REALITY para comparación
-        // La imagen base (2.5★) siempre debe estar disponible para comparar
-        const originalLevel: RealityLevel = 2.5;
+        // La imagen base (1.5★) siempre debe estar disponible para comparar
+        const originalLevel: RealityLevel = 1.5;
         setRealityVariations(prev => ({
           ...prev,
           [originalLevel]: result.imageDataUrl
@@ -1712,7 +1713,7 @@ const handleGenerate = async () => {
     }
     
     // 2. SIEMPRE ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ
-    const originalLevel = 2.5;
+    const originalLevel = 1.5;
     if (draftImageUrl) {
       // Guardar siempre, sobrescribiendo si es necesario para asegurar sincronización
       // ✅ CORRECCIÓN: Eliminar verificación de sceneId que causaba que no se guardara
@@ -2077,7 +2078,7 @@ const handleGenerate = async () => {
                         isRealityVariation={isRealityVariation}
                         onOpenComparator={() => {
                           // 🎯 ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ ANTES DE ABRIR
-                          const originalLevel = 2.5;
+                          const originalLevel = 1.5;
                           if (!realityVariations[originalLevel] && draftImageUrl) {
                             setRealityVariations(prev => ({
                               ...prev,
@@ -2306,7 +2307,7 @@ const handleGenerate = async () => {
                 sceneId={sceneId}
                 variations={realityVariations}
                 currentLevel={realityLevel}
-                originalLevel={2.5}
+                originalLevel={1.5}
                 seed={seed}
                 aspectRatio={aspectRatio}
                 onSelect={(level) => {

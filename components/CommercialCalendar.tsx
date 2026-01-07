@@ -377,18 +377,18 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
       
       {/* LEYENDA SIEMPRE VISIBLE */}
       <div className="px-3 py-2 border-t border-white/5">
-        <div className="flex flex-col gap-0.5 text-[8px] text-white/50">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-400"></span> F = Festivo - Días festivos nacionales
+        <div className="flex flex-col gap-1 text-xs text-white/60">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span> F = Festivo - Días festivos nacionales
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span> C = Consumo - Eventos de consumo masivo
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> C = Consumo - Eventos de consumo masivo
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-purple-400"></span> M = Marketing - Días de marketing y campañas comerciales
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-400"></span> M = Marketing - Días de marketing y campañas comerciales
           </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-pink-400"></span> E = Especial - Eventos especiales
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-pink-400"></span> E = Especial - Eventos especiales
           </span>
         </div>
       </div>
