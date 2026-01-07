@@ -1322,40 +1322,76 @@ const handleGenerate = async () => {
         // 🎚️ INICIALIZAR sceneId PARA REALITY SLIDER - useEffect separado
         // Esto garantiza que sceneId se setee cada vez que se genera una imagen
       } else {
-        // ✅ CORREGIDO: Usar videoStyleKey para videos en lugar de styleKey
+        // ✅ GENERACIÓN DE VIDEO CON VERTEX AI
         const effectiveVideoStyleKey = videoStyleKey || 'video_retail_sale';
         setStatus({
             isLoading: true,
             step: 'rendering',
-            message: imageQuality === 'draft' ? ':: SIMULANDO_FISICAS_RAPIDAS ::' : ':: PRODUCIENDO_VIDEO_CINEMATICO ::'
+            message: imageQuality === 'draft' ? ':: GENERANDO_VIDEO_RAPIDO ::' : ':: PRODUCIENDO_VIDEO_HD ::'
           });
         console.log('🎬 Generating video with aspectRatio:', aspectRatio, '| videoStyleKey:', effectiveVideoStyleKey);
-        // Generar imagen base para el video
-        const videoSeed = Math.floor(Math.random() * 2000000000);
-        const imageResult = await generateFlyerImage(
-          enhancedPrompt,
-          effectiveVideoStyleKey, // ✅ Usar videoStyleKey para la imagen base del video
-          aspectRatio,
-          'draft', // Siempre usar draft para la imagen base del video
-          videoSeed,
-          undefined, // customStylePrompt
-          hasProductOverlay,
-          false, // enableIntelligentTextStyles
-          undefined, // autoExtractedText
-          undefined // autoTextStyle
-        );
         
-        // Video generation disabled - no hacer nada cuando está deshabilitado
-        console.log('⚠️ Generación de video deshabilitada');
-        // Usar la imagen base generada en lugar de video
-        setImageUrl(imageResult.imageDataUrl);
+        // Importar el servicio de video
+        const { generateVideoAndWait } = await import('./services/vertexVideoService');
         
-        // Guardar imagen en estados correspondientes (no hay video)
-        if (imageQuality === 'draft') {
-          setDraftVideoImageUrl(imageResult.imageDataUrl); // Guardar imagen para uso futuro
+        try {
+          // Generar video con Vertex AI
+          const videoUrl = await generateVideoAndWait(
+            {
+              prompt: enhancedPrompt,
+              aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1',
+              model: imageQuality === 'draft' ? 'veo-2.0-flash-generate-preview' : 'veo-2.0-generate-preview',
+              duration: '6s'
+            },
+            (progress) => {
+              setStatus({
+                isLoading: true,
+                step: 'rendering',
+                message: `:: GENERANDO_VIDEO ${Math.round(progress)}% ::`
+              });
+            }
+          );
+          
+          console.log('✅ Video generado:', videoUrl);
+          
+          // Establecer el video generado
+          setImageUrl(videoUrl);
+          
+          if (imageQuality === 'draft') {
+            setDraftVideoUrl(videoUrl);
+          } else {
+            setHdVideoUrl(videoUrl);
+          }
+          
+          setIsDraft(imageQuality === 'draft');
+          
+        } catch (videoError: any) {
+          console.error('❌ Error generando video:', videoError);
+          // Fallback: generar imagen estática
+          console.log('⚠️ Fallback: Generando imagen estática en lugar de video');
+          const videoSeed = Math.floor(Math.random() * 2000000000);
+          const imageResult = await generateFlyerImage(
+            enhancedPrompt,
+            effectiveVideoStyleKey,
+            aspectRatio,
+            'draft',
+            videoSeed,
+            undefined,
+            hasProductOverlay,
+            false,
+            undefined,
+            undefined
+          );
+          
+          setImageUrl(imageResult.imageDataUrl);
+          if (imageQuality === 'draft') {
+            setDraftVideoImageUrl(imageResult.imageDataUrl);
+          }
+          setIsDraft(imageQuality === 'draft');
+          
+          // Mostrar advertencia al usuario
+          estudioAlerts.warning('No se pudo generar el video. Se generó una imagen estática.');
         }
-        
-        setIsDraft(imageQuality === 'draft');
       }
       setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
       console.log('🎉 Generation completed successfully');
