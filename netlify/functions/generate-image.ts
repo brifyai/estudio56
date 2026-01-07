@@ -164,17 +164,24 @@ const handler = async (event: any, _context: any): Promise<HandlerResponse> => {
 // ============================================
 async function getGCPAccessToken(): Promise<string | null> {
   try {
-    // Método 1: Usar GOOGLE_APPLICATION_CREDENTIALS si está disponible
-    const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    // Método 1: Usar GOOGLE_SERVICE_ACCOUNT_KEY (preferido) o GOOGLE_APPLICATION_CREDENTIALS
+    const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY || process.env.GOOGLE_APPLICATION_CREDENTIALS;
     
     if (credentialsJson) {
-      console.log('📄 GOOGLE_APPLICATION_CREDENTIALS encontrado');
+      console.log('📄 Service Account credentials encontrado');
       
       try {
-        const credentials = JSON.parse(credentialsJson);
+        // Parsear el JSON de la cuenta de servicio
+        const serviceAccount = JSON.parse(credentialsJson);
+        
+        // IMPORTANTE: Corregir los saltos de línea de la clave privada
+        // Netlify puede codificar los \n como \\n en las variables de entorno
+        if (serviceAccount.private_key) {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
         
         // Generar token JWT y intercambiar por access token
-        const token = await generateJWTToken(credentials);
+        const token = await generateJWTToken(serviceAccount);
         
         if (token) {
           const response = await fetch('https://oauth2.googleapis.com/token', {
@@ -187,16 +194,23 @@ async function getGCPAccessToken(): Promise<string | null> {
           });
           
           const data = await response.json();
-          return data.access_token || null;
+          
+          if (data.access_token) {
+            console.log('✅ Token de GCP obtenido exitosamente');
+            return data.access_token;
+          } else {
+            console.warn('⚠️ No se pudo obtener access_token:', data);
+          }
         }
-      } catch (parseError) {
-        console.warn('⚠️ Error parseando GOOGLE_APPLICATION_CREDENTIALS');
+      } catch (parseError: any) {
+        console.warn('⚠️ Error parseando Service Account JSON:', parseError.message);
       }
     }
 
-    // Método 2: Si estamos en GCP, usar metadata service
-    if (process.env.GOOGLE_CLOUD_PROJECT) {
+    // Método 2: Si estamos en GCP (Cloud Functions, Cloud Run, etc.), usar metadata service
+    if (process.env.GOOGLE_CLOUD_PROJECT || process.env.K_SERVICE) {
       try {
+        console.log('🔄 Intentando con GCP metadata service...');
         const response = await fetch(
           'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
           {
@@ -204,12 +218,16 @@ async function getGCPAccessToken(): Promise<string | null> {
           }
         );
         const data = await response.json();
-        return data.access_token || null;
+        if (data.access_token) {
+          console.log('✅ Token obtenido desde GCP metadata');
+          return data.access_token;
+        }
       } catch (metadataError) {
         console.warn('⚠️ Error accediendo a metadata service');
       }
     }
 
+    console.log('⚠️ No se pudo obtener token de GCP, usando fallback a Gemini API');
     return null;
   } catch (error: any) {
     console.warn('⚠️ Error obteniendo token de GCP:', error.message);
@@ -220,8 +238,14 @@ async function getGCPAccessToken(): Promise<string | null> {
 // ============================================
 // GENERAR JWT PARA AUTENTICACIÓN DE GCP
 // ============================================
-async function generateJWTToken(credentials: any): Promise<string | null> {
+async function generateJWTToken(serviceAccount: any): Promise<string | null> {
   try {
+    // Validar que tenemos los campos necesarios
+    if (!serviceAccount.client_email || !serviceAccount.private_key) {
+      console.warn('⚠️ Service Account incompleta: falta client_email o private_key');
+      return null;
+    }
+
     const header = {
       alg: 'RS256',
       typ: 'JWT',
@@ -229,33 +253,46 @@ async function generateJWTToken(credentials: any): Promise<string | null> {
 
     const now = Math.floor(Date.now() / 1000);
     const payload = {
-      iss: credentials.client_email,
-      sub: credentials.client_email,
+      iss: serviceAccount.client_email,
+      sub: serviceAccount.client_email,
       aud: 'https://oauth2.googleapis.com/token',
       iat: now,
-      exp: now + 3600,
+      exp: now + 3600, // Token válido por 1 hora
       scope: 'https://www.googleapis.com/auth/cloud-platform',
     };
 
-    // Codificar header y payload
-    const encodedHeader = btoa(JSON.stringify(header)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    const encodedPayload = btoa(JSON.stringify(payload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    // Codificar header y payload a Base64URL
+    const encodedHeader = base64UrlEncode(JSON.stringify(header));
+    const encodedPayload = base64UrlEncode(JSON.stringify(payload));
 
-    // Firmar con clave privada
+    // Firmar con clave privada RSA
     const crypto = require('crypto');
-    const signature = crypto
-      .createSign('RSA-SHA256')
-      .update(`${encodedHeader}.${encodedPayload}`)
-      .sign(credentials.private_key, 'base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
+    const sign = crypto.createSign('RSA-SHA256');
+    sign.update(`${encodedHeader}.${encodedPayload}`);
+    
+    // La clave privada ya debe tener los saltos de línea corregidos
+    const signature = sign.sign(serviceAccount.private_key, 'base64');
+    const encodedSignature = base64UrlEncode(signature);
 
-    return `${encodedHeader}.${encodedPayload}.${signature}`;
+    const jwt = `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
+    console.log('✅ JWT generado correctamente');
+    
+    return jwt;
   } catch (error: any) {
     console.warn('⚠️ Error generando JWT:', error.message);
     return null;
   }
+}
+
+// ============================================
+// UTILIDAD: Codificar a Base64URL (RFC 7515)
+// ============================================
+function base64UrlEncode(str: string): string {
+  return Buffer.from(str)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 // ============================================
