@@ -126,9 +126,9 @@ Enfócate en:
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-  // Timeout de 30 segundos para análisis de imagen
+  // Timeout de 60 segundos para análisis de imagen (aumentado para dar margen a Netlify)
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout de análisis de imagen (30s)')), 30000);
+    setTimeout(() => reject(new Error('Timeout de análisis de imagen (60s)')), 60000);
   });
 
   const apiPromise = ai.models.generateContent({
