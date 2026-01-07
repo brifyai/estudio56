@@ -15,7 +15,10 @@ export const handler: Handler = async (event) => {
     } = body;
 
     console.log('🎯 [Netlify Function] Parámetros recibidos:', { model, aspectRatio, imageSize, seed });
-    console.log('📝 [Netlify Function] Prompt:', prompt?.substring(0, 100) + '...');
+    
+    // 🛡️ LIMPIEZA DE PROMPT: Limitar a 500 caracteres para evitar bloqueos de seguridad
+    const cleanPrompt = (prompt || '').slice(0, 500);
+    console.log('📝 [Netlify Function] Prompt limpio:', cleanPrompt.substring(0, 100) + '...');
 
     const keyData = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyData) throw new Error("Falta la variable GOOGLE_SERVICE_ACCOUNT_KEY");
@@ -59,11 +62,13 @@ export const handler: Handler = async (event) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        instances: [{ prompt }],
+        instances: [{ prompt: cleanPrompt }],
         parameters: {
           sampleCount: 1,
           aspectRatio: aspectRatio,
-          outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 }
+          outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 },
+          // 🛡️ Safety settings reducidos para evitar bloqueos falsos positivos
+          safetySetting: "BLOCK_ONLY_HIGH"
         }
       }),
     });
