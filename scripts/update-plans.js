@@ -16,34 +16,38 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function updatePlans() {
   try {
-    console.log('🚀 Updating plans to match interface...');
+    console.log('🚀 Updating plans to match new pricing structure...');
     console.log(`📡 Connecting to: ${supabaseUrl}`);
 
-    // Define the correct plans that match the interface
+    // Define the correct plans that match the new interface
     const correctPlans = [
       {
         name: 'GRATIS',
         price: 0.00,
-        credits_per_month: 5,
-        features: ['5 Borradores Diarios (H2O)', 'Solo Visualización', 'Sin Generación de Video', 'Sin Descarga de Archivos']
+        credits_hd: 0,
+        drafts: 3,
+        features: ['3 Borradores/día (Imagen)', 'Solo Visualización (Sin descarga)', 'Sin Créditos HD', 'Sin Generación de Video']
       },
       {
         name: 'ESTOY PARTIENDO',
-        price: 12.990,
-        credits_per_month: 50,
-        features: ['50 Imágenes Finales (HD)', '∞ Borradores de Imagen', 'Sin Generación de Video', 'Sin Carga de Productos']
+        price: 14990,
+        credits_hd: 40,
+        drafts: 200,
+        features: ['40 Créditos HD (40 fotos o 4 videos)', '200 Borradores de Imagen', 'Videos HD (Requiere 10 créditos c/u)', 'Sin Carga de Productos']
       },
       {
         name: 'JEFE PYME',
-        price: 39.990,
-        credits_per_month: 250,
-        features: ['250 Imágenes HD', '∞ Borradores de Imagen', '5 Videos HD (Limitado)', 'Carga de Productos']
+        price: 44990,
+        credits_hd: 150,
+        drafts: 750,
+        features: ['150 Créditos HD (150 fotos o 15 videos)', '750 Borradores de Imagen', 'Videos HD (Costo: 10 créditos)', 'Carga de Productos (PNG)']
       },
       {
         name: 'AGENCIA',
-        price: 99.990,
-        credits_per_month: 1000,
-        features: ['1000 Imágenes HD (4x)', '20 Videos HD (4x)', 'Licencia Comercial Extendida', 'Soporte WhatsApp (Humano)']
+        price: 139990,
+        credits_hd: 500,
+        drafts: 2500,
+        features: ['500 Créditos HD (500 fotos o 50 videos)', '2.500 Borradores de Imagen', 'Licencia Comercial', 'Soporte Humano']
       }
     ];
 
@@ -75,7 +79,7 @@ async function updatePlans() {
     console.log('✅ Plans updated successfully!');
     console.log(`📊 Inserted ${plans?.length || 0} plans:`);
     plans?.forEach(plan => {
-      console.log(`   - ${plan.name}: $${plan.price}/mes, ${plan.credits_per_month} créditos`);
+      console.log(`   - ${plan.name}: $${plan.price}/mes, ${plan.credits_hd} créditos HD, ${plan.drafts} borradores`);
       console.log(`     Features: ${plan.features.join(', ')}`);
     });
 
@@ -93,15 +97,20 @@ async function updatePlans() {
       console.log('✅ Verification successful!');
       console.log(`📊 Total plans in database: ${verifyPlans?.length || 0}`);
       verifyPlans?.forEach((plan, index) => {
-        console.log(`   ${index + 1}. ${plan.name} - $${plan.price} (${plan.credits_per_month} créditos)`);
+        console.log(`   ${index + 1}. ${plan.name} - $${plan.price} (${plan.credits_hd} créditos HD, ${plan.drafts} borradores)`);
       });
     }
 
+    // Show credit equivalences
+    console.log('');
+    console.log('📋 Equivalencias de Créditos:');
+    console.log('   📸 1 Foto HD = 1 Crédito');
+    console.log('   🎬 1 Video HD = 10 Créditos');
     console.log('');
     console.log('🎉 Plan update completed successfully!');
     console.log('');
     console.log('📋 Summary:');
-    console.log('✅ Plans now match the interface exactly');
+    console.log('✅ Plans now match the new pricing structure');
     console.log('✅ Database synchronized with UI');
     console.log('✅ Ready for production use');
 

@@ -16,6 +16,7 @@ export interface User {
   created_at: string;
   plan: string;
   credits: number;
+  drafts: number;
 }
 
 export interface Flyer {
@@ -37,6 +38,7 @@ export interface UserPlan {
   id: string;
   name: string;
   price: number;
-  credits_per_month: number;
+  credits_hd: number;
+  drafts: number;
   features: string[];
 }

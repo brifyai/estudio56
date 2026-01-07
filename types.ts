@@ -1,4 +1,169 @@
 
+// ============================================
+// 🎫 SISTEMA DE PLANES Y CRÉDITOS
+// ============================================
+
+export type PlanId = 'GRATIS' | 'ESTOY PARTIENDO' | 'JEFE PYME' | 'AGENCIA';
+
+export type RechargeId = 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO';
+
+export interface PlanConfig {
+  id: PlanId;
+  name: string;
+  price: number; // Precio mensual con IVA
+  creditsHD: number; // Créditos para fotos/videos HD
+  drafts: number; // Borradores de imagen incluidos
+  features: string[];
+  popular?: boolean;
+  color: string;
+}
+
+export interface RechargeConfig {
+  id: RechargeId;
+  name: string;
+  price: number; // Precio con IVA incluido
+  creditsHD: number;
+  drafts: number;
+  description: string;
+  color: string;
+}
+
+// Constantes de equivalencias
+export const CREDIT_EQUIVALENCES = {
+  PHOTO_HD: 1, // 1 foto HD = 1 crédito
+  VIDEO_HD: 10, // 1 video HD = 10 créditos
+};
+
+export const PLAN_CONFIG: PlanConfig[] = [
+  {
+    id: 'GRATIS',
+    name: 'Gratis',
+    price: 0,
+    creditsHD: 0,
+    drafts: 3,
+    features: [
+      '3 Borradores/día (Imagen)',
+      'Solo Visualización (Sin descarga)',
+      'Sin Créditos HD',
+      'Sin Generación de Video'
+    ],
+    color: 'gray'
+  },
+  {
+    id: 'ESTOY PARTIENDO',
+    name: 'Estoy Partiendo',
+    price: 14990,
+    creditsHD: 40,
+    drafts: 200,
+    features: [
+      '40 Créditos HD (40 fotos o 4 videos)',
+      '200 Borradores de Imagen',
+      'Videos HD (Requiere 10 créditos c/u)',
+      'Sin Carga de Productos'
+    ],
+    popular: true,
+    color: 'blue'
+  },
+  {
+    id: 'JEFE PYME',
+    name: 'Jefe PYME',
+    price: 44990,
+    creditsHD: 150,
+    drafts: 750,
+    features: [
+      '150 Créditos HD (150 fotos o 15 videos)',
+      '750 Borradores de Imagen',
+      'Videos HD (Costo: 10 créditos)',
+      'Carga de Productos (PNG)'
+    ],
+    color: 'purple'
+  },
+  {
+    id: 'AGENCIA',
+    name: 'Agencia',
+    price: 139990,
+    creditsHD: 500,
+    drafts: 2500,
+    features: [
+      '500 Créditos HD (500 fotos o 50 videos)',
+      '2.500 Borradores de Imagen',
+      'Licencia Comercial',
+      'Soporte Humano'
+    ],
+    color: 'yellow'
+  }
+];
+
+export const RECHARGE_CONFIG: RechargeConfig[] = [
+  {
+    id: 'INDIVIDUAL',
+    name: 'Individual',
+    price: 2990,
+    creditsHD: 10,
+    drafts: 5,
+    description: "Pa' la emergencia del día",
+    color: 'green'
+  },
+  {
+    id: 'SALVATORE',
+    name: 'Salvatore',
+    price: 9990,
+    creditsHD: 50,
+    drafts: 25,
+    description: "Pa' salvar la semana",
+    color: 'blue'
+  },
+  {
+    id: 'IMPULSO',
+    name: 'Impulso',
+    price: 24990,
+    creditsHD: 150,
+    drafts: 750,
+    description: "Pa' meterle con todo",
+    color: 'purple'
+  }
+];
+
+// ============================================
+// 💰 TIPO PARA RECARGAS DE CRÉDITOS
+// ============================================
+
+export type RechargeStatus = 'pending' | 'completed' | 'failed' | 'refunded';
+
+export interface CreditRecharge {
+  id: string;
+  user_id: string;
+  recharge_type: RechargeId;
+  credits_hd: number;
+  drafts: number;
+  amount: number;
+  status: RechargeStatus;
+  payment_method?: string;
+  mercadopago_preference_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================
+// 📊 EQUIVALENCIAS DE CRÉDITOS (Base de datos)
+// ============================================
+
+export interface CreditEquivalence {
+  id: string;
+  media_type: string;
+  credits_required: number;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Constantes por defecto (fallback si no hay BD)
+export const DEFAULT_EQUIVALENCES: Record<string, number> = {
+  photo_hd: 1,
+  video_hd: 10
+};
+
 export type FlyerStyleKey =
   | 'brand_identity' // NEW: For styles extracted from Instagram/URL
   | 'retail_sale'

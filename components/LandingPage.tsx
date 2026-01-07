@@ -116,54 +116,54 @@ export const LandingPage: React.FC = () => {
                   {/* The "Platform Mockup" (CSS Construction) */}
                   <div className="relative z-10 w-full bg-[#111] rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-500">
                        
-                       {/* Mockup Header */}
-                       <div className="h-8 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <div className="ml-auto w-20 h-1.5 bg-white/10 rounded-full"></div>
-                       </div>
+                        {/* Mockup Header */}
+                        <div className="h-8 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2">
+                           <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                           <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                           <div className="ml-auto w-20 h-1.5 bg-white/10 rounded-full"></div>
+                        </div>
 
-                       {/* Mockup Body */}
-                       <div className="flex">
-                           {/* Sidebar Mockup */}
-                           <div className="w-16 border-r border-white/5 p-3 flex flex-col gap-3">
-                               <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/50"></div>
-                               <div className="w-8 h-8 rounded-lg bg-white/5"></div>
-                               <div className="w-8 h-8 rounded-lg bg-white/5"></div>
-                           </div>
-                           
-                           {/* Main Canvas Mockup */}
-                           <div className="flex-1 p-4 relative">
-                               {/* The Result Image */}
-                               <div className="aspect-[4/5] w-full rounded-lg overflow-hidden relative shadow-2xl">
-                                  <img 
-                                    src="https://images.unsplash.com/photo-1623653387945-2fd25214f8fc?auto=format&fit=crop&w=800&q=80" 
-                                    className="w-full h-full object-cover"
-                                    alt="Result"
-                                  />
-                                  {/* Floating UI Elements */}
-                                  <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-md rounded-lg p-3 border border-white/10 flex items-center gap-3">
-                                      <div className="w-8 h-8 rounded bg-green-500 flex items-center justify-center text-xs">✨</div>
-                                      <div className="flex-1">
-                                          <div className="h-1.5 w-3/4 bg-white rounded-full mb-1"></div>
-                                          <div className="h-1.5 w-1/2 bg-white/30 rounded-full"></div>
-                                      </div>
-                                      <div className="text-[10px] font-mono text-green-400">100%</div>
-                                  </div>
-                                  
-                                  {/* Floating Tags */}
-                                  <div className="absolute top-4 right-4 flex flex-col gap-2">
-                                      <div className="px-2 py-1 bg-blue-500 text-white text-[9px] font-bold rounded shadow-lg uppercase tracking-wide">
-                                          Generado con IA
-                                      </div>
-                                      <div className="px-2 py-1 bg-black/50 text-white text-[9px] font-mono rounded border border-white/20">
-                                          1024 x 1792
-                                      </div>
-                                  </div>
-                               </div>
-                           </div>
-                       </div>
+                        {/* Mockup Body */}
+                        <div className="flex">
+                            {/* Sidebar Mockup */}
+                            <div className="w-16 border-r border-white/5 p-3 flex flex-col gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/50"></div>
+                                <div className="w-8 h-8 rounded-lg bg-white/5"></div>
+                                <div className="w-8 h-8 rounded-lg bg-white/5"></div>
+                            </div>
+                            
+                            {/* Main Canvas Mockup */}
+                            <div className="flex-1 p-4 relative">
+                                {/* The Result Image */}
+                                <div className="aspect-[4/5] w-full rounded-lg overflow-hidden relative shadow-2xl">
+                                   <img 
+                                     src="https://images.unsplash.com/photo-1623653387945-2fd25214f8fc?auto=format&fit=crop&w=800&q=80" 
+                                     className="w-full h-full object-cover"
+                                     alt="Result"
+                                   />
+                                   {/* Floating UI Elements */}
+                                   <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-md rounded-lg p-3 border border-white/10 flex items-center gap-3">
+                                       <div className="w-8 h-8 rounded bg-green-500 flex items-center justify-center text-xs">✨</div>
+                                       <div className="flex-1">
+                                           <div className="h-1.5 w-3/4 bg-white rounded-full mb-1"></div>
+                                           <div className="h-1.5 w-1/2 bg-white/30 rounded-full"></div>
+                                       </div>
+                                       <div className="text-[10px] font-mono text-green-400">100%</div>
+                                   </div>
+                                   
+                                   {/* Floating Tags */}
+                                   <div className="absolute top-4 right-4 flex flex-col gap-2">
+                                       <div className="px-2 py-1 bg-blue-500 text-white text-[9px] font-bold rounded shadow-lg uppercase tracking-wide">
+                                           Generado con IA
+                                       </div>
+                                       <div className="px-2 py-1 bg-black/50 text-white text-[9px] font-mono rounded border border-white/20">
+                                           1024 x 1792
+                                       </div>
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
                   </div>
               </div>
           </div>
@@ -174,12 +174,12 @@ export const LandingPage: React.FC = () => {
         <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-b from-black/20 to-transparent"></div>
         <div className="max-w-[1400px] mx-auto">
             <h2 className="text-5xl md:text-7xl font-black text-center mb-16 tracking-tighter uppercase">
-                Planes pa' <br/> <span className="text-pink-600">todos los bolsillos</span>
+                Planes pa' <br/> <span className="text-pink-600">todos los bolsillo</span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                {/* PLAN GRATIS (NEW) */}
+                {/* PLAN Gratis (NEW) */}
                 <div className="border-4 border-gray-300 p-6 rounded-2xl hover:translate-y-[-10px] hover:shadow-xl transition-all bg-white flex flex-col">
                     <div className="bg-gray-200 text-black text-xs font-bold uppercase py-1 px-3 rounded-full self-start mb-4">
                         Modo Prueba
@@ -188,26 +188,26 @@ export const LandingPage: React.FC = () => {
                     <p className="text-sm font-mono mb-6 text-gray-500">Solo pa' mirar, no se toca (mucho).</p>
                     <div className="text-4xl font-black mb-6">$0 <span className="text-sm font-normal">/siempre</span></div>
                     <ul className="space-y-3 mb-8 text-xs font-bold flex-1 text-gray-600">
-                        <li className="flex items-center gap-2">✔️ 5 Borradores/día (Con marca de agua)</li>
+                        <li className="flex items-center gap-2">✔️ 3 Borradores/día (Imagen)</li>
                         <li className="flex items-center gap-2">✔️ Solo Visualización (Sin descarga)</li>
+                        <li className="flex items-center gap-2 opacity-50">❌ Sin Créditos HD</li>
                         <li className="flex items-center gap-2 opacity-50">❌ Generación de Video</li>
-                        <li className="flex items-center gap-2 opacity-50">❌ Alta Definición (HD)</li>
                     </ul>
                     <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-gray-300 text-gray-500 font-black uppercase hover:border-black hover:text-black transition-colors">
                         Probar Ahora
                     </button>
                 </div>
 
-                {/* Plan 1 */}
+                {/* Plan 1: ESTOY PARTIENDO */}
                 <div className="border-4 border-black p-6 rounded-2xl hover:translate-y-[-10px] hover:shadow-[10px_10px_0px_rgba(0,0,0,1)] transition-all bg-gray-100 flex flex-col">
                     <h3 className="font-black text-2xl mb-2">ESTOY PARTIENDO</h3>
                     <p className="text-sm font-mono mb-6 text-gray-600">Pa' probar si la IA es de verdad.</p>
-                    <div className="text-4xl font-black mb-6">$12.990 <span className="text-sm font-normal text-gray-500">+ IVA/mes</span></div>
+                    <div className="text-4xl font-black mb-6">$14.990 <span className="text-sm font-normal text-gray-500">+ IVA/mes</span></div>
                     <ul className="space-y-3 mb-8 text-xs font-bold flex-1">
-                        <li>✔️ 50 Imágenes Finales (HD)</li>
-                        <li className="text-pink-600">✔️ ∞ Borradores de Imagen</li>
-                        <li>❌ Videos (0 Borradores)</li>
-                        <li>❌ Carga de Productos</li>
+                        <li>✔️ <b>40 Créditos HD</b> (40 fotos o 4 videos)</li>
+                        <li>✔️ <b>200 Borradores</b> de Imagen</li>
+                        <li className="text-gray-500">❌ Videos HD (Requiere 10 créditos c/u)</li>
+                        <li className="text-gray-500">❌ Carga de Productos</li>
                     </ul>
                     <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-black font-black uppercase hover:bg-black hover:text-white transition-colors">
                         Elegir este
@@ -218,11 +218,11 @@ export const LandingPage: React.FC = () => {
                 <div className="border-4 border-black p-6 rounded-2xl hover:translate-y-[-10px] hover:shadow-[10px_10px_0px_rgba(0,0,0,0.5)] transition-all bg-white relative flex flex-col">
                     <h3 className="font-black text-2xl mb-2">JEFE PYME</h3>
                     <p className="text-sm font-mono mb-6 text-gray-600">Pa' darle corte a las redes.</p>
-                    <div className="text-4xl font-black mb-6">$39.990 <span className="text-sm font-normal text-gray-500">+ IVA/mes</span></div>
+                    <div className="text-4xl font-black mb-6">$44.990 <span className="text-sm font-normal text-gray-500">+ IVA/mes</span></div>
                     <ul className="space-y-3 mb-8 text-xs font-bold text-gray-800 flex-1">
-                        <li>✔️ 250 Imágenes HD</li>
-                        <li className="text-pink-600">✔️ ∞ Borradores de Imagen</li>
-                        <li>⚠️ 5 Videos HD (1 semanal)</li>
+                        <li>✔️ <b>150 Créditos HD</b> (150 fotos o 15 videos)</li>
+                        <li>✔️ <b>750 Borradores</b> de Imagen</li>
+                        <li className="text-orange-500">⚠️ <b>Videos HD</b> (Costo: 10 créditos)</li>
                         <li>✔️ Carga de Productos (PNG)</li>
                     </ul>
                     <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-black text-black font-black uppercase hover:bg-gray-100 transition-colors">
@@ -237,18 +237,104 @@ export const LandingPage: React.FC = () => {
                     </div>
                     <h3 className="font-black text-2xl mb-2">AGENCIA</h3>
                     <p className="text-sm font-mono mb-6 opacity-80">Dominio total.</p>
-                    <div className="text-4xl font-black mb-6">$99.990 <span className="text-sm font-normal text-gray-600">+ IVA/mes</span></div>
+                    <div className="text-4xl font-black mb-6">$139.990 <span className="text-sm font-normal text-gray-600">+ IVA/mes</span></div>
                     <ul className="space-y-3 mb-8 text-xs font-bold flex-1">
-                        <li className="flex items-center gap-2">🚀 1000 Imágenes HD (4x)</li>
-                        <li className="flex items-center gap-2 text-pink-600">🎥 <b>20 Videos HD (4x)</b></li>
-                        <li>✔️ Licencia Comercial</li>
-                        <li>✔️ Soporte Humano</li>
+                        <li className="flex items-center gap-2">🚀 <b>500 Créditos HD</b> (500 fotos o 50 videos)</li>
+                        <li className="flex items-center gap-2">✔️ <b>2.500 Borradores</b> de Imagen</li>
+                        <li className="flex items-center gap-2">✔️ Licencia Comercial</li>
+                        <li className="flex items-center gap-2">✔️ Soporte Humano</li>
                     </ul>
                     <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 bg-black text-white font-black uppercase hover:bg-gray-800 transition-colors shadow-2xl">
                         CONTRATAR AGENCIA
                     </button>
                 </div>
 
+            </div>
+        </div>
+      </section>
+
+      {/* RECARGAS SECTION */}
+      <section className="py-24 px-6 bg-[#0A0A0A] text-white relative">
+        <div className="max-w-[1400px] mx-auto">
+            <h2 className="text-4xl md:text-6xl font-black text-center mb-16 tracking-tighter uppercase">
+                Recarga de <br/> <span className="text-green-400">Créditos Sueltos</span>
+            </h2>
+            <p className="text-center text-white/60 mb-12 max-w-2xl mx-auto">
+                Para cuando se acaba el plan o para usuarios gratis. Estos créditos <b>no vencen</b>.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                
+                {/* INDIVIDUAL */}
+                <div className="border-2 border-white/20 p-6 rounded-2xl hover:border-green-500/50 transition-all bg-white/5 flex flex-col">
+                    <h3 className="font-black text-xl mb-2 text-green-400">INDIVIDUAL</h3>
+                    <p className="text-sm text-white/60 mb-4">Pa' la emergencia del día.</p>
+                    <div className="text-3xl font-black mb-6">$2.990 <span className="text-xs text-white/40">(IVA Incl.)</span></div>
+                    <ul className="space-y-2 mb-6 text-sm flex-1">
+                        <li>✔️ <b>10 Créditos HD</b></li>
+                        <li>✔️ <b>5 Borradores</b> de regalo</li>
+                        <li className="text-white/50 text-xs">✨ 1 Video HD o 10 Fotos HD</li>
+                    </ul>
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-green-500 text-green-400 font-black uppercase hover:bg-green-500 hover:text-black transition-colors">
+                        Cargar Unito
+                    </button>
+                </div>
+
+                {/* SALVATORE */}
+                <div className="border-2 border-white/20 p-6 rounded-2xl hover:border-blue-500/50 transition-all bg-white/5 flex flex-col relative">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-3 py-1 font-mono text-[10px] font-bold uppercase rounded-full">
+                        ⭐ POPULAR
+                    </div>
+                    <h3 className="font-black text-xl mb-2 text-blue-400">SALVATORE</h3>
+                    <p className="text-sm text-white/60 mb-4">Pa' salvar la semana.</p>
+                    <div className="text-3xl font-black mb-6">$9.990 <span className="text-xs text-white/40">(IVA Incl.)</span></div>
+                    <ul className="space-y-2 mb-6 text-sm flex-1">
+                        <li>✔️ <b>50 Créditos HD</b></li>
+                        <li>✔️ <b>25 Borradores</b> de regalo</li>
+                        <li className="text-white/50 text-xs">✨ 5 Videos HD o 50 Fotos HD</li>
+                    </ul>
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-blue-500 text-blue-400 font-black uppercase hover:bg-blue-500 hover:text-black transition-colors">
+                        Cargar Salvatore
+                    </button>
+                </div>
+
+                {/* IMPULSO */}
+                <div className="border-2 border-white/20 p-6 rounded-2xl hover:border-purple-500/50 transition-all bg-white/5 flex flex-col">
+                    <h3 className="font-black text-xl mb-2 text-purple-400">IMPULSO</h3>
+                    <p className="text-sm text-white/60 mb-4">Pa' meterle con todo.</p>
+                    <div className="text-3xl font-black mb-6">$24.990 <span className="text-xs text-white/40">(IVA Incl.)</span></div>
+                    <ul className="space-y-2 mb-6 text-sm flex-1">
+                        <li>✔️ <b>150 Créditos HD</b></li>
+                        <li>✔️ <b>750 Borradores</b> de regalo</li>
+                        <li className="text-white/50 text-xs">✨ 15 Videos HD o 150 Fotos HD</li>
+                    </ul>
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-purple-500 text-purple-400 font-black uppercase hover:bg-purple-500 hover:text-black transition-colors">
+                        Cargar Impulso
+                    </button>
+                </div>
+
+            </div>
+
+            {/* EQUIVALENCIAS */}
+            <div className="mt-16 bg-white/5 rounded-2xl p-8 max-w-3xl mx-auto">
+                <h4 className="text-sm font-bold uppercase tracking-widest text-white/50 mb-4 text-center">
+                    Resumen de Equivalencias
+                </h4>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="bg-white/10 rounded-xl p-4">
+                        <span className="text-2xl">📸</span>
+                        <p className="text-lg font-bold text-white">1 Foto HD</p>
+                        <p className="text-sm text-white/60">= 1 Crédito</p>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-4">
+                        <span className="text-2xl">🎬</span>
+                        <p className="text-lg font-bold text-white">1 Video HD</p>
+                        <p className="text-sm text-white/60">= 10 Créditos</p>
+                    </div>
+                </div>
+                <p className="text-xs text-white/40 mt-4 text-center">
+                    *Los Borradores se descuentan de tu saldo de borradores de regalo.
+                </p>
             </div>
         </div>
       </section>
