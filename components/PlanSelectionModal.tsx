@@ -262,14 +262,17 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!isCurrentPlan) {
+                      setSelectedPlanId(plan.id);
                       onSelectPlan(plan.id);
                     }
                   }}
-                  disabled={isCurrentPlan || isLoading}
+                  disabled={isCurrentPlan || isLoading || isSelected}
                   className={`w-full py-3 rounded-xl font-semibold transition-all ${
                     isCurrentPlan
                       ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : `${colors.button} text-white hover:scale-105 active:scale-95`
+                      : isSelected
+                        ? 'bg-green-500 text-white cursor-default'
+                        : `${colors.button} text-white hover:scale-105 active:scale-95`
                   } ${isLoading ? 'opacity-50 cursor-wait' : ''}`}
                 >
                   {isLoading ? (
@@ -279,6 +282,8 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                     </span>
                   ) : isCurrentPlan ? (
                     'Plan Actual'
+                  ) : isSelected ? (
+                    '✓ Seleccionado'
                   ) : plan.price === 0 ? (
                     'Continuar Gratis'
                   ) : (
