@@ -1,5 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
 [[headers]]
   for = "/*"
   [headers.values]
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "credentialless"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/vertex-image/:splat"
+  status = 200

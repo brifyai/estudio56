@@ -704,6 +704,51 @@ const getAiClient = () => new GoogleGenAI({
   apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
 });
 
+// ============================================
+// 🎯 VERTEX AI HELPER PARA MODELOS DE IMAGEN
+// Los modelos de imagen (imagen-3.0-fast-001, imagen-3.0-pro-001) requieren Vertex AI
+// ============================================
+const generateWithVertexAI = async (
+  model: string,
+  prompt: string,
+  aspectRatio: string,
+  imageSize: string,
+  seed: number
+): Promise<string> => {
+  console.log(`🎯 [VertexAI] Generando con ${model}`);
+  
+  // Llamada al endpoint de API que usa Vertex AI
+  // Nota: Esto requiere un backend que configure las credenciales de GCP
+  const response = await fetch('/api/generate-image-vertex', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      prompt,
+      aspectRatio,
+      imageSize,
+      seed,
+      location: 'us-central1',
+      projectId: import.meta.env.VITE_GCP_PROJECT_ID || 'estudio-56-prod'
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || `Vertex AI Error: ${response.status}`);
+  }
+
+  const result = await response.json();
+  
+  if (result.imageUrl) {
+    return result.imageUrl;
+  }
+  
+  throw new Error('No image URL returned from Vertex AI');
+};
+
 // Define which styles allow landscapes. 
 const OUTDOOR_STYLES: FlyerStyleKey[] = [
   'summer_beach', 
@@ -1444,29 +1489,46 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
   // El modelo gemini-2.5-flash-image tiene una API específica más simple
   // ============================================
   
+  // ============================================
+  // DETECTAR TIPO DE MODELO PARA USAR API CORRECTA
+  // ============================================
+  const isImagenModel = model.includes('imagen-');
   const isGemini25Flash = model.includes('gemini-2.5-flash-image');
   
   let apiConfig: any;
   
-  if (isGemini25Flash) {
-    // Para gemini-2.5-flash-image: estructura mínima
-    // NO incluir seed, solo los parámetros requeridos
+  if (isImagenModel) {
+    // ============================================
+    // 🎯 MODELOS DE IMAGEN (imagen-3.0-fast-001 / imagen-3.0-pro-001)
+    // Usan Vertex AI API, estructura diferente
+    // ============================================
     apiConfig = {
       model,
-      contents: { parts: [{ text: finalPrompt }] },
+      prompt: finalPrompt,
+      config: {
+        aspectRatio: finalAspectRatio,
+        imageSize: imageSize,
+        seed: seed
+      }
+    };
+    console.log(`📐 [GeminiService] Usando config VERTEX AI para ${model}`);
+  } else if (isGemini25Flash) {
+    // Para gemini-2.5-flash-image: estructura mínima según documentación oficial
+    apiConfig = {
+      model,
+      contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
       config: {
         imageConfig: {
-          aspectRatio: finalAspectRatio,
-          imageSize: imageSize
+          aspectRatio: finalAspectRatio
         }
       }
     };
-    console.log(`📐 [GeminiService] Usando config SIMPLE para ${model}`);
+    console.log(`📐 [GeminiService] Usando config SIMPLE para ${model}: aspectRatio=${finalAspectRatio}`);
   } else {
     // Para otros modelos (gemini-3.0-pro-image-exp): incluir seed
     apiConfig = {
       model,
-      contents: { parts: [{ text: finalPrompt }] },
+      contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
       config: {
         seed: seed,
         imageConfig: {
@@ -1478,177 +1540,237 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     console.log(`📐 [GeminiService] Usando config para ${model}: seed=${seed}`);
   }
   
-  // Race entre la API y el timeout
-  const apiPromise = ai.models.generateContent(apiConfig);
-
-  try {
-    const response = await Promise.race([apiPromise, timeoutPromise]) as any;
-
-    const candidates = response.candidates;
-    if (!candidates || candidates.length === 0) throw new Error("API retornó 0 candidatos.");
-
-    const parts = candidates[0].content?.parts;
-    if (!parts || parts.length === 0) throw new Error("Respuesta vacía.");
-
-    console.log(`🔍 Total parts received: ${parts.length}`);
-    
-    // Search for image part
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      console.log(`🔍 Checking part ${i}:`, {
-        hasInlineData: !!part.inlineData,
-        hasText: !!part.text,
-        mimeType: part.inlineData?.mimeType,
-        dataLength: part.inlineData?.data?.length || 0
-      });
-      
-      if (part.inlineData && part.inlineData.data) {
-        let base64Data = part.inlineData.data;
-        
-        // 1. Sanitize whitespace
-        base64Data = base64Data.replace(/\s/g, '');
-
-        // 2. CHECK SIZE: Umbral MUY permisivo para evitar imágenes en negro
-        if (base64Data.length < 100) {
-            console.warn(`Image data small but accepting: ${base64Data.length} bytes.`);
-            console.warn(`First 50 chars:`, base64Data.substring(0, 50));
-            // NO DESCARTAR - Aceptar datos pequeños como válidos
-        }
-
-        // 3. MAGIC NUMBER VALIDATION - DETECT FORMAT AUTOMATICALLY (MÁS PERMISIVO)
-        const isJpeg = base64Data.startsWith('/9j/');
-        const isPng = base64Data.startsWith('iVBOR');
-        const isWebp = base64Data.startsWith('UklGR');
-
-        console.log(`🔍 Debugging image format for part ${i}:`, {
-          startsWith: base64Data.substring(0, 10),
-          isJpeg,
-          isPng,
-          isWebp,
-          reportedMimeType: part.inlineData?.mimeType,
-          dataLength: base64Data.length
-        });
-
-        // 4. CORRECT MIME TYPE DETECTION - FIX THE BLACK IMAGE ISSUE
-        let detectedMimeType;
-        if (isJpeg) {
-          detectedMimeType = 'image/jpeg';
-          console.log('✅ Detected JPEG format automatically');
-        } else if (isPng) {
-          detectedMimeType = 'image/png';
-          console.log('✅ Detected PNG format automatically');
-        } else if (isWebp) {
-          detectedMimeType = 'image/webp';
-          console.log('✅ Detected WebP format automatically');
-        } else {
-          // NUEVO: Ser más permisivo con el MIME type - siempre usar JPEG como fallback
-          detectedMimeType = 'image/jpeg';
-          console.warn('⚠️ Using JPEG fallback mimeType (was:', part.inlineData?.mimeType, ')');
-        }
-
-        console.log(`🎯 Image format detected: ${detectedMimeType}, size: ${base64Data.length} chars`);
-        
-        // CRITICAL FIX: Validate the image data before returning (UMbral MUY BAJO)
-        const imageDataUrl = `data:${detectedMimeType};base64,${base64Data}`;
-        
-        // Additional validation: Check if data looks valid (umbral muy bajo)
-        if (base64Data.length > 100) {
-          console.log('✅ Image data looks valid, returning...');
-          return imageDataUrl;
-        } else {
-          console.warn('⚠️ Image data is small but attempting to use...');
-          console.log('🔍 Raw data preview:', base64Data.substring(0, 100));
-          // Intentar usar datos pequeños en lugar de descartarlos
-          return imageDataUrl;
-        }
-      }
-    }
-    
-    // Check for Text Refusal (Safety)
-    const textPart = parts.find(p => p.text)?.text;
-    if (textPart) {
-        console.warn("Safety Refusal:", textPart);
-        throw new Error(`SAFETY_BLOCK: ${textPart}`);
-    }
-
-    // NUEVO: Si llegamos aquí, intentar usar el primer part disponible como fallback
-    if (parts.length > 0) {
-      console.warn("⚠️ No se encontraron datos de imagen válidos, intentando fallback...");
-      const firstPart = parts[0];
-      if (firstPart.inlineData?.data) {
-        console.log("🔄 Usando primer part como fallback...");
-        const fallbackData = firstPart.inlineData.data.replace(/\s/g, '');
-        if (fallbackData.length > 50) { // Umbral MUY bajo para fallback
-          console.log('🔄 Using fallback data with low threshold');
-          console.log('🔍 Fallback data preview:', fallbackData.substring(0, 100));
-          return `data:image/jpeg;base64,${fallbackData}`;
-        }
-      }
-    }
-
-    // ÚLTIMO RECURSO: Intentar con cualquier part que tenga datos
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      if (part.inlineData?.data) {
-        const data = part.inlineData.data.replace(/\s/g, '');
-        if (data.length > 50) {
-          console.log(`🔄 Último recurso: usando part ${i} como fallback...`);
-          console.log('🔍 Last resort data preview:', data.substring(0, 100));
-          return `data:image/jpeg;base64,${data}`;
-        }
-      }
-    }
-
-    throw new Error("La API respondió, pero no generó datos de imagen válidos.");
-  } catch (error: any) {
+  // ============================================
+  // 🎯 EJECUTAR GENERACIÓN SEGÚN TIPO DE MODELO
+  // ============================================
+  
+  if (isImagenModel) {
     // ============================================
-    // RETRY CON PROMPT SIMPLIFICADO SI HAY SAFETY_BLOCK O ERROR
+    // MODELOS DE IMAGEN: Usar Vertex AI
     // ============================================
-    if ((error.message?.includes('SAFETY_BLOCK') || error.message?.includes('invalid argument') || error.message?.includes('400')) && !useSimplified) {
-      console.warn(`⚠️ [GeminiService] Error inicial, reintentando con prompt simplificado...`);
+    console.log(`🎯 [GeminiService] Llamando a Vertex AI para ${model}`);
+    
+    try {
+      const imageUrl = await generateWithVertexAI(model, finalPrompt, finalAspectRatio, imageSize, seed);
+      console.log('✅ [GeminiService] Vertex AI response received');
+      return imageUrl;
+    } catch (vertexError: any) {
+      console.error('❌ [GeminiService] Vertex AI error:', vertexError.message);
       
-      // Extraer sujeto del prompt original
-      const subjectMatch = prompt.match(/SUBJECT:\s*([^\n]+)/i) || prompt.match(/OBJECTIVE:\s*([^\n]+)/i) || prompt.match(/SCENE:\s*([^\n]+)/i);
-      const subject = subjectMatch ? subjectMatch[1].trim() : 'professional business scene';
+      // Si Vertex AI falla, intentar con Gemini API como fallback
+      console.warn('⚠️ [GeminiService] Vertex AI falló, intentando con Gemini API como fallback...');
       
-      // Usar prompt simplificado
-      const simplifiedPrompt = buildSimplifiedPrompt(subject, 'professional commercial', finalAspectRatio);
-      console.log(`📝 [GeminiService] Retry con prompt simplificado: ${simplifiedPrompt}`);
-      
-      // Reintentar con prompt simplificado
-      const retryApiConfig = {
-        ...apiConfig,
-        contents: { parts: [{ text: simplifiedPrompt }] }
+      // Usar Gemini 2.5 Flash Image como fallback
+      const fallbackModel = 'gemini-2.5-flash-image';
+      const fallbackApiConfig = {
+        model: fallbackModel,
+        contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
+        config: {
+          imageConfig: {
+            aspectRatio: finalAspectRatio
+          }
+        }
       };
       
-      const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
+      const fallbackResponse = await Promise.race([
+        ai.models.generateContent(fallbackApiConfig),
+        timeoutPromise
+      ]) as any;
       
-      const retryCandidates = retryResponse.candidates;
-      if (!retryCandidates || retryCandidates.length === 0) {
-        throw new Error("Retry también falló: API retornó 0 candidatos.");
-      }
+      // Procesar respuesta de Gemini
+      const candidates = fallbackResponse.candidates;
+      if (!candidates || candidates.length === 0) throw new Error("Fallback: API retornó 0 candidatos.");
 
-      const retryParts = retryCandidates[0].content?.parts;
-      if (!retryParts || retryParts.length === 0) {
-        throw new Error("Retry también falló: Respuesta vacía.");
-      }
+      const parts = candidates[0].content?.parts;
+      if (!parts || parts.length === 0) throw new Error("Fallback: Respuesta vacía.");
 
-      // Buscar imagen en la respuesta del retry
-      for (let i = 0; i < retryParts.length; i++) {
-        const part = retryParts[i];
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
         if (part.inlineData && part.inlineData.data) {
           let base64Data = part.inlineData.data.replace(/\s/g, '');
           const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
-          console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
+          console.log('✅ [GeminiService] Fallback exitoso');
           return imageDataUrl;
         }
       }
       
-      throw new Error("Retry con prompt simplificado no generó imagen válida.");
+      throw new Error("Fallback no generó imagen válida");
     }
-    
-    // Si ya usamos simplificado o es otro error, relanzar
-    throw error;
+  } else {
+    // ============================================
+    // MODELOS GEMINI: Usar API estándar
+    // ============================================
+    const apiPromise = ai.models.generateContent(apiConfig);
+
+    try {
+      const response = await Promise.race([apiPromise, timeoutPromise]) as any;
+
+      const candidates = response.candidates;
+      if (!candidates || candidates.length === 0) throw new Error("API retornó 0 candidatos.");
+
+      const parts = candidates[0].content?.parts;
+      if (!parts || parts.length === 0) throw new Error("Respuesta vacía.");
+
+      console.log(`🔍 Total parts received: ${parts.length}`);
+      
+      // Search for image part
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        console.log(`🔍 Checking part ${i}:`, {
+          hasInlineData: !!part.inlineData,
+          hasText: !!part.text,
+          mimeType: part.inlineData?.mimeType,
+          dataLength: part.inlineData?.data?.length || 0
+        });
+        
+        if (part.inlineData && part.inlineData.data) {
+          let base64Data = part.inlineData.data;
+          
+          // 1. Sanitize whitespace
+          base64Data = base64Data.replace(/\s/g, '');
+
+          // 2. CHECK SIZE: Umbral MUY permisivo para evitar imágenes en negro
+          if (base64Data.length < 100) {
+              console.warn(`Image data small but accepting: ${base64Data.length} bytes.`);
+              console.warn(`First 50 chars:`, base64Data.substring(0, 50));
+              // NO DESCARTAR - Aceptar datos pequeños como válidos
+          }
+
+          // 3. MAGIC NUMBER VALIDATION - DETECT FORMAT AUTOMATICALLY (MÁS PERMISIVO)
+          const isJpeg = base64Data.startsWith('/9j/');
+          const isPng = base64Data.startsWith('iVBOR');
+          const isWebp = base64Data.startsWith('UklGR');
+
+          console.log(`🔍 Debugging image format for part ${i}:`, {
+            startsWith: base64Data.substring(0, 10),
+            isJpeg,
+            isPng,
+            isWebp,
+            reportedMimeType: part.inlineData?.mimeType,
+            dataLength: base64Data.length
+          });
+
+          // 4. CORRECT MIME TYPE DETECTION - FIX THE BLACK IMAGE ISSUE
+          let detectedMimeType;
+          if (isJpeg) {
+            detectedMimeType = 'image/jpeg';
+            console.log('✅ Detected JPEG format automatically');
+          } else if (isPng) {
+            detectedMimeType = 'image/png';
+            console.log('✅ Detected PNG format automatically');
+          } else if (isWebp) {
+            detectedMimeType = 'image/webp';
+            console.log('✅ Detected WebP format automatically');
+          } else {
+            // NUEVO: Ser más permisivo con el MIME type - siempre usar JPEG como fallback
+            detectedMimeType = 'image/jpeg';
+            console.warn('⚠️ Using JPEG fallback mimeType (was:', part.inlineData?.mimeType, ')');
+          }
+
+          console.log(`🎯 Image format detected: ${detectedMimeType}, size: ${base64Data.length} chars`);
+          
+          // CRITICAL FIX: Validate the image data before returning (UMbral MUY BAJO)
+          const imageDataUrl = `data:${detectedMimeType};base64,${base64Data}`;
+          
+          // Additional validation: Check if data looks valid (umbral muy bajo)
+          if (base64Data.length > 100) {
+            console.log('✅ Image data looks valid, returning...');
+            return imageDataUrl;
+          } else {
+            console.warn('⚠️ Image data is small but attempting to use...');
+            console.log('🔍 Raw data preview:', base64Data.substring(0, 100));
+            // Intentar usar datos pequeños en lugar de descartarlos
+            return imageDataUrl;
+          }
+        }
+      }
+      
+      // Check for Text Refusal (Safety)
+      const textPart = parts.find(p => p.text)?.text;
+      if (textPart) {
+          console.warn("Safety Refusal:", textPart);
+          throw new Error(`SAFETY_BLOCK: ${textPart}`);
+      }
+
+      // NUEVO: Si llegamos aquí, intentar usar el primer part disponible como fallback
+      if (parts.length > 0) {
+        console.warn("⚠️ No se encontraron datos de imagen válidos, intentando fallback...");
+        const firstPart = parts[0];
+        if (firstPart.inlineData?.data) {
+          console.log("🔄 Usando primer part como fallback...");
+          const fallbackData = firstPart.inlineData.data.replace(/\s/g, '');
+          if (fallbackData.length > 50) { // Umbral MUY bajo para fallback
+            console.log('🔄 Using fallback data with low threshold');
+            console.log('🔍 Fallback data preview:', fallbackData.substring(0, 100));
+            return `data:image/jpeg;base64,${fallbackData}`;
+          }
+        }
+      }
+
+      // ÚLTIMO RECURSO: Intentar con cualquier part que tenga datos
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (part.inlineData?.data) {
+          const data = part.inlineData.data.replace(/\s/g, '');
+          if (data.length > 50) {
+            console.log(`🔄 Último recurso: usando part ${i} como fallback...`);
+            console.log('🔍 Last resort data preview:', data.substring(0, 100));
+            return `data:image/jpeg;base64,${data}`;
+          }
+        }
+      }
+
+      throw new Error("La API respondió, pero no generó datos de imagen válidos.");
+    } catch (error: any) {
+      // ============================================
+      // RETRY CON PROMPT SIMPLIFICADO SI HAY SAFETY_BLOCK O ERROR
+      // ============================================
+      if ((error.message?.includes('SAFETY_BLOCK') || error.message?.includes('invalid argument') || error.message?.includes('400')) && !useSimplified) {
+        console.warn(`⚠️ [GeminiService] Error inicial, reintentando con prompt simplificado...`);
+        
+        // Extraer sujeto del prompt original
+        const subjectMatch = prompt.match(/SUBJECT:\s*([^\n]+)/i) || prompt.match(/OBJECTIVE:\s*([^\n]+)/i) || prompt.match(/SCENE:\s*([^\n]+)/i);
+        const subject = subjectMatch ? subjectMatch[1].trim() : 'professional business scene';
+        
+        // Usar prompt simplificado
+        const simplifiedPrompt = buildSimplifiedPrompt(subject, 'professional commercial', finalAspectRatio);
+        console.log(`📝 [GeminiService] Retry con prompt simplificado: ${simplifiedPrompt}`);
+        
+        // Reintentar con prompt simplificado
+        const retryApiConfig = {
+          ...apiConfig,
+          contents: [{ role: 'user', parts: [{ text: simplifiedPrompt }] }]
+        };
+        
+        const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
+        
+        const retryCandidates = retryResponse.candidates;
+        if (!retryCandidates || retryCandidates.length === 0) {
+          throw new Error("Retry también falló: API retornó 0 candidatos.");
+        }
+
+        const retryParts = retryCandidates[0].content?.parts;
+        if (!retryParts || retryParts.length === 0) {
+          throw new Error("Retry también falló: Respuesta vacía.");
+        }
+
+        // Buscar imagen en la respuesta del retry
+        for (let i = 0; i < retryParts.length; i++) {
+          const part = retryParts[i];
+          if (part.inlineData && part.inlineData.data) {
+            let base64Data = part.inlineData.data.replace(/\s/g, '');
+            const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
+            console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
+            return imageDataUrl;
+          }
+        }
+        
+        throw new Error("Retry con prompt simplificado no generó imagen válida.");
+      }
+      
+      // Si ya usamos simplificado o es otro error, relanzar
+      throw error;
+    }
   }
 };
 
@@ -2079,11 +2201,12 @@ const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
   // ============================================
-  // MODELOS DIFERENCIADOS POR TIPO DE CONTENIDO Y CALIDAD
+  // 🎯 ARQUITECTURA CORRECTA: Modelos de Imagen (NO Gemini)
   // ============================================
-  // Videos Draft: gemini-2.5-flash-image + 720p
-  // Videos HD: gemini-3.0-pro-image-exp + 1K
-  // Imágenes: Usar los modelos existentes
+  // Draft: imagen-3.0-fast-001 (bajo costo, rápido)
+  // HD: imagen-3.0-pro-001 (alta fidelidad)
+  // Gemini 2.0 Flash: SOLO para razonamiento, NO para imágenes
+  // ============================================
   
   // Detectar si es estilo de video (contiene prefijo 'video_')
   const isVideoStyle = styleKey && typeof styleKey === 'string' && styleKey.startsWith('video_');
@@ -2094,23 +2217,28 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   if (isVideoStyle) {
     // Videos: Modelos específicos según calidad
     if (quality === 'draft') {
-      // Video Draft: gemini-2.0-flash-exp (más estable que 2.5)
+      // Video Draft: gemini-2.0-flash-exp (razonamiento + video)
       model = 'gemini-2.0-flash-exp';
       isHDForVideo = false;
       console.log('🎬 [Video Draft] Usando gemini-2.0-flash-exp');
     } else {
-      // Video HD: gemini-3.0-pro-image-exp + 1K
-      model = 'gemini-3.0-pro-image-exp';
+      // Video HD: Veo 1.0
+      model = 'veo-1.0-preview-001';
       isHDForVideo = true;
-      console.log('🎬 [Video HD] Usando gemini-3.0-pro-image-exp + 1K');
+      console.log('🎬 [Video HD] Usando veo-1.0-preview-001 + 1K');
     }
   } else {
-    // Imágenes: Usar modelos específicos para generación de imágenes
+    // ============================================
+    // 🎯 IMÁGENES: USAR MODELOS DE IMAGEN (NO Gemini)
+    // ============================================
     if (quality === 'draft') {
-      // gemini-2.5-flash-image es el modelo correcto para imágenes draft
-      model = 'gemini-2.5-flash-image';
+      // Draft: imagen-3.0-fast-001 (bajo costo, rápido)
+      model = 'imagen-3.0-fast-001';
+      console.log('🖼️ [Image Draft] Usando imagen-3.0-fast-001 (bajo costo)');
     } else {
-      model = 'gemini-3.0-pro-image-exp';
+      // HD: imagen-3.0-pro-001 (alta fidelidad)
+      model = 'imagen-3.0-pro-001';
+      console.log('💎 [Image HD] Usando imagen-3.0-pro-001 (alta fidelidad)');
     }
   }
   
