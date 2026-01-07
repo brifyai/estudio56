@@ -26,6 +26,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
   const [equivalences, setEquivalences] = useState<CreditEquivalence[]>([]);
   const [loadingEquivalences, setLoadingEquivalences] = useState(true);
   const [processingRecharge, setProcessingRecharge] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,6 +59,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
   if (!isOpen) return null;
 
   const handleRecharge = async (rechargeId: string) => {
+    setSelectedPlanId(rechargeId);
     try {
       setProcessingRecharge(rechargeId);
       
@@ -81,10 +83,13 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
       alert('Hubo un error al procesar tu recarga. Por favor intenta nuevamente.');
     } finally {
       setProcessingRecharge(null);
+      setSelectedPlanId(null);
     }
   };
 
   const handleContact = (planName: string) => {
+    setSelectedPlanId(planName.toUpperCase());
+    
     // 1. Update the UI to show they "Selected" this plan (Demo effect)
     onSelectPlan(planName.toUpperCase());
     
@@ -97,6 +102,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
   };
 
   const handleFreePlan = () => {
+    setSelectedPlanId('GRATIS');
     onSelectPlan("GRATIS");
     onClose();
   };
@@ -186,8 +192,16 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
               <li className="flex gap-2 opacity-30"><span>✕</span> Generación de Video</li>
             </ul>
 
-            <button onClick={handleFreePlan} className="w-full py-3 rounded-lg border border-white/20 hover:bg-white hover:text-black transition-all text-sm font-bold">
-              Probar Ahora
+            <button
+              onClick={handleFreePlan}
+              disabled={selectedPlanId === 'GRATIS'}
+              className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
+                selectedPlanId === 'GRATIS'
+                  ? 'bg-green-500 text-black border-green-500 cursor-default'
+                  : 'border-white/20 hover:bg-white hover:text-black'
+              }`}
+            >
+              {selectedPlanId === 'GRATIS' ? '✓ Seleccionado' : 'Probar Ahora'}
             </button>
           </div>
 
@@ -211,8 +225,16 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
               <li className="flex gap-2 opacity-50"><span>✕</span> Carga de Productos</li>
             </ul>
 
-            <button onClick={() => handleContact("Estoy Partiendo")} className="w-full py-3 rounded-lg border border-white/20 hover:bg-white hover:text-black transition-all text-sm font-bold">
-              Elegir este
+            <button
+              onClick={() => handleContact("Estoy Partiendo")}
+              disabled={selectedPlanId === 'ESTOY PARTIENDO'}
+              className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
+                selectedPlanId === 'ESTOY PARTIENDO'
+                  ? 'bg-blue-500 text-black border-blue-500 cursor-default'
+                  : 'border-white/20 hover:bg-white hover:text-black'
+              }`}
+            >
+              {selectedPlanId === 'ESTOY PARTIENDO' ? '✓ Seleccionado' : 'Elegir este'}
             </button>
           </div>
 
@@ -236,8 +258,16 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
               <li className="flex gap-2"><span>✓</span> Carga de Productos (PNG)</li>
             </ul>
 
-            <button onClick={() => handleContact("Jefe Pyme")} className="w-full py-3 rounded-lg border border-white/20 hover:bg-white hover:text-black transition-all text-sm font-bold">
-              LO QUIERO
+            <button
+              onClick={() => handleContact("Jefe Pyme")}
+              disabled={selectedPlanId === 'JEFE PYME'}
+              className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
+                selectedPlanId === 'JEFE PYME'
+                  ? 'bg-purple-500 text-black border-purple-500 cursor-default'
+                  : 'border-white/20 hover:bg-white hover:text-black'
+              }`}
+            >
+              {selectedPlanId === 'JEFE PYME' ? '✓ Seleccionado' : 'LO QUIERO'}
             </button>
           </div>
 
@@ -263,8 +293,16 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
               <li className="flex gap-2"><span>✓</span> Soporte Humano</li>
             </ul>
 
-            <button onClick={() => handleContact("Agencia")} className="w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all text-sm font-bold">
-              CONTRATAR AGENCIA
+            <button
+              onClick={() => handleContact("Agencia")}
+              disabled={selectedPlanId === 'AGENCIA'}
+              className={`w-full py-3 rounded-lg shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all text-sm font-bold ${
+                selectedPlanId === 'AGENCIA'
+                  ? 'bg-green-500 text-black border-green-500 cursor-default'
+                  : 'bg-yellow-500 hover:bg-yellow-400 text-black'
+              }`}
+            >
+              {selectedPlanId === 'AGENCIA' ? '✓ Seleccionado' : 'CONTRATAR AGENCIA'}
             </button>
           </div>
 
@@ -299,14 +337,22 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                 </ul>
                 <button
                   onClick={() => handleRecharge(plan.id)}
-                  disabled={processingRecharge === plan.id}
-                  className="w-full py-2 rounded-lg border border-white/20 hover:bg-white hover:text-black transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={processingRecharge === plan.id || selectedPlanId === plan.id}
+                  className={`w-full py-2 rounded-lg border transition-all text-xs font-bold ${
+                    selectedPlanId === plan.id
+                      ? 'bg-green-500 text-black border-green-500 cursor-default'
+                      : processingRecharge === plan.id
+                        ? 'bg-blue-500 text-white border-blue-500 cursor-wait'
+                        : 'border-white/20 hover:bg-white hover:text-black'
+                  }`}
                 >
                   {processingRecharge === plan.id ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Procesando...
                     </span>
+                  ) : selectedPlanId === plan.id ? (
+                    '✓ Seleccionado'
                   ) : (
                     `Cargar ${plan.name}`
                   )}
