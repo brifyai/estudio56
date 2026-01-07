@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Check, Sparkles, Zap, Crown, Gift } from 'lucide-react';
+import { supabase } from '../services/supabaseService';
+import { createPaymentPreference, redirectToCheckout } from '../services/paymentService';
 
 interface Plan {
   id: string;
@@ -29,6 +31,7 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
   isLoading = false
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -144,6 +147,43 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
   };
 
   if (!isOpen) return null;
+
+  // Handle subscription plan payment (goes to MercadoPago)
+  const handleSubscribe = async (planId: string) => {
+    if (planId === 'GRATIS') {
+      setSelectedPlanId(planId);
+      onSelectPlan(planId);
+      onClose();
+      return;
+    }
+
+    setSelectedPlanId(planId);
+    setIsProcessing(true);
+    
+    try {
+      // Get current user from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        alert('Debes iniciar sesión para contratar un plan');
+        return;
+      }
+
+      // Create payment preference for subscription
+      const preference = await createPaymentPreference(
+        session.user.id,
+        planId
+      );
+
+      // Redirect to MercadoPago
+      redirectToCheckout(preference.initPoint);
+    } catch (error) {
+      console.error('Error al procesar suscripción:', error);
+      alert('Hubo un error al procesar tu suscripción. Por favor intenta nuevamente.');
+    } finally {
+      setIsProcessing(false);
+      setSelectedPlanId(null);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
@@ -262,17 +302,18 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!isCurrentPlan) {
-                      setSelectedPlanId(plan.id);
-                      onSelectPlan(plan.id);
+                      handleSubscribe(plan.id);
                     }
                   }}
                   disabled={isCurrentPlan || isLoading || isSelected}
                   className={`w-full py-3 rounded-xl font-semibold transition-all ${
                     isCurrentPlan
                       ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : isSelected
-                        ? 'bg-green-500 text-white cursor-default'
-                        : `${colors.button} text-white hover:scale-105 active:scale-95`
+                      : isSelected && plan.price > 0
+                        ? 'bg-blue-500 text-white cursor-wait'
+                        : plan.price === 0
+                          ? 'bg-green-500 text-white cursor-default'
+                          : `${colors.button} text-white hover:scale-105 active:scale-95`
                   } ${isLoading ? 'opacity-50 cursor-wait' : ''}`}
                 >
                   {isLoading ? (
@@ -282,8 +323,8 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                     </span>
                   ) : isCurrentPlan ? (
                     'Plan Actual'
-                  ) : isSelected ? (
-                    '✓ Seleccionado'
+                  ) : isSelected && plan.price > 0 ? (
+                    'Pagando...'
                   ) : plan.price === 0 ? (
                     'Continuar Gratis'
                   ) : (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Zap, Sparkles, Crown, Gift } from 'lucide-react';
 import { supabase } from '../services/supabaseService';
 import { getEquivalencesWithDescription } from '../services/creditEquivalenceService';
-import { createRechargePreference, redirectToCheckout, RECHARGE_CONFIG } from '../services/paymentService';
+import { createRechargePreference, createPaymentPreference, redirectToCheckout, RECHARGE_CONFIG } from '../services/paymentService';
 import { CreditEquivalence } from '../types';
 
 interface PricingModalProps {
@@ -58,46 +58,47 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
   if (!isOpen) return null;
 
-  const handleRecharge = async (rechargeId: string) => {
-    setSelectedPlanId(rechargeId);
+  // Handle subscription plan payment (goes to MercadoPago)
+  const handleSubscribe = async (planId: string) => {
+    setSelectedPlanId(planId);
     try {
-      setProcessingRecharge(rechargeId);
+      setProcessingRecharge(planId);
       
       // Get current user from Supabase
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        alert('Debes iniciar sesión para realizar una recarga');
+        alert('Debes iniciar sesión para contratar un plan');
         return;
       }
 
-      // Create payment preference
-      const preference = await createRechargePreference(
+      // Create payment preference for subscription
+      const preference = await createPaymentPreference(
         session.user.id,
-        rechargeId as 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO'
+        planId
       );
 
       // Redirect to MercadoPago
       redirectToCheckout(preference.initPoint);
     } catch (error) {
-      console.error('Error al procesar recarga:', error);
-      alert('Hubo un error al procesar tu recarga. Por favor intenta nuevamente.');
+      console.error('Error al procesar suscripción:', error);
+      alert('Hubo un error al procesar tu suscripción. Por favor intenta nuevamente.');
     } finally {
       setProcessingRecharge(null);
       setSelectedPlanId(null);
     }
   };
 
-  const handleContact = (planName: string) => {
-    setSelectedPlanId(planName.toUpperCase());
+  // Handle credit recharge (just selects the plan, no MercadoPago)
+  const handleRecharge = async (rechargeId: string) => {
+    setSelectedPlanId(rechargeId);
     
-    // 1. Update the UI to show they "Selected" this plan (Demo effect)
-    onSelectPlan(planName.toUpperCase());
+    // Update the UI to show they "Selected" this plan
+    onSelectPlan(rechargeId);
     
-    // 2. Open WhatsApp for "purchase"
-    const message = `Hola Estudio 56, me interesa contratar el plan *${planName}*. ¿Me envían datos de transferencia?`;
-    window.open(`https://wa.me/56912345678?text=${encodeURIComponent(message)}`, '_blank');
+    // Show confirmation
+    alert(`Plan ${rechargeId} seleccionado. Credits will be added to your account.`);
     
-    // 3. Close modal
+    // Close modal
     onClose();
   };
 
@@ -226,7 +227,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             </ul>
 
             <button
-              onClick={() => handleContact("Estoy Partiendo")}
+              onClick={() => handleSubscribe('ESTOY PARTIENDO')}
               disabled={selectedPlanId === 'ESTOY PARTIENDO'}
               className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
                 selectedPlanId === 'ESTOY PARTIENDO'
@@ -234,7 +235,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   : 'border-white/20 hover:bg-white hover:text-black'
               }`}
             >
-              {selectedPlanId === 'ESTOY PARTIENDO' ? '✓ Seleccionado' : 'Elegir este'}
+              {selectedPlanId === 'ESTOY PARTIENDO' ? 'Pagando...' : 'Elegir este'}
             </button>
           </div>
 
@@ -259,7 +260,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             </ul>
 
             <button
-              onClick={() => handleContact("Jefe Pyme")}
+              onClick={() => handleSubscribe('JEFE PYME')}
               disabled={selectedPlanId === 'JEFE PYME'}
               className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
                 selectedPlanId === 'JEFE PYME'
@@ -267,7 +268,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   : 'border-white/20 hover:bg-white hover:text-black'
               }`}
             >
-              {selectedPlanId === 'JEFE PYME' ? '✓ Seleccionado' : 'LO QUIERO'}
+              {selectedPlanId === 'JEFE PYME' ? 'Pagando...' : 'LO QUIERO'}
             </button>
           </div>
 
@@ -294,7 +295,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             </ul>
 
             <button
-              onClick={() => handleContact("Agencia")}
+              onClick={() => handleSubscribe('AGENCIA')}
               disabled={selectedPlanId === 'AGENCIA'}
               className={`w-full py-3 rounded-lg shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all text-sm font-bold ${
                 selectedPlanId === 'AGENCIA'
@@ -302,7 +303,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   : 'bg-yellow-500 hover:bg-yellow-400 text-black'
               }`}
             >
-              {selectedPlanId === 'AGENCIA' ? '✓ Seleccionado' : 'CONTRATAR AGENCIA'}
+              {selectedPlanId === 'AGENCIA' ? 'Pagando...' : 'CONTRATAR AGENCIA'}
             </button>
           </div>
 
