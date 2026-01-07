@@ -52,18 +52,32 @@ export const handler: Handler = async (event) => {
     const projectId = serviceAccount.project_id;
     console.log('🏢 [DEBUG] Project ID:', projectId);
     
-    const modelMap: Record<string, string> = {
-      'imagen-3.0-fast-001': 'imagen-3.0-fast-generate-001',
-      'imagen-3.0-pro-001': 'imagen-3.0-pro-generate-001'
+    const modelMap: Record<string, { endpoint: string; version: string }> = {
+      'imagen-3.0-fast-001': {
+        endpoint: 'imagen-3.0-fast-generate-001',
+        version: 'v1beta1'
+      },
+      'imagen-3.0-pro-001': {
+        endpoint: 'imagen-3.0-pro-generate-001',
+        version: 'v1beta1'
+      },
+      'imagen-3.0-capability-001': {
+        endpoint: 'imagen-3.0-capability-001',
+        version: 'v1'
+      }
     };
     
-    const vertexModel = modelMap[body.model] || 'imagen-3.0-fast-generate-001';
+    const modelConfig = modelMap[body.model] || modelMap['imagen-3.0-capability-001'];
+    const vertexModel = modelConfig.endpoint;
+    const apiVersion = modelConfig.version;
+    
     console.log('🎯 [DEBUG] Vertex Model:', vertexModel);
+    console.log('🌐 [DEBUG] API Version:', apiVersion);
     
     const cleanPrompt = (body.prompt || '').slice(0, 500);
     console.log('📝 [DEBUG] Prompt limpio (primeros 100 chars):', cleanPrompt.substring(0, 100));
 
-    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
+    const url = `https://us-central1-aiplatform.googleapis.com/${apiVersion}/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
     console.log('🌐 [DEBUG] URL de Vertex AI:', url.substring(0, 80) + '...');
 
     console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
@@ -71,6 +85,26 @@ export const handler: Handler = async (event) => {
     // Timeout de 20 segundos (menor que el timeout de Netlify de 26s)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
+    
+    // Estructura del request según la versión del modelo
+    const requestBody = apiVersion === 'v1'
+      ? {
+          instances: [{ prompt: cleanPrompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: body.aspectRatio || '9:16',
+            outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 }
+          }
+        }
+      : {
+          instances: [{ prompt: cleanPrompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: body.aspectRatio || '9:16',
+            outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 },
+            safetySetting: "BLOCK_ONLY_HIGH"
+          }
+        };
     
     let response: Response;
     try {
@@ -80,15 +114,7 @@ export const handler: Handler = async (event) => {
           'Authorization': `Bearer ${token.token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          instances: [{ prompt: cleanPrompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: body.aspectRatio || '9:16',
-            outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 },
-            safetySetting: "BLOCK_ONLY_HIGH"
-          }
-        }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal
       });
       clearTimeout(timeoutId);
