@@ -106,9 +106,10 @@ export const handler: Handler = async (event) => {
       access_token: process.env.MERCADOPAGO_ACCESS_TOKEN!,
     };
 
+    const appUrl = process.env.VITE_APP_URL || 'https://estudio56.netlify.app';
     const preapprovalData = {
       payer_email: user.email,
-      back_url: `${process.env.VITE_APP_URL}/panel`,
+      back_url: `${appUrl}/panel`,
       reason: `Plan ${plan.name} - Estudio 56 (Suscripción mensual)`,
       auto_recurring: {
         frequency: 1,
