@@ -1322,7 +1322,7 @@ const handleGenerate = async () => {
         // 🎚️ INICIALIZAR sceneId PARA REALITY SLIDER - useEffect separado
         // Esto garantiza que sceneId se setee cada vez que se genera una imagen
       } else {
-        // ✅ GENERACIÓN DE VIDEO CON VERTEX AI
+        // ✅ GENERACIÓN DE VIDEO CON ALIBABA CLOUD TEXT-TO-VIDEO (T2V)
         const effectiveVideoStyleKey = videoStyleKey || 'video_retail_sale';
         setStatus({
             isLoading: true,
@@ -1335,24 +1335,32 @@ const handleGenerate = async () => {
         const { generateVideoAndWait } = await import('./services/vertexVideoService');
         
         try {
-          // Generar video con Vertex AI usando Veo 3.1 estándar
+          // TEXT-TO-VIDEO: Generar video directamente desde prompt (sin imagen base)
+          console.log('🎬 Generando video con Alibaba Cloud TEXT-TO-VIDEO...');
+          setStatus({
+            isLoading: true,
+            step: 'rendering',
+            message: ':: GENERANDO_VIDEO_0% ::'
+          });
+          
           const videoUrl = await generateVideoAndWait(
             {
               prompt: enhancedPrompt,
+              // ← NO requiere imageUrl (T2V genera directamente desde prompt)
+              quality: imageQuality === 'draft' ? 'draft' : 'hd', // ← 'draft' (480P) o 'hd' (720P)
               aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1',
-              model: imageQuality === 'draft' ? 'veo-3.1-generate-001' : 'veo-2.0-generate-preview',
-              duration: '6s'
+              duration: 5 // 5 segundos por defecto
             },
-            (progress) => {
+            (progress, message) => {
               setStatus({
                 isLoading: true,
                 step: 'rendering',
-                message: `:: GENERANDO_VIDEO ${Math.round(progress)}% ::`
+                message: message || `:: GENERANDO_VIDEO ${Math.round(progress)}% ::`
               });
             }
           );
           
-          console.log('✅ Video generado:', videoUrl);
+          console.log('✅ Video generado:', videoUrl.substring(0, 100) + '...');
           
           // Establecer el video generado
           setImageUrl(videoUrl);
@@ -1365,10 +1373,14 @@ const handleGenerate = async () => {
           
           setIsDraft(imageQuality === 'draft');
           
+          // Mostrar mensaje de éxito
+          estudioAlerts.success('Video generado', 'Video generado exitosamente. Nota: La URL expira en 24 horas.');
+          
         } catch (videoError: any) {
           console.error('❌ Error generando video:', videoError);
-          // Fallback: generar imagen estática
-          console.log('⚠️ Fallback: Generando imagen estática en lugar de video');
+          
+          // Fallback: Generar imagen estática si falla el video
+          console.log('⚠️ Fallback: Generando imagen estática');
           const videoSeed = Math.floor(Math.random() * 2000000000);
           const imageResult = await generateFlyerImage(
             enhancedPrompt,
@@ -1389,8 +1401,7 @@ const handleGenerate = async () => {
           }
           setIsDraft(imageQuality === 'draft');
           
-          // Mostrar advertencia al usuario
-          estudioAlerts.warning('No se pudo generar el video. Se generó una imagen estática.');
+          estudioAlerts.warning(`No se pudo generar el video: ${videoError.message}. Se generó una imagen estática.`);
         }
       }
       setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });

@@ -1,34 +1,40 @@
 /**
- * Servicio para generación de videos usando Vertex AI (Veo)
+ * Servicio para generación de videos usando Alibaba Cloud Model Studio (Wanx)
  * 
- * Modelos disponibles:
- * - veo-2.0-flash-generate-preview (rápido, draft)
- * - veo-2.0-generate-preview (alta calidad, HD)
+ * Modelos TEXT-TO-VIDEO (T2V):
+ * - wan2.5-t2v-preview (480P - draft, 720P - HD)
+ * 
+ * NOTA: T2V genera video directamente desde prompt, sin necesidad de imagen base
  */
 
 export interface VideoGenerationOptions {
   prompt: string;
-  aspectRatio: '9:16' | '16:9' | '1:1';
-  model?: 'veo-3.1-generate-001' | 'veo-3.1-fast-generate-001' | 'veo-2.0-generate-preview';
-  duration?: '6s' | '8s';
+  quality: 'draft' | 'hd';
+  aspectRatio?: '9:16' | '16:9' | '1:1';
+  duration?: number; // 5 o 10 segundos (wan2.5-t2v-preview)
 }
 
 export interface VideoGenerationResult {
   videoUrl?: string;
-  operationName?: string;
-  status: 'processing' | 'complete' | 'error';
+  taskId?: string;
+  status: 'processing' | 'complete' | 'error' | 'failed' | 'expired';
   error?: string;
+  requestId?: string;
+  submitTime?: string;
+  endTime?: string;
+  originalPrompt?: string;
+  actualPrompt?: string;
 }
 
 /**
- * Genera un video usando Vertex AI
+ * Genera un video usando Alibaba Cloud Model Studio
  */
 export const generateVideo = async (
   options: VideoGenerationOptions
 ): Promise<VideoGenerationResult> => {
-  console.log('🎬 [VertexVideo] Iniciando generación de video...');
-  console.log('🎬 [VertexVideo] Prompt:', options.prompt.substring(0, 100));
-  console.log('🎬 [VertexVideo] Modelo:', options.model || 'veo-3.1-generate-001');
+  console.log('🎬 [AlibabaVideo] Iniciando generación de video TEXT-TO-VIDEO...');
+  console.log('🎬 [AlibabaVideo] Prompt:', options.prompt.substring(0, 100));
+  console.log('🎬 [AlibabaVideo] Quality:', options.quality);
   
   try {
     const response = await fetch('/.netlify/functions/generate-video', {
@@ -38,31 +44,32 @@ export const generateVideo = async (
       },
       body: JSON.stringify({
         prompt: options.prompt,
-        aspectRatio: options.aspectRatio,
-        model: options.model || 'veo-3.1-generate-001',
-        duration: options.duration || '6s'
+        quality: options.quality,
+        aspectRatio: options.aspectRatio || '9:16',
+        duration: options.duration || 5
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('❌ [VertexVideo] Error en generación:', data);
+      console.error('❌ [AlibabaVideo] Error en generación:', data);
       throw new Error(data.error || 'Error al generar video');
     }
 
-    // Si es 202, la operación está en proceso
+    // Si es 202, la tarea está en proceso
     if (response.status === 202) {
-      console.log('🔄 [VertexVideo] Video en proceso:', data.operationName);
+      console.log('🔄 [AlibabaVideo] Video en proceso. Task ID:', data.taskId);
       return {
-        operationName: data.operationName,
-        status: 'processing'
+        taskId: data.taskId,
+        status: 'processing',
+        requestId: data.requestId
       };
     }
 
-    // Si es 200, el video está completo (poco probable)
+    // Si es 200, el video está completo (poco probable con Alibaba Cloud)
     if (data.videoUrl) {
-      console.log('✅ [VertexVideo] Video generado inmediatamente');
+      console.log('✅ [AlibabaVideo] Video generado inmediatamente');
       return {
         videoUrl: data.videoUrl,
         status: 'complete'
@@ -72,7 +79,7 @@ export const generateVideo = async (
     throw new Error('Respuesta inesperada del servidor');
 
   } catch (error: any) {
-    console.error('❌ [VertexVideo] Error fatal:', error);
+    console.error('❌ [AlibabaVideo] Error fatal:', error);
     return {
       status: 'error',
       error: error.message
@@ -81,10 +88,10 @@ export const generateVideo = async (
 };
 
 /**
- * Verifica el estado de una operación de video
+ * Verifica el estado de una tarea de video
  */
-export const checkVideoOperation = async (
-  operationName: string
+export const checkVideoTask = async (
+  taskId: string
 ): Promise<VideoGenerationResult> => {
   try {
     const response = await fetch('/.netlify/functions/check-video-operation', {
@@ -93,21 +100,21 @@ export const checkVideoOperation = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        operationName
+        taskId
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('❌ [VertexVideo] Error al verificar operación:', data);
-      throw new Error(data.error || 'Error al verificar operación');
+      console.error('❌ [AlibabaVideo] Error al verificar tarea:', data);
+      throw new Error(data.error || 'Error al verificar tarea');
     }
 
     return data;
 
   } catch (error: any) {
-    console.error('❌ [VertexVideo] Error fatal:', error);
+    console.error('❌ [AlibabaVideo] Error fatal:', error);
     return {
       status: 'error',
       error: error.message
@@ -120,9 +127,9 @@ export const checkVideoOperation = async (
  */
 export const generateVideoAndWait = async (
   options: VideoGenerationOptions,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number, message?: string) => void
 ): Promise<string> => {
-  console.log('🎬 [VertexVideo] Generando video y esperando...');
+  console.log('🎬 [AlibabaVideo] Generando video y esperando...');
   
   // Iniciar generación
   const result = await generateVideo(options);
@@ -135,43 +142,70 @@ export const generateVideoAndWait = async (
     return result.videoUrl;
   }
 
-  if (!result.operationName) {
-    throw new Error('No se recibió operationName');
+  if (!result.taskId) {
+    throw new Error('No se recibió taskId');
   }
 
   // Polling hasta que esté completo
-  console.log('🔄 [VertexVideo] Iniciando polling...');
+  console.log('🔄 [AlibabaVideo] Iniciando polling...');
+  
+  // Alibaba Cloud: videos típicamente toman 1-5 minutos
+  // Polling cada 5 segundos durante máximo 10 minutos
   const maxAttempts = 120; // 10 minutos máximo (5 segundos * 120)
+  const pollInterval = 5000; // 5 segundos
   let attempts = 0;
 
   while (attempts < maxAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Esperar 5 segundos
+    await new Promise(resolve => setTimeout(resolve, pollInterval));
     attempts++;
 
-    console.log(`🔄 [VertexVideo] Verificando estado (intento ${attempts}/${maxAttempts})...`);
+    const progress = Math.min((attempts / maxAttempts) * 100, 95); // Máximo 95% hasta que complete
+    console.log(`🔄 [AlibabaVideo] Verificando estado (intento ${attempts}/${maxAttempts})... ${progress.toFixed(0)}%`);
     
-    const status = await checkVideoOperation(result.operationName);
+    if (onProgress) {
+      onProgress(progress, `Generando video... ${progress.toFixed(0)}%`);
+    }
+    
+    const status = await checkVideoTask(result.taskId);
 
     if (status.status === 'error') {
       throw new Error(status.error || 'Error al generar video');
     }
 
+    if (status.status === 'failed') {
+      throw new Error(status.error || 'La generación del video falló');
+    }
+
+    if (status.status === 'expired') {
+      throw new Error('La tarea expiró (>24 horas). Por favor, intenta nuevamente.');
+    }
+
     if (status.status === 'complete' && status.videoUrl) {
-      console.log('✅ [VertexVideo] Video completado!');
+      console.log('✅ [AlibabaVideo] Video completado!');
+      console.log('🎬 [AlibabaVideo] Video URL:', status.videoUrl.substring(0, 100) + '...');
+      
+      if (onProgress) {
+        onProgress(100, 'Video generado exitosamente');
+      }
+      
       return status.videoUrl;
     }
 
-    // Reportar progreso si hay callback
-    if (onProgress && 'progress' in status) {
-      onProgress((status as any).progress || (attempts / maxAttempts) * 100);
+    // Si aún está procesando, continuar polling
+    if (status.status === 'processing') {
+      console.log('⏳ [AlibabaVideo] Video aún en proceso...');
     }
   }
 
   throw new Error('Timeout: El video tardó más de 10 minutos en generarse');
 };
 
+// Alias para compatibilidad con código existente
+export const checkVideoOperation = checkVideoTask;
+
 export default {
   generateVideo,
+  checkVideoTask,
   checkVideoOperation,
   generateVideoAndWait
 };

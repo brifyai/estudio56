@@ -1,111 +1,102 @@
 import { Handler } from '@netlify/functions';
-import { GoogleAuth } from 'google-auth-library';
+
+// ============================================
+// ALIBABA CLOUD MODEL STUDIO - WANX VIDEO API
+// TEXT-TO-VIDEO (T2V) - Genera video directamente desde prompt
+// ============================================
+
+// API Key de Alibaba Cloud Model Studio (desde variable de entorno)
+const ALIBABA_API_KEY = process.env.ALIBABA_API_KEY;
+const ALIBABA_BASE_URL = 'https://dashscope-intl.aliyuncs.com/api/v1';
+
+if (!ALIBABA_API_KEY) {
+  throw new Error('ALIBABA_API_KEY no está configurada en las variables de entorno');
+}
+
+// Modelos TEXT-TO-VIDEO de Alibaba Cloud Wanx
+const VIDEO_MODELS = {
+  draft: 'wan2.5-t2v-preview',  // 480P - Rápido y económico para borradores
+  hd: 'wan2.5-t2v-preview'      // 720P - Alta calidad para HD (mismo modelo, diferente resolución)
+};
+
+interface VideoGenerationRequest {
+  prompt: string;
+  quality: 'draft' | 'hd';
+  aspectRatio?: string;
+  duration?: number;
+}
 
 export const handler: Handler = async (event) => {
-  console.log('🎬 [DEBUG] ===========================================');
-  console.log('🎬 [DEBUG] FUNCIÓN DE VIDEO INICIADA');
-  console.log('🎬 [DEBUG] HTTP Method:', event.httpMethod);
-  console.log('🎬 [DEBUG] Body length:', event.body?.length);
-  console.log('🎬 [DEBUG] ===========================================');
+  console.log('🎬 [Alibaba Video] ===========================================');
+  console.log('🎬 [Alibaba Video] FUNCIÓN DE VIDEO INICIADA');
+  console.log('🎬 [Alibaba Video] HTTP Method:', event.httpMethod);
+  console.log('🎬 [Alibaba Video] Body length:', event.body?.length);
+  console.log('🎬 [Alibaba Video] ===========================================');
   
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
-    console.log('📝 [DEBUG] Prompt recibido (primeros 100 chars):', (body.prompt || 'SIN PROMPT').substring(0, 100));
-    console.log('🎯 [DEBUG] Modelo:', body.model);
-    console.log('📐 [DEBUG] AspectRatio:', body.aspectRatio);
+    const body: VideoGenerationRequest = JSON.parse(event.body || '{}');
+    console.log('📝 [Alibaba Video] Prompt recibido (primeros 100 chars):', (body.prompt || 'SIN PROMPT').substring(0, 100));
+    console.log('🎯 [Alibaba Video] Quality:', body.quality);
+    console.log('📐 [Alibaba Video] AspectRatio:', body.aspectRatio);
     
-    const keyData = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-    console.log('🔑 [DEBUG] GOOGLE_SERVICE_ACCOUNT_KEY existe:', !!keyData);
-    
-    if (!keyData) {
-      console.error('❌ [DEBUG] FALTA GOOGLE_SERVICE_ACCOUNT_KEY');
-      throw new Error("Falta la variable GOOGLE_SERVICE_ACCOUNT_KEY");
+    if (!body.prompt) {
+      throw new Error("Falta parámetro requerido: prompt");
     }
 
-    const serviceAccount = JSON.parse(keyData);
-    console.log('📧 [DEBUG] Service account email:', serviceAccount.client_email);
+    // Seleccionar modelo y resolución según calidad
+    const model = VIDEO_MODELS[body.quality]; // Mismo modelo para ambos
+    const size = body.quality === 'hd' ? '1280*720' : '832*480'; // 720P para HD, 480P para draft
+    const duration = body.duration || 5; // 5 segundos por defecto
     
-    const privateKey = serviceAccount.private_key
-      .replace(/\\n/g, '\n')
-      .trim();
-    console.log('🔐 [DEBUG] Private key parseada correctamente');
+    console.log('🎯 [Alibaba Video] Modelo seleccionado:', model);
+    console.log('📐 [Alibaba Video] Resolución (size):', size);
+    console.log('⏱️ [Alibaba Video] Duración:', duration, 'segundos');
 
-    const auth = new GoogleAuth({
-      credentials: {
-        client_email: serviceAccount.client_email,
-        private_key: privateKey,
-      },
-      scopes: 'https://www.googleapis.com/auth/cloud-platform',
-    });
+    // Limpiar prompt (máximo 1500 caracteres para wan2.5-t2v-preview)
+    const maxPromptLength = 1500;
+    const cleanPrompt = body.prompt.slice(0, maxPromptLength);
+    console.log('📝 [Alibaba Video] Prompt limpio length:', cleanPrompt.length);
 
-    console.log('⏳ [DEBUG] Obteniendo token de acceso...');
-    const client = await auth.getClient();
-    const token = await client.getAccessToken();
-    
-    if (!token.token) {
-      console.error('❌ [DEBUG] No se pudo obtener token de acceso');
-      throw new Error("No se pudo obtener token de acceso para Vertex AI");
-    }
-    
-    console.log('✅ [DEBUG] Token obtenido:', token.token?.substring(0, 20) + '...');
+    // URL para generación de video con Alibaba Cloud
+    const url = `${ALIBABA_BASE_URL}/services/aigc/video-generation/video-synthesis`;
+    console.log('🌐 [Alibaba Video] URL de Alibaba Cloud:', url);
 
-    const projectId = serviceAccount.project_id;
-    console.log('🏢 [DEBUG] Project ID:', projectId);
-    
-    // Mapear modelos de video a sus endpoints correctos
-    // Usando Veo 3.1 estándar (sin fast) que tiene cuota disponible
-    const modelMap: Record<string, string> = {
-      'veo-3.1-generate-001': 'veo-3.1-generate-001',
-      'veo-3.1-fast-generate-001': 'veo-3.1-generate-001', // Usar estándar si fast no tiene cuota
-      'veo-2.0-flash-generate-preview': 'veo-3.1-generate-001',
-      'veo-2.0-generate-preview': 'veo-2.0-generate-preview',
-      'veo-3-fast-001': 'veo-3.1-generate-001',
-      'veo-1.0-preview-001': 'veo-1.0-preview-001'
-    };
-    
-    const vertexModel = modelMap[body.model] || 'veo-3.1-generate-001';
-    
-    console.log('🎯 [DEBUG] Vertex Model:', vertexModel);
-    
-    const cleanPrompt = (body.prompt || '').slice(0, 1000);
-    console.log('📝 [DEBUG] Prompt limpio (primeros 100 chars):', cleanPrompt.substring(0, 100));
-
-    // URL para generación de video con Veo
-    // Nota: Veo usa el método :predict (no :generateVideos)
-    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
-    console.log('🌐 [DEBUG] URL de Vertex AI:', url);
-
-    console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
-    
-    // Timeout de 120 segundos para videos (Veo 3.1 estándar es más lento)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-    
-    // Estructura del request para Veo usando :predict
-    // Documentación: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/video-generation
+    // Estructura del request para TEXT-TO-VIDEO (T2V)
+    // Documentación: https://www.alibabacloud.com/help/en/model-studio/text-to-video-api-reference/
     const requestBody = {
-      instances: [{
+      model: model,
+      input: {
         prompt: cleanPrompt
-      }],
+        // ← NO incluir img_url (T2V no requiere imagen)
+      },
       parameters: {
-        aspectRatio: body.aspectRatio || '9:16',
-        duration: body.duration || '6s',
-        personGeneration: 'allow_adult',
-        safetySetting: 'block_only_high'
+        size: size,  // Formato: "ancho*alto" (ej: "832*480", "1280*720")
+        prompt_extend: true,  // Habilitar reescritura de prompt con LLM
+        duration: duration,
+        watermark: false,
+        seed: Math.floor(Math.random() * 2147483647)
       }
     };
+
+    console.log('📤 [Alibaba Video] Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('⏳ [Alibaba Video] Enviando petición a Alibaba Cloud...');
+    
+    // Timeout de 120 segundos para la creación de la tarea
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
     
     let response: Response;
     try {
       response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token.token}`,
+          'Authorization': `Bearer ${ALIBABA_API_KEY}`,
           'Content-Type': 'application/json',
+          'X-DashScope-Async': 'enable'  // Habilitar procesamiento asíncrono
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal
@@ -114,95 +105,74 @@ export const handler: Handler = async (event) => {
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('❌ [DEBUG] Timeout: Vertex AI tardó más de 120 segundos');
-        throw new Error("Timeout: Vertex AI tardó más de 120 segundos");
+        console.error('❌ [Alibaba Video] Timeout: Alibaba Cloud tardó más de 120 segundos');
+        throw new Error("Timeout: Alibaba Cloud tardó más de 120 segundos");
       }
       throw fetchError;
     }
 
-    console.log('✅ [DEBUG] Respuesta de Vertex AI recibida. Status:', response.status);
+    console.log('✅ [Alibaba Video] Respuesta de Alibaba Cloud recibida. Status:', response.status);
     
     // Leer el texto de la respuesta primero
     const responseText = await response.text();
-    console.log('📄 [DEBUG] Respuesta raw (primeros 500 chars):', responseText.substring(0, 500));
+    console.log('📄 [Alibaba Video] Respuesta raw (primeros 500 chars):', responseText.substring(0, 500));
     
-    let data;
+    let data: any;
     try {
       data = JSON.parse(responseText);
-      console.log('📊 [DEBUG] Respuesta keys:', Object.keys(data));
+      console.log('📊 [Alibaba Video] Respuesta keys:', Object.keys(data));
     } catch (parseError) {
-      console.error('❌ [DEBUG] Error parseando JSON:', parseError);
-      console.error('❌ [DEBUG] Respuesta completa:', responseText);
-      throw new Error(`Error parseando respuesta de Vertex AI: ${responseText.substring(0, 200)}`);
+      console.error('❌ [Alibaba Video] Error parseando JSON:', parseError);
+      console.error('❌ [Alibaba Video] Respuesta completa:', responseText);
+      throw new Error(`Error parseando respuesta de Alibaba Cloud: ${responseText.substring(0, 200)}`);
     }
 
     if (!response.ok) {
-      console.error('❌ [DEBUG] Error HTTP de Google:', response.status);
-      console.error('❌ [DEBUG] Error details:', JSON.stringify(data, null, 2));
+      console.error('❌ [Alibaba Video] Error HTTP de Alibaba Cloud:', response.status);
+      console.error('❌ [Alibaba Video] Error details:', JSON.stringify(data, null, 2));
       
-      const errorMessage = data.error?.message || data.message || JSON.stringify(data);
-      if (errorMessage.includes('not available') || errorMessage.includes('not supported')) {
-        console.error('❌ [DEBUG] El modelo no está disponible:', body.model);
-        throw new Error(`El modelo ${body.model} no está habilitado en Google Cloud Console. Error: ${errorMessage.substring(0, 200)}`);
+      const errorMessage = data.message || data.code || JSON.stringify(data);
+      
+      // Manejar errores específicos de Alibaba Cloud
+      if (data.code === 'InvalidApiKey') {
+        throw new Error('API Key de Alibaba Cloud inválida');
+      }
+      if (data.code === 'Throttling.RateQuota') {
+        throw new Error('Límite de cuota excedido en Alibaba Cloud');
       }
       
-      return { statusCode: response.status, body: JSON.stringify(data) };
+      return { 
+        statusCode: response.status, 
+        body: JSON.stringify({
+          error: errorMessage,
+          code: data.code
+        })
+      };
     }
 
-    // Veo devuelve una operación de larga duración o predicciones
-    if (data.name && data.name.includes('operations')) {
-      console.log('🔄 [DEBUG] Operación de video iniciada:', data.name);
+    // Alibaba Cloud devuelve un task_id para polling
+    if (data.output && data.output.task_id) {
+      console.log('🔄 [Alibaba Video] Tarea de video iniciada:', data.output.task_id);
+      console.log('📊 [Alibaba Video] Task status:', data.output.task_status);
       
-      // Retornar el nombre de la operación para polling
+      // Retornar el task_id para polling
       return {
         statusCode: 202,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          operationName: data.name,
-          status: 'processing'
+          taskId: data.output.task_id,
+          status: data.output.task_status,
+          requestId: data.request_id
         }),
       };
     }
 
-    // Si devuelve predicciones directamente
-    if (data.predictions && data.predictions.length > 0) {
-      const prediction = data.predictions[0];
-      console.log('🔍 [DEBUG] Predicción keys:', Object.keys(prediction || {}));
-      
-      // Buscar el video en diferentes campos posibles
-      const videoData = prediction.bytesBase64Encoded || prediction.video || prediction.generatedVideo;
-      
-      if (videoData) {
-        console.log('✅ [DEBUG] Video generado inmediatamente');
-        return {
-          statusCode: 200,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            videoUrl: `data:video/mp4;base64,${videoData}`,
-            status: 'complete'
-          }),
-        };
-      }
-    }
-
-    // Si ya está completo con estructura diferente
-    if (data.video || data.generatedVideo) {
-      console.log('✅ [DEBUG] Video generado inmediatamente (formato alternativo)');
-      return {
-        statusCode: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          videoUrl: data.video || data.generatedVideo,
-          status: 'complete'
-        }),
-      };
-    }
-
-    console.error('❌ [DEBUG] Estructura de respuesta inesperada:', JSON.stringify(data, null, 2));
-    throw new Error("Respuesta inesperada de Vertex AI - no se encontró video ni operación");
+    console.error('❌ [Alibaba Video] Estructura de respuesta inesperada:', JSON.stringify(data, null, 2));
+    throw new Error("Respuesta inesperada de Alibaba Cloud - no se encontró task_id");
 
   } catch (error: any) {
-    console.error('❌ [DEBUG] Error fatal:', error.message);
+    console.error('❌ [Alibaba Video] Error fatal:', error.message);
+    console.error('❌ [Alibaba Video] Stack:', error.stack);
     return {
       statusCode: 500,
       body: JSON.stringify({
