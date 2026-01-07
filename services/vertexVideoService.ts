@@ -9,7 +9,7 @@
 export interface VideoGenerationOptions {
   prompt: string;
   aspectRatio: '9:16' | '16:9' | '1:1';
-  model?: 'veo-2.0-flash-generate-preview' | 'veo-2.0-generate-preview';
+  model?: 'veo-3.1-fast-generate-preview' | 'veo-2.0-generate-preview' | 'veo-2.0-flash-generate-preview';
   duration?: '6s' | '8s';
 }
 
@@ -28,7 +28,7 @@ export const generateVideo = async (
 ): Promise<VideoGenerationResult> => {
   console.log('🎬 [VertexVideo] Iniciando generación de video...');
   console.log('🎬 [VertexVideo] Prompt:', options.prompt.substring(0, 100));
-  console.log('🎬 [VertexVideo] Modelo:', options.model || 'veo-2.0-flash-generate-preview');
+  console.log('🎬 [VertexVideo] Modelo:', options.model || 'veo-3.1-fast-generate-preview');
   
   try {
     const response = await fetch('/.netlify/functions/generate-video', {
@@ -39,7 +39,7 @@ export const generateVideo = async (
       body: JSON.stringify({
         prompt: options.prompt,
         aspectRatio: options.aspectRatio,
-        model: options.model || 'veo-2.0-flash-generate-preview',
+        model: options.model || 'veo-3.1-fast-generate-preview',
         duration: options.duration || '6s'
       }),
     });

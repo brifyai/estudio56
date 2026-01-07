@@ -1340,7 +1340,7 @@ const handleGenerate = async () => {
             {
               prompt: enhancedPrompt,
               aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1',
-              model: imageQuality === 'draft' ? 'veo-2.0-flash-generate-preview' : 'veo-2.0-generate-preview',
+              model: imageQuality === 'draft' ? 'veo-3.1-fast-generate-preview' : 'veo-2.0-generate-preview',
               duration: '6s'
             },
             (progress) => {

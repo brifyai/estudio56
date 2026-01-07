@@ -58,12 +58,13 @@ export const handler: Handler = async (event) => {
     
     // Mapear modelos de video a sus endpoints correctos
     const modelMap: Record<string, string> = {
+      'veo-3.1-fast-generate-preview': 'veo-3.1-fast-generate-preview',
       'veo-2.0-generate-preview': 'veo-2.0-generate-preview',
       'veo-2.0-flash-generate-preview': 'veo-2.0-flash-generate-preview',
       'veo-1.0-preview-001': 'veo-1.0-preview-001'
     };
     
-    const vertexModel = modelMap[body.model] || 'veo-2.0-flash-generate-preview';
+    const vertexModel = modelMap[body.model] || 'veo-3.1-fast-generate-preview';
     
     console.log('🎯 [DEBUG] Vertex Model:', vertexModel);
     

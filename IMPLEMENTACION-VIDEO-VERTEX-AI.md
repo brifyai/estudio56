@@ -6,17 +6,19 @@ Se implementó la generación real de videos usando los modelos Veo de Google Cl
 
 ## 🎬 Modelos de Video Implementados
 
-### Draft (Rápido)
-- **Modelo**: `veo-2.0-flash-generate-preview`
-- **Velocidad**: Rápida (~30-60 segundos)
+### Draft (Rápido y Económico) - RECOMENDADO
+- **Modelo**: `veo-3.1-fast-generate-preview`
+- **Velocidad**: Muy rápida (~15-30 segundos)
 - **Calidad**: Buena para previsualizaciones
 - **Duración**: 6 segundos
+- **Costo**: Más económico (~$0.05 USD por video)
 
 ### HD (Alta Calidad)
 - **Modelo**: `veo-2.0-generate-preview`
 - **Velocidad**: Lenta (~2-5 minutos)
 - **Calidad**: Alta calidad cinematográfica
 - **Duración**: 6 segundos
+- **Costo**: ~$0.30 USD por video
 
 ## 🏗️ Arquitectura Implementada
 
@@ -116,7 +118,7 @@ Si la generación de video falla:
 
 ## 💰 Costos Estimados
 
-- **Draft (veo-2.0-flash)**: ~$0.10 USD por video
+- **Draft (veo-3.1-fast)**: ~$0.05 USD por video ⭐ MÁS ECONÓMICO
 - **HD (veo-2.0-generate)**: ~$0.30 USD por video
 
 ## 🚀 Próximos Pasos
