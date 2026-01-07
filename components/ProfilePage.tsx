@@ -31,11 +31,19 @@ interface Payment {
   created_at: string;
 }
 
+interface Subscription {
+  id: string;
+  status: string;
+  next_payment_date: string | null;
+  created_at: string;
+}
+
 export const ProfilePage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [creditTransactions, setCreditTransactions] = useState<CreditTransaction[]>([]);
   const [monthlyUsage, setMonthlyUsage] = useState<{ credit_type: string; total_used: number }[]>([]);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -133,6 +141,19 @@ export const ProfilePage: React.FC = () => {
       // Load monthly usage
       const usage = await creditService.getMonthlyUsage();
       setMonthlyUsage(usage);
+
+      // Load subscription for renewal date
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (subData) {
+        setSubscription(subData);
+      }
 
     } catch (error: any) {
       console.error('Error loading profile:', error);
@@ -396,6 +417,33 @@ export const ProfilePage: React.FC = () => {
                     <span className="text-white/80 font-medium">Total mensual</span>
                     <span className="text-white font-bold text-xl">${(userProfile.user_plans.price_with_iva || 0).toLocaleString('es-CL')}</span>
                   </div>
+                </div>
+              )}
+              
+              {/* Fecha de Renovación */}
+              {subscription && subscription.next_payment_date && (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🔄</span>
+                    <div>
+                      <p className="text-white/60 text-sm">Próxima renovación</p>
+                      <p className="text-white font-bold">
+                        {new Date(subscription.next_payment_date).toLocaleDateString('es-CL', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Si es plan gratuito */}
+              {!subscription && userProfile.user_plans.price === 0 && (
+                <div className="bg-white/5 rounded-2xl p-4">
+                  <p className="text-white/60 text-sm">Plan gratuito</p>
+                  <p className="text-white/80">Sin renovación automática</p>
                 </div>
               )}
               
