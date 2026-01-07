@@ -3,6 +3,11 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[functions]
+  node_bundle = true
+  external_node_modules = ["google-auth-library"]
+  timeout = 26
+
 [[headers]]
   for = "/*"
   [headers.values]
