@@ -2,7 +2,8 @@
  * Servicio para generación de videos usando Alibaba Cloud Model Studio (Wanx)
  * 
  * Modelos TEXT-TO-VIDEO (T2V):
- * - wan2.5-t2v-preview (480P - draft, 720P - HD)
+ * - wan2.1-t2v-turbo (480P - ultra rápido, draft)
+ * - wan2.5-t2v-preview (720P - alta calidad, HD)
  * 
  * NOTA: T2V genera video directamente desde prompt, sin necesidad de imagen base
  */

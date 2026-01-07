@@ -15,8 +15,8 @@ if (!ALIBABA_API_KEY) {
 
 // Modelos TEXT-TO-VIDEO de Alibaba Cloud Wanx
 const VIDEO_MODELS = {
-  draft: 'wan2.5-t2v-preview',  // 480P - Rápido y económico para borradores
-  hd: 'wan2.5-t2v-preview'      // 720P - Alta calidad para HD (mismo modelo, diferente resolución)
+  draft: 'wan2.1-t2v-turbo',    // 480P - Ultra rápido y económico para borradores
+  hd: 'wan2.5-t2v-preview'      // 720P - Alta calidad para HD
 };
 
 interface VideoGenerationRequest {
