@@ -1515,15 +1515,15 @@ const handleGenerate = async () => {
               false
             );
             url = hdImageResult.imageDataUrl;
-      }
+        }
+        
+        // 🎯 CERRAR ALERTA DE PROGRESO ANTES DE SETEAR hdImageUrl
+        // Esto evita que la alerta se superponga con el comparador
+        progressAlert.close();
+        
         setImageUrl(url);
         setHdImageUrl(url);
         setIsDraft(false);
-        progressAlert.updateProgress(100, '¡Completado!');
-        // Cerrar la alerta después de un breve delay para que el usuario vea el mensaje de completado
-        setTimeout(() => {
-          progressAlert.close();
-        }, 500);
         setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
     } catch (error: any) {
         progressAlert.close();
