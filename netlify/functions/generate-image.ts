@@ -5,20 +5,19 @@ export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
   try {
-    const { prompt, seed } = JSON.parse(event.body || '{}');
+    const { prompt } = JSON.parse(event.body || '{}');
 
-    // 1. Carga segura de la cuenta de servicio
     const keyData = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyData) throw new Error("Falta la variable GOOGLE_SERVICE_ACCOUNT_KEY");
 
+    // Parseamos el JSON
     const serviceAccount = JSON.parse(keyData);
     
-    // REPARACIÓN DE EMERGENCIA: Forzar saltos de línea reales en la clave
+    // LIMPIEZA PROFUNDA: Esta es la solución al error DECODER
     const privateKey = serviceAccount.private_key
-      .replace(/\\n/g, '\n')
-      .replace(/"/g, ''); // Eliminar comillas accidentales
+      .replace(/\\n/g, '\n') // Convierte \n de texto a saltos de línea reales
+      .trim();              // Quita espacios accidentales al inicio/final
 
-    // 2. Autenticación
     const auth = new GoogleAuth({
       credentials: {
         client_email: serviceAccount.client_email,
@@ -30,9 +29,6 @@ export const handler: Handler = async (event) => {
     const client = await auth.getClient();
     const token = await client.getAccessToken();
 
-    if (!token.token) throw new Error("Google rechazó la clave privada. Revisa el formato.");
-
-    // 3. Llamada a Vertex AI (Imagen 3 Fast)
     const projectId = serviceAccount.project_id;
     const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/imagen-3.0-fast-generate-001:predict`;
 
@@ -51,10 +47,7 @@ export const handler: Handler = async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      return { 
-        statusCode: response.status, 
-        body: JSON.stringify({ error: data.error?.message || "Error en Vertex AI" }) 
-      };
+      return { statusCode: response.status, body: JSON.stringify(data) };
     }
 
     return {
@@ -68,7 +61,7 @@ export const handler: Handler = async (event) => {
     console.error('❌ Error Crítico:', error.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: `Error de configuración: ${error.message}` }),
+      body: JSON.stringify({ error: `Error de llave: ${error.message}` }),
     };
   }
 };
