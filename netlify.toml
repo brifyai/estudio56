@@ -1,8 +1,8 @@
+[functions."generate-image"]
+  timeout = 26
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
   force = true
-
-[functions."generate-image"]
-  timeout = 26
