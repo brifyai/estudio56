@@ -4,11 +4,11 @@
   functions = "netlify/functions"
 
 [functions]
-  # Dejamos este bloque vacío o con configuraciones globales de empaquetado
-  node_bundle = true
+  # Dejamos la sección global vacía para que no choque con el validador
+  # Netlify aplicará los valores por defecto del plan Pro aquí
 
 [functions."generate-image"]
-  # Aquí es donde el plan Pro busca el tiempo extendido
+  # Aquí aplicamos la configuración solo a tu función de IA
   timeout = 26
   external_node_modules = ["google-auth-library"]
 
