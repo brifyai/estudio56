@@ -720,8 +720,8 @@ const generateWithVertexAI = async (
   console.log(`🎯 [VertexAI] Generando con ${model}`);
   
   // Llamada al endpoint de API que usa Vertex AI
-  // Nota: Esto requiere un backend que configure las credenciales de GCP
-  const response = await fetch('/api/generate-image-vertex', {
+  // El endpoint correcto es /api/generate-image (configurado en netlify/functions/vertex-image.ts)
+  const response = await fetch('/api/generate-image', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -738,7 +738,12 @@ const generateWithVertexAI = async (
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      // La API retornó HTML (probablemente página de error 404 de Netlify)
+      throw new Error(`Vertex AI endpoint no disponible (404). Verificar configuración de Netlify Functions.`);
+    }
+    const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
     throw new Error(error.message || `Vertex AI Error: ${response.status}`);
   }
 
@@ -1906,30 +1911,35 @@ export const generateHDFromDraft = async (
   
   console.log('🎯 [HD From Draft] Generando HD usando borrador como referencia...');
   console.log('📝 [HD From Draft] Seed:', seed);
+  console.log('🖼️ [HD From Draft] Borrador recibido:', draftImageDataUrl.substring(0, 50) + '...');
   
   // Convertir data URL a base64
   const base64Data = draftImageDataUrl.split(',')[1];
   
   // Prompt específico para mejorar la imagen existente
+  // IMPORTANTE: Usar "ENHANCE THIS IMAGE" para Image-to-Image
   const enhancementPrompt = `
     ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and overall visual appeal while maintaining EXACTLY the same composition, layout, and elements.
     
-    CRITICAL RULES:
+    CRITICAL RULES - FOLLOW STRICTLY:
     1. Keep the SAME composition, subject placement, and layout as the reference image
-    2. Improve lighting, shadows, and overall visual quality
-    3. Add more detail and texture to all elements
-    4. Maintain the same color palette and mood
-    5. Do NOT change the composition or add/remove elements
-    6. Do NOT add any text to the image
-    7. Output must be the same aspect ratio: ${aspectRatio}
+    2. Keep the SAME subject, same person, same objects, same everything
+    3. Improve lighting, shadows, and overall visual quality ONLY
+    4. Add more detail and texture to all elements WITHOUT changing them
+    5. Maintain the same color palette and mood EXACTLY
+    6. Do NOT change the composition or add/remove elements
+    7. Do NOT add any text to the image
+    8. Output must be the same aspect ratio: ${aspectRatio}
+    9. Keep the same camera angle and perspective
     
-    Subject: ${enhancedDescription}
+    Subject description: ${enhancedDescription}
     Style: ${safeStyleConfig.label}
   `.replace(/\n/g, ' ').trim();
 
   try {
-    // Usar el modelo HD con la imagen de referencia
-    const model = 'gemini-3.0-pro-image-exp';
+    // Usar gemini-2.5-flash-image que soporta Image-to-Image correctamente
+    const model = 'gemini-2.5-flash-image';
+    console.log(`📡 [HD From Draft] Usando modelo: ${model} con img2img`);
     
     const response = await ai.models.generateContent({
       model,
@@ -2296,17 +2306,20 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         const base64Data = draftImageForHD.split(',')[1];
         
         // Prompt específico para mejorar la imagen existente
+        // IMPORTANTE: Ser muy explícito sobre mantener la misma composición
         const enhancementPrompt = `
           ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and overall visual appeal while maintaining EXACTLY the same composition, layout, and elements.
           
-          CRITICAL RULES:
+          CRITICAL RULES - FOLLOW STRICTLY:
           1. Keep the SAME composition, subject placement, and layout as the reference image
-          2. Improve lighting, shadows, and overall visual quality
-          3. Add more detail and texture to all elements
-          4. Maintain the same color palette and mood
-          5. Do NOT change the composition or add/remove elements
-          6. Do NOT add any text to the image
-          7. Output must be the same aspect ratio: ${aspectRatio}
+          2. Keep the SAME subject, same person, same objects, same everything
+          3. Improve lighting, shadows, and overall visual quality ONLY
+          4. Add more detail and texture to all elements WITHOUT changing them
+          5. Maintain the same color palette and mood EXACTLY
+          6. Do NOT change the composition or add/remove elements
+          7. Do NOT add any text to the image
+          8. Output must be the same aspect ratio: ${aspectRatio}
+          9. Keep the same camera angle and perspective
           
           ${unifiedPrompt}
         `.replace(/\n/g, ' ').trim();

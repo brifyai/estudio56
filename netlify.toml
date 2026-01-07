@@ -11,5 +11,5 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/vertex-image/:splat"
+  to = "/.netlify/functions/vertex-image"
   status = 200

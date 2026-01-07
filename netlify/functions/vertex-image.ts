@@ -283,9 +283,10 @@ async function generateWithGeminiAPI(
   }
 
   // Mapear modelo de imagen a modelo de Gemini
+  // Usar modelos que soporten generación de imágenes
   let geminiModel = 'gemini-2.5-flash-image';
   if (model.includes('imagen-3.0-pro')) {
-    geminiModel = 'gemini-3.0-pro-image-exp';
+    geminiModel = 'gemini-1.5-pro'; // Fallback más estable
   }
 
   // Convertir aspectRatio
@@ -322,7 +323,14 @@ async function generateWithGeminiAPI(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        // La API retornó HTML (error de endpoint)
+        console.error('❌ Gemini API retornó HTML (endpoint no válido)');
+        throw new Error("Gemini API endpoint no disponible");
+      }
+      
+      const errorData = await response.json().catch(() => ({ error: { message: `HTTP ${response.status}` } }));
       console.error('❌ Gemini API error:', errorData);
       throw new Error(errorData.error?.message || `Gemini API error: ${response.status}`);
     }
