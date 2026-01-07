@@ -1794,6 +1794,7 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
             return imageUrl;
           } catch (retryError: any) {
             console.error(`❌ [GeminiService] Retry con Vertex AI también falló: ${retryError.message}`);
+            console.error(`❌ [GeminiService] Error completo:`, retryError);
             throw new Error(`Retry con prompt simplificado también falló: ${retryError.message}`);
           }
         } else {
