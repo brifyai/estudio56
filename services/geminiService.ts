@@ -717,9 +717,11 @@ const generateWithVertexAI = async (
   imageSize: string,
   seed: number
 ): Promise<string> => {
-  console.log(`🎯 [VertexAI] Generando con ${model}`);
-  console.log(`📐 AspectRatio: ${aspectRatio}, ImageSize: ${imageSize}, Seed: ${seed}`);
-  console.log(`📝 Prompt (primeros 100 chars): ${prompt.substring(0, 100)}...`);
+  console.log(`🎯 [VertexAI] ============================================`);
+  console.log(`🎯 [VertexAI] INICIANDO generación con ${model}`);
+  console.log(`📐 [VertexAI] AspectRatio: ${aspectRatio}, ImageSize: ${imageSize}, Seed: ${seed}`);
+  console.log(`📝 [VertexAI] Prompt (primeros 100 chars): ${prompt.substring(0, 100)}...`);
+  console.log(`🌐 [VertexAI] Endpoint: /.netlify/functions/generate-image`);
   
   try {
     // Llamada al endpoint de API que usa Vertex AI
@@ -741,6 +743,7 @@ const generateWithVertexAI = async (
     });
 
     console.log(`📡 [VertexAI] Response status: ${response.status}`);
+    console.log(`📡 [VertexAI] Response headers:`, Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       const contentType = response.headers.get('content-type');
@@ -1826,7 +1829,7 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
             
             throw new Error("Retry no generó imagen válida");
           } catch (retryError: any) {
-            console.error(`❌ [GeminiService] Retry con Gemini API también falló: ${retryError.message}`);
+            console.error(`❌ [GeminiService] Retry con prompt simplificado también falló: ${retryError.message}`);
             throw new Error(`Retry con prompt simplificado también falló: ${retryError.message}`);
           }
         }
