@@ -51,29 +51,52 @@ async function updatePlans() {
       }
     ];
 
-    // First, delete existing plans
-    console.log('🗑️  Deleting existing plans...');
-    const { error: deleteError } = await supabase
-      .from('user_plans')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
-
-    if (deleteError) {
-      console.warn('⚠️  Delete warning:', deleteError.message);
-    } else {
-      console.log('✅ Existing plans deleted');
+    // ⚠️ CORREGIDO: Ya no borramos los planes - los actualizamos por nombre
+    // Esto evita romper las referencias en users.plan_id
+    
+    console.log('📋 Actualizando planes existentes (sin borrar)...');
+    
+    for (const plan of correctPlans) {
+      const { error: upsertError } = await supabase
+        .from('user_plans')
+        .upsert(
+          { name: plan.name },
+          { onConflict: 'name', ignoreDuplicates: false }
+        )
+        .eq('name', plan.name);
+      
+      if (upsertError) {
+        console.warn(`⚠️  Warning updating ${plan.name}:`, upsertError.message);
+      } else {
+        // Ahora actualizar los campos específicos
+        const { error: updateError } = await supabase
+          .from('user_plans')
+          .update({
+            price: plan.price,
+            credits_hd: plan.credits_hd,
+            drafts: plan.drafts,
+            features: plan.features
+          })
+          .eq('name', plan.name);
+          
+        if (updateError) {
+          console.warn(`⚠️  Warning updating fields for ${plan.name}:`, updateError.message);
+        } else {
+          console.log(`✅ ${plan.name} actualizado`);
+        }
+      }
     }
-
-    // Insert the correct plans
-    console.log('📋 Inserting correct plans...');
-    const { data: plans, error: insertError } = await supabase
+    
+    // Verificar que los planes existen
+    const { data: plans, error: fetchError } = await supabase
       .from('user_plans')
-      .insert(correctPlans)
-      .select();
-
-    if (insertError) {
-      console.error('❌ Insert error:', insertError.message);
-      process.exit(1);
+      .select('*')
+      .order('price');
+    
+    if (fetchError) {
+      console.error('❌ Error verificando planes:', fetchError.message);
+    } else {
+      console.log(`✅ Planes verificados: ${plans?.length || 0} planes`);
     }
 
     console.log('✅ Plans updated successfully!');
