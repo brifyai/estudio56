@@ -1917,23 +1917,21 @@ export const generateHDFromDraft = async (
   const base64Data = draftImageDataUrl.split(',')[1];
   
   // Prompt específico para mejorar la imagen existente
-  // IMPORTANTE: Usar "ENHANCE THIS IMAGE" para Image-to-Image
+  // CRÍTICO: Usar prompt MÍNIMO que solo pide mejorar calidad SIN alterar la imagen
   const enhancementPrompt = `
-    ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and overall visual appeal while maintaining EXACTLY the same composition, layout, and elements.
+    ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and visual appeal.
     
     CRITICAL RULES - FOLLOW STRICTLY:
-    1. Keep the SAME composition, subject placement, and layout as the reference image
-    2. Keep the SAME subject, same person, same objects, same everything
-    3. Improve lighting, shadows, and overall visual quality ONLY
-    4. Add more detail and texture to all elements WITHOUT changing them
-    5. Maintain the same color palette and mood EXACTLY
-    6. Do NOT change the composition or add/remove elements
-    7. Do NOT add any text to the image
-    8. Output must be the same aspect ratio: ${aspectRatio}
-    9. Keep the same camera angle and perspective
+    1. Keep EXACTLY the same composition, subject placement, and layout as the reference image
+    2. Keep EXACTLY the same subject, person, objects, colors, and mood
+    3. Improve ONLY: lighting quality, shadow detail, texture sharpness, overall clarity
+    4. Do NOT change: composition, colors, objects, perspective, mood, or any element
+    5. Do NOT add any text, elements, or modify anything except quality improvement
+    6. The output must look like the SAME image but in higher quality (HD)
+    7. Maintain EXACTLY the same camera angle, lighting direction, and perspective
+    8. Keep the same aspect ratio: ${aspectRatio}
     
-    Subject description: ${enhancedDescription}
-    Style: ${safeStyleConfig.label}
+    This is a QUALITY ENHANCEMENT ONLY. Do not reinterpret or change the image content.
   `.replace(/\n/g, ' ').trim();
 
   try {
@@ -2306,22 +2304,22 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         const base64Data = draftImageForHD.split(',')[1];
         
         // Prompt específico para mejorar la imagen existente
-        // IMPORTANTE: Ser muy explícito sobre mantener la misma composición
+        // CRÍTICO: Usar prompt MÍNIMO que solo pide mejorar calidad SIN alterar la imagen
+        // El prompt debe ser simple porque Gemini 2.5 Flash Image interpreta prompts largos como "generar algo nuevo"
         const enhancementPrompt = `
-          ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and overall visual appeal while maintaining EXACTLY the same composition, layout, and elements.
+          ENHANCE THIS IMAGE: Improve the quality, detail, sharpness, and visual appeal.
           
           CRITICAL RULES - FOLLOW STRICTLY:
-          1. Keep the SAME composition, subject placement, and layout as the reference image
-          2. Keep the SAME subject, same person, same objects, same everything
-          3. Improve lighting, shadows, and overall visual quality ONLY
-          4. Add more detail and texture to all elements WITHOUT changing them
-          5. Maintain the same color palette and mood EXACTLY
-          6. Do NOT change the composition or add/remove elements
-          7. Do NOT add any text to the image
-          8. Output must be the same aspect ratio: ${aspectRatio}
-          9. Keep the same camera angle and perspective
+          1. Keep EXACTLY the same composition, subject placement, and layout as the reference image
+          2. Keep EXACTLY the same subject, person, objects, colors, and mood
+          3. Improve ONLY: lighting quality, shadow detail, texture sharpness, overall clarity
+          4. Do NOT change: composition, colors, objects, perspective, mood, or any element
+          5. Do NOT add any text, elements, or modify anything except quality improvement
+          6. The output must look like the SAME image but in higher quality (HD)
+          7. Maintain EXACTLY the same camera angle, lighting direction, and perspective
+          8. Keep the same aspect ratio: ${aspectRatio}
           
-          ${unifiedPrompt}
+          This is a QUALITY ENHANCEMENT ONLY. Do not reinterpret or change the image content.
         `.replace(/\n/g, ' ').trim();
         
         // Usar Gemini con imagen de referencia
