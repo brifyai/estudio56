@@ -107,12 +107,22 @@ export const handler: Handler = async (event) => {
     console.log('📊 [DEBUG] Respuesta completa de Google:', JSON.stringify(data, null, 2).substring(0, 500));
 
     if (!response.ok) {
-      console.error('❌ [DEBUG] Error HTTP de Google:', response.status, data);
+      console.error('❌ [DEBUG] Error HTTP de Google:', response.status);
+      console.error('❌ [DEBUG] Error details:', JSON.stringify(data, null, 2));
+      
+      // Detectar error específico "not available"
+      const errorMessage = data.error?.message || data.message || JSON.stringify(data);
+      if (errorMessage.includes('not available') || errorMessage.includes('not supported')) {
+        console.error('❌ [DEBUG] El modelo no está disponible:', body.model);
+        throw new Error(`El modelo ${body.model} no está disponible en esta cuenta o región. Verifica en Google Cloud Console que el modelo esté habilitado.`);
+      }
+      
       return { statusCode: response.status, body: JSON.stringify(data) };
     }
 
     if (!data.predictions || data.predictions.length === 0) {
       console.error('❌ [DEBUG] Google no devolvió predicciones');
+      console.error('❌ [DEBUG] Full response:', JSON.stringify(data, null, 2));
       throw new Error("Google no devolvió ninguna imagen en las predicciones");
     }
 

@@ -1764,7 +1764,8 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       // Para modelos de imagen (imagen-3.0-fast-001), el retry SIEMPRE debe ejecutarse
       // porque Vertex AI puede fallar por timeout, rate limit, o errores de red
       // IMPORTANTE: Para modelos de imagen, siempre reintentamos aunque ya haya sido simplificado
-      const isRetryableImagenError = isImagenModel && !useSimplified;
+      // MODIFICADO: Ahora siempre reintentamos para modelos de imagen, sin importar si useSimplified
+      const isRetryableImagenError = isImagenModel;
       const isGeminiRetryable = error.message?.includes('SAFETY_BLOCK') ||
                                 error.message?.includes('invalid argument') ||
                                 error.message?.includes('400');
