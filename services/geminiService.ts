@@ -718,43 +718,68 @@ const generateWithVertexAI = async (
   seed: number
 ): Promise<string> => {
   console.log(`🎯 [VertexAI] Generando con ${model}`);
+  console.log(`📐 AspectRatio: ${aspectRatio}, ImageSize: ${imageSize}, Seed: ${seed}`);
+  console.log(`📝 Prompt (primeros 100 chars): ${prompt.substring(0, 100)}...`);
   
-  // Llamada al endpoint de API que usa Vertex AI
-  // Usando ruta directa de Netlify para evitar problemas de redirect
-  const response = await fetch('/.netlify/functions/generate-image', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model,
-      prompt,
-      aspectRatio,
-      imageSize,
-      seed,
-      location: 'us-central1',
-      projectId: import.meta.env.VITE_GCP_PROJECT_ID || 'estudio-56-prod'
-    })
-  });
+  try {
+    // Llamada al endpoint de API que usa Vertex AI
+    // Usando ruta directa de Netlify para evitar problemas de redirect
+    const response = await fetch('/.netlify/functions/generate-image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model,
+        prompt,
+        aspectRatio,
+        imageSize,
+        seed,
+        location: 'us-central1',
+        projectId: import.meta.env.VITE_GCP_PROJECT_ID || 'estudio-56-prod'
+      })
+    });
 
-  if (!response.ok) {
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('text/html')) {
-      // La API retornó HTML (probablemente página de error 404 de Netlify)
-      throw new Error(`Vertex AI endpoint no disponible (404). Verificar configuración de Netlify Functions.`);
+    console.log(`📡 [VertexAI] Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const contentType = response.headers.get('content-type');
+      console.log(`📄 [VertexAI] Content-Type: ${contentType}`);
+      
+      if (contentType && contentType.includes('text/html')) {
+        // La API retornó HTML (probablemente página de error 404 de Netlify)
+        const html = await response.text();
+        console.error(`❌ [VertexAI] HTML response (primeros 200 chars): ${html.substring(0, 200)}`);
+        throw new Error(`Vertex AI endpoint no disponible (404 HTML). Verificar configuración de Netlify Functions.`);
+      }
+      
+      const errorText = await response.text();
+      console.error(`❌ [VertexAI] Error response: ${errorText.substring(0, 500)}`);
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(errorJson.message || errorJson.error || `Vertex AI Error: ${response.status}`);
+      } catch {
+        throw new Error(`Vertex AI Error: ${response.status} - ${errorText.substring(0, 200)}`);
+      }
     }
-    const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
-    throw new Error(error.message || `Vertex AI Error: ${response.status}`);
-  }
 
-  const result = await response.json();
-  
-  // El backend retorna 'url' (data:image/png;base64,...), no 'imageUrl'
-  if (result.url) {
-    return result.url;
+    const result = await response.json();
+    console.log(`📊 [VertexAI] Result keys: ${Object.keys(result)}`);
+    
+    // El backend retorna 'url' (data:image/png;base64,...), no 'imageUrl'
+    if (result.url) {
+      console.log(`✅ [VertexAI] Imagen generada, URL length: ${result.url.length}`);
+      return result.url;
+    }
+    
+    console.error(`❌ [VertexAI] No se encontró URL en la respuesta:`, result);
+    throw new Error('No image URL returned from Vertex AI');
+    
+  } catch (error: any) {
+    console.error(`❌ [VertexAI] Error en generación: ${error.message}`);
+    throw error;
   }
-  
-  throw new Error('No image URL returned from Vertex AI');
 };
 
 // Define which styles allow landscapes. 
@@ -1608,6 +1633,9 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     // ============================================
     // MODELOS GEMINI: Usar API estándar
     // ============================================
+    // ============================================
+    // MODELOS GEMINI: Usar API estándar
+    // ============================================
     const apiPromise = ai.models.generateContent(apiConfig);
 
     try {
@@ -1733,8 +1761,15 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       // ============================================
       // RETRY CON PROMPT SIMPLIFICADO SI HAY SAFETY_BLOCK O ERROR
       // ============================================
-      if ((error.message?.includes('SAFETY_BLOCK') || error.message?.includes('invalid argument') || error.message?.includes('400')) && !useSimplified) {
-        console.warn(`⚠️ [GeminiService] Error inicial, reintentando con prompt simplificado...`);
+      // Para modelos de imagen (imagen-3.0-fast-001), el retry SIEMPRE debe ejecutarse
+      // porque Vertex AI puede fallar por timeout, rate limit, o errores de red
+      const shouldRetry = isImagenModel ||
+                         (error.message?.includes('SAFETY_BLOCK') ||
+                          error.message?.includes('invalid argument') ||
+                          error.message?.includes('400'));
+      
+      if (shouldRetry && !useSimplified) {
+        console.warn(`⚠️ [GeminiService] Error inicial (${error.message?.substring(0, 100)}...), reintentando con prompt simplificado...`);
         
         // Extraer sujeto del prompt original
         const subjectMatch = prompt.match(/SUBJECT:\s*([^\n]+)/i) || prompt.match(/OBJECTIVE:\s*([^\n]+)/i) || prompt.match(/SCENE:\s*([^\n]+)/i);
@@ -1748,9 +1783,14 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
         if (isImagenModel) {
           // Para modelos de imagen: usar Vertex AI directamente
           console.log(`📡 [GeminiService] Retry con Vertex AI para ${model}`);
-          const imageUrl = await generateWithVertexAI(model, simplifiedPrompt, finalAspectRatio, imageSize, seed);
-          console.log('✅ [GeminiService] Retry exitoso con Vertex AI');
-          return imageUrl;
+          try {
+            const imageUrl = await generateWithVertexAI(model, simplifiedPrompt, finalAspectRatio, imageSize, seed);
+            console.log('✅ [GeminiService] Retry exitoso con Vertex AI');
+            return imageUrl;
+          } catch (retryError: any) {
+            console.error(`❌ [GeminiService] Retry con Vertex AI también falló: ${retryError.message}`);
+            throw new Error(`Retry con prompt simplificado también falló: ${retryError.message}`);
+          }
         } else {
           // Para modelos Gemini: usar API estándar
           const retryApiConfig = {
@@ -1758,31 +1798,36 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
             contents: [{ role: 'user', parts: [{ text: simplifiedPrompt }] }]
           };
           
-          const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
-          
-          const retryCandidates = retryResponse.candidates;
-          if (!retryCandidates || retryCandidates.length === 0) {
-            throw new Error("Retry también falló: API retornó 0 candidatos.");
-          }
-
-          const retryParts = retryCandidates[0].content?.parts;
-          if (!retryParts || retryParts.length === 0) {
-            throw new Error("Retry también falló: Respuesta vacía.");
-          }
-
-          // Buscar imagen en la respuesta del retry
-          for (let i = 0; i < retryParts.length; i++) {
-            const part = retryParts[i];
-            if (part.inlineData && part.inlineData.data) {
-              let base64Data = part.inlineData.data.replace(/\s/g, '');
-              const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
-              console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
-              return imageDataUrl;
+          try {
+            const retryResponse = await Promise.race([ai.models.generateContent(retryApiConfig), timeoutPromise]) as any;
+            
+            const retryCandidates = retryResponse.candidates;
+            if (!retryCandidates || retryCandidates.length === 0) {
+              throw new Error("Retry también falló: API retornó 0 candidatos.");
             }
+
+            const retryParts = retryCandidates[0].content?.parts;
+            if (!retryParts || retryParts.length === 0) {
+              throw new Error("Retry también falló: Respuesta vacía.");
+            }
+
+            // Buscar imagen en la respuesta del retry
+            for (let i = 0; i < retryParts.length; i++) {
+              const part = retryParts[i];
+              if (part.inlineData && part.inlineData.data) {
+                let base64Data = part.inlineData.data.replace(/\s/g, '');
+                const imageDataUrl = `data:image/jpeg;base64,${base64Data}`;
+                console.log('✅ [GeminiService] Retry exitoso con prompt simplificado');
+                return imageDataUrl;
+              }
+            }
+            
+            throw new Error("Retry no generó imagen válida");
+          } catch (retryError: any) {
+            console.error(`❌ [GeminiService] Retry con Gemini API también falló: ${retryError.message}`);
+            throw new Error(`Retry con prompt simplificado también falló: ${retryError.message}`);
           }
         }
-        
-        throw new Error("Retry con prompt simplificado no generó imagen válida.");
       }
       
       // Si ya usamos simplificado o es otro error, relanzar
