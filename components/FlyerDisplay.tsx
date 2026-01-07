@@ -1859,6 +1859,22 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 return renderMediaPlaceholder();
               }
               
+              // Renderizar video o imagen según mediaType
+              if (mediaType === 'video') {
+                return (
+                  <video
+                    src={imageUrl}
+                    className="w-full h-full object-cover"
+                    crossOrigin={needsCors ? "anonymous" : undefined}
+                    onError={(e) => handleMediaError(e, 'video')}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                );
+              }
+              
               return (
                 <img
                   src={imageUrl}
@@ -2007,6 +2023,22 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               
               if (mediaError?.type === 'image' && mediaError.url === imageUrl) {
                 return renderMediaPlaceholder();
+              }
+              
+              // Renderizar video o imagen según mediaType
+              if (mediaType === 'video') {
+                return (
+                  <video
+                    src={imageUrl}
+                    className="w-full h-full object-cover"
+                    crossOrigin={needsCors ? "anonymous" : undefined}
+                    onError={(e) => handleMediaError(e, 'video')}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                );
               }
               
               return (
