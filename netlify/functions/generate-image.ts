@@ -107,10 +107,17 @@ export const handler: Handler = async (event) => {
     };
 
   } catch (error: any) {
-    console.error('❌ Error Crítico:', error.message);
+    console.error('❌ Error Crítico en generate-image:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: `Error: ${error.message}` }),
+      body: JSON.stringify({
+        error: `Error: ${error.message}`,
+        type: error.name || 'Unknown'
+      }),
     };
   }
 };
