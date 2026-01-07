@@ -1,25 +1,8 @@
-[build]
-  command = "npm run build"
-  publish = "dist"
-  functions = "netlify/functions"
-
-[functions]
-  # Dejamos la sección global vacía para que no choque con el validador
-  # Netlify aplicará los valores por defecto del plan Pro aquí
-
-[functions."generate-image"]
-  # Aquí aplicamos la configuración solo a tu función de IA
-  timeout = 26
-  external_node_modules = ["google-auth-library"]
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cross-Origin-Opener-Policy = "same-origin"
-    Cross-Origin-Embedder-Policy = "credentialless"
-
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
   force = true
+
+[functions."generate-image"]
+  timeout = 26
