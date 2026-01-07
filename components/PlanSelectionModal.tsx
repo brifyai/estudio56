@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Check, Sparkles, Zap, Crown, Gift } from 'lucide-react';
 
 interface Plan {
@@ -29,6 +29,17 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
   isLoading = false
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
 
   const plans: Plan[] = [
     {
@@ -136,9 +147,9 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-gray-900 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-gray-800">
+      <div className="bg-gray-900 rounded-3xl shadow-2xl max-w-6xl w-full overflow-hidden border border-gray-800">
         {/* Header */}
-        <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-6 flex items-center justify-between z-10">
+        <div className="border-b border-gray-800 p-6 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-white mb-2">
               Elige tu Plan Perfecto

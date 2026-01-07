@@ -44,6 +44,17 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
     }
   };
 
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleRecharge = async (rechargeId: string) => {
@@ -133,9 +144,9 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
-      <div className="bg-[#0A0A0A] border border-white/10 w-full max-w-7xl rounded-3xl shadow-2xl overflow-hidden relative my-8 flex flex-col max-h-[90vh]">
+      <div className="bg-[#0A0A0A] border border-white/10 w-full max-w-7xl rounded-3xl shadow-2xl overflow-hidden relative">
         
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors z-10 text-white/50 hover:text-white"
         >
@@ -144,16 +155,16 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
           </svg>
         </button>
 
-        <div className="text-center pt-12 pb-8 px-6 bg-gradient-to-b from-white/5 to-transparent">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tighter">
+        <div className="text-center pt-12 pb-6 px-6 bg-gradient-to-b from-white/5 to-transparent">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tighter">
             Planes <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Pymes 🇨🇱</span>
           </h2>
-          <p className="text-white/40 text-lg max-w-2xl mx-auto font-light mb-8">
+          <p className="text-white/40 text-base max-w-2xl mx-auto font-light">
             Infraestructura de diseño de nivel empresarial, accesible para todos.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-8 overflow-y-auto custom-scrollbar">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-8 pb-4">
           
           {/* PLAN Gratis */}
           <div className="bg-white/5 rounded-2xl border border-white/5 p-6 flex flex-col hover:border-white/20 transition-all group opacity-80 hover:opacity-100">
@@ -260,7 +271,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
         </div>
 
         {/* RECARGAS SECTION */}
-        <div className="border-t border-white/10 p-8 bg-[#0A0A0A]">
+        <div className="border-t border-white/10 p-6 bg-[#0A0A0A]">
           <h3 className="text-2xl font-bold text-white mb-6 text-center">
             Recarga de <span className="text-green-400">Créditos Sueltos</span>
           </h3>
@@ -305,7 +316,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
           </div>
 
           {/* EQUIVALENCIAS */}
-          <div className="mt-8 bg-white/5 rounded-xl p-6 max-w-2xl mx-auto">
+          <div className="mt-6 bg-white/5 rounded-xl p-4 max-w-2xl mx-auto">
             <h4 className="text-xs font-bold uppercase tracking-widest text-white/50 mb-4 text-center">
               Resumen de Equivalencias
             </h4>
