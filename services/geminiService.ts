@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId } from "../types";
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -35,6 +35,8 @@ import {
 } from "../src/constants/storyArtStyles";
 import { analyzeVisualMimicry, generateMimicryCSS, generateMimicryClasses, VisualMimicryResult } from "./visualMimicryService";
 import { fixPromptContradictions } from "./promptContradictionFixer";
+import { getTechnicalRealityPrompt, getNegativePromptForLevel } from "./realityTranslatorService";
+import { buildPowerPromptWithReality } from "./realitySliderService";
 
 // ============================================
 // 🛡️ EL ESCUDO DE FÍSICA Y LIMPIEZA - Negative Prompt Absoluto
@@ -2008,10 +2010,18 @@ export const generateFlyerImage = async (
   autoTextStyle?: string, // Style for automatically extracted text
   draftImageForHD?: string, // Optional draft image to use as reference for HD
   artDirectionId?: number, // ID del rubro (1-60) para Story Art
-  storyArtStyleId?: StoryArtStyleId // Estilo visual de Story Art seleccionado por el usuario
+  storyArtStyleId?: StoryArtStyleId, // Estilo visual de Story Art seleccionado por el usuario
+  realityLevel: RealityLevel = 1.5 // 🎚️ Nivel de realidad (1.0-5.0), por defecto 1.5 (Cámara Espía)
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
   const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
+  
+  // 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT
+  // Esto asegura que la imagen inicial se genere con el nivel de realidad correcto
+  console.log(`🎚️ [generateFlyerImage] Aplicando nivel de realidad: ${realityLevel}`);
+  const realityPrompt = buildPowerPromptWithReality(enhancedDescription, realityLevel);
+  const realityNegativePrompt = getNegativePromptForLevel(realityLevel);
+  console.log(`🎚️ [generateFlyerImage] Prompt con realidad: ${realityPrompt.substring(0, 100)}...`);
   
   // ============================================
   // MODO STORY ART: Usar Dirección de Arte Profesional
@@ -2148,7 +2158,13 @@ ${RAW_PHOTO_TEXTURE}
   `;
 }
 
+// ============================================
+// 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT FINAL
+// Los modificadores de realidad van al inicio del prompt para máxima prioridad
+// ============================================
 const unifiedPrompt = `
+${realityPrompt}
+
 ${MASTER_STYLE}
 ${compositionPrompt}
 ${verticalCompositionPrompt}
@@ -2196,7 +2212,8 @@ Generate a COMPLETE VISIBLE IMAGE with rich textures, clear subjects, and proper
 const industryGuardrail = IMAGE_GUARDRAILS[styleKey] || "";
 const baseNegativePrompt = "blur, low resolution, messy, watermark, text overlay, logo visible, deformed, disfigured, ugly, incomplete, extra fingers, poorly drawn hands, candles, smoke, steam, fog, water on floor, neon, fused objects, floating people, melting equipment, liquid floors";
 // AGREGAR ESCUDO ANATÓMICO para prevenir errores como pies en la cabeza
-const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI_FANTASY_SHIELD}, ${ANATOMY_SHIELD}`.replace(/\s+/g, ' ').trim();
+// 🎚️ INCLUIR PROMPT NEGATIVO DE REALIDAD
+const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI_FANTASY_SHIELD}, ${ANATOMY_SHIELD}, ${realityNegativePrompt}`.replace(/\s+/g, ' ').trim();
 
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
@@ -2244,11 +2261,12 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   
   if (quality === 'draft') {
     try {
-        // Para draft: usar prompt ULTRA SIMPLIFICADO para evitar SAFETY_BLOCK
-        // El prompt debe ser una sola oración simple, sin reglas ni restricciones
-        const ultraSimplePrompt = `Professional photo of ${enhancedDescription.split('.')[0]}. Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
+        // 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT DE DRAFT
+        // El prompt de draft también debe incluir los modificadores de realidad
+        const realityPromptForDraft = buildPowerPromptWithReality(enhancedDescription.split('.')[0], realityLevel);
+        const ultraSimplePrompt = `Professional photo. ${realityPromptForDraft} Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
         
-        console.log(`📝 [Draft] Prompt ultra-simple: ${ultraSimplePrompt}`);
+        console.log(`📝 [Draft] Prompt con realidad: ${ultraSimplePrompt.substring(0, 150)}...`);
         
         // Para imágenes draft: usar 480p
         imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');

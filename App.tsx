@@ -1253,7 +1253,9 @@ const handleGenerate = async () => {
          autoExtractedText,
          autoTextStyle,
          undefined, // draftImageForHD
-         artDirectionId // NEW: artDirectionId para Story Art (1-60)
+         artDirectionId, // NEW: artDirectionId para Story Art (1-60)
+         undefined, // storyArtStyleId
+         realityLevel // 🎚️ Pasar nivel de realidad (1.5 por defecto)
        );
         console.log('✅ Image generated:', result.imageDataUrl?.substring(0, 50) + '...');
         console.log('🎨 Análisis completo:', {
