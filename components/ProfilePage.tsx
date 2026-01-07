@@ -66,19 +66,10 @@ export const ProfilePage: React.FC = () => {
 
       console.log('👤 Cargando perfil para usuario:', session.user.id);
 
-      // Get user data with plan information
+      // Get user data
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select(`
-          *,
-          user_plans (
-            id,
-            name,
-            price,
-            credits_per_month,
-            features
-          )
-        `)
+        .select('*')
         .eq('id', session.user.id)
         .single();
 
@@ -88,12 +79,11 @@ export const ProfilePage: React.FC = () => {
       }
 
       console.log('✅ Usuario cargado:', user);
-      console.log('📋 Plan del usuario:', user.user_plans);
-
-      // Fallback: if no plan via join, fetch directly
-      let planData = user.user_plans;
-      if (!planData && user.plan_id) {
-        console.log('🔄 Consultando plan directamente...');
+      
+      // Fetch plan directly using plan_id
+      let planData = null;
+      if (user.plan_id) {
+        console.log('🔄 Consultando plan directamente con ID:', user.plan_id);
         const { data: plan } = await supabase
           .from('user_plans')
           .select('*')
@@ -421,7 +411,7 @@ export const ProfilePage: React.FC = () => {
               )}
               
               {/* Fecha de Renovación */}
-              {subscription && subscription.next_payment_date && (
+              {subscription?.next_payment_date ? (
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🔄</span>
@@ -436,6 +426,11 @@ export const ProfilePage: React.FC = () => {
                       </p>
                     </div>
                   </div>
+                </div>
+              ) : (
+                <div className="bg-white/5 rounded-2xl p-4">
+                  <p className="text-white/60 text-sm">Próxima renovación</p>
+                  <p className="text-white/80">Sin fecha programada</p>
                 </div>
               )}
               
