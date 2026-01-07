@@ -720,8 +720,8 @@ const generateWithVertexAI = async (
   console.log(`🎯 [VertexAI] Generando con ${model}`);
   
   // Llamada al endpoint de API que usa Vertex AI
-  // El endpoint correcto es /api/generate-image (configurado en netlify/functions/vertex-image.ts)
-  const response = await fetch('/api/generate-image', {
+  // Usando ruta directa de Netlify para evitar problemas de redirect
+  const response = await fetch('/.netlify/functions/generate-image', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
