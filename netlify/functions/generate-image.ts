@@ -70,19 +70,30 @@ export const handler: Handler = async (event) => {
 
     const data = await response.json();
 
+    console.log('📊 [Netlify Function] Respuesta completa de Google:', JSON.stringify(data, null, 2));
+
     if (!response.ok) {
-      console.error('❌ Error de Google:', data);
+      console.error('❌ Error de Google (HTTP):', response.status, data);
       return { statusCode: response.status, body: JSON.stringify(data) };
     }
 
     // VERIFICACIÓN CLAVE: Google devuelve un array "predictions"
     if (!data.predictions || data.predictions.length === 0) {
-      console.error('❌ Google no devolvió predicciones:', data);
+      console.error('❌ Google no devolvió predicciones. Estructura de respuesta:', Object.keys(data));
       throw new Error("Google no devolvió ninguna imagen en las predicciones");
     }
 
     // Extraemos el Base64 (Google usa la propiedad 'bytesBase64Encoded')
-    const base64Image = data.predictions[0].bytesBase64Encoded;
+    const prediction = data.predictions[0];
+    console.log('🔍 [Netlify Function] Predicción completa:', JSON.stringify(prediction, null, 2));
+    
+    // Manejar diferentes formatos de respuesta de Google
+    let base64Image = prediction.bytesBase64Encoded || prediction.bytes || prediction.base64 || prediction.image;
+    
+    if (!base64Image) {
+      console.error('❌ No se encontró imagen en la predicción. Keys disponibles:', Object.keys(prediction));
+      throw new Error("No se encontró imagen en la respuesta de Google");
+    }
     
     console.log('✅ [Netlify Function] Imagen generada, tamaño Base64:', base64Image.length);
 
