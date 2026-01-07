@@ -13,11 +13,11 @@
 - ✅ Integrado en App.tsx con fallback a imagen estática
 - ✅ Configurado modelo más económico: **Veo 3.1 Fast**
 
-## 🎬 Modelo Seleccionado (Más Económico)
+## 🎬 Modelo Seleccionado
 
-**Veo 3 Fast for Video Generation**
-- ⚡ Velocidad: 15-30 segundos
-- 💰 Costo: ~$0.05 USD por video
+**Veo 2.0 Flash Generate Preview**
+- ⚡ Velocidad: 30-60 segundos
+- 💰 Costo: ~$0.10 USD por video
 - 📹 Duración: 6 segundos
 - 📐 Formatos: 9:16, 16:9, 1:1
 
@@ -117,5 +117,5 @@ Deberías ver:
 ---
 
 **Última actualización**: 7 de enero de 2026
-**Versión**: 1.0.1
-**Modelo de video**: veo-3-fast-001
+**Versión**: 1.0.2
+**Modelo de video**: veo-2.0-flash-generate-preview

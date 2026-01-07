@@ -57,16 +57,16 @@ export const handler: Handler = async (event) => {
     console.log('🏢 [DEBUG] Project ID:', projectId);
     
     // Mapear modelos de video a sus endpoints correctos
-    // Basado en la documentación de Vertex AI Model Garden
+    // Usando Veo 2.0 Flash que está confirmado como disponible
     const modelMap: Record<string, string> = {
-      'veo-3.1-fast-001': 'veo-3.1-fast-001',
-      'veo-3-fast-001': 'veo-3.1-fast-001',
-      'veo-2.0-generate-preview': 'veo-2.0-generate-preview',
       'veo-2.0-flash-generate-preview': 'veo-2.0-flash-generate-preview',
+      'veo-2.0-generate-preview': 'veo-2.0-generate-preview',
+      'veo-3.1-fast-001': 'veo-2.0-flash-generate-preview', // Fallback a 2.0 flash
+      'veo-3-fast-001': 'veo-2.0-flash-generate-preview', // Fallback a 2.0 flash
       'veo-1.0-preview-001': 'veo-1.0-preview-001'
     };
     
-    const vertexModel = modelMap[body.model] || 'veo-3.1-fast-001';
+    const vertexModel = modelMap[body.model] || 'veo-2.0-flash-generate-preview';
     
     console.log('🎯 [DEBUG] Vertex Model:', vertexModel);
     
