@@ -2116,24 +2116,22 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   
   if (quality === 'draft') {
     try {
-        // Para draft: usar prompt SIMPLIFICADO para evitar SAFETY_BLOCK
-        // Extraer solo el sujeto principal del prompt
-        const subjectMatch = enhancedDescription.match(/^[^.]+/)?.[0] || enhancedDescription;
-        const simplifiedPrompt = buildSimplifiedPrompt(subjectMatch.trim(), activeStyleLabel.toLowerCase(), '9:16');
+        // Para draft: usar prompt ULTRA SIMPLIFICADO para evitar SAFETY_BLOCK
+        // El prompt debe ser una sola oración simple, sin reglas ni restricciones
+        const ultraSimplePrompt = `Professional photo of ${enhancedDescription.split('.')[0]}. Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
         
-        console.log(`📝 [Draft] Prompt original: ${unifiedPrompt.substring(0, 100)}...`);
-        console.log(`📝 [Draft] Prompt simplificado: ${simplifiedPrompt}`);
+        console.log(`📝 [Draft] Prompt ultra-simple: ${ultraSimplePrompt}`);
         
         // Para imágenes draft: usar 480p
-        imageDataUrl = await executeImageGeneration(ai, model, simplifiedPrompt, consistencySeed, aspectRatio, false, '480p');
+        imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
     } catch (error: any) {
         console.warn("Draft generation failed. Retrying with same parameters...", error.message);
         
-        // Retry con prompt aún más simple
+        // Retry con prompt mínimo absoluto
         try {
-            const ultraSimplePrompt = `Professional photo of a ${activeStyleLabel.toLowerCase()} business scene. 9:16 vertical format. Clean commercial photography.`;
-            console.log(`📝 [Draft Retry] Prompt ultra-simple: ${ultraSimplePrompt}`);
-            imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
+            const minimalPrompt = `Professional photo of a local business. 9:16 format.`;
+            console.log(`📝 [Draft Retry] Prompt mínimo: ${minimalPrompt}`);
+            imageDataUrl = await executeImageGeneration(ai, model, minimalPrompt, consistencySeed, aspectRatio, false, '480p');
         } catch (retryError) {
              console.error("Draft retry failed.", retryError);
              throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
