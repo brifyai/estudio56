@@ -3,9 +3,6 @@
   publish = "dist"
   functions = "netlify/functions"
 
-[functions]
-  timeout = 26 # Aumentamos a 26 segundos (el máximo permitido en planes gratuitos)
-
 [[headers]]
   for = "/*"
   [headers.values]
