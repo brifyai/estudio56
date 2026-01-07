@@ -56,10 +56,18 @@ export const handler: Handler = async (event) => {
     console.log('📐 [Alibaba Video] Resolución (size):', size);
     console.log('⏱️ [Alibaba Video] Duración:', duration, 'segundos');
 
-    // Limpiar prompt (máximo 1500 caracteres para wan2.5-t2v-preview)
+    // Limpiar y sanitizar prompt (máximo 1500 caracteres para wan2.5-t2v-preview)
     const maxPromptLength = 1500;
-    const cleanPrompt = body.prompt.slice(0, maxPromptLength);
+    let cleanPrompt = body.prompt.slice(0, maxPromptLength);
+    
+    // Sanitizar prompt: remover caracteres especiales problemáticos
+    cleanPrompt = cleanPrompt
+      .replace(/[^\w\s.,!?-]/g, ' ') // Remover caracteres especiales excepto puntuación básica
+      .replace(/\s+/g, ' ') // Normalizar espacios múltiples
+      .trim();
+    
     console.log('📝 [Alibaba Video] Prompt limpio length:', cleanPrompt.length);
+    console.log('📝 [Alibaba Video] Prompt sanitizado:', cleanPrompt.substring(0, 200));
 
     // URL para generación de video con Alibaba Cloud
     const url = `${ALIBABA_BASE_URL}/services/aigc/video-generation/video-synthesis`;
@@ -140,12 +148,16 @@ export const handler: Handler = async (event) => {
       if (data.code === 'Throttling.RateQuota') {
         throw new Error('Límite de cuota excedido en Alibaba Cloud');
       }
+      if (data.code === 'DataInspectionFailed' || errorMessage.includes('inappropriate content')) {
+        throw new Error('El contenido del prompt fue rechazado por filtros de seguridad. Intenta con una descripción más simple y profesional.');
+      }
       
       return { 
         statusCode: response.status, 
         body: JSON.stringify({
           error: errorMessage,
-          code: data.code
+          code: data.code,
+          details: data
         })
       };
     }

@@ -103,14 +103,24 @@ export const handler: Handler = async (event) => {
         console.error('❌ [Alibaba Poll] Error code:', output.code);
         console.error('❌ [Alibaba Poll] Error message:', output.message);
         
+        // Detectar error de contenido inapropiado
+        let errorMessage = output.message || 'Error desconocido';
+        if (output.code === 'DataInspectionFailed' || 
+            errorMessage.includes('inappropriate content') ||
+            errorMessage.includes('inappropriate') ||
+            errorMessage.includes('content safety')) {
+          errorMessage = 'El contenido fue rechazado por filtros de seguridad de Alibaba Cloud. Intenta con una descripción más simple y profesional, evitando términos que puedan ser ambiguos.';
+        }
+        
         return {
           statusCode: 200,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             status: 'failed',
-            error: output.message || 'Error desconocido',
+            error: errorMessage,
             code: output.code,
-            taskId: output.task_id
+            taskId: output.task_id,
+            originalMessage: output.message
           }),
         };
       } else if (status === 'PENDING' || status === 'RUNNING') {
