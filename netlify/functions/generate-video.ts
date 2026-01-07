@@ -74,8 +74,8 @@ export const handler: Handler = async (event) => {
     console.log('📝 [DEBUG] Prompt limpio (primeros 100 chars):', cleanPrompt.substring(0, 100));
 
     // URL para generación de video con Veo
-    // Nota: Veo 3.1 usa el método :generateVideos (no :predict)
-    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:generateVideos`;
+    // Nota: Veo usa el método :predict (no :generateVideos)
+    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
     console.log('🌐 [DEBUG] URL de Vertex AI:', url);
 
     console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
@@ -84,15 +84,18 @@ export const handler: Handler = async (event) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000);
     
-    // Estructura del request para Veo 3.1
+    // Estructura del request para Veo usando :predict
     // Documentación: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/video-generation
     const requestBody = {
-      prompt: cleanPrompt,
-      aspectRatio: body.aspectRatio || '9:16',
-      duration: body.duration || '6s',
-      // Parámetros opcionales para Veo 3.1
-      personGeneration: 'allow_adult',
-      safetySetting: 'block_only_high'
+      instances: [{
+        prompt: cleanPrompt
+      }],
+      parameters: {
+        aspectRatio: body.aspectRatio || '9:16',
+        duration: body.duration || '6s',
+        personGeneration: 'allow_adult',
+        safetySetting: 'block_only_high'
+      }
     };
     
     let response: Response;
@@ -145,8 +148,8 @@ export const handler: Handler = async (event) => {
       return { statusCode: response.status, body: JSON.stringify(data) };
     }
 
-    // Veo devuelve una operación de larga duración
-    if (data.name) {
+    // Veo devuelve una operación de larga duración o predicciones
+    if (data.name && data.name.includes('operations')) {
       console.log('🔄 [DEBUG] Operación de video iniciada:', data.name);
       
       // Retornar el nombre de la operación para polling
@@ -160,20 +163,42 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    // Si ya está completo (poco probable)
-    if (data.video) {
-      console.log('✅ [DEBUG] Video generado inmediatamente');
+    // Si devuelve predicciones directamente
+    if (data.predictions && data.predictions.length > 0) {
+      const prediction = data.predictions[0];
+      console.log('🔍 [DEBUG] Predicción keys:', Object.keys(prediction || {}));
+      
+      // Buscar el video en diferentes campos posibles
+      const videoData = prediction.bytesBase64Encoded || prediction.video || prediction.generatedVideo;
+      
+      if (videoData) {
+        console.log('✅ [DEBUG] Video generado inmediatamente');
+        return {
+          statusCode: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            videoUrl: `data:video/mp4;base64,${videoData}`,
+            status: 'complete'
+          }),
+        };
+      }
+    }
+
+    // Si ya está completo con estructura diferente
+    if (data.video || data.generatedVideo) {
+      console.log('✅ [DEBUG] Video generado inmediatamente (formato alternativo)');
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          videoUrl: data.video,
+          videoUrl: data.video || data.generatedVideo,
           status: 'complete'
         }),
       };
     }
 
-    throw new Error("Respuesta inesperada de Vertex AI");
+    console.error('❌ [DEBUG] Estructura de respuesta inesperada:', JSON.stringify(data, null, 2));
+    throw new Error("Respuesta inesperada de Vertex AI - no se encontró video ni operación");
 
   } catch (error: any) {
     console.error('❌ [DEBUG] Error fatal:', error.message);
