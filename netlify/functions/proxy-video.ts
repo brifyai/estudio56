@@ -67,23 +67,6 @@ export const handler: Handler = async (event) => {
     
     console.log('✅ [Video Proxy] Video convertido a base64');
     console.log('📊 [Video Proxy] Tamaño base64:', (videoBase64.length / 1024 / 1024).toFixed(2), 'MB');
-    
-    // Verificar límite de Netlify (6 MB)
-    const base64SizeMB = videoBase64.length / 1024 / 1024;
-    if (base64SizeMB > 5.5) {
-      console.warn('⚠️ [Video Proxy] Video muy grande:', base64SizeMB.toFixed(2), 'MB (límite: 6 MB)');
-      console.warn('⚠️ [Video Proxy] Retornando URL directa de Alibaba Cloud');
-      
-      // Si el video es muy grande, retornar la URL directa con instrucciones
-      return {
-        statusCode: 307, // Temporary Redirect
-        headers: {
-          'Location': videoUrl,
-          'Access-Control-Allow-Origin': '*',
-        },
-        body: '',
-      };
-    }
 
     // Retornar el video con headers CORS correctos
     return {
