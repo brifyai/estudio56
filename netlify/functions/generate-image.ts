@@ -62,7 +62,8 @@ export const handler: Handler = async (event) => {
         instances: [{ prompt }],
         parameters: {
           sampleCount: 1,
-          aspectRatio: aspectRatio
+          aspectRatio: aspectRatio,
+          outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 }
         }
       }),
     });
