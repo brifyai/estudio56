@@ -749,8 +749,9 @@ const generateWithVertexAI = async (
 
   const result = await response.json();
   
-  if (result.imageUrl) {
-    return result.imageUrl;
+  // El backend retorna 'url' (data:image/png;base64,...), no 'imageUrl'
+  if (result.url) {
+    return result.url;
   }
   
   throw new Error('No image URL returned from Vertex AI');

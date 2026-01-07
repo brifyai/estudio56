@@ -100,9 +100,10 @@ export const generateImageWithVertex = async (
     const duration = Date.now() - startTime;
     console.log(`✅ [VertexImage] Imagen generada en ${duration}ms`);
     
+    // El backend retorna 'url' (data:image/png;base64,...), no 'imageUrl'
     return {
       success: true,
-      imageUrl: result.imageUrl
+      imageUrl: result.url
     };
     
   } catch (error: any) {
@@ -150,7 +151,7 @@ export const generateHDFromDraftWithVertex = async (
     
     return {
       success: true,
-      imageUrl: result.imageUrl
+      imageUrl: result.url
     };
     
   } catch (error: any) {
