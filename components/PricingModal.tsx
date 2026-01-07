@@ -164,7 +164,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
-      <div className="bg-[#0A0A0A] border border-white/10 w-full max-w-7xl rounded-3xl shadow-2xl overflow-hidden relative">
+      <div className="bg-[#0A0A0A] border border-white/10 w-full max-w-7xl rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
         
         <button
           onClick={onClose}
