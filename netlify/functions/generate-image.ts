@@ -57,34 +57,33 @@ export const handler: Handler = async (event) => {
     console.log('🏢 [DEBUG] Project ID:', projectId);
     
     // Mapear modelos a sus endpoints correctos
-    // Modelos disponibles en el proyecto: imagen-4.0-generate-001, imagen-4.0-ultra-generate-001,
-    // imagen-4.0-fast-generate-001, imagen-3.0-generate-002, imagen.3.0-fast-generate-001
+    // Modelos disponibles en Vertex AI según la documentación oficial
     const modelMap: Record<string, { endpoint: string; version: string }> = {
-      // Imagen 3 (asegúrate de habilitar en Model Garden)
+      // Imagen 3 - Usar imagen-3.0-generate-002 (el único disponible públicamente)
       'imagen-3.0-fast-001': {
-        endpoint: 'imagen-3-0-fast-generate',
-        version: 'v1beta1'
+        endpoint: 'imagen-3.0-generate-002',
+        version: 'v1'
       },
       'imagen-3.0-pro-001': {
-        endpoint: 'imagen-3-0-pro-generate',
-        version: 'v1beta1'
+        endpoint: 'imagen-3.0-generate-002',
+        version: 'v1'
       },
       'imagen-3.0-generate-002': {
-        endpoint: 'imagen-3-0-generate-002',
-        version: 'v1beta1'
+        endpoint: 'imagen-3.0-generate-002',
+        version: 'v1'
       },
-      // Imagen 4 (asegúrate de habilitar en Model Garden)
+      // Imagen 4 (requiere habilitación en Model Garden)
       'imagen-4.0-fast-generate-001': {
-        endpoint: 'imagen-4-0-fast-generate-001',
-        version: 'v1beta1'
+        endpoint: 'imagen-4.0-fast-generate-001',
+        version: 'v1'
       },
       'imagen-4.0-generate-001': {
-        endpoint: 'imagen-4-0-generate-001',
-        version: 'v1beta1'
+        endpoint: 'imagen-4.0-generate-001',
+        version: 'v1'
       },
       'imagen-4.0-ultra-generate-001': {
-        endpoint: 'imagen-4-0-ultra-generate-001',
-        version: 'v1beta1'
+        endpoint: 'imagen-4.0-ultra-generate-001',
+        version: 'v1'
       }
     };
     
@@ -98,7 +97,7 @@ export const handler: Handler = async (event) => {
     const cleanPrompt = (body.prompt || '').slice(0, 500);
     console.log('📝 [DEBUG] Prompt limpio (primeros 100 chars):', cleanPrompt.substring(0, 100));
 
-    const url = `https://us-central1-aiplatform.googleapis.com/${apiVersion}/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
+    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
     console.log('🌐 [DEBUG] URL de Vertex AI:', url);
 
     console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
@@ -107,25 +106,18 @@ export const handler: Handler = async (event) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
     
-    // Estructura del request según la versión del modelo
-    const requestBody = apiVersion === 'v1'
-      ? {
-          instances: [{ prompt: cleanPrompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: body.aspectRatio || '9:16',
-            outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 }
-          }
-        }
-      : {
-          instances: [{ prompt: cleanPrompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: body.aspectRatio || '9:16',
-            outputOptions: { mimeType: "image/jpeg", compressionQuality: 75 },
-            safetySetting: "BLOCK_ONLY_HIGH"
-          }
-        };
+    // Estructura del request para Imagen 3.0
+    const requestBody = {
+      instances: [{ 
+        prompt: cleanPrompt 
+      }],
+      parameters: {
+        sampleCount: 1,
+        aspectRatio: body.aspectRatio || '9:16',
+        safetySetting: "block_only_high",
+        personGeneration: "allow_adult"
+      }
+    };
     
     let response: Response;
     try {
