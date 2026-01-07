@@ -1517,14 +1517,20 @@ const handleGenerate = async () => {
             url = hdImageResult.imageDataUrl;
         }
         
-        // 🎯 CERRAR ALERTA DE PROGRESO ANTES DE SETEAR hdImageUrl
-        // Esto evita que la alerta se superponga con el comparador
-        progressAlert.close();
-        
+        // 🎯 CERRAR ALERTA DE PROGRESO DESPUÉS DE SETEAR hdImageUrl
+        // Esto permite que el comparador Draft vs HD se renderice primero
         setImageUrl(url);
         setHdImageUrl(url);
         setIsDraft(false);
         setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
+        
+        // 🔧 CERRAR ALERTA CON DELAY PARA QUE EL COMPARADOR SE RENDERICE PRIMERO
+        // El comparador se abre automáticamente en FlyerDisplay cuando hdImageUrl cambia
+        // Necesitamos dar tiempo a React para renderizar el comparador antes de cerrar la alerta
+        setTimeout(() => {
+          progressAlert.close();
+          console.log('🔒 Alerta de loading cerrada - comparador HD visible');
+        }, 100);
     } catch (error: any) {
         progressAlert.close();
         handleError(error);
