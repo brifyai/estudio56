@@ -1,4 +1,5 @@
 import { Handler } from '@netlify/functions';
+import { GoogleAuth } from 'google-auth-library';
 
 export const handler: Handler = async (event) => {
   console.log('🚨 [DEBUG] ===========================================');
@@ -26,6 +27,32 @@ export const handler: Handler = async (event) => {
     }
 
     const serviceAccount = JSON.parse(keyData);
+    console.log('📧 [DEBUG] Service account email:', serviceAccount.client_email);
+    
+    const privateKey = serviceAccount.private_key
+      .replace(/\\n/g, '\n')
+      .trim();
+    console.log('🔐 [DEBUG] Private key parseada correctamente');
+
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: serviceAccount.client_email,
+        private_key: privateKey,
+      },
+      scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
+
+    console.log('⏳ [DEBUG] Obteniendo token de acceso...');
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
+    
+    if (!token.token) {
+      console.error('❌ [DEBUG] No se pudo obtener token de acceso');
+      throw new Error("No se pudo obtener token de acceso para Vertex AI");
+    }
+    
+    console.log('✅ [DEBUG] Token obtenido:', token.token?.substring(0, 20) + '...');
+
     const projectId = serviceAccount.project_id;
     console.log('🏢 [DEBUG] Project ID:', projectId);
     
@@ -89,7 +116,7 @@ export const handler: Handler = async (event) => {
       response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.GOOGLE_ACCESS_TOKEN}`,
+          'Authorization': `Bearer ${token.token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
