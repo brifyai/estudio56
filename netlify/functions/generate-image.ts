@@ -1,415 +1,74 @@
-// ============================================
-// VERTEX AI IMAGE GENERATION ENDPOINT
-// API REST directa - no requiere SDK de GCP
-// ============================================
+import { Handler } from '@netlify/functions';
+import { GoogleAuth } from 'google-auth-library';
 
-interface VertexImageRequest {
-  model: string;
-  prompt: string;
-  aspectRatio: string;
-  imageSize: string;
-  seed: number;
-  location: string;
-  projectId: string;
-}
-
-interface HandlerResponse {
-  statusCode: number;
-  body: string;
-}
-
-const handler = async (event: any, _context: any): Promise<HandlerResponse> => {
-  // Solo permitir POST
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: "Method not allowed" }),
-    };
-  }
-
-  // Verificar headers
-  const contentType = event.headers["content-type"];
-  if (!contentType?.includes("application/json")) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Content-Type must be application/json" }),
-    };
-  }
+export const handler: Handler = async (event) => {
+  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
   try {
-    const body: VertexImageRequest = JSON.parse(event.body || "{}");
-    
-    const { model, prompt, aspectRatio, imageSize, seed, location, projectId } = body;
-    
-    if (!model || !prompt) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing required fields: model, prompt" }),
-      };
-    }
+    const { prompt, seed } = JSON.parse(event.body || '{}');
 
-    console.log(`🎯 [VertexAI Function] Generando imagen con modelo: ${model}`);
-    console.log(`📝 Prompt length: ${prompt.length} chars`);
-    console.log(`📐 Aspect Ratio: ${aspectRatio}`);
-    console.log(`🖼️ Image Size: ${imageSize}`);
+    // 1. Carga segura de la cuenta de servicio
+    const keyData = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+    if (!keyData) throw new Error("Falta la variable GOOGLE_SERVICE_ACCOUNT_KEY");
 
-    // ============================================
-    // VERTEX AI API REST
-    // ============================================
+    const serviceAccount = JSON.parse(keyData);
     
-    // Obtener token de acceso de GCP
-    const accessToken = await getGCPAccessToken();
-    
-    if (!accessToken) {
-      console.warn('⚠️ No se pudo obtener token de GCP, usando fallback a Gemini API');
-      return await generateWithGeminiAPI(model, prompt, aspectRatio, imageSize, seed);
-    }
+    // REPARACIÓN DE EMERGENCIA: Forzar saltos de línea reales en la clave
+    const privateKey = serviceAccount.private_key
+      .replace(/\\n/g, '\n')
+      .replace(/"/g, ''); // Eliminar comillas accidentales
 
-    const gcpProjectId = projectId || process.env.GCP_PROJECT_ID || 'estudio-56-prod';
-    const gcpLocation = location || 'us-central1';
+    // 2. Autenticación
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: serviceAccount.client_email,
+        private_key: privateKey,
+      },
+      scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
 
-    // Convertir aspectRatio al formato de Vertex AI
-    const aspectRatioMap: Record<string, { width: number; height: number }> = {
-      '1:1': { width: 1024, height: 1024 },
-      '9:16': { width: 768, height: 1024 },
-      '16:9': { width: 1024, height: 576 },
-      '4:5': { width: 832, height: 1024 },
-      '3:4': { width: 768, height: 1024 },
-    };
-    
-    const { width, height } = aspectRatioMap[aspectRatio] || { width: 1024, height: 1024 };
+    const client = await auth.getClient();
+    const token = await client.getAccessToken();
 
-    // Construir URL de Vertex AI
-    const vertexUrl = `https://${gcpLocation}-aiplatform.googleapis.com/v1/projects/${gcpProjectId}/locations/${gcpLocation}/publishers/google/models/${model}:predict`;
-    
-    console.log(`📡 Enviando solicitud a Vertex AI: ${vertexUrl}`);
+    if (!token.token) throw new Error("Google rechazó la clave privada. Revisa el formato.");
 
-    // Hacer request a Vertex AI
-    const vertexResponse = await fetch(vertexUrl, {
+    // 3. Llamada a Vertex AI (Imagen 3 Fast)
+    const projectId = serviceAccount.project_id;
+    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/imagen-3.0-fast-generate-001:predict`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${token.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         instances: [{ prompt }],
-        parameters: {
-          sampleCount: 1,
-          seed: seed,
-          imageSize: {
-            width,
-            height,
-          },
-        },
+        parameters: { sampleCount: 1, aspectRatio: "9:16" }
       }),
     });
-
-    if (!vertexResponse.ok) {
-      const errorData = await vertexResponse.json();
-      console.error('❌ Vertex AI error:', errorData);
-      
-      // Si Vertex AI falla, intentar con Gemini API
-      console.warn('⚠️ Vertex AI falló, usando fallback a Gemini API');
-      return await generateWithGeminiAPI(model, prompt, aspectRatio, imageSize, seed);
-    }
-
-    const vertexData = await vertexResponse.json();
-    console.log(`✅ Vertex AI response received`);
-
-    // Procesar respuesta de Vertex AI
-    if (vertexData.predictions && vertexData.predictions.length > 0) {
-      const prediction = vertexData.predictions[0];
-      
-      if (prediction.bytesBase64Encoded) {
-        const imageUrl = `data:image/jpeg;base64,${prediction.bytesBase64Encoded}`;
-        
-        return {
-          statusCode: 200,
-          body: JSON.stringify({
-            success: true,
-            imageUrl,
-            model,
-            seed,
-          }),
-        };
-      }
-    }
-
-    throw new Error("No image generated by Vertex AI");
-
-  } catch (error: any) {
-    console.error('❌ [VertexAI Function] Error:', error.message);
-    console.error('📝 Stack trace:', error.stack);
-    
-    // Intentar fallback a Gemini API
-    console.warn('⚠️ Error en Vertex AI, intentando fallback a Gemini API');
-    
-    try {
-      const body: VertexImageRequest = JSON.parse(event.body || "{}");
-      return await generateWithGeminiAPI(body.model, body.prompt, body.aspectRatio, body.imageSize, body.seed);
-    } catch (fallbackError: any) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          error: error.message || "Internal server error",
-          message: "Error generating image with Vertex AI and Gemini fallback also failed",
-        }),
-      };
-    }
-  }
-};
-
-// ============================================
-// OBTENER TOKEN DE ACCESO DE GCP
-// ============================================
-async function getGCPAccessToken(): Promise<string | null> {
-  try {
-    // Método 1: Usar GOOGLE_SERVICE_ACCOUNT_KEY (preferido) o GOOGLE_APPLICATION_CREDENTIALS
-    const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY || process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    
-    if (credentialsJson) {
-      console.log('📄 Service Account credentials encontrado');
-      
-      try {
-        // Parsear el JSON de la cuenta de servicio
-        const serviceAccount = JSON.parse(credentialsJson);
-        
-        // IMPORTANTE: Corregir los saltos de línea de la clave privada
-        // Netlify puede codificar los \n como \\n en las variables de entorno
-        if (serviceAccount.private_key) {
-          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-        }
-        
-        // Generar token JWT y intercambiar por access token
-        const token = await generateJWTToken(serviceAccount);
-        
-        if (token) {
-          const response = await fetch('https://oauth2.googleapis.com/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-              assertion: token,
-            }),
-          });
-          
-          const data = await response.json();
-          
-          if (data.access_token) {
-            console.log('✅ Token de GCP obtenido exitosamente');
-            return data.access_token;
-          } else {
-            console.warn('⚠️ No se pudo obtener access_token:', data);
-          }
-        }
-      } catch (parseError: any) {
-        console.warn('⚠️ Error parseando Service Account JSON:', parseError.message);
-      }
-    }
-
-    // Método 2: Si estamos en GCP (Cloud Functions, Cloud Run, etc.), usar metadata service
-    if (process.env.GOOGLE_CLOUD_PROJECT || process.env.K_SERVICE) {
-      try {
-        console.log('🔄 Intentando con GCP metadata service...');
-        const response = await fetch(
-          'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
-          {
-            headers: { 'Metadata-Flavor': 'Google' },
-          }
-        );
-        const data = await response.json();
-        if (data.access_token) {
-          console.log('✅ Token obtenido desde GCP metadata');
-          return data.access_token;
-        }
-      } catch (metadataError) {
-        console.warn('⚠️ Error accediendo a metadata service');
-      }
-    }
-
-    console.log('⚠️ No se pudo obtener token de GCP, usando fallback a Gemini API');
-    return null;
-  } catch (error: any) {
-    console.warn('⚠️ Error obteniendo token de GCP:', error.message);
-    return null;
-  }
-}
-
-// ============================================
-// GENERAR JWT PARA AUTENTICACIÓN DE GCP
-// ============================================
-async function generateJWTToken(serviceAccount: any): Promise<string | null> {
-  try {
-    // Validar que tenemos los campos necesarios
-    if (!serviceAccount.client_email || !serviceAccount.private_key) {
-      console.warn('⚠️ Service Account incompleta: falta client_email o private_key');
-      return null;
-    }
-
-    const header = {
-      alg: 'RS256',
-      typ: 'JWT',
-    };
-
-    const now = Math.floor(Date.now() / 1000);
-    const payload = {
-      iss: serviceAccount.client_email,
-      sub: serviceAccount.client_email,
-      aud: 'https://oauth2.googleapis.com/token',
-      iat: now,
-      exp: now + 3600, // Token válido por 1 hora
-      scope: 'https://www.googleapis.com/auth/cloud-platform',
-    };
-
-    // Codificar header y payload a Base64URL
-    const encodedHeader = base64UrlEncode(JSON.stringify(header));
-    const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-
-    // Firmar con clave privada RSA
-    const crypto = require('crypto');
-    const sign = crypto.createSign('RSA-SHA256');
-    sign.update(`${encodedHeader}.${encodedPayload}`);
-    
-    // La clave privada ya debe tener los saltos de línea corregidos
-    const signature = sign.sign(serviceAccount.private_key, 'base64');
-    const encodedSignature = base64UrlEncode(signature);
-
-    const jwt = `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
-    console.log('✅ JWT generado correctamente');
-    
-    return jwt;
-  } catch (error: any) {
-    console.warn('⚠️ Error generando JWT:', error.message);
-    return null;
-  }
-}
-
-// ============================================
-// UTILIDAD: Codificar a Base64URL (RFC 7515)
-// ============================================
-function base64UrlEncode(str: string): string {
-  return Buffer.from(str)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-// ============================================
-// FALLBACK: GEMINI API DIRECTO
-// ============================================
-async function generateWithGeminiAPI(
-  model: string,
-  prompt: string,
-  aspectRatio: string,
-  imageSize: string,
-  seed: number
-): Promise<HandlerResponse> {
-  console.log(`🔄 [VertexAI Function] Usando Gemini API como fallback`);
-  
-  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
-  
-  if (!apiKey) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "No API key available",
-        message: "Neither Vertex AI nor Gemini API keys are configured",
-      }),
-    };
-  }
-
-  // Mapear modelo de imagen a modelo de Gemini
-  // Usar modelos que soporten generación de imágenes
-  // NOTA: gemini-2.0-flash-exp soporta generación de imágenes
-  let geminiModel = 'gemini-2.0-flash-exp';
-  if (model.includes('imagen-3.0-pro')) {
-    geminiModel = 'gemini-1.5-pro'; // Fallback más estable
-  }
-
-  // Convertir aspectRatio
-  const aspectRatioMap: Record<string, string> = {
-    '1:1': '1:1',
-    '9:16': '9:16',
-    '16:9': '16:9',
-    '4:5': '4:5',
-    '3:4': '3:4',
-  };
-  
-  const finalAspectRatio = aspectRatioMap[aspectRatio] || '1:1';
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
-  
-  const requestBody = {
-    contents: [{
-      parts: [{ text: prompt }]
-    }],
-    config: {
-      imageConfig: {
-        aspectRatio: finalAspectRatio,
-      }
-    }
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        // La API retornó HTML (error de endpoint)
-        console.error('❌ Gemini API retornó HTML (endpoint no válido)');
-        throw new Error("Gemini API endpoint no disponible");
-      }
-      
-      const errorData = await response.json().catch(() => ({ error: { message: `HTTP ${response.status}` } }));
-      console.error('❌ Gemini API error:', errorData);
-      throw new Error(errorData.error?.message || `Gemini API error: ${response.status}`);
-    }
 
     const data = await response.json();
-    
-    if (data.candidates && data.candidates.length > 0) {
-      const parts = data.candidates[0].content?.parts;
-      
-      if (parts && parts.length > 0) {
-        for (const part of parts) {
-          if (part.inlineData && part.inlineData.data) {
-            const imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-            
-            return {
-              statusCode: 200,
-              body: JSON.stringify({
-                success: true,
-                imageUrl,
-                model: geminiModel,
-                seed,
-                fallback: true,
-              }),
-            };
-          }
-        }
-      }
+
+    if (!response.ok) {
+      return { 
+        statusCode: response.status, 
+        body: JSON.stringify({ error: data.error?.message || "Error en Vertex AI" }) 
+      };
     }
 
-    throw new Error("No image in Gemini response");
-
-  } catch (error: any) {
-    console.error('❌ Gemini fallback error:', error.message);
     return {
-      statusCode: 500,
+      statusCode: 200,
       body: JSON.stringify({
-        error: error.message || "Fallback generation failed",
-        message: "Both Vertex AI and Gemini API failed",
+        url: `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`
       }),
     };
-  }
-}
 
-export { handler };
+  } catch (error: any) {
+    console.error('❌ Error Crítico:', error.message);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: `Error de configuración: ${error.message}` }),
+    };
+  }
+};
