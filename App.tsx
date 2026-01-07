@@ -40,6 +40,12 @@ import { CalendarNotifications } from './components/CalendarNotifications';
 import { BrandPanel } from './components/BrandPanel';
 import { BrandNotifications } from './components/BrandNotifications';
 import { MobileMenu } from './components/MobileMenu';
+import { PaymentSuccessPage } from './components/PaymentSuccessPage';
+import { PaymentFailurePage } from './components/PaymentFailurePage';
+import { PaymentPendingPage } from './components/PaymentPendingPage';
+import { RechargeSuccessPage } from './components/RechargeSuccessPage';
+import { RechargeFailurePage } from './components/RechargeFailurePage';
+import { RechargePendingPage } from './components/RechargePendingPage';
 import { supabase } from './services/supabaseService';
 import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
 import { detectIndustryFromDescription } from './services/geminiService';
@@ -2495,6 +2501,17 @@ const App: React.FC = () => {
         <Route path="/terminos" element={<TermsPage />} />
         <Route path="/condiciones" element={<ServiceConditionsPage />} />
         <Route path="/panel" element={<Dashboard />} />
+        
+        {/* Payment Routes */}
+        <Route path="/pago-exitoso" element={<PaymentSuccessPage />} />
+        <Route path="/pago-fallido" element={<PaymentFailurePage />} />
+        <Route path="/pago-pendiente" element={<PaymentPendingPage />} />
+        
+        {/* Recharge Routes */}
+        <Route path="/recarga-exitosa" element={<RechargeSuccessPage />} />
+        <Route path="/recarga-fallida" element={<RechargeFailurePage />} />
+        <Route path="/recarga-pendiente" element={<RechargePendingPage />} />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

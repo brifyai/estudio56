@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createRechargePreference, redirectToCheckout, RECHARGE_CONFIG } from '../services/paymentService';
+import { supabase } from '../services/supabaseService';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [processingRecharge, setProcessingRecharge] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -12,6 +15,31 @@ export const LandingPage: React.FC = () => {
     setTimeout(() => {
         setFormState('success');
     }, 1500);
+  };
+
+  const handleRecharge = async (rechargeType: 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO') => {
+    try {
+      setProcessingRecharge(rechargeType);
+      
+      // Get current user from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        // Redirect to login if not authenticated
+        navigate('/iniciar-sesion');
+        return;
+      }
+
+      // Create payment preference
+      const preference = await createRechargePreference(session.user.id, rechargeType);
+
+      // Redirect to MercadoPago
+      redirectToCheckout(preference.initPoint);
+    } catch (error) {
+      console.error('Error al procesar recarga:', error);
+      alert('Hubo un error al procesar tu recarga. Por favor intenta nuevamente.');
+    } finally {
+      setProcessingRecharge(null);
+    }
   };
 
   return (
@@ -275,7 +303,7 @@ export const LandingPage: React.FC = () => {
                         <li>✔️ <b>5 Borradores</b> de regalo</li>
                         <li className="text-white/50 text-xs">✨ 1 Video HD o 10 Fotos HD</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-green-500 text-green-400 font-black uppercase hover:bg-green-500 hover:text-black transition-colors">
+                    <button onClick={() => handleRecharge('INDIVIDUAL')} className="w-full py-3 border-2 border-green-500 text-green-400 font-black uppercase hover:bg-green-500 hover:text-black transition-colors">
                         Cargar Unito
                     </button>
                 </div>
@@ -293,7 +321,7 @@ export const LandingPage: React.FC = () => {
                         <li>✔️ <b>25 Borradores</b> de regalo</li>
                         <li className="text-white/50 text-xs">✨ 5 Videos HD o 50 Fotos HD</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-blue-500 text-blue-400 font-black uppercase hover:bg-blue-500 hover:text-black transition-colors">
+                    <button onClick={() => handleRecharge('SALVATORE')} className="w-full py-3 border-2 border-blue-500 text-blue-400 font-black uppercase hover:bg-blue-500 hover:text-black transition-colors">
                         Cargar Salvatore
                     </button>
                 </div>
@@ -308,7 +336,7 @@ export const LandingPage: React.FC = () => {
                         <li>✔️ <b>750 Borradores</b> de regalo</li>
                         <li className="text-white/50 text-xs">✨ 15 Videos HD o 150 Fotos HD</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-purple-500 text-purple-400 font-black uppercase hover:bg-purple-500 hover:text-black transition-colors">
+                    <button onClick={() => handleRecharge('IMPULSO')} className="w-full py-3 border-2 border-purple-500 text-purple-400 font-black uppercase hover:bg-purple-500 hover:text-black transition-colors">
                         Cargar Impulso
                     </button>
                 </div>

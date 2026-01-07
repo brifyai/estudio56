@@ -89,21 +89,24 @@ export const handler: Handler = async (event) => {
       metadata,
     } = payment;
 
-    // Parse external reference to get user and plan IDs
+    // Parse external reference to get user and plan/recharge IDs
     let userId: string;
-    let planId: string;
+    let planId: string | undefined;
+    let rechargeType: string | undefined;
 
     try {
       const reference = JSON.parse(external_reference || '{}');
       userId = reference.userId || metadata?.user_id;
       planId = reference.planId || metadata?.plan_id;
+      rechargeType = reference.rechargeType || metadata?.recharge_type;
     } catch (e) {
       userId = metadata?.user_id;
       planId = metadata?.plan_id;
+      rechargeType = metadata?.recharge_type;
     }
 
-    if (!userId || !planId) {
-      console.error('❌ Missing userId or planId in payment metadata');
+    if (!userId) {
+      console.error('❌ Missing userId in payment metadata');
       return {
         statusCode: 400,
         headers,
@@ -111,91 +114,191 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    console.log('👤 User:', userId, '📦 Plan:', planId);
+    console.log('👤 User:', userId, '📦 Plan:', planId, '🔋 Recharge:', rechargeType);
 
-    // Update or create payment record
-    const { data: existingPayment } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('mp_payment_id', paymentId)
-      .single();
+    // Check if this is a recharge or a plan payment
+    if (rechargeType && ['INDIVIDUAL', 'SALVATORE', 'IMPULSO'].includes(rechargeType)) {
+      // ========================================
+      // 💰 MANEJO DE RECARGAS DE CRÉDITOS
+      // ========================================
+      console.log('💳 Processing credit recharge:', rechargeType);
 
-    if (existingPayment) {
-      // Update existing payment
-      console.log('🔄 Updating existing payment record');
-      await supabase
-        .from('payments')
-        .update({
-          mp_status: status,
-          status: status === 'approved' ? 'completed' : status === 'rejected' ? 'failed' : 'pending',
-          payment_method: payment_method_id,
-          paid_at: date_approved,
-          metadata: payment,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('mp_payment_id', paymentId);
-    } else {
-      // Create new payment record
-      console.log('➕ Creating new payment record');
-      await supabase.from('payments').insert({
-        user_id: userId,
-        plan_id: planId,
-        mp_payment_id: paymentId,
-        mp_status: status,
-        amount: transaction_amount,
-        currency: 'CLP',
-        payment_method: payment_method_id,
-        status: status === 'approved' ? 'completed' : status === 'rejected' ? 'failed' : 'pending',
-        paid_at: date_approved,
-        metadata: payment,
-      });
-    }
+      // Get recharge config from metadata
+      let rechargeConfig = { credits_hd: 0, drafts: 0 };
+      try {
+        rechargeConfig = JSON.parse(metadata?.recharge_config || '{}');
+      } catch (e) {
+        console.warn('Could not parse recharge config from metadata');
+      }
 
-    // If payment is approved, update user's plan and credits
-    if (status === 'approved') {
-      console.log('✅ Payment approved! Updating user plan and credits...');
-
-      // Get plan details
-      const { data: plan } = await supabase
-        .from('user_plans')
+      // Update or create recharge record
+      const { data: existingRecharge } = await supabase
+        .from('credit_recharges')
         .select('*')
-        .eq('id', planId)
+        .eq('mercadopago_preference_id', metadata?.preference_id || paymentId)
         .single();
 
-      if (plan) {
-        // Update user's plan
-        const { error: updateError } = await supabase
-          .from('users')
+      if (existingRecharge) {
+        // Update existing recharge
+        console.log('🔄 Updating existing recharge record');
+        await supabase
+          .from('credit_recharges')
           .update({
-            plan_id: planId,
-            credits: plan.credits_per_month,
-            last_credit_reset: new Date().toISOString(),
+            status: status === 'approved' ? 'completed' : status === 'rejected' ? 'failed' : 'pending',
+            payment_method: payment_method_id,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', userId);
-
-        if (updateError) {
-          console.error('❌ Error updating user plan:', updateError);
-        } else {
-          console.log('✅ User plan updated successfully');
-
-          // Add credit transaction
-          await supabase.from('credit_transactions').insert({
-            user_id: userId,
-            type: 'purchase',
-            amount: plan.credits_per_month,
-            credit_type: 'monthly_plan',
-            description: `Créditos del plan ${plan.name}`,
-            reference_id: paymentId,
-          });
-
-          console.log('✅ Credits added to user account');
-        }
+          .eq('id', existingRecharge.id);
+      } else {
+        // Create new recharge record
+        console.log('➕ Creating new recharge record');
+        await supabase.from('credit_recharges').insert({
+          user_id: userId,
+          recharge_type: rechargeType,
+          credits_hd: rechargeConfig.credits_hd || 0,
+          drafts: rechargeConfig.drafts || 0,
+          amount: transaction_amount,
+          status: status === 'approved' ? 'completed' : status === 'rejected' ? 'failed' : 'pending',
+          payment_method: payment_method_id,
+          mercadopago_preference_id: metadata?.preference_id,
+        });
       }
-    } else if (status === 'rejected') {
-      console.log('❌ Payment rejected:', status_detail);
+
+      // If payment is approved, add credits to user
+      if (status === 'approved') {
+        console.log('✅ Recharge approved! Adding credits to user...');
+
+        // Get current user credits
+        const { data: user } = await supabase
+          .from('users')
+          .select('credits, drafts')
+          .eq('id', userId)
+          .single();
+
+        if (user) {
+          // Update user's credits and drafts (additive)
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              credits: (user.credits || 0) + (rechargeConfig.credits_hd || 0),
+              drafts: (user.drafts || 0) + (rechargeConfig.drafts || 0),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+
+          if (updateError) {
+            console.error('❌ Error updating user credits:', updateError);
+          } else {
+            console.log('✅ Credits added to user account');
+
+            // Add credit transaction
+            await supabase.from('credit_transactions').insert({
+              user_id: userId,
+              type: 'recharge',
+              amount: rechargeConfig.credits_hd || 0,
+              credit_type: 'recharge',
+              description: `Recarga ${rechargeType}: ${rechargeConfig.credits_hd || 0} créditos HD`,
+              reference_id: paymentId,
+            });
+          }
+        }
+      } else if (status === 'rejected') {
+        console.log('❌ Recharge rejected:', status_detail);
+      } else {
+        console.log('⏳ Recharge pending:', status_detail);
+      }
+    } else if (planId) {
+      // ========================================
+      // 📦 MANEJO DE PLANES DE SUSCRIPCIÓN
+      // ========================================
+      console.log('💳 Processing plan payment:', planId);
+
+      // Update or create payment record
+      const { data: existingPayment } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('mp_payment_id', paymentId)
+        .single();
+
+      if (existingPayment) {
+        // Update existing payment
+        console.log('🔄 Updating existing payment record');
+        await supabase
+          .from('payments')
+          .update({
+            mp_status: status,
+            status: status === 'approved' ? 'completed' : status === 'rejected' ? 'failed' : 'pending',
+            payment_method: payment_method_id,
+            paid_at: date_approved,
+            metadata: payment,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('mp_payment_id', paymentId);
+      } else {
+        // Create new payment record
+        console.log('➕ Creating new payment record');
+        await supabase.from('payments').insert({
+          user_id: userId,
+          plan_id: planId,
+          mp_payment_id: paymentId,
+          mp_status: status,
+          amount: transaction_amount,
+          currency: 'CLP',
+          payment_method: payment_method_id,
+          status: status === 'approved' ? 'completed' : status === 'rejected' ? 'failed' : 'pending',
+          paid_at: date_approved,
+          metadata: payment,
+        });
+      }
+
+      // If payment is approved, update user's plan and credits
+      if (status === 'approved') {
+        console.log('✅ Payment approved! Updating user plan and credits...');
+
+        // Get plan details
+        const { data: plan } = await supabase
+          .from('user_plans')
+          .select('*')
+          .eq('id', planId)
+          .single();
+
+        if (plan) {
+          // Update user's plan
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              plan_id: planId,
+              credits: plan.credits_per_month,
+              last_credit_reset: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+
+          if (updateError) {
+            console.error('❌ Error updating user plan:', updateError);
+          } else {
+            console.log('✅ User plan updated successfully');
+
+            // Add credit transaction
+            await supabase.from('credit_transactions').insert({
+              user_id: userId,
+              type: 'purchase',
+              amount: plan.credits_per_month,
+              credit_type: 'monthly_plan',
+              description: `Créditos del plan ${plan.name}`,
+              reference_id: paymentId,
+            });
+
+            console.log('✅ Credits added to user account');
+          }
+        }
+      } else if (status === 'rejected') {
+        console.log('❌ Payment rejected:', status_detail);
+      } else {
+        console.log('⏳ Payment pending:', status_detail);
+      }
     } else {
-      console.log('⏳ Payment pending:', status_detail);
+      console.warn('⚠️ Payment received but no plan or recharge type identified');
     }
 
     return {

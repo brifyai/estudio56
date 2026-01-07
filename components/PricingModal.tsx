@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Sparkles, Crown, Gift } from 'lucide-react';
+import { supabase } from '../services/supabaseService';
 import { getEquivalencesWithDescription } from '../services/creditEquivalenceService';
+import { createRechargePreference, redirectToCheckout, RECHARGE_CONFIG } from '../services/paymentService';
 import { CreditEquivalence } from '../types';
 
 interface PricingModalProps {
@@ -23,6 +25,7 @@ interface RechargePlan {
 export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan }) => {
   const [equivalences, setEquivalences] = useState<CreditEquivalence[]>([]);
   const [loadingEquivalences, setLoadingEquivalences] = useState(true);
+  const [processingRecharge, setProcessingRecharge] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -42,6 +45,33 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
   };
 
   if (!isOpen) return null;
+
+  const handleRecharge = async (rechargeId: string) => {
+    try {
+      setProcessingRecharge(rechargeId);
+      
+      // Get current user from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        alert('Debes iniciar sesión para realizar una recarga');
+        return;
+      }
+
+      // Create payment preference
+      const preference = await createRechargePreference(
+        session.user.id,
+        rechargeId as 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO'
+      );
+
+      // Redirect to MercadoPago
+      redirectToCheckout(preference.initPoint);
+    } catch (error) {
+      console.error('Error al procesar recarga:', error);
+      alert('Hubo un error al procesar tu recarga. Por favor intenta nuevamente.');
+    } finally {
+      setProcessingRecharge(null);
+    }
+  };
 
   const handleContact = (planName: string) => {
     // 1. Update the UI to show they "Selected" this plan (Demo effect)
@@ -256,8 +286,19 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   <li>✓ <b>{plan.credits}</b> Créditos HD</li>
                   <li>✓ <b>{plan.drafts}</b> Borradores de regalo</li>
                 </ul>
-                <button onClick={() => handleContact(plan.name)} className="w-full py-2 rounded-lg border border-white/20 hover:bg-white hover:text-black transition-all text-xs font-bold">
-                  Cargar {plan.name}
+                <button
+                  onClick={() => handleRecharge(plan.id)}
+                  disabled={processingRecharge === plan.id}
+                  className="w-full py-2 rounded-lg border border-white/20 hover:bg-white hover:text-black transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {processingRecharge === plan.id ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Procesando...
+                    </span>
+                  ) : (
+                    `Cargar ${plan.name}`
+                  )}
                 </button>
               </div>
             ))}

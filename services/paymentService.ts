@@ -23,6 +23,22 @@ export interface Payment {
   updated_at: string;
 }
 
+export interface CreditRecharge {
+  id: string;
+  user_id: string;
+  recharge_type: string;
+  credits_hd: number;
+  drafts: number;
+  amount: number;
+  status: string;
+  payment_method: string | null;
+  mercadopago_preference_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type RechargeType = 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO';
+
 /**
  * Crear preferencia de pago en MercadoPago
  */
@@ -165,12 +181,117 @@ export function redirectToCheckout(initPoint: string) {
   window.location.href = initPoint;
 }
 
+// ============================================
+// 💰 FUNCIONES DE RECARGAS DE CRÉDITOS
+// ============================================
+
+/**
+ * Crear preferencia de pago para recarga de créditos
+ */
+export async function createRechargePreference(
+  userId: string,
+  rechargeType: RechargeType
+): Promise<PaymentPreference> {
+  try {
+    console.log('💳 Creating recharge preference...', { userId, rechargeType });
+
+    const response = await fetch('/.netlify/functions/create-recharge-preference', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, rechargeType }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create recharge preference');
+    }
+
+    const data = await response.json();
+    console.log('✅ Recharge preference created:', data);
+
+    return data;
+  } catch (error) {
+    console.error('❌ Error creating recharge preference:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener historial de recargas del usuario
+ */
+export async function getUserRecharges(userId: string): Promise<CreditRecharge[]> {
+  try {
+    const { data, error } = await supabase
+      .from('credit_recharges')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data || [];
+  } catch (error) {
+    console.error('❌ Error fetching user recharges:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener detalles de una recarga específica
+ */
+export async function getRechargeById(rechargeId: string): Promise<CreditRecharge | null> {
+  try {
+    const { data, error } = await supabase
+      .from('credit_recharges')
+      .select('*')
+      .eq('id', rechargeId)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('❌ Error fetching recharge:', error);
+    return null;
+  }
+}
+
+/**
+ * Configuración de recargas (para uso en UI)
+ */
+export const RECHARGE_CONFIG: Record<RechargeType, { name: string; price: number; credits: number; drafts: number }> = {
+  INDIVIDUAL: {
+    name: 'Individual',
+    price: 2990,
+    credits: 10,
+    drafts: 5,
+  },
+  SALVATORE: {
+    name: 'Salvatore',
+    price: 9990,
+    credits: 50,
+    drafts: 25,
+  },
+  IMPULSO: {
+    name: 'Impulso',
+    price: 24990,
+    credits: 150,
+    drafts: 750,
+  },
+};
+
 export default {
   createPaymentPreference,
+  createRechargePreference,
   getUserPayments,
+  getUserRecharges,
   getPaymentById,
+  getRechargeById,
   verifyPaymentStatus,
   formatPrice,
   getPaymentStatusLabel,
   redirectToCheckout,
+  RECHARGE_CONFIG,
 };
