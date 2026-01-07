@@ -1492,15 +1492,15 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
   
   // ============================================
-  // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.5 FLASH IMAGE
-  // El modelo gemini-2.5-flash-image tiene una API específica más simple
+  // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.0 FLASH EXP
+  // El modelo gemini-2.0-flash-exp tiene una API específica más simple
   // ============================================
   
   // ============================================
   // DETECTAR TIPO DE MODELO PARA USAR API CORRECTA
   // ============================================
   const isImagenModel = model.includes('imagen-');
-  const isGemini25Flash = model.includes('gemini-2.5-flash-image');
+  const isGemini20Flash = model.includes('gemini-2.0-flash-exp');
   
   let apiConfig: any;
   
@@ -1519,8 +1519,8 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       }
     };
     console.log(`📐 [GeminiService] Usando config VERTEX AI para ${model}`);
-  } else if (isGemini25Flash) {
-    // Para gemini-2.5-flash-image: estructura mínima según documentación oficial
+  } else if (isGemini20Flash) {
+    // Para gemini-2.0-flash-exp: estructura mínima según documentación oficial
     apiConfig = {
       model,
       contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
@@ -1567,8 +1567,8 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       // Si Vertex AI falla, intentar con Gemini API como fallback
       console.warn('⚠️ [GeminiService] Vertex AI falló, intentando con Gemini API como fallback...');
       
-      // Usar Gemini 2.5 Flash Image como fallback
-      const fallbackModel = 'gemini-2.5-flash-image';
+      // Usar Gemini 2.0 Flash Exp como fallback
+      const fallbackModel = 'gemini-2.0-flash-exp';
       const fallbackApiConfig = {
         model: fallbackModel,
         contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
@@ -1935,8 +1935,8 @@ export const generateHDFromDraft = async (
   `.replace(/\n/g, ' ').trim();
 
   try {
-    // Usar gemini-2.5-flash-image que soporta Image-to-Image correctamente
-    const model = 'gemini-2.5-flash-image';
+    // Usar gemini-2.0-flash-exp que soporta Image-to-Image correctamente
+    const model = 'gemini-2.0-flash-exp';
     console.log(`📡 [HD From Draft] Usando modelo: ${model} con img2img`);
     
     const response = await ai.models.generateContent({
@@ -2324,7 +2324,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         
         // Usar Gemini con imagen de referencia
         const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-image', // Usar modelo que soporta img2img
+          model: 'gemini-2.0-flash-exp', // Usar modelo que soporta img2img
           contents: {
             parts: [
               { text: enhancementPrompt },

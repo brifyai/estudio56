@@ -284,7 +284,8 @@ async function generateWithGeminiAPI(
 
   // Mapear modelo de imagen a modelo de Gemini
   // Usar modelos que soporten generación de imágenes
-  let geminiModel = 'gemini-2.5-flash-image';
+  // NOTA: gemini-2.0-flash-exp soporta generación de imágenes
+  let geminiModel = 'gemini-2.0-flash-exp';
   if (model.includes('imagen-3.0-pro')) {
     geminiModel = 'gemini-1.5-pro'; // Fallback más estable
   }
