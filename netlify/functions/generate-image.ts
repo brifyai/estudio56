@@ -5,7 +5,17 @@ export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
   try {
-    const { prompt } = JSON.parse(event.body || '{}');
+    const body = JSON.parse(event.body || '{}');
+    const {
+      prompt,
+      model = 'imagen-3.0-fast-001',
+      aspectRatio = '9:16',
+      imageSize = '480p',
+      seed
+    } = body;
+
+    console.log('🎯 [Netlify Function] Parámetros recibidos:', { model, aspectRatio, imageSize, seed });
+    console.log('📝 [Netlify Function] Prompt:', prompt?.substring(0, 100) + '...');
 
     const keyData = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyData) throw new Error("Falta la variable GOOGLE_SERVICE_ACCOUNT_KEY");
@@ -30,7 +40,17 @@ export const handler: Handler = async (event) => {
     const token = await client.getAccessToken();
 
     const projectId = serviceAccount.project_id;
-    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/imagen-3.0-fast-generate-001:predict`;
+    
+    // Seleccionar modelo según el parámetro recibido
+    const modelMap: Record<string, string> = {
+      'imagen-3.0-fast-001': 'imagen-3.0-fast-generate-001',
+      'imagen-3.0-pro-001': 'imagen-3.0-pro-generate-001'
+    };
+    
+    const vertexModel = modelMap[model] || 'imagen-3.0-fast-generate-001';
+    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${vertexModel}:predict`;
+
+    console.log('🎯 [Netlify Function] Usando modelo Vertex AI:', vertexModel);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -40,7 +60,10 @@ export const handler: Handler = async (event) => {
       },
       body: JSON.stringify({
         instances: [{ prompt }],
-        parameters: { sampleCount: 1, aspectRatio: "9:16" }
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: aspectRatio
+        }
       }),
     });
 
@@ -53,11 +76,14 @@ export const handler: Handler = async (event) => {
 
     // VERIFICACIÓN CLAVE: Google devuelve un array "predictions"
     if (!data.predictions || data.predictions.length === 0) {
+      console.error('❌ Google no devolvió predicciones:', data);
       throw new Error("Google no devolvió ninguna imagen en las predicciones");
     }
 
     // Extraemos el Base64 (Google usa la propiedad 'bytesBase64Encoded')
     const base64Image = data.predictions[0].bytesBase64Encoded;
+    
+    console.log('✅ [Netlify Function] Imagen generada, tamaño Base64:', base64Image.length);
 
     return {
       statusCode: 200,
@@ -72,7 +98,7 @@ export const handler: Handler = async (event) => {
     console.error('❌ Error Crítico:', error.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: `Error de llave: ${error.message}` }),
+      body: JSON.stringify({ error: `Error: ${error.message}` }),
     };
   }
 };

@@ -1814,6 +1814,22 @@ export interface GeneratedImageResult {
 export interface SimpleImageResult {
   success: boolean;
   imageUrl: string;
+  url?: string;  // Alias para compatibilidad con Frontend
+  error?: string;
+}
+
+// ============================================
+// INTERFAZ PARA PACK DUAL (Imagen + Video)
+// ============================================
+export interface PackDualResult {
+  success: boolean;
+  imageUrl: string;
+  videoUrl: string;
+  artDirection?: {
+    id: number;
+    rubro: string;
+    prompt: string;
+  };
   error?: string;
 }
 
@@ -1880,7 +1896,8 @@ export const generateImage = async (
     
     return {
       success: true,
-      imageUrl: result.imageDataUrl
+      imageUrl: result.imageDataUrl,
+      url: result.imageDataUrl  // Alias para compatibilidad con Frontend
     };
   } catch (error: any) {
     console.error('❌ Error generando imagen:', error);

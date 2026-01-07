@@ -74,9 +74,8 @@ export const generateImageWithVertex = async (
   console.log(`📝 Prompt: ${prompt.substring(0, 100)}...`);
   
   try {
-    // Importar Vertex AI dinámicamente (solo funciona en Node.js/server-side)
-    // Para browser, necesitamos un endpoint de API
-    const response = await fetch('/api/generate-image', {
+    // Usar endpoint directo de Netlify Functions para evitar redirects
+    const response = await fetch('/.netlify/functions/generate-image', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -128,7 +127,7 @@ export const generateHDFromDraftWithVertex = async (
   console.log(`💎 [VertexImage] Generando HD desde borrador...`);
   
   try {
-    const response = await fetch('/api/generate-image', {
+    const response = await fetch('/.netlify/functions/generate-image', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
