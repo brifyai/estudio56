@@ -2313,7 +2313,15 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         try {
             const minimalPrompt = `Professional photo of a local business. 9:16 format.`;
             console.log(`📝 [Draft Retry] Prompt mínimo: ${minimalPrompt}`);
-            imageDataUrl = await executeImageGeneration(ai, model, minimalPrompt, consistencySeed, aspectRatio, false, '480p');
+            
+            // 🎯 USAR VERTEX AI DIRECTAMENTE PARA MODELOS DE IMAGEN
+            const isImagenModel = model.includes('imagen-');
+            if (isImagenModel) {
+              console.log(`📡 [Draft Retry] Usando Vertex AI para ${model}`);
+              imageDataUrl = await generateWithVertexAI(model, minimalPrompt, aspectRatio, '480p', consistencySeed);
+            } else {
+              imageDataUrl = await executeImageGeneration(ai, model, minimalPrompt, consistencySeed, aspectRatio, false, '480p');
+            }
         } catch (retryError) {
              console.error("Draft retry failed.", retryError);
              throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
