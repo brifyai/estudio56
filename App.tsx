@@ -1335,12 +1335,12 @@ const handleGenerate = async () => {
         const { generateVideoAndWait } = await import('./services/vertexVideoService');
         
         try {
-          // Generar video con Vertex AI usando Veo 2.0 Flash
+          // Generar video con Vertex AI usando Veo 3.1 Fast
           const videoUrl = await generateVideoAndWait(
             {
               prompt: enhancedPrompt,
               aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1',
-              model: imageQuality === 'draft' ? 'veo-2.0-flash-generate-preview' : 'veo-2.0-generate-preview',
+              model: imageQuality === 'draft' ? 'veo-3.1-fast-generate-001' : 'veo-2.0-generate-preview',
               duration: '6s'
             },
             (progress) => {
