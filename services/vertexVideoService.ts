@@ -141,7 +141,7 @@ export const generateVideoAndWait = async (
 
   // Polling hasta que esté completo
   console.log('🔄 [VertexVideo] Iniciando polling...');
-  const maxAttempts = 60; // 5 minutos máximo (5 segundos * 60)
+  const maxAttempts = 120; // 10 minutos máximo (5 segundos * 120)
   let attempts = 0;
 
   while (attempts < maxAttempts) {
@@ -167,7 +167,7 @@ export const generateVideoAndWait = async (
     }
   }
 
-  throw new Error('Timeout: El video tardó más de 5 minutos en generarse');
+  throw new Error('Timeout: El video tardó más de 10 minutos en generarse');
 };
 
 export default {

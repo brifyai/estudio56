@@ -81,9 +81,9 @@ export const handler: Handler = async (event) => {
 
     console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
     
-    // Timeout de 60 segundos para videos (toman más tiempo)
+    // Timeout de 120 segundos para videos (Veo 3.1 estándar es más lento)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
     
     // Estructura del request para Veo usando :predict
     // Documentación: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/video-generation
@@ -114,8 +114,8 @@ export const handler: Handler = async (event) => {
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('❌ [DEBUG] Timeout: Vertex AI tardó más de 60 segundos');
-        throw new Error("Timeout: Vertex AI tardó más de 60 segundos");
+        console.error('❌ [DEBUG] Timeout: Vertex AI tardó más de 120 segundos');
+        throw new Error("Timeout: Vertex AI tardó más de 120 segundos");
       }
       throw fetchError;
     }
