@@ -397,34 +397,39 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       console.log('📊 Esperando mensajes de estado...');
     }
     
-    // Si hay imagen, completar al 100% y cerrar alerta (INDEPENDIENTE de isLoading)
-    if (imageUrl) {
+    // Si hay imagen Y no está cargando, cerrar inmediatamente
+    // Esto es más robusto que depender solo del mensaje de estado
+    const hasImage = imageUrl || draftImageUrl;
+    const isCompleteMessage = status.message.includes('LISTO') ||
+                               status.message.includes('COMPLETADO') ||
+                               status.message.includes('ACTUALIZADO');
+    
+    if (hasImage && (!isLoading || isCompleteMessage)) {
       // Verificar nuevamente que la alerta esté visible antes de cerrar
-      if (progressAlertRef.current.isVisible()) {
+      if (progressAlertRef.current?.isVisible()) {
         progressAlertRef.current.updateProgress(100, '¡Completado!');
         console.log('📊 Generación completada, cerrando alerta...');
+        // Cerrar inmediatamente sin delay
+        progressAlertRef.current.close();
+        progressAlertRef.current = null;
       } else {
         console.log('📊 Generación completada pero alerta ya estaba cerrada');
+        progressAlertRef.current = null;
       }
     }
-  }, [status.message, isLoading, imageUrl]);
+  }, [status.message, isLoading, imageUrl, draftImageUrl]);
 
-  // NEW: Fallback de seguridad - cerrar alerta cuando imageUrl aparece
+  // NEW: Fallback de seguridad - cerrar alerta inmediatamente cuando imageUrl aparece
   useEffect(() => {
     // Cerrar alerta cuando cualquiera de las URLs de imagen esté disponible
     const hasImage = imageUrl || draftImageUrl;
     
     if (hasImage && progressAlertRef.current?.isVisible()) {
       console.log('📊 Fallback: cerrando alerta por imagen disponible');
-      // Primero actualizar a 100% para mostrar "¡Completado!"
+      // Actualizar a 100% y cerrar inmediatamente
       progressAlertRef.current.updateProgress(100, '¡Completado!');
-      // Luego cerrar después de un pequeño delay para que el usuario vea el 100%
-      setTimeout(() => {
-        if (progressAlertRef.current?.isVisible()) {
-          progressAlertRef.current.close();
-        }
-        progressAlertRef.current = null;
-      }, 500);
+      progressAlertRef.current.close();
+      progressAlertRef.current = null;
     } else if (hasImage) {
       // Si ya estaba cerrada pero hay imagen, limpiar la referencia
       progressAlertRef.current = null;
