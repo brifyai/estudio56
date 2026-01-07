@@ -57,6 +57,8 @@ export const handler: Handler = async (event) => {
     console.log('🏢 [DEBUG] Project ID:', projectId);
     
     // Mapear modelos a sus endpoints correctos
+    // Modelos disponibles en el proyecto: imagen-4.0-generate-001, imagen-4.0-ultra-generate-001,
+    // imagen-4.0-fast-generate-001, imagen-3.0-generate-002, imagen.3.0-fast-generate-001
     const modelMap: Record<string, { endpoint: string; version: string }> = {
       'imagen-3.0-fast-001': {
         endpoint: 'imagen-3-0-fast-generate',
@@ -67,12 +69,28 @@ export const handler: Handler = async (event) => {
         version: 'v1beta1'
       },
       'imagen-3.0-capability-001': {
-        endpoint: 'imagen-3-0-capability-generate',
-        version: 'v1'
+        endpoint: 'imagen-3-0-generate-002',
+        version: 'v1beta1'
+      },
+      'imagen-3.0-generate-002': {
+        endpoint: 'imagen-3-0-generate-002',
+        version: 'v1beta1'
+      },
+      'imagen-4.0-fast-generate-001': {
+        endpoint: 'imagen-4-0-fast-generate-001',
+        version: 'v1beta1'
+      },
+      'imagen-4.0-generate-001': {
+        endpoint: 'imagen-4-0-generate-001',
+        version: 'v1beta1'
+      },
+      'imagen-4.0-ultra-generate-001': {
+        endpoint: 'imagen-4-0-ultra-generate-001',
+        version: 'v1beta1'
       }
     };
     
-    const modelConfig = modelMap[body.model] || modelMap['imagen-3.0-capability-001'];
+    const modelConfig = modelMap[body.model] || modelMap['imagen-3.0-generate-002'];
     const vertexModel = modelConfig.endpoint;
     const apiVersion = modelConfig.version;
     
