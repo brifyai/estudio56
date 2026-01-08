@@ -102,9 +102,9 @@ export const handler: Handler = async (event) => {
 
     console.log('⏳ [DEBUG] Enviando petición a Vertex AI...');
     
-    // Timeout de 20 segundos
+    // Timeout de 24 segundos (antes del límite de Netlify de 26s)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 24000);
     
     // Estructura del request para Imagen 3.0
     const requestBody = {
@@ -134,8 +134,15 @@ export const handler: Handler = async (event) => {
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
       if (fetchError.name === 'AbortError') {
-        console.error('❌ [DEBUG] Timeout: Vertex AI tardó más de 20 segundos');
-        throw new Error("Timeout: Vertex AI tardó más de 20 segundos");
+        console.error('❌ [DEBUG] Timeout: Vertex AI tardó más de 24 segundos');
+        return {
+          statusCode: 503,
+          body: JSON.stringify({
+            error: "Vertex AI está tardando demasiado. Intenta de nuevo o usa un prompt más simple.",
+            type: 'Timeout',
+            retryable: true
+          })
+        };
       }
       throw fetchError;
     }

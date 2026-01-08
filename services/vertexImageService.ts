@@ -60,15 +60,17 @@ export const generateImageWithVertex = async (
   prompt: string,
   aspectRatio: AspectRatio,
   quality: 'draft' | 'hd',
-  seed?: number
+  seed?: number,
+  retryCount: number = 0
 ): Promise<VertexImageResult> => {
   const startTime = Date.now();
+  const maxRetries = 2; // Máximo 2 reintentos
   
   // Seleccionar el modelo correcto según calidad
   const model = MODELS.DRAFT_ENGINE; // Usar el mismo modelo para draft y HD
   const modelDisplayName = 'Imagen 3 Capability';
   
-  console.log(`🎨 [VertexImage] Generando con ${modelDisplayName} (${model})`);
+  console.log(`🎨 [VertexImage] Generando con ${modelDisplayName} (${model}) - Intento ${retryCount + 1}/${maxRetries + 1}`);
   console.log(`📐 Aspect Ratio: ${aspectRatio}`);
   console.log(`📝 Prompt: ${prompt.substring(0, 100)}...`);
   
@@ -88,6 +90,14 @@ export const generateImageWithVertex = async (
       })
     });
 
+    // Si es 503 y aún tenemos reintentos, esperar y reintentar
+    if (response.status === 503 && retryCount < maxRetries) {
+      const waitTime = (retryCount + 1) * 2000; // 2s, 4s
+      console.log(`⏳ [VertexImage] Error 503, reintentando en ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return generateImageWithVertex(prompt, aspectRatio, quality, seed, retryCount + 1);
+    }
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP ${response.status}`);
@@ -106,6 +116,14 @@ export const generateImageWithVertex = async (
     
   } catch (error: any) {
     console.error(`❌ [VertexImage] Error:`, error.message);
+    
+    // Si es un error de timeout y aún tenemos reintentos
+    if (error.message.includes('503') && retryCount < maxRetries) {
+      const waitTime = (retryCount + 1) * 2000;
+      console.log(`⏳ [VertexImage] Reintentando en ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      return generateImageWithVertex(prompt, aspectRatio, quality, seed, retryCount + 1);
+    }
     
     return {
       success: false,
