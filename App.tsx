@@ -1496,11 +1496,6 @@ const handleGenerate = async () => {
         let url;
         // story_art se maneja igual que image para el upgrade HD
         if (mediaType === 'image' || mediaType === 'story_art') {
-            // 🎯 OPCIÓN A: Image-to-Image con strength bajo
-            // Usar un prompt SIMPLE y DIRECTO que indique mantener la estructura original
-            // Esto simula un strength bajo (0.2-0.4) porque el prompt es mínimo
-            const hdPrompt = `Enhance this image with better quality, sharpness, and detail. Keep EXACTLY the same composition, layout, colors, and elements. Do not change anything except improving quality.`;
-            
             // NEW: Determinar artDirectionId para Story Art (mismo mapeo que en handleGenerate)
             let upgradeArtDirectionId: number | undefined = undefined;
             if (mediaType === 'story_art') {
