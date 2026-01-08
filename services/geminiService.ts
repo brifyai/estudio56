@@ -2488,27 +2488,29 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       console.log('📝 [HD] Negative prompt length:', hdNegativePrompt.length, 'chars');
       console.log('📝 [HD] Negative prompt:', hdNegativePrompt.substring(0, 150) + '...');
       
-      // Usar fal.ai img2img nativo con parámetros optimizados
+      // Usar Clarity Upscaler para HD (mantiene 100% similitud)
       const falResult = await generateHDWithImg2Img(
         hdPrompt,
         draftImageForHD,
         {
-          strength: 0.03, // EXTREMADAMENTE bajo = máxima similitud (0.02-0.05)
-          guidanceScale: 3, // Mínimo absoluto = seguir la imagen, no el prompt
-          steps: 10, // Mínimo steps = menos variación
+          // Clarity Upscaler no usa strength, guidance, steps
+          // Solo necesita el prompt y la imagen
           seed: consistencySeed,
           aspectRatio,
+          // Estos parámetros se ignoran para Clarity Upscaler
+          strength: 0,
+          guidanceScale: 0,
+          steps: 0,
           negativePrompt: hdNegativePrompt,
         }
       );
       
       if (falResult.success && falResult.imageUrl) {
-        console.log('✅ [HD] fal.ai img2img exitoso');
+        console.log('✅ [HD] Clarity Upscaler exitoso (100% similitud)');
         console.log('📝 [HD] Seed usado:', consistencySeed);
-        console.log('📝 [HD] Strength usado: 0.03 (máxima similitud)');
         imageDataUrl = falResult.imageUrl;
       } else {
-        console.warn('⚠️ [HD] fal.ai falló, usando fallback:', falResult.error);
+        console.warn('⚠️ [HD] Clarity Upscaler falló, usando fallback:', falResult.error);
         // Continuar con el método original
       }
     }

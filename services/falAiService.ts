@@ -15,27 +15,24 @@ const FAL_AI_API_KEY = import.meta.env.VITE_FAL_AI_API_KEY || process.env.FAL_AI
 
 const FAL_AI_BASE_URL = 'https://api.fal.ai/v1';
 
-// Modelos disponibles en fal.ai para img2img
-// Verificar modelos actualizados en: https://fal.ai/models
+// Modelos disponibles en fal.ai
 export const FAL_MODELS = {
+  // Clarity Upscaler - MEJOR para HD (mejora resolución sin cambiar contenido)
+  CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
   // Stable Diffusion XL 1.0 img2img - Alta calidad
   SDXL_IMG2IMG: 'fal-ai/stable-diffusion-xl-1.0/img2img',
   // Stable Diffusion 1.5 img2img - Compatible con más estilos
   SD15_IMG2IMG: 'fal-ai/stable-diffusion-v1-5/img2img',
-  // Flux Schnell - Rápido y buena calidad (no tiene img2img nativo, usar txt2img)
+  // Flux Schnell - Rápido y buena calidad
   FLUX_SCHNELL: 'fal-ai/flux/schnell',
-  // Flux Dev - Mejor calidad (no tiene img2img nativo, usar txt2img)
+  // Flux Dev - Mejor calidad
   FLUX_DEV: 'fal-ai/flux/dev',
   // SDXL Base - Modelo base
   SDXL_BASE: 'fal-ai/stable-diffusion-xl/base',
 } as const;
 
-// Lista de modelos a intentar en orden de prioridad
-const MODEL_PRIORITY = [
-  FAL_MODELS.SDXL_IMG2IMG,
-  FAL_MODELS.SD15_IMG2IMG,
-  FAL_MODELS.SDXL_BASE,
-];
+// Modelo principal para HD
+const HD_MODEL = FAL_MODELS.CLARITY_UPSCALER;
 
 export type FalModelId = typeof FAL_MODELS[keyof typeof FAL_MODELS];
 
@@ -154,74 +151,58 @@ export const generateHDWithImg2Img = async (
       throw new Error('FAL_AI_API_KEY no configurada');
     }
 
-    console.log('📡 [fal.ai] Iniciando request con fallback de modelos...');
+    console.log('📡 [fal.ai] Usando Clarity Upscaler para HD...');
+    console.log(`📡 [fal.ai] Modelo: ${HD_MODEL}`);
 
-    // Intentar cada modelo en orden de prioridad
-    let lastError: string = '';
-    let imageUrl: string | null = null;
-    let usedModel: string = '';
-    let usedSeed: number | undefined;
+    // Clarity Upscaler tiene una API diferente
+    // No usa strength, guidance, steps - solo la imagen y el prompt
+    const upscalerRequestBody = {
+      prompt: requestBody.prompt,
+      image: requestBody.image,
+      // Parámetros específicos de Clarity Upscaler
+      scale: 2, // 2x upscale (puede ser 2 o 4)
+      enhance_prompt: true,
+      enhance_negative_prompt: true,
+    };
 
-    for (const modelEndpoint of MODEL_PRIORITY) {
-      console.log(`📡 [fal.ai] Intentando modelo: ${modelEndpoint}`);
-      
-      try {
-        const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Key ${FAL_AI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
+    const response = await fetch(`${FAL_AI_BASE_URL}/${HD_MODEL}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_AI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(upscalerRequestBody),
+    });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.warn(`⚠️ [fal.ai] Modelo ${modelEndpoint} falló: ${response.status}`);
-          lastError = `HTTP ${response.status}: ${errorText.substring(0, 100)}`;
-          continue; // Intentar siguiente modelo
-        }
-
-        const data = await response.json();
-        console.log('✅ [fal.ai] Respuesta recibida del modelo:', modelEndpoint);
-
-        // Extraer imagen de la respuesta
-        imageUrl = data.images?.[0]?.url || data.image || data.url;
-        
-        if (!imageUrl) {
-          console.warn(`⚠️ [fal.ai] Modelo ${modelEndpoint} no retornó imagen`);
-          lastError = 'No se encontró imagen en la respuesta';
-          continue;
-        }
-
-        // Si es URL relativa, convertir a URL completa
-        if (imageUrl.startsWith('/')) {
-          imageUrl = `https://fal.ai${imageUrl}`;
-        }
-
-        usedModel = modelEndpoint;
-        usedSeed = data.seed || seed;
-        console.log(`✅ [fal.ai] Imagen generada exitosamente con: ${usedModel}`);
-        console.log(`📝 [fal.ai] Seed usado: ${usedSeed}`);
-        break; // Éxito, salir del loop
-        
-      } catch (modelError: any) {
-        console.warn(`⚠️ [fal.ai] Error con modelo ${modelEndpoint}:`, modelError.message);
-        lastError = modelError.message;
-        continue; // Intentar siguiente modelo
-      }
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
+      throw new Error(`fal.ai error: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
+    const data = await response.json();
+    console.log('✅ [fal.ai] Respuesta recibida');
+
+    // Extraer imagen de la respuesta
+    // Clarity Upscaler retorna la imagen en 'image' o 'images[0].url'
+    let imageUrl = data.images?.[0]?.url || data.image || data.url;
+    
     if (!imageUrl) {
-      throw new Error(`Todos los modelos fallaron. Último error: ${lastError}`);
+      console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', data);
+      throw new Error('No se encontró imagen en la respuesta de fal.ai');
     }
 
-    console.log(`✅ [fal.ai] Imagen generada: ${imageUrl.substring(0, 100)}...`);
+    // Si es URL relativa, convertir a URL completa
+    if (imageUrl.startsWith('/')) {
+      imageUrl = `https://fal.ai${imageUrl}`;
+    }
+
+    console.log(`✅ [fal.ai] Imagen HD generada: ${imageUrl.substring(0, 100)}...`);
 
     return {
       success: true,
       imageUrl,
-      seed: usedSeed,
+      seed: data.seed || seed,
     };
 
   } catch (error: any) {
