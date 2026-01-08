@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
+import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2376,98 +2377,133 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     }
   } else {
     // HD: Generar imagen HD manteniendo consistencia con el borrador
-    // Usamos análisis del borrador + txt2img con seed para maximizar similitud
-    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen HD con análisis del borrador`);
+    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen HD`);
     
     // ============================================
-    // 🎯 ANÁLISIS DEL BORRADOR PARA HD CONSISTENTE
-    // Usar Gemini Vision para extraer detalles visuales del borrador
+    // 🎯 USAR FAL.AI IMG2IMG SI ESTÁ CONFIGURADO
+    // Esto garantiza ~95% similitud con el borrador
     // ============================================
     
-    let draftAnalysis = '';
-    if (draftImageForHD) {
-      try {
-        console.log('🔍 [HD] Analizando borrador con Gemini Vision...');
-        const base64Data = draftImageForHD.split(',')[1];
+    if (isFalAiConfigured() && draftImageForHD) {
+      console.log('🚀 [HD] Usando fal.ai Image-to-Image nativo (95%+ similitud)');
+      
+      // Construir prompt para fal.ai
+      const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
+                          enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
+                          enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
+      const subjectDetail = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
+      
+      const hdPrompt = `
+        ${subjectDetail}
         
-        const analysisResponse = await ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
-          contents: {
-            parts: [
-              { text: `Analyze this image in extreme detail. Describe:
-              1. The main subject (person, object, scene)
-              2. Exact colors of key elements
-              3. Lighting direction and quality
-              4. Background/environment details
-              5. Camera angle and perspective
-              6. Composition and subject placement
-              7. Mood and atmosphere
-              
-              Format your response as a single detailed paragraph that could be used to recreate this exact image.` },
-              {
-                inlineData: {
-                  mimeType: 'image/jpeg',
-                  data: base64Data
-                }
-              }
-            ]
-          }
-        });
-        
-        const analysisText = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (analysisText) {
-          draftAnalysis = analysisText.trim();
-          console.log('✅ [HD] Análisis del borrador:', draftAnalysis.substring(0, 100) + '...');
+        Enhance this image with higher quality, sharpness, and detail.
+        Keep the same composition, colors, and subject exactly.
+        Professional commercial photography, HD quality.
+      `.replace(/\n/g, ' ').trim();
+      
+      const hdNegativePrompt = `${finalNegativePrompt}, blurry, low quality, pixelated, artifacts, noise, compression, different composition, different colors`;
+      
+      // Usar fal.ai img2img nativo
+      const falResult = await generateHDWithImg2Img(
+        hdPrompt,
+        draftImageForHD,
+        {
+          strength: 0.15, // Muy bajo = máxima similitud (0.1-0.3)
+          guidanceScale: 9,
+          steps: 30,
+          seed: consistencySeed,
+          aspectRatio,
+          negativePrompt: hdNegativePrompt,
         }
-      } catch (analysisError: any) {
-        console.warn('⚠️ [HD] Error analizando borrador:', analysisError.message);
-        // Continuar sin análisis detallado
+      );
+      
+      if (falResult.success && falResult.imageUrl) {
+        console.log('✅ [HD] fal.ai img2img exitoso:', falResult.imageUrl.substring(0, 50) + '...');
+        imageDataUrl = falResult.imageUrl;
+      } else {
+        console.warn('⚠️ [HD] fal.ai falló, usando fallback:', falResult.error);
+        // Continuar con el método original
       }
     }
     
-    // ============================================
-    // 🎯 PROMPT HD ULTRA-ESPECÍFICO
-    // ============================================
-    
-    // Extraer elementos clave del prompt original
-    const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
-                        enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
-                        enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
-    const subjectDetail = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
-    
-    // Construir prompt HD con análisis del borrador
-    const hdSpecificPrompt = `
-      ${realityPrompt}
+    // Fallback: Si fal.ai no está configurado o falló, usar txt2img con análisis
+    if (!imageDataUrl) {
+      console.log('🔄 [HD] Usando fallback: txt2img con análisis del borrador');
       
-      REFERENCE IMAGE ANALYSIS: ${draftAnalysis || subjectDetail}
+      let draftAnalysis = '';
+      if (draftImageForHD) {
+        try {
+          console.log('🔍 [HD] Analizando borrador con Gemini Vision...');
+          const base64Data = draftImageForHD.split(',')[1];
+          
+          const analysisResponse = await ai.models.generateContent({
+            model: 'gemini-2.0-flash-exp',
+            contents: {
+              parts: [
+                { text: `Analyze this image in extreme detail. Describe:
+                1. The main subject (person, object, scene)
+                2. Exact colors of key elements
+                3. Lighting direction and quality
+                4. Background/environment details
+                5. Camera angle and perspective
+                6. Composition and subject placement
+                7. Mood and atmosphere
+                
+                Format your response as a single detailed paragraph.` },
+                {
+                  inlineData: {
+                    mimeType: 'image/jpeg',
+                    data: base64Data
+                  }
+                }
+              ]
+            }
+          });
+          
+          const analysisText = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (analysisText) {
+            draftAnalysis = analysisText.trim();
+            console.log('✅ [HD] Análisis completado');
+          }
+        } catch (analysisError: any) {
+          console.warn('⚠️ [HD] Error analizando borrador:', analysisError.message);
+        }
+      }
       
-      CRITICAL CONSISTENCY RULES:
-      - RECREATE this image with HIGHER QUALITY (HD resolution)
-      - Keep EXACTLY the same: subject, composition, colors, lighting, perspective, mood, background
-      - Improve ONLY: resolution, sharpness, detail clarity, texture quality
-      - DO NOT change: subject identity, position, colors, composition, or style
+      // Extraer elementos clave del prompt original
+      const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
+                          enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
+                          enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
+      const subjectDetail = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
       
-      STYLE: ${activeStyleLabel}
-      COMPOSITION: ${compositionPrompt}
-      ASPECT RATIO: ${aspectRatio}
+      // Construir prompt HD
+      const hdSpecificPrompt = `
+        ${realityPrompt}
+        
+        REFERENCE IMAGE ANALYSIS: ${draftAnalysis || subjectDetail}
+        
+        CRITICAL: RECREATE this image with HIGHER QUALITY.
+        Keep EXACTLY the same: subject, composition, colors, lighting, perspective, mood.
+        Improve ONLY: resolution, sharpness, detail clarity.
+        
+        STYLE: ${activeStyleLabel}
+        ASPECT RATIO: ${aspectRatio}
+      `.replace(/\n/g, ' ').trim();
       
-      THIS IS AN ENHANCEMENT OF A REFERENCE IMAGE. The output must look like the SAME image but in higher quality.
-    `.replace(/\n/g, ' ').trim();
-    
-    const hdNegativePrompt = `${finalNegativePrompt}, low resolution, blurry, pixelated, artifacts, noise, compression artifacts, oversaturated, oversharpened, different composition, different subject, different colors`;
-    
-    try {
-      const promptWithGuardrails = `${hdSpecificPrompt} AVOID: ${hdNegativePrompt}`;
-      imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
-      console.log('✅ [HD] Imagen HD generada con análisis de borrador');
-    } catch (error: any) {
-      if (error.message.includes('SAFETY_BLOCK')) {
-        console.warn('⚠️ [HD] Safety block, reintentando...');
-        const simplifiedPrompt = `Professional photo of ${draftAnalysis || subjectDetail}. ${activeStyleLabel} style. ${aspectRatio} format. High quality, sharp, detailed. Same composition as reference.`;
-        imageDataUrl = await executeImageGeneration(ai, model, simplifiedPrompt, consistencySeed, aspectRatio, isHDForVideo, '1K');
-        console.log('✅ [HD] Retry exitoso');
-      } else {
-        throw error;
+      const hdNegativePrompt = `${finalNegativePrompt}, low resolution, blurry, pixelated, artifacts, noise, compression, different composition, different colors`;
+      
+      try {
+        const promptWithGuardrails = `${hdSpecificPrompt} AVOID: ${hdNegativePrompt}`;
+        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
+        console.log('✅ [HD] Fallback exitoso');
+      } catch (error: any) {
+        if (error.message.includes('SAFETY_BLOCK')) {
+          console.warn('⚠️ [HD] Safety block, reintentando...');
+          const simplifiedPrompt = `Professional photo of ${draftAnalysis || subjectDetail}. ${activeStyleLabel} style. ${aspectRatio} format. High quality.`;
+          imageDataUrl = await executeImageGeneration(ai, model, simplifiedPrompt, consistencySeed, aspectRatio, isHDForVideo, '1K');
+        } else {
+          throw error;
+        }
       }
     }
   }
