@@ -18,20 +18,24 @@ const FAL_AI_BASE_URL = 'https://api.fal.ai/v1';
 // Modelos disponibles en fal.ai para img2img
 // Verificar modelos actualizados en: https://fal.ai/models
 export const FAL_MODELS = {
-  // Stable Diffusion XL 1.0 img2img - Alta calidad (verificar endpoint exacto)
+  // Stable Diffusion XL 1.0 img2img - Alta calidad
   SDXL_IMG2IMG: 'fal-ai/stable-diffusion-xl-1.0/img2img',
   // Stable Diffusion 1.5 img2img - Compatible con más estilos
   SD15_IMG2IMG: 'fal-ai/stable-diffusion-v1-5/img2img',
-  // Flux Schnell img2img - Rápido y buena calidad
-  FLUX_SCHNELL_IMG2IMG: 'fal-ai/flux/schnell/img2img',
-  // Flux Dev img2img - Mejor calidad
-  FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev/img2img',
-  // Modelo alternativo: SDXL base con img2img
-  SDXL_BASE_IMG2IMG: 'fal-ai/stable-diffusion-xl/base/img2img',
+  // Flux Schnell - Rápido y buena calidad (no tiene img2img nativo, usar txt2img)
+  FLUX_SCHNELL: 'fal-ai/flux/schnell',
+  // Flux Dev - Mejor calidad (no tiene img2img nativo, usar txt2img)
+  FLUX_DEV: 'fal-ai/flux/dev',
+  // SDXL Base - Modelo base
+  SDXL_BASE: 'fal-ai/stable-diffusion-xl/base',
 } as const;
 
-// Modelo recomendado para máxima similitud
-const RECOMMENDED_MODEL = FAL_MODELS.SDXL_IMG2IMG;
+// Lista de modelos a intentar en orden de prioridad
+const MODEL_PRIORITY = [
+  FAL_MODELS.SDXL_IMG2IMG,
+  FAL_MODELS.SD15_IMG2IMG,
+  FAL_MODELS.SDXL_BASE,
+];
 
 export type FalModelId = typeof FAL_MODELS[keyof typeof FAL_MODELS];
 
@@ -150,43 +154,66 @@ export const generateHDWithImg2Img = async (
       throw new Error('FAL_AI_API_KEY no configurada');
     }
 
-    console.log('📡 [fal.ai] Enviando request a fal.ai...');
+    console.log('📡 [fal.ai] Iniciando request con fallback de modelos...');
 
-    // Usar el modelo correcto de fal.ai
-    // SDXL 1.0 img2img tiene mejor calidad para transformaciones sutiles
-    const modelEndpoint = FAL_MODELS.SDXL_IMG2IMG;
-    console.log(`📡 [fal.ai] Usando modelo: ${modelEndpoint}`);
-    
-    const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_AI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    // Intentar cada modelo en orden de prioridad
+    let lastError: string = '';
+    let imageUrl: string | null = null;
+    let usedModel: string = '';
+    let usedSeed: number | undefined;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
-      throw new Error(`fal.ai error: ${response.status} - ${errorText.substring(0, 200)}`);
+    for (const modelEndpoint of MODEL_PRIORITY) {
+      console.log(`📡 [fal.ai] Intentando modelo: ${modelEndpoint}`);
+      
+      try {
+        const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Key ${FAL_AI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.warn(`⚠️ [fal.ai] Modelo ${modelEndpoint} falló: ${response.status}`);
+          lastError = `HTTP ${response.status}: ${errorText.substring(0, 100)}`;
+          continue; // Intentar siguiente modelo
+        }
+
+        const data = await response.json();
+        console.log('✅ [fal.ai] Respuesta recibida del modelo:', modelEndpoint);
+
+        // Extraer imagen de la respuesta
+        imageUrl = data.images?.[0]?.url || data.image || data.url;
+        
+        if (!imageUrl) {
+          console.warn(`⚠️ [fal.ai] Modelo ${modelEndpoint} no retornó imagen`);
+          lastError = 'No se encontró imagen en la respuesta';
+          continue;
+        }
+
+        // Si es URL relativa, convertir a URL completa
+        if (imageUrl.startsWith('/')) {
+          imageUrl = `https://fal.ai${imageUrl}`;
+        }
+
+        usedModel = modelEndpoint;
+        usedSeed = data.seed || seed;
+        console.log(`✅ [fal.ai] Imagen generada exitosamente con: ${usedModel}`);
+        console.log(`📝 [fal.ai] Seed usado: ${usedSeed}`);
+        break; // Éxito, salir del loop
+        
+      } catch (modelError: any) {
+        console.warn(`⚠️ [fal.ai] Error con modelo ${modelEndpoint}:`, modelError.message);
+        lastError = modelError.message;
+        continue; // Intentar siguiente modelo
+      }
     }
 
-    const data = await response.json();
-    console.log('✅ [fal.ai] Respuesta recibida');
-
-    // Extraer imagen de la respuesta
-    // fal.ai retorna la imagen en diferentes formatos
-    let imageUrl = data.images?.[0]?.url || data.image || data.url;
-    
     if (!imageUrl) {
-      console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', data);
-      throw new Error('No se encontró imagen en la respuesta de fal.ai');
-    }
-
-    // Si es URL relativa, convertir a URL completa
-    if (imageUrl.startsWith('/')) {
-      imageUrl = `https://fal.ai${imageUrl}`;
+      throw new Error(`Todos los modelos fallaron. Último error: ${lastError}`);
     }
 
     console.log(`✅ [fal.ai] Imagen generada: ${imageUrl.substring(0, 100)}...`);
@@ -194,7 +221,7 @@ export const generateHDWithImg2Img = async (
     return {
       success: true,
       imageUrl,
-      seed: data.seed || seed,
+      seed: usedSeed,
     };
 
   } catch (error: any) {
