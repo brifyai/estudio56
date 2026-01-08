@@ -2501,6 +2501,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
             </div>
             <div className="flex-1 overflow-y-auto">
               <RealityComparator
+                key={`comparator-${Object.keys(realityVariations).length}-${realityLevel}`}
                 sceneId={sceneId}
                 variations={realityVariations}
                 currentLevel={realityLevel}
