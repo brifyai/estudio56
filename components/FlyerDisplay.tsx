@@ -1709,9 +1709,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       {/* Logo flotante que se mueve con el scroll - OCULTAR DURANTE COMPARACIÓN */}
       {!showComparison && <FloatingLogo />}
 
-      {/* CERRAR COMPARACIÓN DE IMÁGENES */}
+      {/* CERRAR COMPARACIÓN DE IMÁGENES - Centrado debajo del botón "Generar nuevo borrador" */}
       {showComparison && (
-        <div className="absolute top-6 left-4 lg:left-8 z-50">
+        <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-50">
           <button
             onClick={() => setShowComparison(false)}
             className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
