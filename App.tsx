@@ -954,10 +954,14 @@ const handleGenerate = async () => {
       setImageUrl(null);
       // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
       setRealityImageUrl(null);
-      // 🎯 RESETEAR realityLevel a 1.5 (Celular Viejo) y limpiar variaciones al generar nuevo borrador
-      setRealityLevel(1.5);
+      // 🎯 RESETEAR realityLevel a 1.0 (Hostal - DEFAULT) y limpiar variaciones al generar nuevo borrador
+      setRealityLevel(1.0);
       setIsRealityVariation(false); // Indicar que es una nueva imagen base
       setRealityVariations({});
+      // 🔧 CERRAR comparador de realidad si está abierto
+      if (showRealityComparator) {
+        setShowRealityComparator(false);
+      }
     }
     // Si estamos generando HD, NO limpiar draftImageUrl (lo necesitamos para comparar)
     setCurrentSpanishPrompt(''); // Limpiar prompt en español
