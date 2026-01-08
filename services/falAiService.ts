@@ -73,6 +73,83 @@ const extractBase64 = (dataUrl: string): string => {
 };
 
 // ============================================
+// 🚀 GENERAR BORRADOR CON FLUX SCHNELL (TEXT-TO-IMAGE)
+// ============================================
+
+/**
+ * Genera un borrador rápido usando Flux Schnell (text-to-image)
+ * Ideal para borradores iniciales sin imagen de referencia
+ */
+export const generateDraftWithFluxSchnell = async (
+  prompt: string,
+  options: {
+    seed?: number;
+    aspectRatio?: AspectRatio;
+  } = {}
+): Promise<FalImg2ImgResponse> => {
+  const {
+    seed,
+    aspectRatio = '9:16',
+  } = options;
+
+  console.log('🚀 [fal.ai] Iniciando Flux Schnell para borrador...');
+  console.log(`📝 [fal.ai] Modelo: ${FAL_MODELS.FLUX_SCHNELL}`);
+  console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
+  console.log(`🖼️ [fal.ai] Aspect Ratio: ${aspectRatio}`);
+  console.log(`🎲 [fal.ai] Seed: ${seed}`);
+
+  try {
+    console.log('📡 [fal.ai] Enviando request via Netlify Function...');
+    
+    // Llamar a Netlify Function (API key en backend)
+    const response = await fetch('/.netlify/functions/generate-with-fal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: FAL_MODELS.FLUX_SCHNELL,
+        prompt,
+        seed,
+        aspectRatio,
+        // Flux Schnell no usa imagen de referencia (text-to-image)
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`fal.ai error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ [fal.ai] Respuesta recibida');
+
+    if (!data.success) {
+      throw new Error(data.error || 'Error en generación');
+    }
+
+    if (!data.imageUrl) {
+      throw new Error('No se encontró imageUrl en respuesta');
+    }
+
+    console.log(`✅ [fal.ai] Borrador generado exitosamente con Flux Schnell`);
+    return {
+      success: true,
+      imageUrl: data.imageUrl,
+      seed: data.seed || seed,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido',
+    };
+  }
+};
+
+// ============================================
 // 🚀 GENERAR VARIACIÓN DE REALIDAD CON FLUX DEV IMG2IMG
 // ============================================
 

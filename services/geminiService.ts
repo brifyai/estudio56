@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
-import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation } from "./falAiService";
+import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxSchnell } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2346,8 +2346,9 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   
   if (quality === 'draft') {
     // ============================================
-    // 🎯 SI HAY IMAGEN DE REFERENCIA, USAR FAL.AI Z-IMAGE TURBO
-    // Más rápido y económico que Flux Dev para borradores
+    // 🎯 USAR FAL.AI PARA TODOS LOS BORRADORES
+    // - CON imagen de referencia: Flux Dev Image-to-Image (variaciones de realidad)
+    // - SIN imagen de referencia: Flux Schnell Text-to-Image (borradores nuevos)
     // ============================================
     
     console.log('🔍 [Draft] Verificando configuración de fal.ai...');
@@ -2356,6 +2357,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     console.log('🔍 [Draft] draftImageForHD length:', draftImageForHD?.length || 0);
     
     if (isFalAiConfigured() && draftImageForHD) {
+      // CON imagen de referencia: Flux Dev Image-to-Image (variaciones de realidad)
       console.log('🚀 [Draft] Usando fal.ai Flux Dev Image-to-Image para mantener composición');
       console.log('📝 [Draft] Seed usado:', consistencySeed);
       console.log('🖼️ [Draft] Imagen de referencia disponible:', !!draftImageForHD);
@@ -2419,44 +2421,65 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
           throw new Error(errorMsg);
         }
       } catch (error: any) {
-        console.error('❌ [Draft] Error con fal.ai, fallback a Vertex AI:', error);
-        // Fallback a Vertex AI si fal.ai falla
-        const realityPromptForDraft = buildPowerPromptWithReality(enhancedDescription.split('.')[0], realityLevel);
-        const ultraSimplePrompt = `Professional photo. ${realityPromptForDraft} Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
-        imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
+        console.error('❌ [Draft] Error con fal.ai Flux Dev Image-to-Image:', error);
+        throw error; // No fallback, solo fal.ai
       }
     } else {
-      // Sin imagen de referencia, usar Vertex AI normal
+      // SIN imagen de referencia: Flux Schnell Text-to-Image (borradores nuevos)
+      console.log('🚀 [Draft] Usando fal.ai Flux Schnell para borrador nuevo');
+      console.log('📝 [Draft] Seed usado:', consistencySeed);
+      
       try {
-          // 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT DE DRAFT
-          // El prompt de draft también debe incluir los modificadores de realidad
-          const realityPromptForDraft = buildPowerPromptWithReality(enhancedDescription.split('.')[0], realityLevel);
-          const ultraSimplePrompt = `Professional photo. ${realityPromptForDraft} Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
-          
-          console.log(`📝 [Draft] Prompt con realidad: ${ultraSimplePrompt.substring(0, 150)}...`);
-          
-          // Para imágenes draft: usar 480p
-          imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
-      } catch (error: any) {
-          console.warn("Draft generation failed. Retrying with same parameters...", error.message);
-          
-          // Retry con prompt mínimo absoluto
-          try {
-              const minimalPrompt = `Professional photo of a local business. 9:16 format.`;
-              console.log(`📝 [Draft Retry] Prompt mínimo: ${minimalPrompt}`);
-              
-              // 🎯 USAR VERTEX AI DIRECTAMENTE PARA MODELOS DE IMAGEN
-              const isImagenModel = model.includes('imagen-');
-              if (isImagenModel) {
-                console.log(`📡 [Draft Retry] Usando Vertex AI para ${model}`);
-                imageDataUrl = await generateWithVertexAI(model, minimalPrompt, aspectRatio, '480p', consistencySeed);
-              } else {
-                imageDataUrl = await executeImageGeneration(ai, model, minimalPrompt, consistencySeed, aspectRatio, false, '480p');
-              }
-          } catch (retryError) {
-               console.error("Draft retry failed.", retryError);
-               throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
+        const falResult = await generateDraftWithFluxSchnell(
+          enhancedDescription,
+          {
+            seed: consistencySeed,
+            aspectRatio: aspectRatio,
           }
+        );
+        
+        console.log('📦 [Draft] Resultado de fal.ai Flux Schnell:', {
+          success: falResult.success,
+          hasImageUrl: !!falResult.imageUrl,
+          imageUrlLength: falResult.imageUrl?.length || 0,
+          error: falResult.error
+        });
+        
+        if (falResult.success && falResult.imageUrl) {
+          // Convertir URL a data URL
+          console.log('🔄 [Draft] Convirtiendo URL a data URL...');
+          
+          try {
+            const response = await fetch(falResult.imageUrl);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const blob = await response.blob();
+            console.log('📦 [Draft] Blob size:', blob.size, 'bytes');
+            
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Error leyendo blob'));
+              reader.readAsDataURL(blob);
+            });
+            
+            imageDataUrl = dataUrl;
+            console.log('✅ [Draft] Borrador generado con fal.ai Flux Schnell');
+            console.log('📏 [Draft] Data URL length:', dataUrl.length);
+          } catch (conversionError: any) {
+            console.error('❌ [Draft] Error convirtiendo URL a data URL:', conversionError);
+            throw new Error(`Error convirtiendo imagen: ${conversionError.message}`);
+          }
+        } else {
+          const errorMsg = falResult.error || 'No se recibió imageUrl en respuesta';
+          console.error('❌ [Draft] Error en respuesta de Flux Schnell:', errorMsg);
+          throw new Error(errorMsg);
+        }
+      } catch (error: any) {
+        console.error('❌ [Draft] Error con fal.ai Flux Schnell:', error);
+        throw error; // No fallback, solo fal.ai
       }
     }
   } else {
