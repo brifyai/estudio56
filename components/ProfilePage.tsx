@@ -411,31 +411,30 @@ export const ProfilePage: React.FC = () => {
               )}
               
               {/* Fecha de Renovación */}
-              {subscription?.next_payment_date ? (
+              {userProfile.user_plans.price > 0 ? (
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🔄</span>
                     <div>
                       <p className="text-white/60 text-sm">Próxima renovación</p>
                       <p className="text-white font-bold">
-                        {new Date(subscription.next_payment_date).toLocaleDateString('es-CL', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        {subscription?.next_payment_date
+                          ? new Date(subscription.next_payment_date).toLocaleDateString('es-CL', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-CL', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                        }
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-white/5 rounded-2xl p-4">
-                  <p className="text-white/60 text-sm">Próxima renovación</p>
-                  <p className="text-white/80">Sin fecha programada</p>
-                </div>
-              )}
-              
-              {/* Si es plan gratuito */}
-              {!subscription && userProfile.user_plans.price === 0 && (
                 <div className="bg-white/5 rounded-2xl p-4">
                   <p className="text-white/60 text-sm">Plan gratuito</p>
                   <p className="text-white/80">Sin renovación automática</p>
