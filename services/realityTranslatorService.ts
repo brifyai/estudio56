@@ -206,13 +206,13 @@ export const getRealityLabel = (stars: number): string => {
   const labels: Record<number, string> = {
     1.0: 'Hostal',
     1.5: 'Motel',
-    2.0: 'Hotel 2★',
-    2.5: 'Hotel 3★',
-    3.0: 'Hotel 4★',
-    3.5: 'Hotel 4★ Superior',
-    4.0: 'Hotel 5★',
-    4.5: 'Hotel 5★ Gran Lujo',
-    5.0: 'Resort de Lujo'
+    2.0: '2★',
+    2.5: '3★',
+    3.0: '4★',
+    3.5: '4★+',
+    4.0: '5★',
+    4.5: '5★+',
+    5.0: 'Resort'
   };
   return labels[Math.round(stars * 2) / 2] || 'Hostal';
 };

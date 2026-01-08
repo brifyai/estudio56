@@ -106,7 +106,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   2.0: {
     stars: 2.0,
-    label: "Hotel 2★",
+    label: "2★",
     description: "Rango dinámico limitado, balance de blancos automático (errático)",
     technicalProfile: "Post rápido / Espontáneo",
     lighting: "Standard overhead LED, slightly harsh shadows, natural indoor lighting, mixed sources",
@@ -119,7 +119,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   },
   2.5: {
     stars: 2.5,
-    label: "Hotel 3★",
+    label: "3★",
     description: "Punto Dulce. Smartphone moderno, luz de techo, sin filtros",
     technicalProfile: "Generar Confianza - El ancla de Estudio 56",
     lighting: "Standard overhead LED or natural window light, slight shadows, authentic, no dramatic lighting, mixed color temperature from different light sources",
@@ -132,7 +132,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   },
   3.0: {
     stars: 3.0,
-    label: "Hotel 4★",
+    label: "4★",
     description: "DSLR con lente de kit, enfoque nítido, luz natural balanceada",
     technicalProfile: "Perfil de Negocio Google",
     lighting: "Balanced natural light, soft shadows, professional but natural, window light",
@@ -149,7 +149,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   3.5: {
     stars: 3.5,
-    label: "Hotel 4★ Superior",
+    label: "4★+",
     description: "Fotografía comercial profesional, iluminación de estudio",
     technicalProfile: "Web / Landing Page",
     lighting: "Professional softbox lighting, balanced exposure, subtle rim light, controlled environment",
@@ -162,7 +162,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   },
   4.0: {
     stars: 4.0,
-    label: "Hotel 5★",
+    label: "5★",
     description: "Formato medio, iluminación de estudio, retoque de piel sutil",
     technicalProfile: "Catálogo / Revista",
     lighting: "Studio lighting with modifiers, perfect highlights and shadows, professional setup",
@@ -179,7 +179,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   4.5: {
     stars: 4.5,
-    label: "Hotel 5★ Gran Lujo",
+    label: "5★+",
     description: "Look publicitario de alta gama, alto contraste, paleta controlada",
     technicalProfile: "Campañas de Pago (Ads)",
     lighting: "Cinematic lighting, softboxes, reflectors, perfect light control, dramatic but beautiful",
@@ -192,7 +192,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   },
   5.0: {
     stars: 5.0,
-    label: "Resort de Lujo",
+    label: "Resort",
     description: "Formato anamórfico, luces teatrales, atmósfera estilizada (humo/mármol)",
     technicalProfile: "Branding Aspiracional",
     lighting: "Cinematic sunset lighting, studio softboxes, dramatic highlights, theatrical setup",
