@@ -2274,15 +2274,17 @@ const handleGenerate = async () => {
                       <span className={`text-xs font-medium ${imageUrl ? "text-white" : "text-white/50"}`}>Previsualización</span>
                   </div>
                   <div className="flex items-center gap-2">
-                     <button
-                         onClick={() => window.location.href = '/perfil'}
-                         className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
-                         title="Ver perfil de cuenta"
-                     >
-                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                         <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                     </button>
-                 </div>
+                      <button
+                          onClick={() => window.location.href = '/perfil'}
+                          className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
+                          title="Ver perfil de cuenta"
+                      >
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                      </button>
+                  </div>
              </header>
 
             {/* Viewport */}
@@ -2422,10 +2424,10 @@ const handleGenerate = async () => {
 
       {/* NOTIFICACIONES DEL CALENDARIO */}
       <CalendarNotifications
-        onGenerateForEvent={(event) => {
-          // Pre-llenar la descripción con el evento comercial
-          setDescription(`Oferta especial para ${event.name} - ${event.date}`);
-          console.log('🎯 Generando para evento:', event.name);
+        selectedBrand={selectedBrand}
+        onGenerateForEvent={(event, prompt) => {
+          setDescription(prompt);
+          console.log('🎯 Generando para evento:', event.name, 'con marca:', selectedBrand?.name);
         }}
       />
 
@@ -2436,6 +2438,12 @@ const handleGenerate = async () => {
         onBrandSelect={(brand) => {
           setSelectedBrand(brand);
           setShowBrandPanel(false);
+        }}
+        onBrandSelectWithPrompt={(brand, prompt) => {
+          setSelectedBrand(brand);
+          setDescription(prompt);
+          setShowBrandPanel(false);
+          console.log('✅ Marca seleccionada con prompt:', prompt);
         }}
         selectedBrand={selectedBrand}
       />
@@ -2491,9 +2499,10 @@ const handleGenerate = async () => {
          </div>
          <div className="flex-1 overflow-y-auto">
            <CommercialCalendar
-             onGenerateForEvent={(event) => {
-               setDescription(`Oferta especial para ${event.name} - ${event.date}`);
-               console.log('🎯 Generando para evento:', event.name);
+             selectedBrand={selectedBrand}
+             onGenerateForEvent={(event, prompt) => {
+               setDescription(prompt);
+               console.log('🎯 Generando para evento:', event.name, 'con marca:', selectedBrand?.name);
              }}
            />
          </div>

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import { Brand, getUserBrands, createBrand, updateBrand, deleteBrand, setDefaultBrand } from '../services/brandService';
 
 interface BrandPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onBrandSelect: (brand: Brand) => void;
+  onBrandSelectWithPrompt?: (brand: Brand, prompt: string) => void; // NEW: Callback con prompt generado
   selectedBrand: Brand | null;
 }
 
-export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrandSelect, selectedBrand }) => {
+export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrandSelect, onBrandSelectWithPrompt, selectedBrand }) => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -91,15 +93,102 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
   };
 
   const handleDelete = async (brandId: string) => {
-    if (confirm('¿Estás seguro de eliminar esta marca?')) {
+    const result = await Swal.fire({
+      title: '¿Estás seguro de eliminar esta marca?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      background: '#111827',
+      color: '#ffffff',
+      customClass: {
+        popup: 'border border-gray-700 rounded-2xl',
+        title: 'text-lg font-bold',
+        confirmButton: 'rounded-lg px-4 py-2',
+        cancelButton: 'rounded-lg px-4 py-2'
+      }
+    });
+
+    if (result.isConfirmed) {
       await deleteBrand(brandId);
       await loadBrands();
+      Swal.fire({
+        title: 'Marca eliminada',
+        icon: 'success',
+        background: '#111827',
+        color: '#ffffff',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'border border-gray-700 rounded-2xl'
+        }
+      });
     }
   };
 
   const handleSetDefault = async (brandId: string) => {
     await setDefaultBrand(brandId);
     await loadBrands();
+  };
+
+  // NEW: Generar prompt contextual para la marca
+  const generateBrandPrompt = (brand: Brand): string => {
+    let prompt = '';
+
+    // Si tiene website_url, usar eso como base
+    if (brand.website_url) {
+      prompt = brand.website_url;
+    } else {
+      // Generar prompt basado en los datos de la marca
+      prompt = brand.name;
+      if (brand.industry) {
+        const industryLabels: Record<string, string> = {
+          gastronomy: 'restaurante de comida',
+          retail_sale: 'tienda de retail',
+          wellness_zen: 'spa y bienestar',
+          sport_gritty: 'gimnasio y deporte',
+          aesthetic_min: 'salón de belleza',
+          medical_clean: 'clínica médica',
+          tech_saas: 'empresa de tecnología',
+          corporate: 'empresa corporativa',
+          education: 'centro educativo',
+          realestate: 'inmobiliaria',
+          other: 'negocio local'
+        };
+        prompt += ` - ${industryLabels[brand.industry] || brand.industry}`;
+      }
+      // Agregar redes sociales
+      const socials: string[] = [];
+      if (brand.instagram) socials.push(`Instagram: @${brand.instagram}`);
+      if (brand.tiktok) socials.push(`TikTok: @${brand.tiktok}`);
+      if (brand.facebook) socials.push(`Facebook: ${brand.facebook}`);
+      if (socials.length > 0) {
+        prompt += ` | ${socials.join(', ')}`;
+      }
+    }
+
+    return prompt;
+  };
+
+  // NEW: Manejar selección de marca con prompt automático
+  const handleSelectBrand = (brand: Brand) => {
+    // Llamar al callback original
+    onBrandSelect(brand);
+
+    // Si hay callback con prompt, generar y pasar
+    if (onBrandSelectWithPrompt) {
+      const prompt = generateBrandPrompt(brand);
+      onBrandSelectWithPrompt(brand, prompt);
+    } else {
+      // Fallback: solo pasar la marca
+      onBrandSelect(brand);
+    }
+
+    // Cerrar el panel
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -331,7 +420,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
                         <div className="flex items-center gap-1">
                           {selectedBrand?.id !== brand.id && (
                             <button
-                              onClick={() => onBrandSelect(brand)}
+                              onClick={() => handleSelectBrand(brand)}
                               className="text-[8px] bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded transition-colors"
                             >
                               Seleccionar

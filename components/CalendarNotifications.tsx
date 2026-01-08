@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { getUpcomingEvents, getDaysUntilEvent, CommercialEvent } from '../services/commercialCalendarService';
+import { Brand, generateEventPrompt } from '../services/brandService';
 
 interface CalendarNotificationProps {
-  onGenerateForEvent?: (event: CommercialEvent) => void;
+  onGenerateForEvent?: (event: CommercialEvent, prompt: string) => void;
+  selectedBrand?: Brand | null;
 }
 
-export const CalendarNotifications: React.FC<CalendarNotificationProps> = ({ onGenerateForEvent }) => {
+export const CalendarNotifications: React.FC<CalendarNotificationProps> = ({ onGenerateForEvent, selectedBrand }) => {
   const [notifications, setNotifications] = useState<CommercialEvent[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
@@ -48,8 +50,13 @@ export const CalendarNotifications: React.FC<CalendarNotificationProps> = ({ onG
     setNotifications(prev => prev.filter(e => e.id !== eventId));
   };
 
-  const handleGenerate = (event: CommercialEvent) => {
-    onGenerateForEvent?.(event);
+  const handleGenerate = async (event: CommercialEvent) => {
+    // Generar prompt contextual con la marca
+    const eventDate = new Date(event.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+    const prompt = selectedBrand
+      ? await generateEventPrompt(selectedBrand, event.name, eventDate)
+      : `Oferta especial para ${event.name} - ${eventDate}`;
+    onGenerateForEvent?.(event, prompt);
     handleDismiss(event.id);
   };
 

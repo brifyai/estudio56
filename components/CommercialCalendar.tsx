@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getCommercialEvents, 
-  getUpcomingEvents, 
-  getActiveAlertEvents, 
+import {
+  getCommercialEvents,
+  getUpcomingEvents,
+  getActiveAlertEvents,
   getDaysUntilEvent,
-  CommercialEvent 
+  CommercialEvent
 } from '../services/commercialCalendarService';
+import { Brand, generateEventPrompt } from '../services/brandService';
+import Swal from 'sweetalert2';
 
 interface CommercialCalendarProps {
-  onGenerateForEvent?: (event: CommercialEvent) => void;
+  onGenerateForEvent?: (event: CommercialEvent, prompt: string) => void;
+  selectedBrand?: Brand | null;
 }
 
-export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenerateForEvent }) => {
+export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenerateForEvent, selectedBrand }) => {
   const [events, setEvents] = useState<CommercialEvent[]>([]);
   const [activeAlerts, setActiveAlerts] = useState<CommercialEvent[]>([]);
   const [showCalendar, setShowCalendar] = useState(true);
@@ -317,9 +320,34 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
                           </div>
                           {onGenerateForEvent && (
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                onGenerateForEvent(event);
+                                
+                                // Validar que haya una marca seleccionada
+                                if (!selectedBrand) {
+                                  Swal.fire({
+                                    background: '#111827',
+                                    color: '#ffffff',
+                                    confirmButtonColor: '#3b82f6',
+                                    customClass: {
+                                      popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
+                                      title: 'text-xl font-bold text-white',
+                                      htmlContainer: 'text-gray-400 text-sm',
+                                      confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold',
+                                    },
+                                    buttonsStyling: true,
+                                    icon: 'warning',
+                                    title: 'Selecciona una marca',
+                                    html: 'Primero selecciona una marca en el panel superior para generar un prompt contextualizado.',
+                                    confirmButtonText: 'Entendido'
+                                  });
+                                  return;
+                                }
+                                
+                                // Generar prompt contextual con la marca
+                                const eventDate = new Date(event.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+                                const prompt = await generateEventPrompt(selectedBrand, event.name, eventDate);
+                                onGenerateForEvent(event, prompt);
                               }}
                               className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors"
                               title="Generar oferta para este evento"
@@ -361,7 +389,33 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
                   </div>
                   {onGenerateForEvent && (
                     <button
-                      onClick={() => onGenerateForEvent(event)}
+                      onClick={async () => {
+                        // Validar que haya una marca seleccionada
+                        if (!selectedBrand) {
+                          Swal.fire({
+                            background: '#111827',
+                            color: '#ffffff',
+                            confirmButtonColor: '#3b82f6',
+                            customClass: {
+                              popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
+                              title: 'text-xl font-bold text-white',
+                              htmlContainer: 'text-gray-400 text-sm',
+                              confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold',
+                            },
+                            buttonsStyling: true,
+                            icon: 'warning',
+                            title: 'Selecciona una marca',
+                            html: 'Primero selecciona una marca en el panel superior para generar un prompt contextualizado.',
+                            confirmButtonText: 'Entendido'
+                          });
+                          return;
+                        }
+                        
+                        // Generar prompt contextual con la marca
+                        const eventDate = new Date(event.date).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
+                        const prompt = await generateEventPrompt(selectedBrand, event.name, eventDate);
+                        onGenerateForEvent(event, prompt);
+                      }}
                       className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors"
                       title="Generar oferta para este evento"
                     >

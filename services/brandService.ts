@@ -1,4 +1,10 @@
 import { supabase } from './supabaseService';
+import { GoogleGenAI } from '@google/genai';
+
+// Helper para obtener cliente de Gemini
+const getAiClient = () => new GoogleGenAI({
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+});
 
 export interface Brand {
   id: string;
@@ -291,33 +297,100 @@ export const setDefaultBrand = async (brandId: string): Promise<boolean> => {
   }
 };
 
-// Generar prompt contextual para un evento comercial
+// Generar prompt contextual para un evento comercial usando Gemini
 export const generateEventPrompt = async (
-  brand: Brand, 
-  eventName: string, 
+  brand: Brand,
+  eventName: string,
   eventDate: string
 ): Promise<string> => {
-  let prompt = `Oferta especial para ${eventName}`;
+  // Construir contexto base con información de la marca
+  const brandInfo = [];
+  if (brand.name) brandInfo.push(`Nombre del negocio: ${brand.name}`);
+  if (brand.industry) brandInfo.push(`Industria: ${brand.industry}`);
+  if (brand.website_url) brandInfo.push(`Sitio web: ${brand.website_url}`);
   
-  if (brand.name) {
-    prompt = `${brand.name}: ${prompt}`;
-  }
-  
-  if (brand.industry) {
-    prompt += ` - Negocio de ${brand.industry}`;
-  }
-  
-  prompt += ` - ${eventDate}`;
-  
-  // Agregar redes sociales si existen
   const socials: string[] = [];
-  if (brand.instagram) socials.push(`@${brand.instagram}`);
-  if (brand.tiktok) socials.push(`@${brand.tiktok}`);
-  if (brand.facebook) socials.push(brand.facebook);
+  if (brand.instagram) socials.push(`Instagram: @${brand.instagram}`);
+  if (brand.tiktok) socials.push(`TikTok: @${brand.tiktok}`);
+  if (brand.facebook) socials.push(`Facebook: ${brand.facebook}`);
   
-  if (socials.length > 0) {
-    prompt += ` | Síguenos: ${socials.join(', ')}`;
+  const context = [
+    ...brandInfo,
+    socials.length > 0 ? `Redes sociales: ${socials.join(', ')}` : '',
+    `Evento comercial: ${eventName}`,
+    `Fecha del evento: ${eventDate}`
+  ].filter(Boolean).join('\n');
+
+  try {
+    const ai = getAiClient();
+    const model = "gemini-3-flash-preview";
+
+    // Timeout de 10 segundos
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout')), 10000);
+    });
+
+    const apiPromise = ai.models.generateContent({
+      model,
+      contents: `Genera un prompt para crear un flyer publicitario en español.
+
+INFORMACIÓN DEL NEGOCIO:
+${context}
+
+INSTRUCCIONES:
+- Genera un prompt DESCRIPTIVO y VISUAL que describa la ESCENA FOTOGRÁFICA que se debe generar
+- NO incluyas texto para el flyer, solo la descripción visual
+- Incluye: tipo de establecimiento, productos/servicios, ambiente, iluminación natural
+- Sé específico sobre la estética visual (colores, estilo, ambiente)
+- El prompt debe ser rico en detalles visuales para la IA generadora de imágenes
+- Máximo 150 palabras
+
+Ejemplo de prompt visual:
+"Interior de un local de café acogedor con iluminación cálida de tarde, mesas de madera con clientes disfrutando sus bebidas, mostrador con pasteles expuestos, luz natural entrando por ventanas grandes, ambiente relajado de cafetería de barrio en Santiago"
+
+Genera el prompt visual para este negocio y evento:`,
+      config: {
+        systemInstruction: `Eres un experto en crear prompts visuales para IA generadora de imágenes.
+Tu tarea es crear descripciones fotográficas ricas en detalles visuales.
+Enfócate en: ambiente, iluminación, composición, colores, textura, ambiente.
+NO incluyas texto superpuesto ni elementos gráficos.`
+      }
+    });
+
+    const response = await Promise.race([apiPromise, timeoutPromise]) as any;
+    const generatedPrompt = response.text?.trim();
+
+    if (generatedPrompt && generatedPrompt.length > 20) {
+      console.log('✅ Prompt generado con Gemini para evento:', eventName);
+      return generatedPrompt;
+    }
+
+    throw new Error('Prompt generado muy corto');
+    
+  } catch (error) {
+    console.warn('⚠️ Error con Gemini, usando fallback local:', error);
+    
+    // Fallback local si Gemini falla
+    let prompt = `Flyer para ${brand.name || 'negocio'}`;
+    
+    if (brand.industry) {
+      prompt += ` - ${brand.industry}`;
+    }
+    
+    prompt += ` - ${eventName} (${eventDate})`;
+    
+    if (brand.website_url) {
+      prompt += ` | Visítanos: ${brand.website_url}`;
+    }
+    
+    const socials: string[] = [];
+    if (brand.instagram) socials.push(`@${brand.instagram}`);
+    if (brand.tiktok) socials.push(`@${brand.tiktok}`);
+    
+    if (socials.length > 0) {
+      prompt += ` | Síguenos: ${socials.join(', ')}`;
+    }
+    
+    return prompt;
   }
-  
-  return prompt;
 };
