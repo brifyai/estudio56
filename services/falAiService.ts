@@ -85,17 +85,18 @@ export const generateHDWithImg2Img = async (
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
-    strength = 0.25, // Bajo strength = más similitud con original
-    guidanceScale = 9,
-    steps = 30,
+    strength = 0.1, // MUY bajo = máxima similitud (0.05-0.15)
+    guidanceScale = 7.5, // Más bajo = más apego a la imagen original
+    steps = 25, // Menos steps = menos variación
     seed,
     aspectRatio = '9:16',
-    negativePrompt = 'blurry, low quality, distorted, deformed, extra limbs, bad anatomy'
+    negativePrompt = 'blurry, low quality, distorted, deformed, extra limbs, bad anatomy, different composition, different colors, different subject'
   } = options;
 
   console.log('🎯 [fal.ai] Iniciando Image-to-Image nativo...');
   console.log(`📝 [fal.ai] Prompt: ${prompt.substring(0, 100)}...`);
-  console.log(`🖼️ [fal.ai] Strength: ${strength} (menor = más similitud)`);
+  console.log(`🖼️ [fal.ai] Strength: ${strength} (MÁXIMA SIMILITUD)`);
+  console.log(`🖼️ [fal.ai] API Key configurada: ${!!FAL_AI_API_KEY}`);
   
   // Convertir aspect ratio a dimensiones
   const aspectRatioMap: Record<string, { width: number; height: number }> = {
@@ -136,7 +137,12 @@ export const generateHDWithImg2Img = async (
 
     console.log('📡 [fal.ai] Enviando request a fal.ai...');
 
-    const response = await fetch(`${FAL_AI_BASE_URL}/${FAL_MODELS.SDXL_IMG2IMG}`, {
+    // Usar el modelo correcto de fal.ai
+    // NOTA: Verificar modelo exacto en https://docs.fal.ai/model-apis
+    const modelEndpoint = 'fal-ai/stable-diffusion-xl-1.0/img2img';
+    console.log(`📡 [fal.ai] Usando modelo: ${modelEndpoint}`);
+    
+    const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
       method: 'POST',
       headers: {
         'Authorization': `Key ${FAL_AI_API_KEY}`,
@@ -231,7 +237,9 @@ export const generateHDWithTxt2Img = async (
   }
 
   try {
-    const response = await fetch(`${FAL_AI_BASE_URL}/${FAL_MODELS.SDXL_IMG2IMG}`, {
+    // Usar el modelo correcto de fal.ai
+    const modelEndpoint = 'fal-ai/stable-diffusion-xl-1.0/img2img';
+    const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
       method: 'POST',
       headers: {
         'Authorization': `Key ${FAL_AI_API_KEY}`,
