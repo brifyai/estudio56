@@ -569,7 +569,7 @@ export const ProfilePage: React.FC = () => {
         {/* Middle Row - Credits & Usage */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
-          {/* Contador de Créditos Principal - SEPARADO HD y Borradores */}
+          {/* Contador de Créditos Principal - SEPARADO Borradores de Imágenes y Borradores HD */}
           <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
               <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
@@ -577,43 +577,10 @@ export const ProfilePage: React.FC = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Créditos HD */}
+              {/* Borradores de Imágenes */}
               <div className="bg-black/30 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-white/60">Créditos HD</span>
-                  <span className="text-5xl font-bold text-blue-400">{userProfile.credits}</span>
-                </div>
-                
-                {/* Monthly Progress HD */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/60">Usado este mes</span>
-                    <span className="text-white">
-                      {getUsageByType('final_image') + getUsageByType('video')} / {userProfile.user_plans.credits_hd || 0}
-                    </span>
-                  </div>
-                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        ((getUsageByType('final_image') + getUsageByType('video')) / (userProfile.user_plans.credits_hd || 1)) > 90
-                          ? 'bg-red-500'
-                          : ((getUsageByType('final_image') + getUsageByType('video')) / (userProfile.user_plans.credits_hd || 1)) > 70
-                            ? 'bg-yellow-500'
-                            : 'bg-blue-500'
-                      }`}
-                      style={{ width: `${Math.min(((getUsageByType('final_image') + getUsageByType('video')) / (userProfile.user_plans.credits_hd || 1)) * 100, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-white/40 text-right">
-                    Para imágenes HD y videos
-                  </p>
-                </div>
-              </div>
-              
-              {/* Borradores */}
-              <div className="bg-black/30 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-white/60">Borradores</span>
+                  <span className="text-white/60">Borradores de Imágenes</span>
                   <span className="text-5xl font-bold text-green-400">{userProfile.drafts}</span>
                 </div>
                 
@@ -639,6 +606,39 @@ export const ProfilePage: React.FC = () => {
                   </div>
                   <p className="text-xs text-white/40 text-right">
                     Imágenes rápidas con marca de agua
+                  </p>
+                </div>
+              </div>
+              
+              {/* Borradores HD */}
+              <div className="bg-black/30 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-white/60">Borradores HD</span>
+                  <span className="text-5xl font-bold text-blue-400">{userProfile.credits}</span>
+                </div>
+                
+                {/* Monthly Progress HD */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-white/60">Usado este mes</span>
+                    <span className="text-white">
+                      {getUsageByType('final_image')} / {userProfile.user_plans.credits_hd || 0}
+                    </span>
+                  </div>
+                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        (getUsageByType('final_image') / (userProfile.user_plans.credits_hd || 1)) > 90
+                          ? 'bg-red-500'
+                          : (getUsageByType('final_image') / (userProfile.user_plans.credits_hd || 1)) > 70
+                            ? 'bg-yellow-500'
+                            : 'bg-blue-500'
+                      }`}
+                      style={{ width: `${Math.min((getUsageByType('final_image') / (userProfile.user_plans.credits_hd || 1)) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-white/40 text-right">
+                    Imágenes HD y videos (10 créditos por video)
                   </p>
                 </div>
               </div>
