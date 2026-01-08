@@ -73,6 +73,52 @@ const extractBase64 = (dataUrl: string): string => {
 };
 
 // ============================================
+// 🔧 HELPER: Comprimir imagen antes de enviar
+// ============================================
+
+const compressImageDataUrl = async (dataUrl: string, maxWidth: number = 768, quality: number = 0.8): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // Calcular nuevas dimensiones manteniendo aspect ratio
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      
+      // Crear canvas y comprimir
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('No se pudo obtener contexto 2D'));
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Convertir a JPEG con calidad reducida
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      
+      console.log(`🗜️ [Compression] Original: ${dataUrl.length} bytes → Compressed: ${compressedDataUrl.length} bytes (${Math.round((1 - compressedDataUrl.length / dataUrl.length) * 100)}% reduction)`);
+      
+      resolve(compressedDataUrl);
+    };
+    
+    img.onerror = () => {
+      reject(new Error('Error cargando imagen para comprimir'));
+    };
+    
+    img.src = dataUrl;
+  });
+};
+
+// ============================================
 // 🚀 GENERAR BORRADOR CON FLUX SCHNELL (TEXT-TO-IMAGE)
 // ============================================
 
@@ -202,6 +248,21 @@ export const generateRealityVariation = async (
       console.warn('⚠️ [fal.ai] API Key no configurada en frontend, usando Netlify Function');
     }
 
+    // 🗜️ COMPRIMIR IMAGEN ANTES DE ENVIAR (Solución para payloads grandes)
+    console.log('🗜️ [fal.ai] Comprimiendo imagen de referencia antes de enviar...');
+    console.log('📏 [fal.ai] Tamaño original:', referenceImageDataUrl.length, 'bytes');
+    
+    let compressedImage: string;
+    try {
+      compressedImage = await compressImageDataUrl(referenceImageDataUrl, 768, 0.75);
+      console.log('✅ [fal.ai] Imagen comprimida exitosamente');
+      console.log('📏 [fal.ai] Tamaño comprimido:', compressedImage.length, 'bytes');
+      console.log('📊 [fal.ai] Reducción:', Math.round((1 - compressedImage.length / referenceImageDataUrl.length) * 100), '%');
+    } catch (compressionError: any) {
+      console.warn('⚠️ [fal.ai] Error comprimiendo imagen, usando original:', compressionError.message);
+      compressedImage = referenceImageDataUrl;
+    }
+
     console.log('📡 [fal.ai] Enviando request a Flux Dev Image-to-Image via Netlify Function...');
     
     // Llamar a Netlify Function
@@ -213,7 +274,7 @@ export const generateRealityVariation = async (
       body: JSON.stringify({
         model: FAL_MODELS.FLUX_DEV_IMG2IMG,
         prompt,
-        imageUrl: referenceImageDataUrl,
+        imageUrl: compressedImage, // ✅ Usar imagen comprimida
         strength,
         guidanceScale,
         steps,
@@ -296,6 +357,21 @@ export const generateHDWithImg2Img = async (
   console.log(`🖼️ [fal.ai] Aspect Ratio: ${aspectRatio}`);
 
   try {
+    // 🗜️ COMPRIMIR IMAGEN ANTES DE ENVIAR (Solución para payloads grandes)
+    console.log('🗜️ [fal.ai] Comprimiendo imagen de referencia antes de enviar...');
+    console.log('📏 [fal.ai] Tamaño original:', referenceImageDataUrl.length, 'bytes');
+    
+    let compressedImage: string;
+    try {
+      compressedImage = await compressImageDataUrl(referenceImageDataUrl, 768, 0.75);
+      console.log('✅ [fal.ai] Imagen comprimida exitosamente');
+      console.log('📏 [fal.ai] Tamaño comprimido:', compressedImage.length, 'bytes');
+      console.log('📊 [fal.ai] Reducción:', Math.round((1 - compressedImage.length / referenceImageDataUrl.length) * 100), '%');
+    } catch (compressionError: any) {
+      console.warn('⚠️ [fal.ai] Error comprimiendo imagen, usando original:', compressionError.message);
+      compressedImage = referenceImageDataUrl;
+    }
+    
     console.log('📡 [fal.ai] Enviando request via Netlify Function...');
     
     // Llamar a Netlify Function (API key en backend)
@@ -307,7 +383,7 @@ export const generateHDWithImg2Img = async (
       body: JSON.stringify({
         model: HD_MODEL,
         prompt,
-        imageUrl: referenceImageDataUrl,
+        imageUrl: compressedImage, // ✅ Usar imagen comprimida
         strength,
         guidanceScale,
         steps,
