@@ -948,6 +948,7 @@ const handleGenerate = async () => {
     // NO borrar draftImageUrl si estamos en modo HD - lo necesitamos para comparar
     if (imageQuality === 'draft') {
       setDraftImageUrl(null);
+      setHdImageUrl(null); // 🔧 LIMPIAR HD al generar nuevo borrador
     }
     setImageUrl(null);
     setHdImageUrl(null);
