@@ -65,34 +65,92 @@ exports.handler = async (event) => {
 
     const dimensions = aspectRatioMap[aspectRatio || '9:16'] || aspectRatioMap['9:16'];
 
-    // Construir request para fal.ai
-    const requestBody = {
-      prompt,
-      image_url: imageUrl,  // ✅ CORREGIDO: image_url (no imageUrl)
-      strength: strength || 0.20,
-      guidance_scale: guidanceScale || 7.5,
-      num_inference_steps: steps || 20,
-      seed: seed,
-      enable_safety_checker: false,
-    };
+    // Construir request según el modelo
+    let requestBody;
     
-    // Agregar image_size según aspect ratio
-    if (aspectRatio) {
-      const aspectRatioToSize: Record<string, string> = {
-        '9:16': 'portrait_16_9',
-        '1:1': 'square',
-        '16:9': 'landscape_16_9',
-        '4:5': 'portrait_4_3',
-        '3:4': 'portrait_4_3',
+    // Flux Schnell: Modelo rápido para borradores (solo text-to-image)
+    if (model === 'fal-ai/flux/schnell') {
+      console.log('🚀 [fal.ai Function] Usando Flux Schnell (text-to-image)');
+      requestBody = {
+        prompt,
+        image_size: {
+          width: dimensions.width,
+          height: dimensions.height,
+        },
+        num_inference_steps: steps || 4, // Flux Schnell usa 4 steps por defecto
+        enable_safety_checker: false,
       };
       
-      const imageSize = aspectRatioToSize[aspectRatio] || 'auto';
-      requestBody.image_size = imageSize;
+      if (seed !== undefined && seed !== null) {
+        requestBody.seed = seed;
+      }
     }
-
-    // Agregar negative prompt si existe
-    if (negativePrompt) {
-      requestBody.negative_prompt = negativePrompt;
+    // Flux Dev Image-to-Image: Para HD con referencia
+    else if (model === 'fal-ai/flux/dev/image-to-image') {
+      console.log('🚀 [fal.ai Function] Usando Flux Dev Image-to-Image');
+      
+      if (!imageUrl) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'imageUrl es requerido para image-to-image' }),
+        };
+      }
+      
+      requestBody = {
+        prompt,
+        image_url: imageUrl,
+        strength: strength || 0.20,
+        guidance_scale: guidanceScale || 7.5,
+        num_inference_steps: steps || 28,
+        image_size: {
+          width: dimensions.width,
+          height: dimensions.height,
+        },
+        enable_safety_checker: false,
+      };
+      
+      if (seed !== undefined && seed !== null) {
+        requestBody.seed = seed;
+      }
+      
+      if (negativePrompt) {
+        requestBody.negative_prompt = negativePrompt;
+      }
+    }
+    // Otros modelos (SDXL, etc.)
+    else {
+      console.log('🚀 [fal.ai Function] Usando modelo genérico');
+      requestBody = {
+        prompt,
+        image_url: imageUrl,
+        strength: strength || 0.20,
+        guidance_scale: guidanceScale || 7.5,
+        num_inference_steps: steps || 20,
+        enable_safety_checker: false,
+      };
+      
+      // Agregar image_size según aspect ratio
+      if (aspectRatio) {
+        const aspectRatioToSize = {
+          '9:16': 'portrait_16_9',
+          '1:1': 'square',
+          '16:9': 'landscape_16_9',
+          '4:5': 'portrait_4_3',
+          '3:4': 'portrait_4_3',
+        };
+        
+        const imageSize = aspectRatioToSize[aspectRatio] || 'auto';
+        requestBody.image_size = imageSize;
+      }
+      
+      if (seed !== undefined && seed !== null) {
+        requestBody.seed = seed;
+      }
+      
+      if (negativePrompt) {
+        requestBody.negative_prompt = negativePrompt;
+      }
     }
 
     console.log('📡 [fal.ai Function] Enviando request...');

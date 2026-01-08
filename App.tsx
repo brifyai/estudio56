@@ -1914,40 +1914,52 @@ progressAlert.updateProgress(60, 'Renderizando...');
       // Un prompt que no describa contenido, solo calidad técnica
       const config = getRealityConfig(realityLevelTyped);
       
-      // Mapeo de nivel a prompt técnico PURO (sin describir la escena)
+      // 🎯 PROMPTS OPTIMIZADOS PARA IMAGE-TO-IMAGE
+      // Describen características técnicas ESPECÍFICAS de la foto
+      // NO describen contenido (personas, objetos, escenas)
       const technicalPromptMap: Record<number, string> = {
-        1.0: 'low resolution photo quality',
-        1.5: 'basic smartphone photo quality',
-        2.0: 'standard smartphone photo quality',
-        2.5: 'good smartphone photo quality',
-        3.0: 'semi-professional photo quality',
-        3.5: 'professional photo quality',
-        4.0: 'commercial photo quality',
-        4.5: 'editorial photo quality',
-        5.0: 'cinematic photo quality'
+        // NIVELES BAJOS (1.0-2.5): Características de foto de celular/amateur
+        1.0: 'low resolution, heavy compression artifacts, visible noise, poor dynamic range, washed out colors, soft focus',
+        1.5: 'smartphone camera quality, moderate grain, limited sharpness, basic auto-exposure, slight color cast',
+        2.0: 'standard mobile photo, acceptable sharpness, natural colors, basic lighting, everyday snapshot quality',
+        2.5: 'good smartphone photo, balanced exposure, accurate colors, decent detail, casual photography',
+        
+        // NIVELES ALTOS (3.0-5.0): Características de foto profesional
+        3.0: 'semi-professional quality, sharp focus, good dynamic range, natural lighting, clean image',
+        3.5: 'professional photography, excellent sharpness, balanced lighting, rich colors, high detail',
+        4.0: 'commercial grade, perfect exposure, studio lighting quality, vibrant colors, crisp details',
+        4.5: 'editorial quality, exceptional clarity, professional color grading, perfect lighting, magazine standard',
+        5.0: 'cinematic quality, ultra sharp, perfect dynamic range, professional color science, film-like depth'
       };
       
       const technicalPrompt = technicalPromptMap[levelKey] || technicalPromptMap[2.5];
       
-      // Negative prompt específico por nivel (controla la calidad)
+      // 🚫 NEGATIVE PROMPTS OPTIMIZADOS
+      // Evitan características opuestas al nivel deseado
       const qualityNegativeMap: Record<number, string> = {
-        1.0: 'high quality, sharp, clear, professional, polished, clean, crisp, detailed',
-        1.5: 'professional lighting, studio quality, polished, perfect, crisp, ultra detailed',
-        2.0: 'studio lighting, professional setup, polished, perfect, magazine quality',
-        2.5: 'studio lighting, theatrical, cinematic, perfect, ultra polished',
-        3.0: 'low quality, grainy, pixelated, blurry, compressed, poor lighting',
-        3.5: 'low quality, grainy, pixelated, blurry, compressed',
-        4.0: 'low quality, grainy, pixelated, blurry',
-        4.5: 'low quality, grainy, pixelated',
-        5.0: 'low quality, grainy'
+        // NIVELES BAJOS: Evitar características profesionales
+        1.0: 'professional photography, studio lighting, perfect exposure, high resolution, sharp focus, color grading, post-processing, clean image, professional equipment',
+        1.5: 'professional quality, studio setup, perfect lighting, color correction, high-end camera, professional post-processing',
+        2.0: 'studio photography, professional lighting, color grading, high-end equipment, perfect exposure',
+        2.5: 'studio lighting, professional color grading, cinematic look, perfect post-processing',
+        
+        // NIVELES ALTOS: Evitar características amateur/defectos
+        3.0: 'low resolution, compression artifacts, noise, grain, poor lighting, washed out colors, soft focus, blurry',
+        3.5: 'low quality, pixelated, noisy, poor exposure, color cast, compression, artifacts',
+        4.0: 'grainy, blurry, poor quality, compression, noise, artifacts',
+        4.5: 'noise, grain, compression, poor quality',
+        5.0: 'any defects, noise, compression'
       };
       
       const qualityNegative = qualityNegativeMap[levelKey] || qualityNegativeMap[2.5];
-      const fullNegativePrompt = `${qualityNegative}, different composition, different person, different pose, different background, different scene, changed elements, text, letters, words`;
       
-      console.log('📝 [Reality] Prompt técnico:', technicalPrompt);
-      console.log('🚫 [Reality] Negative prompt:', qualityNegative);
-      console.log('🖼️ [Reality] Strength 0.20 + imagen de referencia controlarán los cambios');
+      // ✅ NEGATIVE PROMPT FINAL: Calidad + Preservación de contenido
+      const fullNegativePrompt = `${qualityNegative}, different composition, different subject, different person, different pose, different angle, different background, different scene, changed layout, altered content, new elements, removed elements, text, letters, words, watermark`;
+      
+      console.log('📝 [Reality] Prompt técnico optimizado:', technicalPrompt);
+      console.log('🚫 [Reality] Negative prompt optimizado:', qualityNegative);
+      console.log('🖼️ [Reality] Strength 0.20 + imagen de referencia + prompts específicos');
+      console.log('🎯 [Reality] Objetivo: Solo cambiar calidad fotográfica, mantener TODO lo demás');
       console.log('🎚️ [Reality] Nivel:', levelKey, '→', config.label);
       
       // 🔍 DIAGNÓSTICO: Verificar que tenemos imagen de referencia

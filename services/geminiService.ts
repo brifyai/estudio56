@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
-import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS, generateDraftWithZImage } from "./falAiService";
+import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2356,22 +2356,22 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     console.log('🔍 [Draft] draftImageForHD length:', draftImageForHD?.length || 0);
     
     if (isFalAiConfigured() && draftImageForHD) {
-      console.log('🚀 [Draft] Usando fal.ai Z-Image Turbo para mantener composición');
+      console.log('🚀 [Draft] Usando fal.ai Flux Dev Image-to-Image para mantener composición');
       console.log('📝 [Draft] Seed usado:', consistencySeed);
       console.log('🖼️ [Draft] Imagen de referencia disponible:', !!draftImageForHD);
       console.log('🖼️ [Draft] Imagen de referencia length:', draftImageForHD?.length || 0);
       console.log('🎚️ [Draft] Strength configurado: 0.20 (máxima similitud)');
       
       try {
-        // Usar Z-Image Turbo con strength moderado
-        const falResult = await generateDraftWithZImage(
+        // Usar Flux Dev Image-to-Image con strength moderado
+        const falResult = await generateRealityVariation(
           enhancedDescription,
           draftImageForHD,
           {
             seed: consistencySeed,
-            strength: 0.20, // ✅ REDUCIDO: 0.20 para máxima similitud (antes 0.3)
+            strength: 0.20, // ✅ 0.20 para máxima similitud
             guidanceScale: 7.5,
-            steps: 20, // Menos steps = más rápido
+            steps: 28, // Flux Dev usa 28 steps
             aspectRatio: aspectRatio,
             negativePrompt: realityNegativePrompt
           }
@@ -2407,7 +2407,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
             });
             
             imageDataUrl = dataUrl;
-            console.log('✅ [Draft] Imagen generada con fal.ai Z-Image Turbo');
+            console.log('✅ [Draft] Imagen generada con fal.ai Flux Dev Image-to-Image');
             console.log('📏 [Draft] Data URL length:', dataUrl.length);
           } catch (conversionError: any) {
             console.error('❌ [Draft] Error convirtiendo URL a data URL:', conversionError);
@@ -2415,7 +2415,7 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
           }
         } else {
           const errorMsg = falResult.error || 'No se recibió imageUrl en respuesta';
-          console.error('❌ [Draft] Error en respuesta de Z-Image:', errorMsg);
+          console.error('❌ [Draft] Error en respuesta de Flux Dev:', errorMsg);
           throw new Error(errorMsg);
         }
       } catch (error: any) {

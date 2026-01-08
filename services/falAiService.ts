@@ -18,24 +18,20 @@ const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
 // Modelos disponibles en fal.ai
 export const FAL_MODELS = {
-  // Z-Image Turbo LoRA - RÁPIDO para borradores y variaciones de realidad
-  Z_IMAGE_TURBO: 'fal-ai/z-image/turbo/image-to-image/lora',  // ✅ CORREGIDO: Ruta completa con /image-to-image/
-  // Clarity Upscaler - MEJOR para HD (mejora resolución sin cambiar contenido)
-  CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
-  // Flux Dev img2img - Mejor calidad y más confiable
-  FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev/image-to-image',
-  // Flux Pro img2img - Máxima calidad
-  FLUX_PRO_IMG2IMG: 'fal-ai/flux-pro/v1.1/image-to-image',
-  // Stable Diffusion XL 1.0 img2img - Alta calidad
-  SDXL_IMG2IMG: 'fal-ai/fast-sdxl/image-to-image',
-  // Flux Schnell - Rápido y buena calidad
+  // Flux Schnell - RÁPIDO para borradores y variaciones de realidad (2-3 segundos)
   FLUX_SCHNELL: 'fal-ai/flux/schnell',
-  // Flux Dev - Mejor calidad
+  // Flux Dev - Mejor calidad para HD
   FLUX_DEV: 'fal-ai/flux/dev',
+  // Flux Dev img2img - Mejor calidad y más confiable para HD con referencia
+  FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev/image-to-image',
+  // Stable Diffusion XL 1.0 img2img - Alta calidad alternativa
+  SDXL_IMG2IMG: 'fal-ai/fast-sdxl/image-to-image',
+  // Clarity Upscaler - Para mejorar resolución sin cambiar contenido
+  CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
 } as const;
 
-// Modelo para borradores y variaciones de realidad - Z-Image Turbo es más rápido
-const DRAFT_MODEL = FAL_MODELS.Z_IMAGE_TURBO;
+// Modelo para borradores y variaciones de realidad - Flux Schnell es más rápido (2-3s)
+const DRAFT_MODEL = FAL_MODELS.FLUX_SCHNELL;
 // Modelo principal para HD - Flux Dev img2img es más confiable y mantiene similitud
 const HD_MODEL = FAL_MODELS.FLUX_DEV_IMG2IMG;
 
@@ -77,16 +73,16 @@ const extractBase64 = (dataUrl: string): string => {
 };
 
 // ============================================
-// 🚀 GENERAR BORRADOR CON Z-IMAGE TURBO
+// 🚀 GENERAR VARIACIÓN DE REALIDAD CON FLUX DEV IMG2IMG
 // ============================================
 
 /**
- * Genera un borrador rápido usando Z-Image Turbo LoRA
- * Ideal para borradores y variaciones de realidad (más rápido y económico)
+ * Genera una variación de realidad usando Flux Dev Image-to-Image
+ * Mantiene la composición exacta y solo ajusta la calidad fotográfica
  */
-export const generateDraftWithZImage = async (
+export const generateRealityVariation = async (
   prompt: string,
-  referenceImageDataUrl?: string,
+  referenceImageDataUrl: string,
   options: {
     strength?: number; // 0.15-0.25 para variaciones de realidad (MÁXIMA SIMILITUD)
     guidanceScale?: number;
@@ -97,16 +93,16 @@ export const generateDraftWithZImage = async (
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
-    strength = 0.20, // ✅ REDUCIDO: 0.20 para máxima similitud (antes 0.3)
+    strength = 0.20, // ✅ 0.20 para máxima similitud
     guidanceScale = 7.5,
-    steps = 20, // Menos steps = más rápido
+    steps = 28, // Flux Dev usa 28 steps por defecto
     seed,
     aspectRatio = '9:16',
     negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy, different composition, different person, different pose, different background, different scene, changed elements'
   } = options;
 
-  console.log('🚀 [fal.ai] Iniciando Z-Image Turbo para borrador...');
-  console.log(`📝 [fal.ai] Modelo: ${DRAFT_MODEL}`);
+  console.log('🚀 [fal.ai] Iniciando Flux Dev Image-to-Image para variación de realidad...');
+  console.log(`📝 [fal.ai] Modelo: ${FAL_MODELS.FLUX_DEV_IMG2IMG}`);
   console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
   console.log(`🖼️ [fal.ai] Tiene imagen de referencia: ${!!referenceImageDataUrl}`);
   console.log(`🖼️ [fal.ai] Strength: ${strength}`);
@@ -124,45 +120,21 @@ export const generateDraftWithZImage = async (
   
   const dimensions = aspectRatioMap[aspectRatio] || aspectRatioMap['9:16'];
 
-  // Construir request para Z-Image Turbo
-  const requestBody: any = {
-    prompt: prompt,
-    guidance_scale: guidanceScale,
-    num_inference_steps: steps,
-    image_size: {
-      width: dimensions.width,
-      height: dimensions.height,
-    },
-    enable_safety_checker: false,
-  };
-
-  // Si hay imagen de referencia, agregar parámetros de img2img
-  if (referenceImageDataUrl) {
-    requestBody.image_url = referenceImageDataUrl;
-    requestBody.strength = strength;
-    console.log(`🖼️ [fal.ai] Usando Image-to-Image con strength ${strength}`);
-  }
-
-  // Agregar seed si existe
-  if (seed !== undefined && seed !== null) {
-    requestBody.seed = seed;
-  }
-
   try {
     if (!FAL_AI_API_KEY) {
       console.warn('⚠️ [fal.ai] API Key no configurada en frontend, usando Netlify Function');
     }
 
-    console.log('📡 [fal.ai] Enviando request a Z-Image Turbo via Netlify Function...');
+    console.log('📡 [fal.ai] Enviando request a Flux Dev Image-to-Image via Netlify Function...');
     
-    // Llamar a Netlify Function en lugar de fal.ai directamente
+    // Llamar a Netlify Function
     const response = await fetch('/.netlify/functions/generate-with-fal', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: DRAFT_MODEL,
+        model: FAL_MODELS.FLUX_DEV_IMG2IMG,
         prompt,
         imageUrl: referenceImageDataUrl,
         strength,
@@ -181,7 +153,7 @@ export const generateDraftWithZImage = async (
     }
 
     const data = await response.json();
-    console.log('✅ [fal.ai] Respuesta Z-Image recibida');
+    console.log('✅ [fal.ai] Respuesta Flux Dev recibida');
     console.log('📦 [fal.ai] Response:', data);
 
     if (!data.success) {
@@ -192,7 +164,7 @@ export const generateDraftWithZImage = async (
       throw new Error('No se encontró imageUrl en respuesta');
     }
 
-    console.log(`✅ [fal.ai] Imagen generada exitosamente`);
+    console.log(`✅ [fal.ai] Variación de realidad generada exitosamente`);
     return {
       success: true,
       imageUrl: data.imageUrl,
