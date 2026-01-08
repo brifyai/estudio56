@@ -293,22 +293,22 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
             setSliderPosition(percentage);
           }}
         >
-          {/* Imagen derecha (fondo) */}
+          {/* Imagen izquierda (fondo) - ORIGINAL */}
           <img
-            src={rightVariation.image_url}
-            alt="Derecha"
+            src={leftVariation.image_url}
+            alt="Original"
             className="absolute inset-0 w-full h-full object-cover"
             draggable={false}
           />
 
-          {/* Imagen izquierda (superior, recortada) */}
+          {/* Imagen derecha (superior, recortada) - ACTUAL */}
           <div 
             className="absolute inset-0 overflow-hidden"
-            style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+            style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
           >
             <img
-              src={leftVariation.image_url}
-              alt="Izquierda"
+              src={rightVariation.image_url}
+              alt="Actual"
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
             />
