@@ -24,6 +24,11 @@ exports.handler = async (event) => {
 
   try {
     // Verificar que la API key esté configurada
+    console.log('🔍 [Debug] Todas las variables de entorno:', Object.keys(process.env));
+    console.log('🔍 [Debug] Variables que contienen FAL:', Object.keys(process.env).filter(k => k.includes('FAL') || k.includes('fal')));
+    console.log('🔍 [Debug] FAL_AI_API_KEY existe:', 'FAL_AI_API_KEY' in process.env);
+    console.log('🔍 [Debug] FAL_AI_API_KEY valor (primeros 10 chars):', FAL_AI_API_KEY?.substring(0, 10) || 'undefined');
+    
     if (!FAL_AI_API_KEY) {
       console.error('❌ FAL_AI_API_KEY no está configurada en Netlify Environment Variables');
       console.error('📝 Variables disponibles:', Object.keys(process.env).filter(k => k.includes('FAL')));
