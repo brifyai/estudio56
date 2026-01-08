@@ -244,10 +244,6 @@ export const generateRealityVariation = async (
   const dimensions = aspectRatioMap[aspectRatio] || aspectRatioMap['9:16'];
 
   try {
-    if (!FAL_AI_API_KEY) {
-      console.warn('⚠️ [fal.ai] API Key no configurada en frontend, usando Netlify Function');
-    }
-
     // 🗜️ COMPRIMIR IMAGEN ANTES DE ENVIAR (Solución para payloads grandes)
     console.log('🗜️ [fal.ai] Comprimiendo imagen de referencia antes de enviar...');
     console.log('📏 [fal.ai] Tamaño original:', referenceImageDataUrl.length, 'bytes');
@@ -427,9 +423,13 @@ export const generateHDWithImg2Img = async (
 };
 
 // ============================================
-// 🔄 FALLBACK: Generar HD sin img2img (si fal.ai falla)
+// 🔄 FALLBACK: Generar HD sin img2img (DEPRECATED - NO SE USA)
 // ============================================
+// NOTA: Esta función está deprecada y no se usa en el código actual.
+// Todas las llamadas van vía Netlify Function (generate-with-fal.js)
+// Mantener comentada por si se necesita en el futuro.
 
+/*
 export const generateHDWithTxt2Img = async (
   prompt: string,
   options: {
@@ -472,33 +472,37 @@ export const generateHDWithTxt2Img = async (
   }
 
   try {
-    // Usar el modelo correcto de fal.ai
-    const modelEndpoint = FAL_MODELS.SDXL_IMG2IMG;
-    const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_AI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    // NOTA: Esta función requeriría FAL_AI_API_KEY en el frontend (INSEGURO)
+    // Por eso está deprecada - usar Netlify Function en su lugar
+    throw new Error('generateHDWithTxt2Img está deprecada - usar Netlify Function');
+    
+    // Código original comentado:
+    // const modelEndpoint = FAL_MODELS.SDXL_IMG2IMG;
+    // const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Authorization': `Key ${FAL_AI_API_KEY}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(requestBody),
+    // });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`HTTP ${response.status}`);
+    // }
 
-    const data = await response.json();
-    let imageUrl = data.images?.[0]?.url || data.image || data.url;
+    // const data = await response.json();
+    // let imageUrl = data.images?.[0]?.url || data.image || data.url;
 
-    if (imageUrl?.startsWith('/')) {
-      imageUrl = `https://fal.ai${imageUrl}`;
-    }
+    // if (imageUrl?.startsWith('/')) {
+    //   imageUrl = `https://fal.ai${imageUrl}`;
+    // }
 
-    return {
-      success: true,
-      imageUrl,
-      seed: data.seed || seed,
-    };
+    // return {
+    //   success: true,
+    //   imageUrl,
+    //   seed: data.seed || seed,
+    // };
 
   } catch (error: any) {
     return {
@@ -507,6 +511,7 @@ export const generateHDWithTxt2Img = async (
     };
   }
 };
+*/
 
 // ============================================
 // 📋 HELPERS
