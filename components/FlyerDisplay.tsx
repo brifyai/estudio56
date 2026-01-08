@@ -1793,10 +1793,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       try {
                         // Usar composeAndExport para generar imagen completa con logo y texto
                         // IMPORTANTE: Pasar visualContainerWidth=320px para que el texto tenga el mismo wrap que en la app
+                        // CRÍTICO: Usar recoloredLogoUrl si existe (logo ya recoloreado), sino logoUrl original
                         const composedImageUrl = await composeAndExport({
                           imageUrl: hdImageUrl,
-                          logoUrl: logoUrl,
-                          logoColor: logoColor,
+                          logoUrl: recoloredLogoUrl || logoUrl, // Usar logo recoloreado si existe
+                          logoColor: null, // No recolorear de nuevo, ya está recoloreado
                           logoFilters: logoFilters,
                           productUrl: productUrl,
                           overlayText: localText || overlayText || initialOverlayText || '',
