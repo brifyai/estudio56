@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
   const [productPosition, setProductPosition] = useState<{x: number, y: number; width: number; height: number}>({ x: 50, y: 70, width: 120, height: 120 });
   
   // 🎚️ REALITY SLIDER STATES - Sistema de регулятор de realidad
-  // DEFAULT: 1.5 (Cámara Espía) - Look más auténtico y cercano para locales chilenos
+  // DEFAULT: 1.5 (Celular Viejo) - Look más auténtico y cercano para locales chilenos
   const [realityLevel, setRealityLevel] = useState<number>(1.5);
   const [sceneId, setSceneId] = useState<string | null>(null);
   const [realityVariations, setRealityVariations] = useState<Record<number, string>>({});
@@ -954,7 +954,7 @@ const handleGenerate = async () => {
     setHdImageUrl(null);
     // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
     setRealityImageUrl(null);
-    // 🎯 RESETEAR realityLevel a 1.5 (Cámara Espía) y limpiar variaciones al generar nuevo borrador
+    // 🎯 RESETEAR realityLevel a 1.5 (Celular Viejo) y limpiar variaciones al generar nuevo borrador
     setRealityLevel(1.5);
     setIsRealityVariation(false); // Indicar que es una nueva imagen base
     setRealityVariations({});

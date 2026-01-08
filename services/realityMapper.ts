@@ -76,22 +76,22 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   1.0: {
     stars: 1.0,
-    label: "CCTV / Seguridad",
+    label: "Celular Antiguo",
     description: "Blanco y negro o color lavado, ruido extremo, ángulo alto, 480p",
-    technicalProfile: "Evidencia / Seguridad",
+    technicalProfile: "Celular 2010 / Muy pixelado",
     lighting: "Poor overhead lighting, harsh fluorescent, uneven exposure, some areas completely dark",
     atmosphere: "Grainy, low resolution, compressed video quality, security camera aesthetic",
     camera: "Old security camera, 480p, visible compression artifacts, motion blur, wide angle distortion",
     human: "Unrecognizable faces, low detail, no professional posing, candid and unpolished",
     negative: NEGATIVE_CRUDA,
     categoryModifiers: CRUDA_MODIFIERS,
-    icon: "📸"
+    icon: "📱"
   },
   1.5: {
     stars: 1.5,
-    label: "Cámara Espía",
+    label: "Celular Viejo",
     description: "Granulado, saturación baja, óptica deficiente, 720p",
-    technicalProfile: "Captura 'In fraganti'",
+    technicalProfile: "Celular 2015 / Granulado",
     lighting: "Basic LED ceiling light, slight yellow tint, shadows on one side, mixed color temperature",
     atmosphere: "Authentic everyday local, minor clutter visible, functional business space, natural mess",
     camera: "Old smartphone or basic camera, 720p, visible noise, slight blur, natural imperfections",
