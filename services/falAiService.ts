@@ -131,11 +131,13 @@ export const generateDraftWithFluxSchnell = async (
   options: {
     seed?: number;
     aspectRatio?: AspectRatio;
+    negativePrompt?: string; // 🎚️ Negative prompt para filtros de realidad
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
     seed,
     aspectRatio = '9:16',
+    negativePrompt,
   } = options;
 
   console.log('🚀 [fal.ai] Iniciando Flux Schnell para borrador...');
@@ -158,6 +160,7 @@ export const generateDraftWithFluxSchnell = async (
         prompt,
         seed,
         aspectRatio,
+        negativePrompt, // 🎚️ Incluir negative prompt para filtros de realidad
         // Flux Schnell no usa imagen de referencia (text-to-image)
       }),
     });

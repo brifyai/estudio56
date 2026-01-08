@@ -214,9 +214,9 @@ const Dashboard: React.FC = () => {
   const [productPosition, setProductPosition] = useState<{x: number, y: number; width: number; height: number}>({ x: 50, y: 70, width: 120, height: 120 });
   
   // 🎚️ REALITY SLIDER STATES - Sistema de регулятор de realidad
-  // DEFAULT: 1.0 (Cámara Espía) - Look MÁS auténtico y realista para negocios locales chilenos
+  // DEFAULT: 1.5 (Motel) - Look auténtico y realista para negocios locales chilenos
   // Evita que las imágenes parezcan hoteles 5 estrellas desde el inicio
-  const [realityLevel, setRealityLevel] = useState<number>(1.0);
+  const [realityLevel, setRealityLevel] = useState<number>(1.5);
   const [sceneId, setSceneId] = useState<string | null>(null);
   const [realityVariations, setRealityVariations] = useState<Record<number, string>>({});
   const [showRealityComparator, setShowRealityComparator] = useState(false);
@@ -954,8 +954,8 @@ const handleGenerate = async () => {
       setImageUrl(null);
       // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
       setRealityImageUrl(null);
-      // 🎯 RESETEAR realityLevel a 1.0 (Hostal - DEFAULT) y limpiar variaciones al generar nuevo borrador
-      setRealityLevel(1.0);
+      // 🎯 RESETEAR realityLevel a 1.5 (Motel - DEFAULT) y limpiar variaciones al generar nuevo borrador
+      setRealityLevel(1.5);
       setIsRealityVariation(false); // Indicar que es una nueva imagen base
       setRealityVariations({});
       // 🔧 CERRAR comparador de realidad si está abierto
@@ -1298,8 +1298,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
         currentImageRef.current = result.imageDataUrl; // ✅ SOLUCIÓN: Actualizar ref con imagen actual
         
         // 🎯 GUARDAR IMAGEN ORIGINAL EN CACHÉ DE REALITY para comparación
-        // La imagen base (1.0★) siempre debe estar disponible para comparar
-        const originalLevel: RealityLevel = 1.0;
+        // La imagen base (1.5★ Motel) siempre debe estar disponible para comparar
+        const originalLevel: RealityLevel = 1.5;
         setRealityVariations(prev => ({
           ...prev,
           [originalLevel]: result.imageDataUrl

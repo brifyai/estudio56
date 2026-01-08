@@ -280,23 +280,35 @@ const RealitySlider: React.FC<RealitySliderProps> = ({
         />
       </div>
       
-      {/* Labels de los extremos */}
+      {/* Labels de los extremos con categorías de hoteles */}
       <div className="flex justify-between text-[10px] text-white/50 mb-4">
         <div className="text-center">
-          <span className="block text-lg mb-0.5">📸</span>
-          <span>Crudo</span>
+          <span className="block text-lg mb-0.5">🏠</span>
+          <span>Hostal</span>
         </div>
         <div className="text-center">
-          <span className="block text-lg mb-0.5">🏪</span>
-          <span>Auténtico</span>
+          <span className="block text-lg mb-0.5">🛏️</span>
+          <span>Motel</span>
         </div>
         <div className="text-center">
-          <span className="block text-lg mb-0.5">✨</span>
-          <span>Profesional</span>
+          <span className="block text-lg mb-0.5">⭐⭐⭐</span>
+          <span>3★</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">⭐⭐⭐⭐</span>
+          <span>4★</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">🌟</span>
+          <span>5★</span>
+        </div>
+        <div className="text-center">
+          <span className="block text-lg mb-0.5">💎</span>
+          <span>5★+</span>
         </div>
         <div className="text-center">
           <span className="block text-lg mb-0.5">🏆</span>
-          <span>Lujo</span>
+          <span>Resort</span>
         </div>
       </div>
       

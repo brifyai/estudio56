@@ -2099,7 +2099,7 @@ export const generateFlyerImage = async (
   draftImageForHD?: string, // Optional draft image to use as reference for HD
   artDirectionId?: number, // ID del rubro (1-60) para Story Art
   storyArtStyleId?: StoryArtStyleId, // Estilo visual de Story Art seleccionado por el usuario
-  realityLevel: RealityLevel = 1.0 // 🎚️ Nivel de realidad (1.0-5.0), por defecto 1.0 (Cámara Espía) - MÁS realista para negocios locales
+  realityLevel: RealityLevel = 1.5 // 🎚️ Nivel de realidad (1.0-5.0), por defecto 1.5 (Motel) - Look auténtico para negocios locales
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
   const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };
@@ -2428,13 +2428,33 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       // SIN imagen de referencia: Flux Schnell Text-to-Image (borradores nuevos)
       console.log('🚀 [Draft] Usando fal.ai Flux Schnell para borrador nuevo');
       console.log('📝 [Draft] Seed usado:', consistencySeed);
+      console.log(`🎚️ [Draft] Nivel de realidad aplicado: ${realityLevel}`);
       
       try {
+        // 🎚️ PROMPT SIMPLIFICADO PARA FLUX SCHNELL
+        // Flux Schnell funciona mejor con prompts cortos y directos
+        const schnellPrompt = `
+${realityPrompt}
+
+SCENE: ${enhancedDescription}
+
+STRICT RULES:
+- NO text, letters, words, or symbols anywhere
+- Pure photography, blank surfaces only
+- Natural lighting, realistic textures
+- ${compositionPrompt}
+
+${NEGATIVE_TEXT_SHIELD}
+        `.replace(/\n/g, ' ').trim();
+        
+        console.log('📝 [Draft] Prompt simplificado para Flux Schnell:', schnellPrompt.substring(0, 200) + '...');
+        
         const falResult = await generateDraftWithFluxSchnell(
-          enhancedDescription,
+          schnellPrompt, // ✅ Usar prompt simplificado
           {
             seed: consistencySeed,
             aspectRatio: aspectRatio,
+            negativePrompt: finalNegativePrompt // ✅ Incluir negative prompt con filtros de realidad
           }
         );
         
