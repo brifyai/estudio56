@@ -1443,6 +1443,9 @@ progressAlert.updateProgress(60, 'Renderizando...');
   const handleUpgradeToHD = async () => {
     if (!currentSpanishPrompt) return;
     
+    // 🔒 BLOQUEAR INTERFAZ DURANTE GENERACIÓN HD
+    setStatus({ isLoading: true, step: 'generating', message: 'Generando imagen HD...' });
+    
     // ═══════════════════════════════════════════════════════════════
     // 🔍 DIAGNÓSTICO HD - Verificar estado antes de generar
     // ═══════════════════════════════════════════════════════════════
@@ -1626,11 +1629,13 @@ progressAlert.updateProgress(60, 'Renderizando...');
         
         // 🔧 CERRAR ALERTA CON DELAY PARA QUE EL COMPARADOR SE RENDERICE PRIMERO
         // El comparador se abre automáticamente en FlyerDisplay cuando hdImageUrl cambia
-        // Necesitamos dar tiempo a React para renderizar el comparador antes de cerrar la alerta
+        // Delay aumentado para evitar que la alerta desaparezca antes del comparador
         setTimeout(() => {
           progressAlert.close();
+          // 🔓 DESBLOQUEAR INTERFAZ - Generación HD completada
+          setStatus({ isLoading: false, step: 'complete', message: 'Imagen HD generada' });
           console.log('🔒 Alerta de loading cerrada - comparador HD visible');
-        }, 100);
+        }, 500); // Aumentado de 100ms a 500ms para mejor UX
     } catch (error: any) {
         progressAlert.close();
         handleError(error);
