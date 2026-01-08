@@ -1789,6 +1789,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                     // Componer imagen con todos los overlays usando canvas
                     if (hdImageUrl) {
                       console.log('📥 Componiendo imagen HD con overlays...');
+                      console.log('📏 [DEBUG] displayStyles:', displayStyles);
+                      console.log('📏 [DEBUG] textPosition:', textPosition);
+                      console.log('📏 [DEBUG] overlayText:', localText || overlayText || initialOverlayText || '');
                       
                       try {
                         // Usar composeAndExport para generar imagen completa con logo y texto
