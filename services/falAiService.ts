@@ -18,7 +18,7 @@ const FAL_AI_BASE_URL = 'https://api.fal.ai/v1';
 // Modelos disponibles en fal.ai para img2img
 // Verificar modelos actualizados en: https://fal.ai/models
 export const FAL_MODELS = {
-  // Stable Diffusion XL 1.0 img2img - Alta calidad
+  // Stable Diffusion XL 1.0 img2img - Alta calidad (verificar endpoint exacto)
   SDXL_IMG2IMG: 'fal-ai/stable-diffusion-xl-1.0/img2img',
   // Stable Diffusion 1.5 img2img - Compatible con más estilos
   SD15_IMG2IMG: 'fal-ai/stable-diffusion-v1-5/img2img',
@@ -26,7 +26,12 @@ export const FAL_MODELS = {
   FLUX_SCHNELL_IMG2IMG: 'fal-ai/flux/schnell/img2img',
   // Flux Dev img2img - Mejor calidad
   FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev/img2img',
+  // Modelo alternativo: SDXL base con img2img
+  SDXL_BASE_IMG2IMG: 'fal-ai/stable-diffusion-xl/base/img2img',
 } as const;
+
+// Modelo recomendado para máxima similitud
+const RECOMMENDED_MODEL = FAL_MODELS.SDXL_IMG2IMG;
 
 export type FalModelId = typeof FAL_MODELS[keyof typeof FAL_MODELS];
 
@@ -77,27 +82,32 @@ export const generateHDWithImg2Img = async (
   prompt: string,
   referenceImageDataUrl: string,
   options: {
-    strength?: number; // 0.1-0.3 para máxima similitud
-    guidanceScale?: number; // 7-15
-    steps?: number; // 20-50
+    strength?: number; // 0.03-0.1 para máxima similitud
+    guidanceScale?: number; // 3-7
+    steps?: number; // 10-20
     seed?: number;
     aspectRatio?: AspectRatio;
     negativePrompt?: string;
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
-    strength = 0.1, // MUY bajo = máxima similitud (0.05-0.15)
-    guidanceScale = 7.5, // Más bajo = más apego a la imagen original
-    steps = 25, // Menos steps = menos variación
+    strength = 0.05, // EXTREMADAMENTE bajo = máxima similitud (0.03-0.1)
+    guidanceScale = 5, // Mínimo = máximo apego a la imagen original
+    steps = 15, // Mínimo steps = menos variación
     seed,
     aspectRatio = '9:16',
-    negativePrompt = 'blurry, low quality, distorted, deformed, extra limbs, bad anatomy, different composition, different colors, different subject'
+    negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy, different composition, different colors, different subject, different lighting, different perspective, different size, different background, different mood'
   } = options;
 
   console.log('🎯 [fal.ai] Iniciando Image-to-Image nativo...');
-  console.log(`📝 [fal.ai] Prompt: ${prompt.substring(0, 100)}...`);
-  console.log(`🖼️ [fal.ai] Strength: ${strength} (MÁXIMA SIMILITUD)`);
+  console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
+  console.log(`📝 [fal.ai] Prompt (first 150): ${prompt.substring(0, 150)}...`);
+  console.log(`🖼️ [fal.ai] Strength: ${strength} (MÁXIMA SIMILITUD - 0.03-0.1)`);
+  console.log(`🖼️ [fal.ai] Guidance Scale: ${guidanceScale} (MÍNIMO - 3-7)`);
+  console.log(`🖼️ [fal.ai] Steps: ${steps} (MÍNIMO - 10-20)`);
+  console.log(`🖼️ [fal.ai] Seed: ${seed}`);
   console.log(`🖼️ [fal.ai] API Key configurada: ${!!FAL_AI_API_KEY}`);
+  console.log(`🖼️ [fal.ai] Negative prompt: ${negativePrompt.substring(0, 100)}...`);
   
   // Convertir aspect ratio a dimensiones
   const aspectRatioMap: Record<string, { width: number; height: number }> = {
@@ -114,21 +124,25 @@ export const generateHDWithImg2Img = async (
   const imageBase64 = extractBase64(referenceImageDataUrl);
 
   // Construir request para fal.ai
+  // Usar nombres exactos según documentación de fal.ai
   const requestBody: any = {
-    prompt,
+    prompt: prompt,
     negative_prompt: negativePrompt,
     image: imageBase64, // base64 de la imagen de referencia
-    strength, // Qué tanto modificar (0.1 = muy poco, 0.9 = mucho)
-    guidance_scale: guidanceScale,
-    num_inference_steps: steps,
+    strength: strength, // 0.03-0.1 = muy poca modificación
+    guidance_scale: guidanceScale, // 3-7 = seguir prompt loosely
+    num_inference_steps: steps, // 10-20 = menos denoising steps
     width: dimensions.width,
     height: dimensions.height,
   };
 
-  // Agregar seed si existe
-  if (seed !== undefined) {
+  // Agregar seed si existe (importante para reproducibilidad)
+  if (seed !== undefined && seed !== null) {
     requestBody.seed = seed;
+    console.log(`🖼️ [fal.ai] Seed configurado: ${seed}`);
   }
+
+  console.log('📡 [fal.ai] Request body:', JSON.stringify(requestBody, null, 2).substring(0, 500) + '...');
 
   try {
     // Verificar API key
@@ -139,6 +153,7 @@ export const generateHDWithImg2Img = async (
     console.log('📡 [fal.ai] Enviando request a fal.ai...');
 
     // Usar el modelo correcto de fal.ai
+    // SDXL 1.0 img2img tiene mejor calidad para transformaciones sutiles
     const modelEndpoint = FAL_MODELS.SDXL_IMG2IMG;
     console.log(`📡 [fal.ai] Usando modelo: ${modelEndpoint}`);
     

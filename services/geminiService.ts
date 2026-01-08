@@ -2386,31 +2386,116 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     
     if (isFalAiConfigured() && draftImageForHD) {
       console.log('🚀 [HD] Usando fal.ai Image-to-Image nativo (95%+ similitud)');
+      console.log('📝 [HD] Seed usado:', consistencySeed);
+      console.log('🖼️ [HD] Draft disponible:', !!draftImageForHD);
       
-      // Construir prompt para fal.ai
-      const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
-                          enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
-                          enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
-      const subjectDetail = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
+      // ============================================
+      // 🎯 ANÁLISIS DETALLADO DEL BORRADOR
+      // Usar Gemini Vision para extraer descripción precisa
+      // ============================================
       
-      const hdPrompt = `
-        ${subjectDetail}
+      let draftAnalysis = '';
+      try {
+        console.log('🔍 [HD] Analizando borrador con Gemini Vision...');
+        const base64Data = draftImageForHD.split(',')[1];
         
-        Enhance this image with higher quality, sharpness, and detail.
-        Keep the same composition, colors, and subject exactly.
-        Professional commercial photography, HD quality.
+        const analysisResponse = await ai.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
+          contents: {
+            parts: [
+              { text: `Analyze this image in extreme detail. Describe:
+              1. The main subject (person, object, scene) - be very specific
+              2. Exact colors of key elements (not just "blue", but "navy blue", "sky blue", etc.)
+              3. Lighting direction and quality (e.g., "overhead fluorescent", "soft window light from left")
+              4. Background/environment details (what's in the background, what's the setting)
+              5. Camera angle and perspective (eye level, slightly above, below, etc.)
+              6. Composition and subject placement (centered, left side, right side, etc.)
+              7. Mood and atmosphere (professional, casual, energetic, calm, etc.)
+              8. Subject size in frame (small, medium, large, fills most of frame)
+              9. Any text or graphics present (describe them even though they will be removed)
+              
+              Format your response as a detailed paragraph that could be used to recreate this exact image.` },
+              {
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        });
+        
+        const analysisText = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (analysisText) {
+          draftAnalysis = analysisText.trim();
+          console.log('✅ [HD] Análisis completado:', draftAnalysis.substring(0, 200) + '...');
+        }
+      } catch (analysisError: any) {
+        console.warn('⚠️ [HD] Error analizando borrador:', analysisError.message);
+        // Usar la descripción original como fallback
+        const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
+                            enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
+                            enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
+        draftAnalysis = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
+      }
+      
+      // ============================================
+      // 🎯 PROMPT DETALLADO PARA FAL.AI
+      // Incluir TODOS los filtros de realismo y dirección de arte
+      // ============================================
+      
+      // Determinar qué filtros aplicar según el modo
+      let realismFilters = '';
+      if (!isStoryArtMode) {
+        // Solo aplicar filtros de realismo en modo normal (NO en Story Art)
+        realismFilters = `
+          ${REAL_BUSINESS_ENVIRONMENT}
+          ${RAW_PHOTO_TEXTURE}
+          ${HUMAN_AUTHENTICITY_RULES}
+          ${BONE_ANCHOR_RULES}
+        `;
+      }
+      
+      // Construir prompt COMPLETO para fal.ai con todos los filtros
+      const hdPrompt = `
+        ${realityPrompt}
+        
+        REFERENCE IMAGE ANALYSIS (MUST FOLLOW EXACTLY):
+        ${draftAnalysis}
+        
+        CRITICAL INSTRUCTIONS - FOLLOW STRICTLY:
+        1. RECREATE this image EXACTLY with higher quality
+        2. Keep EXACTLY the same: composition, subject placement, layout, colors, objects, and mood
+        3. Improve ONLY: lighting quality, shadow detail, texture sharpness, overall clarity
+        4. Do NOT change: composition, colors, objects, perspective, mood, or any element
+        5. Maintain EXACTLY the same camera angle, lighting direction, and perspective
+        6. Keep the same aspect ratio: ${aspectRatio}
+        7. Keep the same subject size and proportions in the frame
+        8. Keep the same background elements and depth of field
+        9. Keep the same colors for all elements
+        
+        ${realismFilters}
+        
+        VISUAL STYLE: ${activeStylePrompt}
+        COMPOSITION: ${compositionPrompt}
+        
+        This is a QUALITY ENHANCEMENT ONLY. Do not reinterpret or change the image content.
       `.replace(/\n/g, ' ').trim();
       
-      const hdNegativePrompt = `${finalNegativePrompt}, blurry, low quality, pixelated, artifacts, noise, compression, different composition, different colors`;
+      const hdNegativePrompt = `${finalNegativePrompt}, blurry, low quality, pixelated, artifacts, noise, compression, different composition, different subject, different colors, different lighting, different perspective, different size, different background, different mood, different angle, different framing`;
       
-      // Usar fal.ai img2img nativo
+      console.log('📝 [HD] Prompt length:', hdPrompt.length, 'chars');
+      console.log('📝 [HD] Negative prompt length:', hdNegativePrompt.length, 'chars');
+      console.log('📝 [HD] Negative prompt:', hdNegativePrompt.substring(0, 150) + '...');
+      
+      // Usar fal.ai img2img nativo con parámetros optimizados
       const falResult = await generateHDWithImg2Img(
         hdPrompt,
         draftImageForHD,
         {
-          strength: 0.15, // Muy bajo = máxima similitud (0.1-0.3)
-          guidanceScale: 9,
-          steps: 30,
+          strength: 0.03, // EXTREMADAMENTE bajo = máxima similitud (0.02-0.05)
+          guidanceScale: 3, // Mínimo absoluto = seguir la imagen, no el prompt
+          steps: 10, // Mínimo steps = menos variación
           seed: consistencySeed,
           aspectRatio,
           negativePrompt: hdNegativePrompt,
@@ -2418,7 +2503,9 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       );
       
       if (falResult.success && falResult.imageUrl) {
-        console.log('✅ [HD] fal.ai img2img exitoso:', falResult.imageUrl.substring(0, 50) + '...');
+        console.log('✅ [HD] fal.ai img2img exitoso');
+        console.log('📝 [HD] Seed usado:', consistencySeed);
+        console.log('📝 [HD] Strength usado: 0.03 (máxima similitud)');
         imageDataUrl = falResult.imageUrl;
       } else {
         console.warn('⚠️ [HD] fal.ai falló, usando fallback:', falResult.error);
