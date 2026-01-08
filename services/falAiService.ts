@@ -13,7 +13,8 @@ import { AspectRatio, ImageQuality } from '../types';
 
 const FAL_AI_API_KEY = import.meta.env.VITE_FAL_AI_API_KEY || process.env.FAL_AI_API_KEY;
 
-const FAL_AI_BASE_URL = 'https://api.fal.ai/v1';
+// Base URL sin /v1/ - los modelos usan rutas directas
+const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
 // Modelos disponibles en fal.ai
 export const FAL_MODELS = {
