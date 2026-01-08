@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
-import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS } from "./falAiService";
+import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS, generateDraftWithZImage } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2346,31 +2346,44 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   
   if (quality === 'draft') {
     // ============================================
-    // 🎯 SI HAY IMAGEN DE REFERENCIA, USAR FAL.AI IMG2IMG
-    // Esto garantiza similitud con la imagen original
+    // 🎯 SI HAY IMAGEN DE REFERENCIA, USAR FAL.AI Z-IMAGE TURBO
+    // Más rápido y económico que Flux Dev para borradores
     // ============================================
     if (isFalAiConfigured() && draftImageForHD) {
-      console.log('🚀 [Draft] Usando fal.ai Image-to-Image para mantener composición');
+      console.log('🚀 [Draft] Usando fal.ai Z-Image Turbo para mantener composición');
       console.log('📝 [Draft] Seed usado:', consistencySeed);
       console.log('🖼️ [Draft] Imagen de referencia disponible:', !!draftImageForHD);
       
       try {
-        // Usar strength bajo para mantener alta similitud
-        const falResult = await generateHDWithImg2Img(
+        // Usar Z-Image Turbo con strength moderado
+        const falResult = await generateDraftWithZImage(
           enhancedDescription,
           draftImageForHD,
           {
             seed: consistencySeed,
-            strength: 0.25, // Bajo para mantener composición similar
+            strength: 0.3, // Moderado para mantener composición pero permitir cambios de realidad
             guidanceScale: 7.5,
-            steps: 25,
+            steps: 20, // Menos steps = más rápido
             aspectRatio: aspectRatio,
             negativePrompt: realityNegativePrompt
           }
         );
         
-        imageDataUrl = falResult.imageDataUrl;
-        console.log('✅ [Draft] Imagen generada con fal.ai Image-to-Image');
+        if (falResult.success && falResult.imageUrl) {
+          // Convertir URL a data URL
+          const response = await fetch(falResult.imageUrl);
+          const blob = await response.blob();
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          
+          imageDataUrl = dataUrl;
+          console.log('✅ [Draft] Imagen generada con fal.ai Z-Image Turbo');
+        } else {
+          throw new Error(falResult.error || 'Error generando con Z-Image');
+        }
       } catch (error: any) {
         console.error('❌ [Draft] Error con fal.ai, fallback a Vertex AI:', error);
         // Fallback a Vertex AI si fal.ai falla

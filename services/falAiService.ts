@@ -18,6 +18,8 @@ const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
 // Modelos disponibles en fal.ai
 export const FAL_MODELS = {
+  // Z-Image Turbo LoRA - RÁPIDO para borradores y variaciones de realidad
+  Z_IMAGE_TURBO: 'fal-ai/z-image/turbo/lora',
   // Clarity Upscaler - MEJOR para HD (mejora resolución sin cambiar contenido)
   CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
   // Flux Dev img2img - Mejor calidad y más confiable
@@ -32,6 +34,8 @@ export const FAL_MODELS = {
   FLUX_DEV: 'fal-ai/flux/dev',
 } as const;
 
+// Modelo para borradores y variaciones de realidad - Z-Image Turbo es más rápido
+const DRAFT_MODEL = FAL_MODELS.Z_IMAGE_TURBO;
 // Modelo principal para HD - Flux Dev img2img es más confiable y mantiene similitud
 const HD_MODEL = FAL_MODELS.FLUX_DEV_IMG2IMG;
 
@@ -70,6 +74,169 @@ const extractBase64 = (dataUrl: string): string => {
     return dataUrl.split(',')[1];
   }
   return dataUrl;
+};
+
+// ============================================
+// 🚀 GENERAR BORRADOR CON Z-IMAGE TURBO
+// ============================================
+
+/**
+ * Genera un borrador rápido usando Z-Image Turbo LoRA
+ * Ideal para borradores y variaciones de realidad (más rápido y económico)
+ */
+export const generateDraftWithZImage = async (
+  prompt: string,
+  referenceImageDataUrl?: string,
+  options: {
+    strength?: number; // 0.2-0.4 para variaciones de realidad
+    guidanceScale?: number;
+    steps?: number;
+    seed?: number;
+    aspectRatio?: AspectRatio;
+    negativePrompt?: string;
+  } = {}
+): Promise<FalImg2ImgResponse> => {
+  const {
+    strength = 0.3, // Moderado para variaciones de realidad
+    guidanceScale = 7.5,
+    steps = 20, // Menos steps = más rápido
+    seed,
+    aspectRatio = '9:16',
+    negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy'
+  } = options;
+
+  console.log('🚀 [fal.ai] Iniciando Z-Image Turbo para borrador...');
+  console.log(`📝 [fal.ai] Modelo: ${DRAFT_MODEL}`);
+  console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
+  console.log(`🖼️ [fal.ai] Tiene imagen de referencia: ${!!referenceImageDataUrl}`);
+  console.log(`🖼️ [fal.ai] Strength: ${strength}`);
+  console.log(`🖼️ [fal.ai] Steps: ${steps}`);
+  console.log(`🖼️ [fal.ai] Seed: ${seed}`);
+  
+  // Convertir aspect ratio a dimensiones
+  const aspectRatioMap: Record<string, { width: number; height: number }> = {
+    '9:16': { width: 768, height: 1344 },
+    '1:1': { width: 1024, height: 1024 },
+    '16:9': { width: 1344, height: 768 },
+    '4:5': { width: 832, height: 1024 },
+    '3:4': { width: 768, height: 1024 },
+  };
+  
+  const dimensions = aspectRatioMap[aspectRatio] || aspectRatioMap['9:16'];
+
+  // Construir request para Z-Image Turbo
+  const requestBody: any = {
+    prompt: prompt,
+    guidance_scale: guidanceScale,
+    num_inference_steps: steps,
+    image_size: {
+      width: dimensions.width,
+      height: dimensions.height,
+    },
+    enable_safety_checker: false,
+  };
+
+  // Si hay imagen de referencia, agregar parámetros de img2img
+  if (referenceImageDataUrl) {
+    requestBody.image_url = referenceImageDataUrl;
+    requestBody.strength = strength;
+    console.log(`🖼️ [fal.ai] Usando Image-to-Image con strength ${strength}`);
+  }
+
+  // Agregar seed si existe
+  if (seed !== undefined && seed !== null) {
+    requestBody.seed = seed;
+  }
+
+  try {
+    if (!FAL_AI_API_KEY) {
+      throw new Error('FAL_AI_API_KEY no configurada');
+    }
+
+    console.log('📡 [fal.ai] Enviando request a Z-Image Turbo...');
+    const response = await fetch(`${FAL_AI_BASE_URL}/${DRAFT_MODEL}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_AI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
+      throw new Error(`fal.ai Z-Image error: ${response.status} - ${errorText.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ [fal.ai] Respuesta Z-Image recibida');
+
+    // Manejar sistema de cola si es necesario
+    if (data.status === 'IN_QUEUE' || data.status === 'IN_PROGRESS') {
+      console.log('⏳ [fal.ai] Imagen en cola, esperando resultado...');
+      
+      const maxAttempts = 60; // 60 intentos = 2 minutos máximo
+      const pollInterval = 2000;
+      
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        
+        const statusResponse = await fetch(data.status_url, {
+          headers: { 'Authorization': `Key ${FAL_AI_API_KEY}` },
+        });
+        
+        if (!statusResponse.ok) continue;
+        
+        const statusData = await statusResponse.json();
+        
+        if (statusData.status === 'COMPLETED') {
+          const resultResponse = await fetch(data.response_url, {
+            headers: { 'Authorization': `Key ${FAL_AI_API_KEY}` },
+          });
+          
+          const resultData = await resultResponse.json();
+          const imageUrl = resultData.images?.[0]?.url || resultData.image?.url || resultData.url;
+          
+          if (!imageUrl) {
+            throw new Error('No se encontró imagen en resultado');
+          }
+          
+          console.log(`✅ [fal.ai] Borrador generado exitosamente`);
+          return {
+            success: true,
+            imageUrl,
+            seed: resultData.seed || seed,
+          };
+        } else if (statusData.status === 'FAILED') {
+          throw new Error(`Generación falló: ${statusData.error}`);
+        }
+      }
+      
+      throw new Error('Timeout esperando resultado (2 minutos)');
+    }
+
+    // Respuesta síncrona
+    const imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
+    
+    if (!imageUrl) {
+      throw new Error('No se encontró imagen en respuesta');
+    }
+
+    console.log(`✅ [fal.ai] Borrador generado exitosamente`);
+    return {
+      success: true,
+      imageUrl,
+      seed: data.seed || seed,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido',
+    };
+  }
 };
 
 // ============================================
