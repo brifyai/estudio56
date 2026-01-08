@@ -2359,6 +2359,8 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       console.log('🚀 [Draft] Usando fal.ai Z-Image Turbo para mantener composición');
       console.log('📝 [Draft] Seed usado:', consistencySeed);
       console.log('🖼️ [Draft] Imagen de referencia disponible:', !!draftImageForHD);
+      console.log('🖼️ [Draft] Imagen de referencia length:', draftImageForHD?.length || 0);
+      console.log('🎚️ [Draft] Strength configurado: 0.20 (máxima similitud)');
       
       try {
         // Usar Z-Image Turbo con strength moderado
@@ -2367,13 +2369,20 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
           draftImageForHD,
           {
             seed: consistencySeed,
-            strength: 0.3, // Moderado para mantener composición pero permitir cambios de realidad
+            strength: 0.20, // ✅ REDUCIDO: 0.20 para máxima similitud (antes 0.3)
             guidanceScale: 7.5,
             steps: 20, // Menos steps = más rápido
             aspectRatio: aspectRatio,
             negativePrompt: realityNegativePrompt
           }
         );
+        
+        console.log('📦 [Draft] Resultado de fal.ai:', {
+          success: falResult.success,
+          hasImageUrl: !!falResult.imageUrl,
+          imageUrlLength: falResult.imageUrl?.length || 0,
+          error: falResult.error
+        });
         
         if (falResult.success && falResult.imageUrl) {
           // Convertir URL a data URL

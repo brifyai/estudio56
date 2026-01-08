@@ -88,7 +88,7 @@ export const generateDraftWithZImage = async (
   prompt: string,
   referenceImageDataUrl?: string,
   options: {
-    strength?: number; // 0.2-0.4 para variaciones de realidad
+    strength?: number; // 0.15-0.25 para variaciones de realidad (MÁXIMA SIMILITUD)
     guidanceScale?: number;
     steps?: number;
     seed?: number;
@@ -97,12 +97,12 @@ export const generateDraftWithZImage = async (
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
-    strength = 0.3, // Moderado para variaciones de realidad
+    strength = 0.20, // ✅ REDUCIDO: 0.20 para máxima similitud (antes 0.3)
     guidanceScale = 7.5,
     steps = 20, // Menos steps = más rápido
     seed,
     aspectRatio = '9:16',
-    negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy'
+    negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy, different composition, different person, different pose, different background, different scene, changed elements'
   } = options;
 
   console.log('🚀 [fal.ai] Iniciando Z-Image Turbo para borrador...');
