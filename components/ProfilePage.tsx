@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseService';
 import { creditService, CreditTransaction } from '../services/creditService';
 import { PlanSelectionModal } from './PlanSelectionModal';
+import { PricingModal } from './PricingModal';
 
 interface UserProfile {
   id: string;
@@ -56,6 +57,7 @@ export const ProfilePage: React.FC = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
@@ -746,7 +748,7 @@ export const ProfilePage: React.FC = () => {
               
               <div className="flex items-center">
                 <button
-                  onClick={() => window.location.href = '/panel'}
+                  onClick={() => setShowPricingModal(true)}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium"
                 >
                   Obtener más créditos
@@ -870,6 +872,14 @@ export const ProfilePage: React.FC = () => {
           onSelectPlan={async (planId) => {
             console.log('Plan seleccionado:', planId);
           }}
+        />
+      )}
+
+      {/* Pricing Modal for Credit Recharges */}
+      {showPricingModal && (
+        <PricingModal
+          isOpen={showPricingModal}
+          onClose={() => setShowPricingModal(false)}
         />
       )}
     </div>
