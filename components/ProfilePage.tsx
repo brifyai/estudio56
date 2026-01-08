@@ -614,7 +614,9 @@ export const ProfilePage: React.FC = () => {
               <div className="bg-black/30 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-white/60">Borradores de Videos</span>
-                  <span className="text-5xl font-bold text-orange-400">{Math.floor(userProfile.credits / 10)}</span>
+                  <span className="text-5xl font-bold text-orange-400">
+                    {Math.max(0, Math.floor((userProfile.user_plans.credits_hd || 0) / 10) - getUsageByType('video'))}
+                  </span>
                 </div>
                 
                 {/* Monthly Progress Videos */}
