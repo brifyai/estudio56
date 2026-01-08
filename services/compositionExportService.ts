@@ -282,18 +282,18 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
     }
     
     // Dibujar texto con wrap si es necesario
-    // CRÍTICO: El lineWidth NO debe escalarse, representa el ancho en el contenedor visual (320px)
-    // Debemos escalarlo al tamaño del canvas para mantener la misma proporción
-    // En vista HD (320px): texto usa lineWidth = 200px
-    // En canvas HD (1080px): texto debe usar (200 / 320) * 1080 = 675px
-    // Pero esto es incorrecto porque lineWidth ya está en píxeles del contenedor visual
-    // La solución correcta: lineWidth * (canvasWidth / visualContainerWidth)
-    const maxWidth = textStyles.lineWidth * scaleFactor;
+    // CRÍTICO: Calcular maxWidth basado en el ancho del contenedor visual
+    // El texto en la vista ocupa aproximadamente el 62.5% del ancho del contenedor (200px de 320px)
+    // Para mantener la misma proporción en el canvas HD, usamos el mismo porcentaje
+    // Esto garantiza que el texto tenga el mismo número de líneas
+    const textWidthPercentage = 0.625; // 200px / 320px = 0.625
+    const maxWidth = canvasWidth * textWidthPercentage;
     console.log('📏 [composeAndExport] Cálculo de maxWidth:', {
+      canvasWidth,
+      textWidthPercentage,
+      maxWidth,
       lineWidth: textStyles.lineWidth,
       scaleFactor,
-      maxWidth,
-      canvasWidth,
       visualContainerWidth
     });
     wrapText(ctx, textToDraw, textX, textY, maxWidth, fontSize * 1.4);
