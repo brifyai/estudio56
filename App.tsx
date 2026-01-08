@@ -2036,7 +2036,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
             seed: seed,
             stars: levelKeyTyped,
             image_url: result.imageDataUrl,
-            prompt_used: simpleRealityPrompt,
+            prompt_used: technicalPrompt, // ✅ CORREGIDO: usar technicalPrompt en lugar de simpleRealityPrompt
             created_at: new Date(),
             cached: true
           });
