@@ -2440,78 +2440,72 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       }
       
       // ============================================
-      // 🎯 PROMPT DETALLADO PARA FAL.AI
-      // Incluir TODOS los filtros de realismo y dirección de arte
+      // 🎯 PROMPT SIMPLIFICADO PARA SDXL IMG2IMG
+      // Prompt corto y directo = máxima similitud con el borrador
       // ============================================
       
-      // Determinar qué filtros aplicar según el modo
-      let realismFilters = '';
-      if (!isStoryArtMode) {
-        // Solo aplicar filtros de realismo en modo normal (NO en Story Art)
-        realismFilters = `
-          ${REAL_BUSINESS_ENVIRONMENT}
-          ${RAW_PHOTO_TEXTURE}
-          ${HUMAN_AUTHENTICITY_RULES}
-          ${BONE_ANCHOR_RULES}
-        `;
-      }
-      
-      // Construir prompt COMPLETO para fal.ai con todos los filtros
+      // Construir prompt SIMPLE y DIRECTO para SDXL img2img
+      // SDXL img2img funciona mejor con prompts cortos (200-500 chars)
       const hdPrompt = `
-        ${realityPrompt}
-        
-        REFERENCE IMAGE ANALYSIS (MUST FOLLOW EXACTLY):
+        High quality professional photograph.
         ${draftAnalysis}
-        
-        CRITICAL INSTRUCTIONS - FOLLOW STRICTLY:
-        1. RECREATE this image EXACTLY with higher quality
-        2. Keep EXACTLY the same: composition, subject placement, layout, colors, objects, and mood
-        3. Improve ONLY: lighting quality, shadow detail, texture sharpness, overall clarity
-        4. Do NOT change: composition, colors, objects, perspective, mood, or any element
-        5. Maintain EXACTLY the same camera angle, lighting direction, and perspective
-        6. Keep the same aspect ratio: ${aspectRatio}
-        7. Keep the same subject size and proportions in the frame
-        8. Keep the same background elements and depth of field
-        9. Keep the same colors for all elements
-        
-        ${realismFilters}
-        
-        VISUAL STYLE: ${activeStylePrompt}
-        COMPOSITION: ${compositionPrompt}
-        
-        This is a QUALITY ENHANCEMENT ONLY. Do not reinterpret or change the image content.
-      `.replace(/\n/g, ' ').trim();
+        Maintain exact composition, colors, lighting, and subject placement.
+        Improve only: sharpness, detail, texture quality.
+        ${aspectRatio} format.
+      `.replace(/\s+/g, ' ').trim();
       
-      const hdNegativePrompt = `${finalNegativePrompt}, blurry, low quality, pixelated, artifacts, noise, compression, different composition, different subject, different colors, different lighting, different perspective, different size, different background, different mood, different angle, different framing`;
+      // Negative prompt enfocado en mantener similitud
+      const hdNegativePrompt = `blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, different composition, different colors, different subject, different lighting, different perspective, different size, different background, different mood, changed elements, modified layout, altered colors`;
       
-      console.log('📝 [HD] Prompt length:', hdPrompt.length, 'chars');
+      console.log('📝 [HD] Prompt simplificado length:', hdPrompt.length, 'chars');
+      console.log('📝 [HD] Prompt:', hdPrompt);
       console.log('📝 [HD] Negative prompt length:', hdNegativePrompt.length, 'chars');
-      console.log('📝 [HD] Negative prompt:', hdNegativePrompt.substring(0, 150) + '...');
       
-      // Usar Clarity Upscaler para HD (mantiene 100% similitud)
+      // Usar SDXL img2img para HD (mantiene alta similitud con strength bajo)
       const falResult = await generateHDWithImg2Img(
         hdPrompt,
         draftImageForHD,
         {
-          // Clarity Upscaler no usa strength, guidance, steps
-          // Solo necesita el prompt y la imagen
           seed: consistencySeed,
           aspectRatio,
-          // Estos parámetros se ignoran para Clarity Upscaler
-          strength: 0,
-          guidanceScale: 0,
-          steps: 0,
+          strength: 0.20, // Bajo = mantener similitud
+          guidanceScale: 7.5, // Moderado = seguir referencia
+          steps: 30, // Suficiente para calidad HD
           negativePrompt: hdNegativePrompt,
         }
       );
       
       if (falResult.success && falResult.imageUrl) {
-        console.log('✅ [HD] Clarity Upscaler exitoso (100% similitud)');
+        console.log('✅ [HD] SDXL img2img exitoso - imagen HD generada');
         console.log('📝 [HD] Seed usado:', consistencySeed);
-        imageDataUrl = falResult.imageUrl;
+        console.log('📸 [HD] URL:', falResult.imageUrl.substring(0, 100) + '...');
+        
+        // Descargar la imagen de fal.ai y convertir a data URL
+        try {
+          console.log('📥 [HD] Descargando imagen de fal.ai...');
+          const imageResponse = await fetch(falResult.imageUrl);
+          if (!imageResponse.ok) {
+            throw new Error(`Error descargando imagen: ${imageResponse.status}`);
+          }
+          const imageBlob = await imageResponse.blob();
+          const reader = new FileReader();
+          
+          imageDataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(imageBlob);
+          });
+          
+          console.log('✅ [HD] Imagen descargada y convertida a data URL');
+          console.log('📊 [HD] Data URL length:', imageDataUrl.length, 'chars');
+        } catch (downloadError: any) {
+          console.error('❌ [HD] Error descargando imagen:', downloadError.message);
+          console.log('🔄 [HD] Usando URL directa de fal.ai');
+          imageDataUrl = falResult.imageUrl;
+        }
       } else {
-        console.warn('⚠️ [HD] Clarity Upscaler falló, usando fallback:', falResult.error);
-        // Continuar con el método original
+        console.warn('⚠️ [HD] SDXL img2img falló, usando fallback:', falResult.error);
+        // Continuar con el método original (txt2img)
       }
     }
     

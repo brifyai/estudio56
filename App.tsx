@@ -52,6 +52,7 @@ import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './se
 import { detectIndustryFromDescription } from './services/geminiService';
 import { enhancePrompt, generateFlyerImage, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
 import { createGeneration, updateGenerationToHD, getGenerationById, FlyerGeneration } from './services/flyerGenerationService';
+import { isFalAiConfigured } from './services/falAiService';
 import creditService from './services/creditService';
 import { SurfaceType } from './hooks/useSurfaceDetection';
 import { getStoryArtStyleById, type StoryArtStyleId } from './src/constants/storyArtStyles';
@@ -1451,6 +1452,25 @@ const handleGenerate = async () => {
 
   const handleUpgradeToHD = async () => {
     if (!currentSpanishPrompt) return;
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 🔍 DIAGNÓSTICO HD - Verificar estado antes de generar
+    // ═══════════════════════════════════════════════════════════════
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('🔍 DIAGNÓSTICO HD - Estado antes de generar');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('📸 Draft URL disponible:', !!draftImageUrl);
+    console.log('📸 Draft URL type:', typeof draftImageUrl);
+    console.log('📸 Draft URL length:', draftImageUrl?.length || 0);
+    console.log('📸 Draft URL prefix:', draftImageUrl?.substring(0, 100) || 'N/A');
+    console.log('📸 Draft URL es data URL:', draftImageUrl?.startsWith('data:') || false);
+    console.log('🔑 fal.ai configurado:', isFalAiConfigured());
+    console.log('🎨 Style key:', styleKey);
+    console.log('📐 Aspect ratio:', aspectRatio);
+    console.log('🎲 Seed:', seed);
+    console.log('🎬 Media type:', mediaType);
+    console.log('📝 Prompt español:', currentSpanishPrompt.substring(0, 100) + '...');
+    console.log('═══════════════════════════════════════════════════════════════');
     
     // Cerrar Comparador de Realismos si está abierto
     if (showRealityComparator) {

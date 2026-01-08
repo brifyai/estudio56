@@ -31,8 +31,8 @@ export const FAL_MODELS = {
   SDXL_BASE: 'fal-ai/stable-diffusion-xl/base',
 } as const;
 
-// Modelo principal para HD
-const HD_MODEL = FAL_MODELS.CLARITY_UPSCALER;
+// Modelo principal para HD - SDXL img2img mantiene máxima similitud con el borrador
+const HD_MODEL = FAL_MODELS.SDXL_IMG2IMG;
 
 export type FalModelId = typeof FAL_MODELS[keyof typeof FAL_MODELS];
 
@@ -83,31 +83,34 @@ export const generateHDWithImg2Img = async (
   prompt: string,
   referenceImageDataUrl: string,
   options: {
-    strength?: number; // 0.03-0.1 para máxima similitud
-    guidanceScale?: number; // 3-7
-    steps?: number; // 10-20
+    strength?: number; // 0.15-0.25 para máxima similitud con SDXL
+    guidanceScale?: number; // 7-9 para seguir la imagen de referencia
+    steps?: number; // 25-30 para mejor calidad
     seed?: number;
     aspectRatio?: AspectRatio;
     negativePrompt?: string;
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
-    strength = 0.05, // EXTREMADAMENTE bajo = máxima similitud (0.03-0.1)
-    guidanceScale = 5, // Mínimo = máximo apego a la imagen original
-    steps = 15, // Mínimo steps = menos variación
+    strength = 0.20, // Bajo = máxima similitud (0.15-0.25 óptimo para SDXL)
+    guidanceScale = 7.5, // Moderado = seguir imagen de referencia
+    steps = 30, // Suficientes steps para calidad HD
     seed,
     aspectRatio = '9:16',
-    negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy, different composition, different colors, different subject, different lighting, different perspective, different size, different background, different mood'
+    negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy, different composition, different colors, different subject, different lighting, different perspective, different size, different background, different mood, changed elements, modified layout, altered colors, different style'
   } = options;
 
-  console.log('🎯 [fal.ai] Iniciando Image-to-Image nativo...');
+  console.log('🎯 [fal.ai] Iniciando SDXL Image-to-Image para HD...');
+  console.log(`📝 [fal.ai] Modelo: ${HD_MODEL}`);
   console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
   console.log(`📝 [fal.ai] Prompt (first 150): ${prompt.substring(0, 150)}...`);
-  console.log(`🖼️ [fal.ai] Strength: ${strength} (MÁXIMA SIMILITUD - 0.03-0.1)`);
-  console.log(`🖼️ [fal.ai] Guidance Scale: ${guidanceScale} (MÍNIMO - 3-7)`);
-  console.log(`🖼️ [fal.ai] Steps: ${steps} (MÍNIMO - 10-20)`);
+  console.log(`🖼️ [fal.ai] Strength: ${strength} (0.15-0.25 = máxima similitud)`);
+  console.log(`🖼️ [fal.ai] Guidance Scale: ${guidanceScale} (7-9 = seguir referencia)`);
+  console.log(`🖼️ [fal.ai] Steps: ${steps} (25-30 = calidad HD)`);
   console.log(`🖼️ [fal.ai] Seed: ${seed}`);
+  console.log(`🖼️ [fal.ai] Aspect Ratio: ${aspectRatio}`);
   console.log(`🖼️ [fal.ai] API Key configurada: ${!!FAL_AI_API_KEY}`);
+  console.log(`🖼️ [fal.ai] Draft image length: ${referenceImageDataUrl?.length || 0} chars`);
   console.log(`🖼️ [fal.ai] Negative prompt: ${negativePrompt.substring(0, 100)}...`);
   
   // Convertir aspect ratio a dimensiones
@@ -124,46 +127,40 @@ export const generateHDWithImg2Img = async (
   // Extraer base64 de la imagen de referencia
   const imageBase64 = extractBase64(referenceImageDataUrl);
 
-  // Construir request para fal.ai
+  // Construir request para SDXL img2img
   // Usar nombres exactos según documentación de fal.ai
   const requestBody: any = {
     prompt: prompt,
     negative_prompt: negativePrompt,
-    image: imageBase64, // base64 de la imagen de referencia
-    strength: strength, // 0.03-0.1 = muy poca modificación
-    guidance_scale: guidanceScale, // 3-7 = seguir prompt loosely
-    num_inference_steps: steps, // 10-20 = menos denoising steps
-    width: dimensions.width,
-    height: dimensions.height,
+    image_url: referenceImageDataUrl, // Enviar data URL completo
+    strength: strength, // 0.15-0.25 = mantener similitud alta
+    guidance_scale: guidanceScale, // 7-9 = seguir imagen de referencia
+    num_inference_steps: steps, // 25-30 = calidad HD
+    image_size: {
+      width: dimensions.width,
+      height: dimensions.height,
+    },
   };
 
-  // Agregar seed si existe (importante para reproducibilidad)
+  // Agregar seed si existe (CRÍTICO para reproducibilidad)
   if (seed !== undefined && seed !== null) {
     requestBody.seed = seed;
-    console.log(`🖼️ [fal.ai] Seed configurado: ${seed}`);
+    console.log(`🖼️ [fal.ai] Seed configurado: ${seed} (garantiza consistencia)`);
   }
 
-  console.log('📡 [fal.ai] Request body:', JSON.stringify(requestBody, null, 2).substring(0, 500) + '...');
+  console.log('📡 [fal.ai] Request body (sin imagen):', JSON.stringify({
+    ...requestBody,
+    image_url: `[DATA_URL ${referenceImageDataUrl?.length || 0} chars]`
+  }, null, 2));
 
   try {
     // Verificar API key
     if (!FAL_AI_API_KEY) {
-      throw new Error('FAL_AI_API_KEY no configurada');
+      throw new Error('FAL_AI_API_KEY no configurada en .env');
     }
 
-    console.log('📡 [fal.ai] Usando Clarity Upscaler para HD...');
-    console.log(`📡 [fal.ai] Modelo: ${HD_MODEL}`);
-
-    // Clarity Upscaler tiene una API diferente
-    // No usa strength, guidance, steps - solo la imagen y el prompt
-    const upscalerRequestBody = {
-      prompt: requestBody.prompt,
-      image: requestBody.image,
-      // Parámetros específicos de Clarity Upscaler
-      scale: 2, // 2x upscale (puede ser 2 o 4)
-      enhance_prompt: true,
-      enhance_negative_prompt: true,
-    };
+    console.log('📡 [fal.ai] Enviando request a SDXL img2img...');
+    console.log(`📡 [fal.ai] Endpoint: ${FAL_AI_BASE_URL}/${HD_MODEL}`);
 
     const response = await fetch(`${FAL_AI_BASE_URL}/${HD_MODEL}`, {
       method: 'POST',
@@ -171,25 +168,26 @@ export const generateHDWithImg2Img = async (
         'Authorization': `Key ${FAL_AI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(upscalerRequestBody),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
-      throw new Error(`fal.ai error: ${response.status} - ${errorText.substring(0, 200)}`);
+      throw new Error(`fal.ai SDXL error: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
     const data = await response.json();
-    console.log('✅ [fal.ai] Respuesta recibida');
+    console.log('✅ [fal.ai] Respuesta SDXL recibida');
+    console.log('📦 [fal.ai] Response keys:', Object.keys(data));
 
-    // Extraer imagen de la respuesta
-    // Clarity Upscaler retorna la imagen en 'image' o 'images[0].url'
-    let imageUrl = data.images?.[0]?.url || data.image || data.url;
+    // Extraer imagen de la respuesta SDXL
+    // SDXL retorna la imagen en 'images[0].url' o 'image.url'
+    let imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
     
     if (!imageUrl) {
-      console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', data);
-      throw new Error('No se encontró imagen en la respuesta de fal.ai');
+      console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', JSON.stringify(data, null, 2));
+      throw new Error('No se encontró imagen en la respuesta de fal.ai SDXL');
     }
 
     // Si es URL relativa, convertir a URL completa
@@ -197,7 +195,9 @@ export const generateHDWithImg2Img = async (
       imageUrl = `https://fal.ai${imageUrl}`;
     }
 
-    console.log(`✅ [fal.ai] Imagen HD generada: ${imageUrl.substring(0, 100)}...`);
+    console.log(`✅ [fal.ai] Imagen HD generada exitosamente`);
+    console.log(`📸 [fal.ai] URL: ${imageUrl.substring(0, 100)}...`);
+    console.log(`🎲 [fal.ai] Seed usado: ${data.seed || seed}`);
 
     return {
       success: true,
