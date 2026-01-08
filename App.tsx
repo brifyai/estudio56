@@ -1092,7 +1092,7 @@ const handleGenerate = async () => {
        setStatus({
          isLoading: true,
          step: 'rendering',
-         message: imageQuality === 'draft' ? ':: GENERANDO_PIXELES_BORRADOR ::' : ':: RENDERIZANDO_TEXTURAS_HD ::'
+         message: imageQuality === 'draft' ? 'Generando borrador...' : 'Renderizando imagen HD...'
        });
        console.log('🎨 Generating image with aspectRatio:', aspectRatio, '| mediaType:', mediaType);
        
@@ -1588,7 +1588,7 @@ const handleGenerate = async () => {
               upgradeArtDirectionId // NEW: artDirectionId para Story Art
             );
             url = result.imageDataUrl;
-            progressAlert.updateProgress(70, 'Renderizando imagen HD...');
+            progressAlert.updateProgress(70, ''Renderizando imagen HD...'');
             setIntelligentTextStyles(result.intelligentTextStyles);
             setImageAnalysis(result.imageAnalysis);
             setContextualTypography(result.contextualTypography);
