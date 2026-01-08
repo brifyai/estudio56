@@ -51,7 +51,7 @@ export const LandingPage: React.FC = () => {
           <span className="text-3xl">🤡</span>
           <span className="text-green-400 uppercase">Estudio 56</span>
         </div>
-        <button onClick={() => navigate('/iniciar-sesion')} className="bg-white text-black font-bold px-4 py-2 rounded-full hover:scale-105 transition-transform text-sm">
+        <button onClick={() => navigate('/iniciar-sesion')} className="bg-white text-black font-bold px-4 py-2 rounded-full hover:scale-105 transition-transform text-sm cursor-pointer">
           Entrar a la Matrix
         </button>
       </nav>
@@ -88,7 +88,7 @@ export const LandingPage: React.FC = () => {
 
         <button
             onClick={() => navigate('/iniciar-sesion')}
-            className="inline-flex items-center justify-center px-8 py-6 text-xl font-black text-black transition-all duration-200 bg-green-400 rounded-2xl hover:bg-green-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 shadow-[0_0_40px_rgba(74,222,128,0.4)]"
+            className="inline-flex items-center justify-center px-8 py-6 text-xl font-black text-black transition-all duration-200 bg-green-400 rounded-2xl hover:bg-green-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 shadow-[0_0_40px_rgba(74,222,128,0.4)] cursor-pointer"
         >
             REPARAR MI DIGNIDAD DIGITAL
         </button>
@@ -221,7 +221,7 @@ export const LandingPage: React.FC = () => {
                         <li className="flex items-center gap-2 opacity-50">❌ Sin Créditos HD</li>
                         <li className="flex items-center gap-2 opacity-50">❌ Generación de Video</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-gray-300 text-gray-500 font-black uppercase hover:border-black hover:text-black transition-colors">
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-gray-300 text-gray-500 font-black uppercase hover:border-black hover:text-black transition-colors cursor-pointer">
                         Probar Ahora
                     </button>
                 </div>
@@ -237,7 +237,7 @@ export const LandingPage: React.FC = () => {
                         <li className="text-gray-500">❌ Videos HD (Requiere 10 créditos c/u)</li>
                         <li className="text-gray-500">❌ Carga de Productos</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-black font-black uppercase hover:bg-black hover:text-white transition-colors">
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-black font-black uppercase hover:bg-black hover:text-white transition-colors cursor-pointer">
                         Elegir este
                     </button>
                 </div>
@@ -253,7 +253,7 @@ export const LandingPage: React.FC = () => {
                         <li className="text-orange-500">⚠️ <b>Videos HD</b> (Costo: 10 créditos)</li>
                         <li>✔️ Carga de Productos (PNG)</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-black text-black font-black uppercase hover:bg-gray-100 transition-colors">
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 border-2 border-black text-black font-black uppercase hover:bg-gray-100 transition-colors cursor-pointer">
                         LO QUIERO
                     </button>
                 </div>
@@ -272,7 +272,7 @@ export const LandingPage: React.FC = () => {
                         <li className="flex items-center gap-2">✔️ Licencia Comercial</li>
                         <li className="flex items-center gap-2">✔️ Soporte Humano</li>
                     </ul>
-                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 bg-black text-white font-black uppercase hover:bg-gray-800 transition-colors shadow-2xl">
+                    <button onClick={() => navigate('/iniciar-sesion')} className="w-full py-3 bg-black text-white font-black uppercase hover:bg-gray-800 transition-colors shadow-2xl cursor-pointer">
                         CONTRATAR AGENCIA
                     </button>
                 </div>
@@ -303,7 +303,7 @@ export const LandingPage: React.FC = () => {
                         <li>✔️ <b>5 Borradores</b> de regalo</li>
                         <li className="text-white/50 text-xs">✨ 1 Video HD o 10 Fotos HD</li>
                     </ul>
-                    <button onClick={() => handleRecharge('INDIVIDUAL')} className="w-full py-3 border-2 border-green-500 text-green-400 font-black uppercase hover:bg-green-500 hover:text-black transition-colors">
+                    <button onClick={() => handleRecharge('INDIVIDUAL')} className="w-full py-3 border-2 border-green-500 text-green-400 font-black uppercase hover:bg-green-500 hover:text-black transition-colors cursor-pointer">
                         Cargar Unito
                     </button>
                 </div>
@@ -321,7 +321,7 @@ export const LandingPage: React.FC = () => {
                         <li>✔️ <b>25 Borradores</b> de regalo</li>
                         <li className="text-white/50 text-xs">✨ 5 Videos HD o 50 Fotos HD</li>
                     </ul>
-                    <button onClick={() => handleRecharge('SALVATORE')} className="w-full py-3 border-2 border-blue-500 text-blue-400 font-black uppercase hover:bg-blue-500 hover:text-black transition-colors">
+                    <button onClick={() => handleRecharge('SALVATORE')} className="w-full py-3 border-2 border-blue-500 text-blue-400 font-black uppercase hover:bg-blue-500 hover:text-black transition-colors cursor-pointer">
                         Cargar Salvatore
                     </button>
                 </div>
@@ -336,7 +336,7 @@ export const LandingPage: React.FC = () => {
                         <li>✔️ <b>750 Borradores</b> de regalo</li>
                         <li className="text-white/50 text-xs">✨ 15 Videos HD o 150 Fotos HD</li>
                     </ul>
-                    <button onClick={() => handleRecharge('IMPULSO')} className="w-full py-3 border-2 border-purple-500 text-purple-400 font-black uppercase hover:bg-purple-500 hover:text-black transition-colors">
+                    <button onClick={() => handleRecharge('IMPULSO')} className="w-full py-3 border-2 border-purple-500 text-purple-400 font-black uppercase hover:bg-purple-500 hover:text-black transition-colors cursor-pointer">
                         Cargar Impulso
                     </button>
                 </div>
@@ -413,7 +413,7 @@ export const LandingPage: React.FC = () => {
                 <button
                     disabled={formState !== 'idle'}
                     type="submit"
-                    className="w-full bg-white text-black font-black text-xl py-4 rounded-xl hover:bg-gray-200 transition-colors uppercase tracking-tight flex items-center justify-center gap-2"
+                    className="w-full bg-white text-black font-black text-xl py-4 rounded-xl hover:bg-gray-200 transition-colors uppercase tracking-tight flex items-center justify-center gap-2 cursor-pointer"
                 >
                     {formState === 'idle' && (
                         <>ENVIAR MENSAJE</>
@@ -440,13 +440,13 @@ export const LandingPage: React.FC = () => {
           <p>© 2026 Estudio 56. Hecho con paciencia y mucha cafeína.</p>
           <p className="mt-2 text-[10px] font-mono">No nos hacemos responsables si tus ventas explotan.</p>
           <div className="mt-4 flex justify-center gap-4 text-xs">
-            <a href="/privacidad" className="hover:text-green-400 transition-colors">Privacidad</a>
+            <a href="/privacidad" className="hover:text-green-400 transition-colors cursor-pointer">Privacidad</a>
             <span className="text-white/40">|</span>
-            <a href="/cookies" className="hover:text-green-400 transition-colors">Cookies</a>
+            <a href="/cookies" className="hover:text-green-400 transition-colors cursor-pointer">Cookies</a>
             <span className="text-white/40">|</span>
-            <a href="/terminos" className="hover:text-green-400 transition-colors">Términos</a>
+            <a href="/terminos" className="hover:text-green-400 transition-colors cursor-pointer">Términos</a>
             <span className="text-white/40">|</span>
-            <a href="/condiciones" className="hover:text-green-400 transition-colors">Condiciones</a>
+            <a href="/condiciones" className="hover:text-green-400 transition-colors cursor-pointer">Condiciones</a>
           </div>
       </footer>
     </div>
