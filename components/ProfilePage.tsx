@@ -610,35 +610,35 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
               
-              {/* Borradores HD */}
+              {/* Borradores de Videos */}
               <div className="bg-black/30 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-white/60">Borradores HD</span>
-                  <span className="text-5xl font-bold text-blue-400">{userProfile.credits}</span>
+                  <span className="text-white/60">Borradores de Videos</span>
+                  <span className="text-5xl font-bold text-orange-400">{Math.floor(userProfile.credits / 10)}</span>
                 </div>
                 
-                {/* Monthly Progress HD */}
+                {/* Monthly Progress Videos */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/60">Usado este mes</span>
+                    <span className="text-white/60">Videos este mes</span>
                     <span className="text-white">
-                      {getUsageByType('final_image')} / {userProfile.user_plans.credits_hd || 0}
+                      {getUsageByType('video')} / {Math.floor((userProfile.user_plans.credits_hd || 0) / 10)}
                     </span>
                   </div>
                   <div className="h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        (getUsageByType('final_image') / (userProfile.user_plans.credits_hd || 1)) > 90
+                        (getUsageByType('video') / Math.max((userProfile.user_plans.credits_hd || 1) / 10, 1)) > 90
                           ? 'bg-red-500'
-                          : (getUsageByType('final_image') / (userProfile.user_plans.credits_hd || 1)) > 70
+                          : (getUsageByType('video') / Math.max((userProfile.user_plans.credits_hd || 1) / 10, 1)) > 70
                             ? 'bg-yellow-500'
-                            : 'bg-blue-500'
+                            : 'bg-orange-500'
                       }`}
-                      style={{ width: `${Math.min((getUsageByType('final_image') / (userProfile.user_plans.credits_hd || 1)) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((getUsageByType('video') / Math.max((userProfile.user_plans.credits_hd || 1) / 10, 1)) * 100, 100)}%` }}
                     />
                   </div>
                   <p className="text-xs text-white/40 text-right">
-                    Imágenes HD y videos (10 créditos por video)
+                    Videos HD (10 créditos por video)
                   </p>
                 </div>
               </div>
