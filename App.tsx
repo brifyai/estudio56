@@ -938,6 +938,13 @@ const handleGenerate = async () => {
       isPosterMode: mediaType === 'poster'
     });
 
+    // Mostrar alerta de progreso
+    const progressAlert = estudioAlerts.progress(
+      mediaType === 'poster' ? 'Generando póster...' :
+      mediaType === 'video' ? 'Generando video...' :
+      imageQuality === 'draft' ? 'Generando borrador...' : 'Generando imagen HD...'
+    );
+
     // NO borrar draftImageUrl si estamos en modo HD - lo necesitamos para comparar
     if (imageQuality === 'draft') {
       setDraftImageUrl(null);
@@ -960,7 +967,7 @@ const handleGenerate = async () => {
     // ============================================
     if (mediaType === 'poster') {
       try {
-        setStatus({ isLoading: true, step: 'translating', message: 'Generando póster profesional...' });
+        progressAlert.updateProgress(20, 'Generando póster profesional...');
         
         // Detectar industria basada en la descripción
         const industryKey = detectIndustryFromDescription(description);
@@ -974,11 +981,7 @@ const handleGenerate = async () => {
         console.log('📄 Prompt generado:', posterPrompt.substring(0, 100) + '...');
         
         // Generar imagen de poster con formato 1:1.41
-        setStatus({
-          isLoading: true,
-          step: 'rendering',
-          message: 'Renderizando póster en alta resolución...'
-        });
+progressAlert.updateProgress(60, 'Renderizando...');
         
         // Usar el mismo servicio de generación pero con prompt de poster
         const result = await generateFlyerImage(
@@ -1015,7 +1018,7 @@ const handleGenerate = async () => {
           }
         }
         
-        setStatus({ isLoading: false, step: 'complete', message: 'POSTER GENERADO ✓' });
+        progressAlert.updateProgress(100, '¡Completado!'); setTimeout(() => progressAlert.close(), 500);
         console.log('✅ Poster generado exitosamente');
         return;
         
@@ -1077,7 +1080,7 @@ const handleGenerate = async () => {
         console.log(`💰 product_study - No se descuenta crédito (usa imagen subida por usuario)`);
       }
 
-      setStatus({ isLoading: true, step: 'translating', message: 'Analizando contexto...' });
+      progressAlert.updateProgress(20, 'Analizando contexto...');
       // Obtenemos ambos prompts: inglés para la IA, español para mostrar al usuario
       const { english: enhancedPrompt, spanish: spanishPrompt } = await enhancePrompt(description, effectiveStyleKey);
       setCurrentSpanishPrompt(spanishPrompt);
@@ -1085,15 +1088,11 @@ const handleGenerate = async () => {
       // Si es product_study, usar la imagen subida directamente (ya mejorada)
       if (mediaType === 'product_study') {
         // La imagen ya está en productUrl (mejorada con IA)
-        setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
+        progressAlert.close();
         console.log('📸 product_study - Usando imagen subida por el usuario');
         return;
       } else if (mediaType === 'image' || mediaType === 'story_art') {
-       setStatus({
-         isLoading: true,
-         step: 'rendering',
-         message: imageQuality === 'draft' ? 'Generando borrador...' : 'Renderizando imagen HD...'
-       });
+progressAlert.updateProgress(60, 'Renderizando...');
        console.log('🎨 Generating image with aspectRatio:', aspectRatio, '| mediaType:', mediaType);
        
        // NEW: Determinar si hay texto extraído automáticamente
@@ -1344,11 +1343,7 @@ const handleGenerate = async () => {
       } else {
         // ✅ GENERACIÓN DE VIDEO CON ALIBABA CLOUD TEXT-TO-VIDEO (T2V)
         const effectiveVideoStyleKey = videoStyleKey || 'video_retail_sale';
-        setStatus({
-            isLoading: true,
-            step: 'rendering',
-            message: imageQuality === 'draft' ? ':: GENERANDO_VIDEO_RAPIDO ::' : ':: PRODUCIENDO_VIDEO_HD ::'
-          });
+progressAlert.updateProgress(60, 'Renderizando...');
         console.log('🎬 Generating video with aspectRatio:', aspectRatio, '| videoStyleKey:', effectiveVideoStyleKey);
         
         // Importar el servicio de video
@@ -1357,11 +1352,7 @@ const handleGenerate = async () => {
         try {
           // TEXT-TO-VIDEO: Generar video directamente desde prompt (sin imagen base)
           console.log('🎬 Generando video con Alibaba Cloud TEXT-TO-VIDEO...');
-          setStatus({
-            isLoading: true,
-            step: 'rendering',
-            message: 'Generando video...'
-          });
+progressAlert.updateProgress(60, 'Renderizando...');
           
           // IMPORTANTE: Remover cualquier mención de texto del prompt para videos
           // Los videos NO deben tener texto superpuesto (se agrega después en la UI)
@@ -1390,11 +1381,7 @@ const handleGenerate = async () => {
               duration: 5 // 5 segundos por defecto
             },
             (progress, message) => {
-              setStatus({
-                isLoading: true,
-                step: 'rendering',
-                message: message || `:: GENERANDO_VIDEO ${Math.round(progress)}% ::`
-              });
+progressAlert.updateProgress(60, 'Renderizando...');
             }
           );
           
@@ -1442,10 +1429,12 @@ const handleGenerate = async () => {
           estudioAlerts.warning(`No se pudo generar el video: ${videoError.message}. Se generó una imagen estática.`);
         }
       }
-      setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
+      progressAlert.updateProgress(100, '¡Completado!');
+      setTimeout(() => progressAlert.close(), 500);
       console.log('🎉 Generation completed successfully');
     } catch (error: any) {
       console.error('❌ Generation failed:', error);
+      progressAlert.close();
       handleError(error);
     }
   };
@@ -1588,7 +1577,7 @@ const handleGenerate = async () => {
               upgradeArtDirectionId // NEW: artDirectionId para Story Art
             );
             url = result.imageDataUrl;
-            progressAlert.updateProgress(70, ''Renderizando imagen HD...'');
+            progressAlert.updateProgress(70, 'Renderizando imagen HD...');
             setIntelligentTextStyles(result.intelligentTextStyles);
             setImageAnalysis(result.imageAnalysis);
             setContextualTypography(result.contextualTypography);
