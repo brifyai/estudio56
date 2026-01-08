@@ -9,7 +9,8 @@ interface UserProfile {
   business_name: string;
   created_at: string;
   credits: number;      // Créditos HD disponibles del usuario
-  drafts: number;       // Borradores disponibles del usuario
+  drafts: number;       // Borradores de imágenes disponibles del usuario
+  drafts_video: number; // Borradores de videos disponibles del usuario
   plan_id: string;
   user_plans: {
     id: string;
@@ -19,7 +20,8 @@ interface UserProfile {
     iva_amount: number;
     price_with_iva: number;
     credits_hd: number; // Créditos HD incluidos en el plan (límite mensual)
-    drafts: number;     // Borradores incluidos en el plan (límite mensual)
+    drafts: number;     // Borradores de imágenes incluidos en el plan (límite mensual)
+    drafts_video: number; // Borradores de videos incluidos en el plan (límite mensual)
     features: string[];
   };
 }
@@ -99,6 +101,7 @@ export const ProfilePage: React.FC = () => {
 
       setUserProfile({
         ...user,
+        drafts_video: user.drafts_video || 0,
         user_plans: planData || {
           id: '',
           name: 'GRATIS',
@@ -108,6 +111,7 @@ export const ProfilePage: React.FC = () => {
           price_with_iva: 0,
           credits_hd: 0,
           drafts: 3,
+          drafts_video: 0,
           features: []
         }
       });
@@ -614,9 +618,7 @@ export const ProfilePage: React.FC = () => {
               <div className="bg-black/30 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-white/60">Borradores de Videos</span>
-                  <span className="text-5xl font-bold text-orange-400">
-                    {Math.max(0, Math.floor((userProfile.user_plans.credits_hd || 0) / 10) - getUsageByType('video'))}
-                  </span>
+                  <span className="text-5xl font-bold text-orange-400">{userProfile.drafts_video}</span>
                 </div>
                 
                 {/* Monthly Progress Videos */}
@@ -624,23 +626,23 @@ export const ProfilePage: React.FC = () => {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-white/60">Videos este mes</span>
                     <span className="text-white">
-                      {getUsageByType('video')} / {Math.floor((userProfile.user_plans.credits_hd || 0) / 10)}
+                      {getUsageByType('video')} / {userProfile.user_plans.drafts_video || 0}
                     </span>
                   </div>
                   <div className="h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        (getUsageByType('video') / Math.max((userProfile.user_plans.credits_hd || 1) / 10, 1)) > 90
+                        (getUsageByType('video') / (userProfile.user_plans.drafts_video || 1)) > 90
                           ? 'bg-red-500'
-                          : (getUsageByType('video') / Math.max((userProfile.user_plans.credits_hd || 1) / 10, 1)) > 70
+                          : (getUsageByType('video') / (userProfile.user_plans.drafts_video || 1)) > 70
                             ? 'bg-yellow-500'
                             : 'bg-orange-500'
                       }`}
-                      style={{ width: `${Math.min((getUsageByType('video') / Math.max((userProfile.user_plans.credits_hd || 1) / 10, 1)) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((getUsageByType('video') / (userProfile.user_plans.drafts_video || 1)) * 100, 100)}%` }}
                     />
                   </div>
                   <p className="text-xs text-white/40 text-right">
-                    Videos HD (10 créditos por video)
+                    Videos HD (límite separado)
                   </p>
                 </div>
               </div>
