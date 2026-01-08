@@ -2371,18 +2371,37 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         
         if (falResult.success && falResult.imageUrl) {
           // Convertir URL a data URL
-          const response = await fetch(falResult.imageUrl);
-          const blob = await response.blob();
-          const dataUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
+          console.log('🔄 [Draft] Convirtiendo URL a data URL...');
+          console.log('📸 [Draft] Image URL:', falResult.imageUrl.substring(0, 100));
           
-          imageDataUrl = dataUrl;
-          console.log('✅ [Draft] Imagen generada con fal.ai Z-Image Turbo');
+          try {
+            const response = await fetch(falResult.imageUrl);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const blob = await response.blob();
+            console.log('📦 [Draft] Blob size:', blob.size, 'bytes');
+            console.log('📦 [Draft] Blob type:', blob.type);
+            
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Error leyendo blob'));
+              reader.readAsDataURL(blob);
+            });
+            
+            imageDataUrl = dataUrl;
+            console.log('✅ [Draft] Imagen generada con fal.ai Z-Image Turbo');
+            console.log('📏 [Draft] Data URL length:', dataUrl.length);
+          } catch (conversionError: any) {
+            console.error('❌ [Draft] Error convirtiendo URL a data URL:', conversionError);
+            throw new Error(`Error convirtiendo imagen: ${conversionError.message}`);
+          }
         } else {
-          throw new Error(falResult.error || 'Error generando con Z-Image');
+          const errorMsg = falResult.error || 'No se recibió imageUrl en respuesta';
+          console.error('❌ [Draft] Error en respuesta de Z-Image:', errorMsg);
+          throw new Error(errorMsg);
         }
       } catch (error: any) {
         console.error('❌ [Draft] Error con fal.ai, fallback a Vertex AI:', error);

@@ -154,6 +154,12 @@ export const generateDraftWithZImage = async (
     }
 
     console.log('📡 [fal.ai] Enviando request a Z-Image Turbo...');
+    console.log(`📡 [fal.ai] Endpoint: ${FAL_AI_BASE_URL}/${DRAFT_MODEL}`);
+    console.log(`📡 [fal.ai] Request body:`, JSON.stringify({
+      ...requestBody,
+      image_url: referenceImageDataUrl ? `[DATA_URL ${referenceImageDataUrl.length} chars]` : undefined
+    }, null, 2));
+    
     const response = await fetch(`${FAL_AI_BASE_URL}/${DRAFT_MODEL}`, {
       method: 'POST',
       headers: {
