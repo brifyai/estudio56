@@ -960,7 +960,7 @@ const handleGenerate = async () => {
     // ============================================
     if (mediaType === 'poster') {
       try {
-        setStatus({ isLoading: true, step: 'translating', message: ':: GENERANDO_POSTER_PRO ::' });
+        setStatus({ isLoading: true, step: 'translating', message: 'Generando póster profesional...' });
         
         // Detectar industria basada en la descripción
         const industryKey = detectIndustryFromDescription(description);
@@ -977,7 +977,7 @@ const handleGenerate = async () => {
         setStatus({
           isLoading: true,
           step: 'rendering',
-          message: ':: RENDERIZANDO_POSTER_ALTA_RESOLUCION ::'
+          message: 'Renderizando póster en alta resolución...'
         });
         
         // Usar el mismo servicio de generación pero con prompt de poster
@@ -1077,7 +1077,7 @@ const handleGenerate = async () => {
         console.log(`💰 product_study - No se descuenta crédito (usa imagen subida por usuario)`);
       }
 
-      setStatus({ isLoading: true, step: 'translating', message: ':: ANALIZANDO_CONTEXTO ::' });
+      setStatus({ isLoading: true, step: 'translating', message: 'Analizando contexto...' });
       // Obtenemos ambos prompts: inglés para la IA, español para mostrar al usuario
       const { english: enhancedPrompt, spanish: spanishPrompt } = await enhancePrompt(description, effectiveStyleKey);
       setCurrentSpanishPrompt(spanishPrompt);
@@ -1360,7 +1360,7 @@ const handleGenerate = async () => {
           setStatus({
             isLoading: true,
             step: 'rendering',
-            message: ':: GENERANDO_VIDEO_0% ::'
+            message: 'Generando video...'
           });
           
           // IMPORTANTE: Remover cualquier mención de texto del prompt para videos
@@ -1491,7 +1491,7 @@ const handleGenerate = async () => {
         );
         console.log(`💰 Crédito final_image ${creditDeducted ? 'descontado' : 'NO descontado (sin créditos o error)'}`);
 
-        setStatus({ isLoading: true, step: 'rendering', message: ':: ESCALANDO_A_PRODUCCION ::' });
+        setStatus({ isLoading: true, step: 'rendering', message: 'Generando imagen HD...' });
         progressAlert.updateProgress(20, 'Preparando prompt...');
         let url;
         // story_art se maneja igual que image para el upgrade HD
@@ -1657,7 +1657,7 @@ const handleGenerate = async () => {
     const progressAlert = estudioAlerts.progress('Refinando imagen...');
     
     try {
-      setStatus({ isLoading: true, step: 'translating', message: ':: REFINANDO_LOGICA_PROMPT ::' });
+      setStatus({ isLoading: true, step: 'translating', message: 'Refinando prompt...' });
       progressAlert.updateProgress(20, 'Analizando prompt...');
       // Para refinar necesitamos el prompt en inglés original, lo regeneramos
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
@@ -1667,7 +1667,7 @@ const handleGenerate = async () => {
       setStatus({ 
         isLoading: true, 
         step: 'rendering', 
-        message: ':: REGENERANDO_ASSET ::' 
+        message: 'Regenerando imagen...' 
       });
       progressAlert.updateProgress(60, 'Renderizando imagen...');
 
@@ -1787,11 +1787,11 @@ const handleGenerate = async () => {
 
   const handleError = (error: any) => {
     if (error.message && (error.message.includes('permission denied') || error.message.includes('403'))) {
-      setStatus({ isLoading: false, step: 'error', message: ':: ERROR_AUTENTICACION ::' });
+      setStatus({ isLoading: false, step: 'error', message: 'Error de autenticación' });
       setHasKey(false);
       alert('Tu sesión expiró. Conecta nuevamente.');
     } else {
-      setStatus({ isLoading: false, step: 'error', message: ':: FALLO_DEL_SISTEMA ::' });
+      setStatus({ isLoading: false, step: 'error', message: 'Error del sistema' });
       alert('Error al generar. Intenta de nuevo.');
     }
   };
