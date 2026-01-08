@@ -2130,7 +2130,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       )}
 
       {/* EDITOR DE REALIDAD - Debajo del botón HD para mayor visibilidad */}
-      {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && realityLevel !== undefined && onRealityLevelChange && (
+      {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
         <div className="w-full max-w-[600px] mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
           <RealitySlider
             value={realityLevel as RealityLevel}
