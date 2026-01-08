@@ -2162,41 +2162,6 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 )}
                 
                 
-                {/* EDITOR DE REALIDAD - En el menú lateral izquierdo */}
-                {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
-                  <div className="p-4 border-t border-white/10 flex-shrink-0">
-                    <CollapsibleSection
-                      title="Editor de Realidad"
-                      icon=""
-                      defaultOpen={false}
-                    >
-                      <RealitySlider
-                        value={realityLevel}
-                        sceneId={sceneId}
-                        currentImageUrl={imageUrl}
-                        seed={seed}
-                        aspectRatio={aspectRatio} // Pasar el aspectRatio actual para mostrar el formato correcto
-                        onLevelChange={handleRealityChange}
-                        disabled={isGeneratingReality}
-                        cachedVariations={realityVariations}
-                        onGenerationStart={handleRealityGenerationStart}
-                        isRealityVariation={isRealityVariation}
-                        onOpenComparator={() => {
-                          // 🎯 ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ ANTES DE ABRIR
-                          const originalLevel = 1.5;
-                          if (!realityVariations[originalLevel] && draftImageUrl) {
-                            setRealityVariations(prev => ({
-                              ...prev,
-                              [originalLevel]: draftImageUrl
-                            }));
-                          }
-                          setShowRealityComparator(true);
-                        }}
-                      />
-                    </CollapsibleSection>
-                  </div>
-                )}
-                
                 {/* Panel de Editor de Texto y Estilo de Integración Visual - OCULTAR PARA VIDEOS Y STORY ART */}
                 {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && (
                   <div className="p-4 border-t border-white/10 flex-shrink-0">
@@ -2378,6 +2343,23 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       onSurfaceTypeChange={setSurfaceType}
                       autoDetectedSurface={autoDetectedSurface}
                       isGeneratingReality={isGeneratingReality}
+                      realityLevel={realityLevel}
+                      sceneId={sceneId}
+                      seed={seed}
+                      onRealityLevelChange={handleRealityChange}
+                      cachedRealityVariations={realityVariations}
+                      onRealityGenerationStart={handleRealityGenerationStart}
+                      isRealityVariation={isRealityVariation}
+                      onOpenRealityComparator={() => {
+                        const originalLevel = 1.5;
+                        if (!realityVariations[originalLevel] && draftImageUrl) {
+                          setRealityVariations(prev => ({
+                            ...prev,
+                            [originalLevel]: draftImageUrl
+                          }));
+                        }
+                        setShowRealityComparator(true);
+                      }}
                     />
                   );
                 })()}

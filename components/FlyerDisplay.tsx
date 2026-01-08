@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo } from '../types';
+import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo, RealityLevel } from '../types';
 import { downloadComposedImage, getDimensionsForAspectRatio, composeAndExport } from '../services/compositionExportService';
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
 import { useSurfaceDetection, SurfaceType, SURFACE_CONFIGS } from '../hooks/useSurfaceDetection';
+import RealitySlider from './RealitySlider';
 import Swal from 'sweetalert2';
 
 interface LogoFilters {
@@ -50,6 +51,15 @@ interface FlyerDisplayProps {
   isGeneratingReality?: boolean;
   // NEW: Supresión forzada de comparación
   suppressComparison?: boolean;
+  // NEW: Reality Slider props
+  realityLevel?: number;
+  sceneId?: string | null;
+  seed?: number;
+  onRealityLevelChange?: (level: number) => void;
+  cachedRealityVariations?: Record<number, string>;
+  onRealityGenerationStart?: () => void;
+  isRealityVariation?: boolean;
+  onOpenRealityComparator?: () => void;
 }
 
 export interface TextStyleOptions {
@@ -103,7 +113,16 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   // NEW: Para evitar comparación automática durante generación de realidad
   isGeneratingReality = false,
   // NEW: Supresión forzada de comparación
-  suppressComparison = false
+  suppressComparison = false,
+  // NEW: Reality Slider props
+  realityLevel,
+  sceneId,
+  seed,
+  onRealityLevelChange,
+  cachedRealityVariations,
+  onRealityGenerationStart,
+  isRealityVariation,
+  onOpenRealityComparator
 }) => {
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -2108,6 +2127,25 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <span>✨</span>
           <span>Generar imagen HD</span>
         </button>
+      )}
+
+      {/* EDITOR DE REALIDAD - Debajo del botón HD para mayor visibilidad */}
+      {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && realityLevel !== undefined && onRealityLevelChange && (
+        <div className="w-full max-w-[600px] mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
+          <RealitySlider
+            value={realityLevel as RealityLevel}
+            sceneId={sceneId}
+            currentImageUrl={imageUrl}
+            seed={seed}
+            aspectRatio={aspectRatio}
+            onLevelChange={onRealityLevelChange}
+            disabled={isGeneratingReality}
+            cachedVariations={cachedRealityVariations}
+            onGenerationStart={onRealityGenerationStart}
+            isRealityVariation={isRealityVariation}
+            onOpenComparator={onOpenRealityComparator}
+          />
+        </div>
       )}
       
     </div>
