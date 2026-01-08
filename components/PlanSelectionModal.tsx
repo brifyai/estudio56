@@ -273,9 +273,9 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                   ) : (
                     <>
                       <span className="text-3xl font-bold text-white">
-                        {formatPrice(plan.price)}
+                        {formatPrice(plan.price * 1.19)}
                       </span>
-                      <span className="text-gray-400 text-sm ml-2">/mes</span>
+                      <span className="text-gray-400 text-sm ml-2">/mes IVA incl.</span>
                     </>
                   )}
                 </div>
