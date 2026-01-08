@@ -1772,6 +1772,57 @@ progressAlert.updateProgress(60, 'Renderizando...');
   };
 
   const handleError = (error: any) => {
+    // 🔄 MANEJO ESPECIAL PARA TIMEOUTS - Opción de reintentar
+    if (error.message && error.message.includes('Timeout')) {
+      setStatus({ isLoading: false, step: 'error', message: 'Timeout de generación' });
+      
+      Swal.fire({
+        background: '#111827',
+        color: '#ffffff',
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#ef4444',
+        customClass: {
+          popup: 'border border-gray-700 shadow-2xl rounded-3xl font-sans',
+          title: 'text-2xl font-bold text-white tracking-tight',
+          htmlContainer: 'text-gray-300 text-sm leading-relaxed',
+          confirmButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95',
+          cancelButton: 'rounded-xl px-6 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95',
+        },
+        buttonsStyling: true,
+        icon: 'warning',
+        title: '⏱️ La generación está tardando más de lo normal',
+        html: `
+          <div class="space-y-3 text-left">
+            <p class="text-gray-300">El servidor está procesando tu imagen pero está tardando más de lo esperado.</p>
+            <p class="text-gray-400 text-xs">Esto puede ocurrir cuando hay alta demanda en los servidores de IA.</p>
+            <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mt-3">
+              <p class="text-blue-300 text-sm font-medium">💡 ¿Qué quieres hacer?</p>
+              <ul class="text-gray-400 text-xs mt-2 space-y-1 list-disc list-inside">
+                <li><strong class="text-white">Reintentar:</strong> Volver a generar la imagen (recomendado)</li>
+                <li><strong class="text-white">Cancelar:</strong> Volver al formulario</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '🔄 Reintentar generación',
+        cancelButtonText: '❌ Cancelar',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Reintentar generación SIN perder datos del usuario
+          console.log('🔄 Usuario eligió reintentar generación después de timeout');
+          handleGenerate();
+        } else {
+          console.log('❌ Usuario canceló después de timeout');
+        }
+      });
+      
+      return;
+    }
+    
+    // Manejo de otros errores
     if (error.message && (error.message.includes('permission denied') || error.message.includes('403'))) {
       setStatus({ isLoading: false, step: 'error', message: 'Error de autenticación' });
       setHasKey(false);
