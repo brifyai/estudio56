@@ -124,9 +124,9 @@ exports.handler = async (event) => {
           });
 
           const resultData = await resultResponse.json();
-          const imageUrl = resultData.images?.[0]?.url || resultData.image?.url || resultData.url;
+          const generatedImageUrl = resultData.images?.[0]?.url || resultData.image?.url || resultData.url;
 
-          if (!imageUrl) {
+          if (!generatedImageUrl) {
             throw new Error('No se encontró imagen en resultado');
           }
 
@@ -137,7 +137,7 @@ exports.handler = async (event) => {
             headers,
             body: JSON.stringify({
               success: true,
-              imageUrl,
+              imageUrl: generatedImageUrl,
               seed: resultData.seed || seed,
             }),
           };
@@ -150,9 +150,9 @@ exports.handler = async (event) => {
     }
 
     // Respuesta síncrona
-    const imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
+    const generatedImageUrl = data.images?.[0]?.url || data.image?.url || data.url;
 
-    if (!imageUrl) {
+    if (!generatedImageUrl) {
       throw new Error('No se encontró imagen en respuesta');
     }
 
@@ -163,7 +163,7 @@ exports.handler = async (event) => {
       headers,
       body: JSON.stringify({
         success: true,
-        imageUrl,
+        imageUrl: generatedImageUrl,
         seed: data.seed || seed,
       }),
     };
