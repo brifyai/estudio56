@@ -1,5 +1,3 @@
-const { Handler } = require('@netlify/functions');
-
 const FAL_AI_API_KEY = process.env.FAL_AI_API_KEY;
 const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
@@ -46,7 +44,7 @@ exports.handler = async (event) => {
     console.log('🖼️ [fal.ai Function] Tiene imagen de referencia:', !!imageUrl);
 
     // Convertir aspect ratio a dimensiones
-    const aspectRatioMap: Record<string, { width: number; height: number }> = {
+    const aspectRatioMap = {
       '9:16': { width: 768, height: 1344 },
       '1:1': { width: 1024, height: 1024 },
       '16:9': { width: 1344, height: 768 },
@@ -57,7 +55,7 @@ exports.handler = async (event) => {
     const dimensions = aspectRatioMap[aspectRatio || '9:16'] || aspectRatioMap['9:16'];
 
     // Construir request para fal.ai
-    const requestBody: any = {
+    const requestBody = {
       prompt,
       guidance_scale: guidanceScale || 7.5,
       num_inference_steps: steps || 20,
@@ -170,7 +168,7 @@ exports.handler = async (event) => {
       }),
     };
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ [fal.ai Function] Error:', error.message);
     return {
       statusCode: 500,
