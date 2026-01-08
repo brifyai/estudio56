@@ -40,6 +40,11 @@ export interface CompositionAnalysisResult {
     bottom: number;
     left: number;
   };
+  textCoverage?: {
+    percentage: number; // 0-100: porcentaje del área de la imagen cubierta por texto
+    density: 'low' | 'medium' | 'high'; // Densidad de texto
+    recommendation: string; // Recomendación sobre la cantidad de texto
+  };
 }
 
 const getAiClient = () => new GoogleGenAI({
@@ -67,6 +72,7 @@ export const analyzeCompositionForText = async (
 3. LEGIBILIDAD: Asegura que el texto sea claramente visible
 4. JERARQUÍA VISUAL: Donde el ojo se enfoca primero
 5. CONTRASTE: Fondos claros vs oscuros para el texto
+6. COBERTURA DE TEXTO: Estima qué porcentaje del área de la imagen debería ocupar el texto
 
 Responde SOLO con JSON válido:
 
@@ -109,6 +115,11 @@ Responde SOLO con JSON válido:
     "right": 5,
     "bottom": 15,
     "left": 5
+  },
+  "textCoverage": {
+    "percentage": 15,
+    "density": "medium",
+    "recommendation": "El texto ocupa un 15% del área, ideal para legibilidad sin saturar la imagen"
   }
 }
 
@@ -118,7 +129,10 @@ INSTRUCCIONES ESPECÍFICAS:
 - verticalAlignment: top|center|bottom
 - fontSize: Tamaño en píxeles apropiado para la imagen
 - contrastRatio: Mínimo 4.5 para WCAG AA
-- safeAreas: Porcentajes de margen seguro desde los bordes`;
+- safeAreas: Porcentajes de margen seguro desde los bordes
+- textCoverage.percentage: Porcentaje estimado del área que ocupará el texto (0-100)
+- textCoverage.density: "low" (<10%), "medium" (10-25%), "high" (>25%)
+- textCoverage.recommendation: Explicación breve sobre la cantidad de texto`;
 
     const response = await ai.models.generateContent({
       model,
@@ -187,10 +201,22 @@ INSTRUCCIONES ESPECÍFICAS:
         right: analysisResult.safeAreas?.right ?? 5,
         bottom: analysisResult.safeAreas?.bottom ?? 15,
         left: analysisResult.safeAreas?.left ?? 5
-      }
+      },
+      textCoverage: analysisResult.textCoverage ? {
+        percentage: analysisResult.textCoverage.percentage ?? 15,
+        density: analysisResult.textCoverage.density ?? 'medium',
+        recommendation: analysisResult.textCoverage.recommendation ?? 'Cantidad de texto equilibrada'
+      } : undefined
     };
 
     console.log("✅ Análisis de composición completado:", validatedResult);
+    
+    // Log específico para cobertura de texto
+    if (validatedResult.textCoverage) {
+      console.log(`📊 Cobertura de texto IA: ${validatedResult.textCoverage.percentage}% (${validatedResult.textCoverage.density})`);
+      console.log(`💡 Recomendación: ${validatedResult.textCoverage.recommendation}`);
+    }
+    
     return validatedResult;
 
   } catch (error: any) {
