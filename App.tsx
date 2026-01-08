@@ -1491,7 +1491,6 @@ const handleGenerate = async () => {
         );
         console.log(`💰 Crédito final_image ${creditDeducted ? 'descontado' : 'NO descontado (sin créditos o error)'}`);
 
-        setStatus({ isLoading: true, step: 'rendering', message: 'Generando imagen HD...' });
         progressAlert.updateProgress(20, 'Preparando prompt...');
         let url;
         // story_art se maneja igual que image para el upgrade HD
@@ -1634,7 +1633,6 @@ const handleGenerate = async () => {
         setImageUrl(url);
         setHdImageUrl(url);
         setIsDraft(false);
-        setStatus({ isLoading: false, step: 'complete', message: 'LISTO' });
         
         // 🔧 CERRAR ALERTA CON DELAY PARA QUE EL COMPARADOR SE RENDERICE PRIMERO
         // El comparador se abre automáticamente en FlyerDisplay cuando hdImageUrl cambia
@@ -1657,18 +1655,12 @@ const handleGenerate = async () => {
     const progressAlert = estudioAlerts.progress('Refinando imagen...');
     
     try {
-      setStatus({ isLoading: true, step: 'translating', message: 'Refinando prompt...' });
       progressAlert.updateProgress(20, 'Analizando prompt...');
       // Para refinar necesitamos el prompt en inglés original, lo regeneramos
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
       const newPrompt = await refineDescription(enhancedPrompt, instruction);
       const qualityToUse = isDraft ? 'draft' : 'hd';
       
-      setStatus({ 
-        isLoading: true, 
-        step: 'rendering', 
-        message: 'Regenerando imagen...' 
-      });
       progressAlert.updateProgress(60, 'Renderizando imagen...');
 
       let url;
@@ -1778,7 +1770,11 @@ const handleGenerate = async () => {
       }
       setImageUrl(url);
       progressAlert.updateProgress(100, '¡Completado!');
-      setStatus({ isLoading: false, step: 'complete', message: 'ACTUALIZADO' });
+      
+      // Cerrar alerta automáticamente
+      setTimeout(() => {
+        progressAlert.close();
+      }, 500);
     } catch (error: any) {
       progressAlert.close();
       handleError(error);
