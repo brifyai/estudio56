@@ -213,6 +213,9 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
     }
     
     // Dibujar texto con wrap si es necesario
+    // CRÍTICO: Usar el lineWidth escalado proporcionalmente para que coincida con la vista
+    // En la vista: width = lineWidth * scaleFactor
+    // Aquí: maxWidth = lineWidth * scaleFactor (mismo cálculo)
     const maxWidth = textStyles.lineWidth * scaleFactor;
     wrapText(ctx, textToDraw, textX, textY, maxWidth, fontSize * 1.4);
     
