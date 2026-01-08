@@ -1,9 +1,9 @@
-import { Handler } from '@netlify/functions';
+const { Handler } = require('@netlify/functions');
 
 const FAL_AI_API_KEY = process.env.FAL_AI_API_KEY;
 const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
-export const handler: Handler = async (event) => {
+exports.handler = async (event) => {
   // CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
