@@ -569,7 +569,7 @@ export const ProfilePage: React.FC = () => {
         {/* Middle Row - Credits & Usage */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
-          {/* Contador de Créditos Principal - SEPARADO Borradores de Imágenes y Borradores HD */}
+          {/* Contador de Créditos Principal - SEPARADO Borradores de Imágenes y Borradores de Videos */}
           <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
               <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
@@ -646,7 +646,7 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
             
-            {/* Usage by Type */}
+            {/* Uso por Categoría */}
             <div className="mt-6 space-y-3">
               <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
               
@@ -683,6 +683,92 @@ export const ProfilePage: React.FC = () => {
               >
                 Obtener más créditos
               </button>
+            </div>
+          </div>
+
+          {/* Estadísticas Completas de Consumo */}
+          <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+            <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
+              <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">📊</span>
+              Estadísticas de Consumo
+            </h2>
+            
+            {/* Resumen de Créditos */}
+            <div className="bg-black/30 rounded-2xl p-4 mb-4">
+              <h3 className="text-sm font-semibold text-white/80 mb-3">Resumen de Créditos</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-sm">Créditos HD disponibles</span>
+                  <span className="text-blue-400 font-bold">{userProfile.credits}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-sm">Borradores disponibles</span>
+                  <span className="text-green-400 font-bold">{userProfile.drafts}</span>
+                </div>
+                <div className="h-px bg-white/10 my-2"></div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-sm">Total créditos mes</span>
+                  <span className="text-white font-bold">
+                    {(userProfile.user_plans.credits_hd || 0) + (userProfile.user_plans.drafts || 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60 text-sm">Total usado este mes</span>
+                  <span className="text-white font-bold">
+                    {getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Para qué alcanzan los créditos */}
+            <div className="bg-black/30 rounded-2xl p-4">
+              <h3 className="text-sm font-semibold text-white/80 mb-3">¿Para qué alcanzan?</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-2 bg-green-500/10 rounded-lg">
+                  <span className="text-white/70 text-sm">🖼️ Imágenes HD</span>
+                  <span className="text-green-400 font-bold">{userProfile.credits} unid.</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-orange-500/10 rounded-lg">
+                  <span className="text-white/70 text-sm">🎬 Videos HD</span>
+                  <span className="text-orange-400 font-bold">{Math.floor(userProfile.credits / 10)} unid.</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-blue-500/10 rounded-lg">
+                  <span className="text-white/70 text-sm">📝 Borradores</span>
+                  <span className="text-blue-400 font-bold">{userProfile.drafts} unid.</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-purple-500/10 rounded-lg">
+                  <span className="text-white/70 text-sm">📦 Productos</span>
+                  <span className="text-purple-400 font-bold">{userProfile.credits} unid.</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Progreso general */}
+            <div className="mt-4 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/80 text-sm">Progreso general del mes</span>
+                <span className="text-white font-bold">
+                  {Math.round(
+                    ((getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')) /
+                    ((userProfile.user_plans.credits_hd || 1) + (userProfile.user_plans.drafts || 0))) * 100
+                  )}%
+                </span>
+              </div>
+              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all"
+                  style={{
+                    width: `${Math.min(
+                      ((getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')) /
+                      ((userProfile.user_plans.credits_hd || 1) + (userProfile.user_plans.drafts || 0))) * 100,
+                      100
+                    )}%`
+                  }}
+                />
+              </div>
             </div>
           </div>
 
