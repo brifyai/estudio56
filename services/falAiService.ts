@@ -182,18 +182,87 @@ export const generateHDWithImg2Img = async (
     console.log('✅ [fal.ai] Respuesta Flux recibida');
     console.log('📦 [fal.ai] Response keys:', Object.keys(data));
 
-    // Extraer imagen de la respuesta Flux
-    // Flux retorna la imagen en 'images[0].url' o 'image.url'
+    // fal.ai usa sistema de cola - verificar si está en cola
+    if (data.status === 'IN_QUEUE' || data.status === 'IN_PROGRESS') {
+      console.log('⏳ [fal.ai] Imagen en cola, esperando resultado...');
+      console.log('📝 [fal.ai] Request ID:', data.request_id);
+      console.log('📝 [fal.ai] Status URL:', data.status_url);
+      
+      // Hacer polling hasta obtener el resultado
+      const maxAttempts = 60; // 60 intentos = 2 minutos máximo
+      const pollInterval = 2000; // 2 segundos entre intentos
+      
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        
+        console.log(`🔄 [fal.ai] Polling intento ${attempt + 1}/${maxAttempts}...`);
+        
+        const statusResponse = await fetch(data.status_url, {
+          headers: {
+            'Authorization': `Key ${FAL_AI_API_KEY}`,
+          },
+        });
+        
+        if (!statusResponse.ok) {
+          console.error(`❌ [fal.ai] Error en polling: ${statusResponse.status}`);
+          continue;
+        }
+        
+        const statusData = await statusResponse.json();
+        console.log(`📊 [fal.ai] Status: ${statusData.status}`);
+        
+        if (statusData.status === 'COMPLETED') {
+          console.log('✅ [fal.ai] Generación completada');
+          
+          // Obtener el resultado final
+          const resultResponse = await fetch(data.response_url, {
+            headers: {
+              'Authorization': `Key ${FAL_AI_API_KEY}`,
+            },
+          });
+          
+          if (!resultResponse.ok) {
+            throw new Error(`Error obteniendo resultado: ${resultResponse.status}`);
+          }
+          
+          const resultData = await resultResponse.json();
+          console.log('📦 [fal.ai] Result keys:', Object.keys(resultData));
+          
+          // Extraer imagen del resultado
+          let imageUrl = resultData.images?.[0]?.url || resultData.image?.url || resultData.url;
+          
+          if (!imageUrl) {
+            console.error('❌ [fal.ai] No se encontró imagen en resultado:', JSON.stringify(resultData, null, 2));
+            throw new Error('No se encontró imagen en el resultado de fal.ai');
+          }
+          
+          console.log(`✅ [fal.ai] Imagen HD generada exitosamente`);
+          console.log(`📸 [fal.ai] URL: ${imageUrl.substring(0, 100)}...`);
+          console.log(`🎲 [fal.ai] Seed usado: ${resultData.seed || seed}`);
+          
+          return {
+            success: true,
+            imageUrl,
+            seed: resultData.seed || seed,
+          };
+        } else if (statusData.status === 'FAILED') {
+          console.error('❌ [fal.ai] Generación falló:', statusData.error);
+          throw new Error(`Generación falló: ${statusData.error || 'Error desconocido'}`);
+        }
+        
+        // Continuar polling si está IN_PROGRESS
+      }
+      
+      // Si llegamos aquí, se agotó el tiempo
+      throw new Error('Timeout esperando resultado de fal.ai (2 minutos)');
+    }
+
+    // Si la respuesta ya tiene la imagen (respuesta síncrona)
     let imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
     
     if (!imageUrl) {
       console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', JSON.stringify(data, null, 2));
       throw new Error('No se encontró imagen en la respuesta de fal.ai Flux');
-    }
-
-    // Si es URL relativa, convertir a URL completa
-    if (imageUrl.startsWith('/')) {
-      imageUrl = `https://fal.ai${imageUrl}`;
     }
 
     console.log(`✅ [fal.ai] Imagen HD generada exitosamente`);
