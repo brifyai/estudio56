@@ -570,17 +570,18 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Middle Row - Credits & Usage */}
+        {/* Middle Row - Credits & Usage - UNIFIED CONTAINER */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
-          {/* Control de Créditos - col-span-2 */}
-          <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
+          {/* Control de Créditos - UNIFIED SINGLE CONTAINER */}
+          <div className="lg:col-span-3 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
               <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
               Control de Créditos
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Top Row - Drafts Progress */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               {/* Borradores de Imágenes */}
               <div className="bg-black/30 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -611,6 +612,23 @@ export const ProfilePage: React.FC = () => {
                   <p className="text-xs text-white/40 text-right">
                     Imágenes rápidas con marca de agua
                   </p>
+                </div>
+                
+                {/* ¿Para qué alcanzan? */}
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-xs text-white/50 mb-2">Con estos créditos puedes generar:</p>
+                  <div className="flex gap-3">
+                    <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                      <span className="text-lg">🖼️</span>
+                      <span className="text-white font-bold">{userProfile.drafts}</span>
+                      <span className="text-white/50 text-xs">borradores</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                      <span className="text-lg">✨</span>
+                      <span className="text-white font-bold">{Math.floor(userProfile.credits / 5)}</span>
+                      <span className="text-white/50 text-xs">imágenes HD</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -645,98 +663,116 @@ export const ProfilePage: React.FC = () => {
                     Videos HD (límite separado)
                   </p>
                 </div>
-              </div>
-            </div>
-            
-            {/* Uso por Categoría */}
-            <div className="mt-6 space-y-3">
-              <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                  <span className="text-white/70 flex items-center gap-2">
-                    <span className="text-lg">📝</span> Borradores
-                  </span>
-                  <span className="text-white font-bold">{getUsageByType('draft')}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                  <span className="text-white/70 flex items-center gap-2">
-                    <span className="text-lg">🖼️</span> Imágenes HD
-                  </span>
-                  <span className="text-white font-bold">{getUsageByType('final_image')}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                  <span className="text-white/70 flex items-center gap-2">
-                    <span className="text-lg">🎬</span> Videos HD
-                  </span>
-                  <span className="text-white font-bold">{getUsageByType('video')}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                  <span className="text-white/70 flex items-center gap-2">
-                    <span className="text-lg">📦</span> Productos
-                  </span>
-                  <span className="text-white font-bold">{getUsageByType('product_upload')}</span>
-                </div>
-              </div>
-              
-              <button
-                onClick={() => window.location.href = '/panel'}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium mt-4"
-              >
-                Obtener más créditos
-              </button>
-            </div>
-          </div>
-
-          {/* Estadísticas de Consumo */}
-          <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
-            <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
-              <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">📊</span>
-              Estadísticas
-            </h2>
-            
-            {/* Resumen de Créditos */}
-            <div className="bg-black/30 rounded-2xl p-4 mb-4">
-              <h3 className="text-sm font-semibold text-white/80 mb-3">Resumen</h3>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Créditos HD</span>
-                  <span className="text-blue-400 font-bold">{userProfile.credits}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Borradores</span>
-                  <span className="text-green-400 font-bold">{userProfile.drafts}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Videos</span>
-                  <span className="text-orange-400 font-bold">{userProfile.drafts_video}</span>
+                
+                {/* ¿Para qué alcanzan? */}
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-xs text-white/50 mb-2">Con estos créditos puedes generar:</p>
+                  <div className="flex gap-3">
+                    <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                      <span className="text-lg">🎬</span>
+                      <span className="text-white font-bold">{userProfile.drafts_video}</span>
+                      <span className="text-white/50 text-xs">videos</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                      <span className="text-lg">⏱️</span>
+                      <span className="text-white font-bold">{userProfile.drafts_video * 5}</span>
+                      <span className="text-white/50 text-xs">segundos</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             
-            {/* Progreso general */}
-            <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white/80 text-sm">Progreso mes</span>
-                <span className="text-white font-bold">
-                  {Math.round(
-                    ((getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')) /
-                    ((userProfile.user_plans.credits_hd || 1) + (userProfile.user_plans.drafts || 0))) * 100
-                  )}%
-                </span>
+            {/* Middle Row - Usage by Category & Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Uso por Categoría */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">📝</span> Borradores
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('draft')}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">🖼️</span> Imágenes HD
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('final_image')}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">🎬</span> Videos HD
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('video')}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-white/70 flex items-center gap-2">
+                      <span className="text-lg">📦</span> Productos
+                    </span>
+                    <span className="text-white font-bold">{getUsageByType('product_upload')}</span>
+                  </div>
+                </div>
               </div>
-              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all"
-                  style={{
-                    width: `${Math.min(
+              
+              {/* Resumen de Créditos */}
+              <div className="bg-black/30 rounded-2xl p-4">
+                <h3 className="text-sm font-semibold text-white/80 mb-3">Resumen</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm">Créditos HD</span>
+                    <span className="text-blue-400 font-bold">{userProfile.credits}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm">Borradores</span>
+                    <span className="text-green-400 font-bold">{userProfile.drafts}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 text-sm">Videos</span>
+                    <span className="text-orange-400 font-bold">{userProfile.drafts_video}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Bottom Row - Progress & CTA */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Progreso general */}
+              <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white/80 text-sm">Progreso mes</span>
+                  <span className="text-white font-bold">
+                    {Math.round(
                       ((getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')) /
-                      ((userProfile.user_plans.credits_hd || 1) + (userProfile.user_plans.drafts || 0))) * 100,
-                      100
-                    )}%`
-                  }}
-                />
+                      ((userProfile.user_plans.credits_hd || 1) + (userProfile.user_plans.drafts || 0))) * 100
+                    )}%
+                  </span>
+                </div>
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all"
+                    style={{
+                      width: `${Math.min(
+                        ((getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')) /
+                        ((userProfile.user_plans.credits_hd || 1) + (userProfile.user_plans.drafts || 0))) * 100,
+                        100
+                      )}%`
+                    }}
+                  />
+                </div>
+              </div>
+              
+              {/* CTA Button */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => window.location.href = '/panel'}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium"
+                >
+                  Obtener más créditos
+                </button>
               </div>
             </div>
           </div>
