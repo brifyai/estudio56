@@ -950,15 +950,15 @@ const handleGenerate = async () => {
     if (imageQuality === 'draft') {
       setDraftImageUrl(null);
       setHdImageUrl(null); // 🔧 LIMPIAR HD al generar nuevo borrador
+      setImageUrl(null);
+      // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
+      setRealityImageUrl(null);
+      // 🎯 RESETEAR realityLevel a 1.5 (Celular Viejo) y limpiar variaciones al generar nuevo borrador
+      setRealityLevel(1.5);
+      setIsRealityVariation(false); // Indicar que es una nueva imagen base
+      setRealityVariations({});
     }
-    setImageUrl(null);
-    setHdImageUrl(null);
-    // 🎯 LIMPIAR realityImageUrl al generar nueva imagen base
-    setRealityImageUrl(null);
-    // 🎯 RESETEAR realityLevel a 1.5 (Celular Viejo) y limpiar variaciones al generar nuevo borrador
-    setRealityLevel(1.5);
-    setIsRealityVariation(false); // Indicar que es una nueva imagen base
-    setRealityVariations({});
+    // Si estamos generando HD, NO limpiar draftImageUrl (lo necesitamos para comparar)
     setCurrentSpanishPrompt(''); // Limpiar prompt en español
     const newSeed = Math.floor(Math.random() * 2000000000);
     setSeed(newSeed);
