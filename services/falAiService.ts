@@ -189,7 +189,7 @@ export const generateHDWithImg2Img = async (
       console.log('📝 [fal.ai] Status URL:', data.status_url);
       
       // Hacer polling hasta obtener el resultado
-      const maxAttempts = 60; // 60 intentos = 2 minutos máximo
+      const maxAttempts = 90; // 90 intentos = 3 minutos máximo
       const pollInterval = 2000; // 2 segundos entre intentos
       
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -254,7 +254,7 @@ export const generateHDWithImg2Img = async (
       }
       
       // Si llegamos aquí, se agotó el tiempo
-      throw new Error('Timeout esperando resultado de fal.ai (2 minutos)');
+      throw new Error('Timeout esperando resultado de fal.ai (3 minutos)');
     }
 
     // Si la respuesta ya tiene la imagen (respuesta síncrona)
