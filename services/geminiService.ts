@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
-import { generateHDWithImg2Img, generateHDWithTxt2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxSchnell } from "./falAiService";
+import { generateHDWithImg2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxSchnell } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2099,7 +2099,7 @@ export const generateFlyerImage = async (
   draftImageForHD?: string, // Optional draft image to use as reference for HD
   artDirectionId?: number, // ID del rubro (1-60) para Story Art
   storyArtStyleId?: StoryArtStyleId, // Estilo visual de Story Art seleccionado por el usuario
-  realityLevel: RealityLevel = 1.5 // 🎚️ Nivel de realidad (1.0-5.0), por defecto 1.5 (Cámara Espía)
+  realityLevel: RealityLevel = 1.0 // 🎚️ Nivel de realidad (1.0-5.0), por defecto 1.0 (Cámara Espía) - MÁS realista para negocios locales
 ): Promise<GeneratedImageResult> => {
   const ai = getAiClient();
   const styleConfig = FLYER_STYLES[styleKey] || { label: 'Professional', english_prompt: 'Professional commercial style' };

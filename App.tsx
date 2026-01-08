@@ -214,8 +214,9 @@ const Dashboard: React.FC = () => {
   const [productPosition, setProductPosition] = useState<{x: number, y: number; width: number; height: number}>({ x: 50, y: 70, width: 120, height: 120 });
   
   // 🎚️ REALITY SLIDER STATES - Sistema de регулятор de realidad
-  // DEFAULT: 1.5 (Celular Viejo) - Look más auténtico y cercano para locales chilenos
-  const [realityLevel, setRealityLevel] = useState<number>(1.5);
+  // DEFAULT: 1.0 (Cámara Espía) - Look MÁS auténtico y realista para negocios locales chilenos
+  // Evita que las imágenes parezcan hoteles 5 estrellas desde el inicio
+  const [realityLevel, setRealityLevel] = useState<number>(1.0);
   const [sceneId, setSceneId] = useState<string | null>(null);
   const [realityVariations, setRealityVariations] = useState<Record<number, string>>({});
   const [showRealityComparator, setShowRealityComparator] = useState(false);
@@ -1293,8 +1294,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
         currentImageRef.current = result.imageDataUrl; // ✅ SOLUCIÓN: Actualizar ref con imagen actual
         
         // 🎯 GUARDAR IMAGEN ORIGINAL EN CACHÉ DE REALITY para comparación
-        // La imagen base (1.5★) siempre debe estar disponible para comparar
-        const originalLevel: RealityLevel = 1.5;
+        // La imagen base (1.0★) siempre debe estar disponible para comparar
+        const originalLevel: RealityLevel = 1.0;
         setRealityVariations(prev => ({
           ...prev,
           [originalLevel]: result.imageDataUrl
@@ -1877,7 +1878,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
     }
     
     // 2. SIEMPRE ASEGURAR QUE LA IMAGEN ORIGINAL ESTÉ EN CACHÉ
-    const originalLevel = 1.5;
+    const originalLevel = 1.0;
     if (draftImageUrl) {
       // Guardar siempre, sobrescribiendo si es necesario para asegurar sincronización
       // ✅ CORRECCIÓN: Eliminar verificación de sceneId que causaba que no se guardara
@@ -2469,7 +2470,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       onRealityGenerationStart={handleRealityGenerationStart}
                       isRealityVariation={isRealityVariation}
                       onOpenRealityComparator={() => {
-                        const originalLevel = 1.5;
+                        const originalLevel = 1.0;
                         if (!realityVariations[originalLevel] && draftImageUrl) {
                           setRealityVariations(prev => ({
                             ...prev,
@@ -2517,7 +2518,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 sceneId={sceneId}
                 variations={realityVariations}
                 currentLevel={realityLevel}
-                originalLevel={1.5}
+                originalLevel={1.0}
                 seed={seed}
                 aspectRatio={aspectRatio}
                 onSelect={(level) => {
