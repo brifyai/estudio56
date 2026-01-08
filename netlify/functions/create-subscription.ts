@@ -153,6 +153,13 @@ export const handler: Handler = async (event) => {
 
     console.log('✅ Subscription created:', mpPreapproval.id);
 
+    // Calculate next payment date (30 days from now)
+    const startDate = new Date();
+    const nextPaymentDate = new Date(startDate);
+    nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+    
+    console.log(`📅 Próxima renovación: ${nextPaymentDate.toISOString()}`);
+
     // Create subscription record in database
     const { error: subscriptionError } = await supabase
       .from('subscriptions')
@@ -161,11 +168,11 @@ export const handler: Handler = async (event) => {
         plan_id: planId,
         mp_preapproval_id: mpPreapproval.id,
         status: mpPreapproval.status,
-        amount: plan.price,
+        amount: plan.price_with_iva || plan.price,
         currency: 'CLP',
-        next_payment_date: mpPreapproval.next_payment_date,
-        start_date: mpPreapproval.start_date,
-        end_date: mpPreapproval.end_date,
+        next_payment_date: nextPaymentDate.toISOString(),
+        start_date: startDate.toISOString(),
+        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
       });
 
     if (subscriptionError) {

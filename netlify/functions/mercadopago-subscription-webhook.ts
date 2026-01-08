@@ -79,12 +79,22 @@ export const handler: Handler = async (event) => {
 
       console.log('📋 Subscription details:', subscription);
 
+      // Calculate next payment date if not provided by MercadoPago
+      let nextPaymentDate = subscription.next_payment_date;
+      if (!nextPaymentDate) {
+        // Calculate 30 days from now
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + 30);
+        nextPaymentDate = nextDate.toISOString();
+        console.log('📅 Calculando próxima renovación localmente:', nextPaymentDate);
+      }
+
       // Update subscription in database
       const { error: updateError } = await supabase
         .from('subscriptions')
         .update({
           status: subscription.status,
-          next_payment_date: subscription.next_payment_date,
+          next_payment_date: nextPaymentDate,
           last_updated: new Date().toISOString(),
         })
         .eq('mp_preapproval_id', preapprovalId);
