@@ -204,17 +204,17 @@ export const buildPowerPrompt = (basePrompt: string, stars: number): string => {
  */
 export const getRealityLabel = (stars: number): string => {
   const labels: Record<number, string> = {
-    1.0: 'CCTV / Seguridad',
-    1.5: 'Cámara Espía',
-    2.0: 'Celular Básico',
-    2.5: 'Auténtico Local',
-    3.0: 'Semi-Pro',
-    3.5: 'Comercial',
-    4.0: 'Editorial',
-    4.5: 'Premium Ad',
-    5.0: 'Cinematográfico'
+    1.0: 'Hostal',
+    1.5: 'Motel',
+    2.0: 'Hotel 2★',
+    2.5: 'Hotel 3★',
+    3.0: 'Hotel 4★',
+    3.5: 'Hotel 4★ Superior',
+    4.0: 'Hotel 5★',
+    4.5: 'Hotel 5★ Gran Lujo',
+    5.0: 'Resort de Lujo'
   };
-  return labels[Math.round(stars * 2) / 2] || 'Auténtico Local';
+  return labels[Math.round(stars * 2) / 2] || 'Hostal';
 };
 
 /**

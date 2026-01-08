@@ -76,7 +76,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   1.0: {
     stars: 1.0,
-    label: "Celular Antiguo",
+    label: "Hostal",
     description: "Blanco y negro o color lavado, ruido extremo, ángulo alto, 480p",
     technicalProfile: "Celular 2010 / Muy pixelado",
     lighting: "Poor overhead lighting, harsh fluorescent, uneven exposure, some areas completely dark",
@@ -85,11 +85,11 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Unrecognizable faces, low detail, no professional posing, candid and unpolished",
     negative: NEGATIVE_CRUDA,
     categoryModifiers: CRUDA_MODIFIERS,
-    icon: "📱"
+    icon: "🏠"
   },
   1.5: {
     stars: 1.5,
-    label: "Celular Viejo",
+    label: "Motel",
     description: "Granulado, saturación baja, óptica deficiente, 720p",
     technicalProfile: "Celular 2015 / Granulado",
     lighting: "Basic LED ceiling light, slight yellow tint, shadows on one side, mixed color temperature",
@@ -98,15 +98,15 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Average people, common clothing brands, natural expressions, no professional styling, candid moments",
     negative: NEGATIVE_CRUDA,
     categoryModifiers: CRUDA_MODIFIERS,
-    icon: "📱"
+    icon: "🛏️"
   },
 
   // ============================================
-  // 2.0 - 2.5: AUTÉNTICO LOCAL (El punto dulce - DEFAULT)
+  // 2.0 - 2.5: AUTÉNTICO LOCAL (El punto dulce)
   // ============================================
   2.0: {
     stars: 2.0,
-    label: "Celular Básico",
+    label: "Hotel 2★",
     description: "Rango dinámico limitado, balance de blancos automático (errático)",
     technicalProfile: "Post rápido / Espontáneo",
     lighting: "Standard overhead LED, slightly harsh shadows, natural indoor lighting, mixed sources",
@@ -115,11 +115,11 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Real customers, common sportswear, natural sweat, authentic effort visible, relatable subjects",
     negative: NEGATIVE_AUTENTICA,
     categoryModifiers: { ...CRUDA_MODIFIERS, ...AUTENTICA_MODIFIERS },
-    icon: "📱"
+    icon: "🏨"
   },
   2.5: {
     stars: 2.5,
-    label: "Auténtico Local",
+    label: "Hotel 3★",
     description: "Punto Dulce. Smartphone moderno, luz de techo, sin filtros",
     technicalProfile: "Generar Confianza - El ancla de Estudio 56",
     lighting: "Standard overhead LED or natural window light, slight shadows, authentic, no dramatic lighting, mixed color temperature from different light sources",
@@ -128,11 +128,11 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Average person, natural sweat visible, non-branded gym wear, authentic expressions, relatable, natural skin texture with visible pores, no airbrushing",
     negative: NEGATIVE_AUTENTICA,
     categoryModifiers: AUTENTICA_MODIFIERS,
-    icon: "🏪"
+    icon: "⭐⭐⭐"
   },
   3.0: {
     stars: 3.0,
-    label: "Semi-Pro",
+    label: "Hotel 4★",
     description: "DSLR con lente de kit, enfoque nítido, luz natural balanceada",
     technicalProfile: "Perfil de Negocio Google",
     lighting: "Balanced natural light, soft shadows, professional but natural, window light",
@@ -141,7 +141,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Fit but relatable subjects, natural expressions, common activewear brands, genuine smiles",
     negative: NEGATIVE_PROFESIONAL,
     categoryModifiers: PROFESIONAL_MODIFIERS,
-    icon: "📷"
+    icon: "⭐⭐⭐⭐"
   },
 
   // ============================================
@@ -149,7 +149,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   3.5: {
     stars: 3.5,
-    label: "Comercial",
+    label: "Hotel 4★ Superior",
     description: "Fotografía comercial profesional, iluminación de estudio",
     technicalProfile: "Web / Landing Page",
     lighting: "Professional softbox lighting, balanced exposure, subtle rim light, controlled environment",
@@ -158,11 +158,11 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Athletic but natural subjects, genuine expressions, quality activewear, approachable look",
     negative: NEGATIVE_PROFESIONAL,
     categoryModifiers: PROFESIONAL_MODIFIERS,
-    icon: "🏢"
+    icon: "✨"
   },
   4.0: {
     stars: 4.0,
-    label: "Editorial",
+    label: "Hotel 5★",
     description: "Formato medio, iluminación de estudio, retoque de piel sutil",
     technicalProfile: "Catálogo / Revista",
     lighting: "Studio lighting with modifiers, perfect highlights and shadows, professional setup",
@@ -171,7 +171,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
     human: "Fit models, professional posing, quality branded clothing, subtle makeup, polished look",
     negative: NEGATIVE_ASPIRACIONAL,
     categoryModifiers: ASPIRACIONAL_MODIFIERS,
-    icon: "✨"
+    icon: "🌟"
   },
 
   // ============================================
@@ -179,7 +179,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   // ============================================
   4.5: {
     stars: 4.5,
-    label: "Premium Ad",
+    label: "Hotel 5★ Gran Lujo",
     description: "Look publicitario de alta gama, alto contraste, paleta controlada",
     technicalProfile: "Campañas de Pago (Ads)",
     lighting: "Cinematic lighting, softboxes, reflectors, perfect light control, dramatic but beautiful",
@@ -192,7 +192,7 @@ export const REALITY_CONFIGS: Record<RealityLevel, RealityPromptConfig> = {
   },
   5.0: {
     stars: 5.0,
-    label: "Cinematográfico",
+    label: "Resort de Lujo",
     description: "Formato anamórfico, luces teatrales, atmósfera estilizada (humo/mármol)",
     technicalProfile: "Branding Aspiracional",
     lighting: "Cinematic sunset lighting, studio softboxes, dramatic highlights, theatrical setup",
