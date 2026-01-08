@@ -1,7 +1,9 @@
 /**
  * 🎯 FAL.AI Service - Image-to-Image (img2img) nativo
  * 
- * fal.ai soporta modelos Stable Diffusion con img2img nativo
+ * IMPORTANTE: Todas las llamadas a fal.ai van a través de Netlify Functions
+ * La API key está en el backend por seguridad
+ * 
  * Documentación: https://docs.fal.ai/model-apis/quickstart
  */
 
@@ -11,9 +13,7 @@ import { AspectRatio, ImageQuality } from '../types';
 // 🔑 CONFIGURACIÓN
 // ============================================
 
-const FAL_AI_API_KEY = import.meta.env.VITE_FAL_AI_API_KEY || process.env.FAL_AI_API_KEY;
-
-// Base URL sin /v1/ - los modelos usan rutas directas
+// Base URL - solo para referencia, las llamadas van vía Netlify Function
 const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
 // Modelos disponibles en fal.ai
@@ -186,7 +186,7 @@ export const generateRealityVariation = async (
 
 /**
  * Genera una imagen HD usando Image-to-Image nativo de fal.ai
- * Esto garantiza ~95% similitud con la imagen de referencia
+ * IMPORTANTE: Usa Netlify Function para seguridad (API key en backend)
  */
 export const generateHDWithImg2Img = async (
   prompt: string,
@@ -212,174 +212,55 @@ export const generateHDWithImg2Img = async (
   console.log('🎯 [fal.ai] Iniciando Flux Dev Image-to-Image para HD...');
   console.log(`📝 [fal.ai] Modelo: ${HD_MODEL}`);
   console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
-  console.log(`📝 [fal.ai] Prompt (first 150): ${prompt.substring(0, 150)}...`);
   console.log(`🖼️ [fal.ai] Strength: ${strength} (0.15-0.25 = máxima similitud)`);
-  console.log(`🖼️ [fal.ai] Guidance Scale: ${guidanceScale} (7-9 = seguir referencia)`);
-  console.log(`🖼️ [fal.ai] Steps: ${steps} (25-30 = calidad HD)`);
+  console.log(`🖼️ [fal.ai] Guidance Scale: ${guidanceScale}`);
+  console.log(`🖼️ [fal.ai] Steps: ${steps}`);
   console.log(`🖼️ [fal.ai] Seed: ${seed}`);
   console.log(`🖼️ [fal.ai] Aspect Ratio: ${aspectRatio}`);
-  console.log(`🖼️ [fal.ai] API Key configurada: ${!!FAL_AI_API_KEY}`);
-  console.log(`🖼️ [fal.ai] Draft image length: ${referenceImageDataUrl?.length || 0} chars`);
-  console.log(`🖼️ [fal.ai] Negative prompt: ${negativePrompt.substring(0, 100)}...`);
-  
-  // Convertir aspect ratio a dimensiones
-  const aspectRatioMap: Record<string, { width: number; height: number }> = {
-    '9:16': { width: 768, height: 1344 },
-    '1:1': { width: 1024, height: 1024 },
-    '16:9': { width: 1344, height: 768 },
-    '4:5': { width: 832, height: 1024 },
-    '3:4': { width: 768, height: 1024 },
-  };
-  
-  const dimensions = aspectRatioMap[aspectRatio] || aspectRatioMap['9:16'];
-
-  // Extraer base64 de la imagen de referencia
-  const imageBase64 = extractBase64(referenceImageDataUrl);
-
-  // Construir request para Flux Dev img2img
-  // Flux usa nombres de parámetros diferentes a SDXL
-  const requestBody: any = {
-    prompt: prompt,
-    image_url: referenceImageDataUrl, // Enviar data URL completo
-    strength: strength, // 0.15-0.25 = mantener similitud alta
-    guidance_scale: guidanceScale, // 7-9 = seguir imagen de referencia
-    num_inference_steps: steps, // 25-30 = calidad HD
-    image_size: {
-      width: dimensions.width,
-      height: dimensions.height,
-    },
-    enable_safety_checker: false, // Desactivar para evitar falsos positivos
-  };
-
-  // Agregar seed si existe (CRÍTICO para reproducibilidad)
-  if (seed !== undefined && seed !== null) {
-    requestBody.seed = seed;
-    console.log(`🖼️ [fal.ai] Seed configurado: ${seed} (garantiza consistencia)`);
-  }
-
-  console.log('📡 [fal.ai] Request body (sin imagen):', JSON.stringify({
-    ...requestBody,
-    image_url: `[DATA_URL ${referenceImageDataUrl?.length || 0} chars]`
-  }, null, 2));
 
   try {
-    // Verificar API key
-    if (!FAL_AI_API_KEY) {
-      throw new Error('FAL_AI_API_KEY no configurada en .env');
-    }
-
-    console.log('📡 [fal.ai] Enviando request a Flux Dev img2img...');
-    console.log(`📡 [fal.ai] Endpoint: ${FAL_AI_BASE_URL}/${HD_MODEL}`);
-
-    const response = await fetch(`${FAL_AI_BASE_URL}/${HD_MODEL}`, {
+    console.log('📡 [fal.ai] Enviando request via Netlify Function...');
+    
+    // Llamar a Netlify Function (API key en backend)
+    const response = await fetch('/.netlify/functions/generate-with-fal', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${FAL_AI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        model: HD_MODEL,
+        prompt,
+        imageUrl: referenceImageDataUrl,
+        strength,
+        guidanceScale,
+        steps,
+        seed,
+        aspectRatio,
+        negativePrompt,
+      }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
-      throw new Error(`fal.ai Flux error: ${response.status} - ${errorText.substring(0, 200)}`);
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`fal.ai error: ${response.status} - ${errorData.error || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    console.log('✅ [fal.ai] Respuesta Flux recibida');
-    console.log('📦 [fal.ai] Response keys:', Object.keys(data));
+    console.log('✅ [fal.ai] Respuesta recibida');
 
-    // fal.ai usa sistema de cola - verificar si está en cola
-    if (data.status === 'IN_QUEUE' || data.status === 'IN_PROGRESS') {
-      console.log('⏳ [fal.ai] Imagen en cola, esperando resultado...');
-      console.log('📝 [fal.ai] Request ID:', data.request_id);
-      console.log('📝 [fal.ai] Status URL:', data.status_url);
-      
-      // Hacer polling hasta obtener el resultado
-      const maxAttempts = 90; // 90 intentos = 3 minutos máximo
-      const pollInterval = 2000; // 2 segundos entre intentos
-      
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
-        
-        console.log(`🔄 [fal.ai] Polling intento ${attempt + 1}/${maxAttempts}...`);
-        
-        const statusResponse = await fetch(data.status_url, {
-          headers: {
-            'Authorization': `Key ${FAL_AI_API_KEY}`,
-          },
-        });
-        
-        if (!statusResponse.ok) {
-          console.error(`❌ [fal.ai] Error en polling: ${statusResponse.status}`);
-          continue;
-        }
-        
-        const statusData = await statusResponse.json();
-        console.log(`📊 [fal.ai] Status: ${statusData.status}`);
-        
-        if (statusData.status === 'COMPLETED') {
-          console.log('✅ [fal.ai] Generación completada');
-          
-          // Obtener el resultado final
-          const resultResponse = await fetch(data.response_url, {
-            headers: {
-              'Authorization': `Key ${FAL_AI_API_KEY}`,
-            },
-          });
-          
-          if (!resultResponse.ok) {
-            throw new Error(`Error obteniendo resultado: ${resultResponse.status}`);
-          }
-          
-          const resultData = await resultResponse.json();
-          console.log('📦 [fal.ai] Result keys:', Object.keys(resultData));
-          
-          // Extraer imagen del resultado
-          let imageUrl = resultData.images?.[0]?.url || resultData.image?.url || resultData.url;
-          
-          if (!imageUrl) {
-            console.error('❌ [fal.ai] No se encontró imagen en resultado:', JSON.stringify(resultData, null, 2));
-            throw new Error('No se encontró imagen en el resultado de fal.ai');
-          }
-          
-          console.log(`✅ [fal.ai] Imagen HD generada exitosamente`);
-          console.log(`📸 [fal.ai] URL: ${imageUrl.substring(0, 100)}...`);
-          console.log(`🎲 [fal.ai] Seed usado: ${resultData.seed || seed}`);
-          
-          return {
-            success: true,
-            imageUrl,
-            seed: resultData.seed || seed,
-          };
-        } else if (statusData.status === 'FAILED') {
-          console.error('❌ [fal.ai] Generación falló:', statusData.error);
-          throw new Error(`Generación falló: ${statusData.error || 'Error desconocido'}`);
-        }
-        
-        // Continuar polling si está IN_PROGRESS
-      }
-      
-      // Si llegamos aquí, se agotó el tiempo
-      throw new Error('Timeout esperando resultado de fal.ai (3 minutos)');
+    if (!data.success) {
+      throw new Error(data.error || 'Error en generación');
     }
 
-    // Si la respuesta ya tiene la imagen (respuesta síncrona)
-    let imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
-    
-    if (!imageUrl) {
-      console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', JSON.stringify(data, null, 2));
-      throw new Error('No se encontró imagen en la respuesta de fal.ai Flux');
+    if (!data.imageUrl) {
+      throw new Error('No se encontró imageUrl en respuesta');
     }
 
     console.log(`✅ [fal.ai] Imagen HD generada exitosamente`);
-    console.log(`📸 [fal.ai] URL: ${imageUrl.substring(0, 100)}...`);
-    console.log(`🎲 [fal.ai] Seed usado: ${data.seed || seed}`);
-
     return {
       success: true,
-      imageUrl,
+      imageUrl: data.imageUrl,
       seed: data.seed || seed,
     };
 
