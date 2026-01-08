@@ -2349,6 +2349,12 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
     // 🎯 SI HAY IMAGEN DE REFERENCIA, USAR FAL.AI Z-IMAGE TURBO
     // Más rápido y económico que Flux Dev para borradores
     // ============================================
+    
+    console.log('🔍 [Draft] Verificando configuración de fal.ai...');
+    console.log('🔍 [Draft] isFalAiConfigured():', isFalAiConfigured());
+    console.log('🔍 [Draft] draftImageForHD disponible:', !!draftImageForHD);
+    console.log('🔍 [Draft] draftImageForHD length:', draftImageForHD?.length || 0);
+    
     if (isFalAiConfigured() && draftImageForHD) {
       console.log('🚀 [Draft] Usando fal.ai Z-Image Turbo para mantener composición');
       console.log('📝 [Draft] Seed usado:', consistencySeed);
