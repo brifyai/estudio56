@@ -23,10 +23,15 @@ exports.handler = async (event) => {
   }
 
   try {
+    // Verificar que la API key esté configurada
     if (!FAL_AI_API_KEY) {
-      throw new Error('FAL_AI_API_KEY no configurada');
+      console.error('❌ FAL_AI_API_KEY no está configurada en Netlify Environment Variables');
+      console.error('📝 Variables disponibles:', Object.keys(process.env).filter(k => k.includes('FAL')));
+      throw new Error('FAL_AI_API_KEY no configurada en Netlify. Por favor configúrala en: Site settings → Environment variables');
     }
 
+    console.log('✅ FAL_AI_API_KEY configurada correctamente');
+    
     const body = JSON.parse(event.body || '{}');
     const { model, prompt, imageUrl, strength, guidanceScale, steps, seed, aspectRatio, negativePrompt } = body;
 
