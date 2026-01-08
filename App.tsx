@@ -227,6 +227,7 @@ const Dashboard: React.FC = () => {
   const realityLoadingSwalRef = useRef<any>(null);
   const generationLockRef = useRef(false); // ✅ CORRECCIÓN: Prevenir generaciones paralelas
   const previousDraftUrlRef = useRef<string | null>(null);
+  const currentImageRef = useRef<string | null>(null); // ✅ SOLUCIÓN: Ref para imagen actual (no afectado por batching de React)
   
   // Callback para mostrar alerta de loading cuando inicia generación de realidad
   const handleRealityGenerationStart = useCallback(() => {
@@ -1289,6 +1290,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
         });
         setImageUrl(result.imageDataUrl);
         setDraftImageUrl(result.imageDataUrl);
+        currentImageRef.current = result.imageDataUrl; // ✅ SOLUCIÓN: Actualizar ref con imagen actual
         
         // 🎯 GUARDAR IMAGEN ORIGINAL EN CACHÉ DE REALITY para comparación
         // La imagen base (1.5★) siempre debe estar disponible para comparar
@@ -1924,11 +1926,19 @@ progressAlert.updateProgress(60, 'Renderizando...');
       console.log('═══════════════════════════════════════════════════════════════');
       console.log('🔍 DIAGNÓSTICO REALITY - Estado antes de generar variación');
       console.log('═══════════════════════════════════════════════════════════════');
+      console.log('📸 currentImageRef.current disponible:', !!currentImageRef.current);
+      console.log('📸 currentImageRef.current length:', currentImageRef.current?.length || 0);
+      console.log('📸 imageUrl disponible:', !!imageUrl);
+      console.log('📸 imageUrl length:', imageUrl?.length || 0);
       console.log('📸 draftImageUrl disponible:', !!draftImageUrl);
       console.log('📸 draftImageUrl length:', draftImageUrl?.length || 0);
-      console.log('📸 draftImageUrl prefix:', draftImageUrl?.substring(0, 100) || 'N/A');
       console.log('🎚️ Nivel de realidad:', levelKey);
       console.log('🎲 Seed:', seed);
+      
+      // ✅ SOLUCIÓN: Usar currentImageRef como primera opción (no afectado por batching de React)
+      const referenceImage = currentImageRef.current || imageUrl || draftImageUrl;
+      console.log('📸 referenceImage final disponible:', !!referenceImage);
+      console.log('📸 referenceImage final length:', referenceImage?.length || 0);
       console.log('═══════════════════════════════════════════════════════════════');
       
       // Determinar artDirectionId para mantener la Dirección de Arte
@@ -1966,7 +1976,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
         true,
         workMode === 'auto' && overlayText.trim() ? overlayText : undefined,
         workMode === 'auto' ? "modern and clean" : undefined,
-        draftImageUrl || undefined, // 🖼️ SIEMPRE usar imagen de referencia para mantener composición
+        referenceImage, // ✅ SOLUCIÓN: Usar ref en lugar de estado (no afectado por batching)
         artDirectionId // 🎨 DIRECCIÓN DE ARTE preservada
       );
       
@@ -1996,6 +2006,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
         setImageUrl(result.imageDataUrl);
         // 🎯 GUARDAR EN realityImageUrl - NO en hdImageUrl para evitar comparación automática
         setRealityImageUrl(result.imageDataUrl);
+        currentImageRef.current = result.imageDataUrl; // ✅ SOLUCIÓN: Actualizar ref con nueva variación
         
         // SceneId ya fue inicializado en handleGenerate, no es necesario setearlo aquí
         
