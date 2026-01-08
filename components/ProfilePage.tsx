@@ -8,7 +8,8 @@ interface UserProfile {
   name: string;
   business_name: string;
   created_at: string;
-  credits: number;
+  credits: number;      // Créditos HD disponibles del usuario
+  drafts: number;       // Borradores disponibles del usuario
   plan_id: string;
   user_plans: {
     id: string;
@@ -17,7 +18,8 @@ interface UserProfile {
     iva_percentage: number;
     iva_amount: number;
     price_with_iva: number;
-    credits_per_month: number;
+    credits_hd: number; // Créditos HD incluidos en el plan (límite mensual)
+    drafts: number;     // Borradores incluidos en el plan (límite mensual)
     features: string[];
   };
 }
@@ -104,7 +106,8 @@ export const ProfilePage: React.FC = () => {
           iva_percentage: 19,
           iva_amount: 0,
           price_with_iva: 0,
-          credits_per_month: 5,
+          credits_hd: 0,
+          drafts: 3,
           features: []
         }
       });
@@ -228,12 +231,6 @@ export const ProfilePage: React.FC = () => {
     } finally {
       setIsCancelling(false);
     }
-  };
-
-  const getCreditUsagePercentage = () => {
-    if (!userProfile) return 0;
-    const totalUsed = monthlyUsage.reduce((acc, u) => acc + u.total_used, 0);
-    return Math.min((totalUsed / userProfile.user_plans.credits_per_month) * 100, 100);
   };
 
   const getUsageByType = (type: string) => {
@@ -572,7 +569,7 @@ export const ProfilePage: React.FC = () => {
         {/* Middle Row - Credits & Usage */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
-          {/* Contador de Créditos Principal */}
+          {/* Contador de Créditos Principal - SEPARADO HD y Borradores */}
           <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
               <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
@@ -580,77 +577,110 @@ export const ProfilePage: React.FC = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Main Credit Display */}
+              {/* Créditos HD */}
               <div className="bg-black/30 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-white/60">Créditos Disponibles</span>
+                  <span className="text-white/60">Créditos HD</span>
                   <span className="text-5xl font-bold text-blue-400">{userProfile.credits}</span>
                 </div>
                 
-                {/* Monthly Progress */}
+                {/* Monthly Progress HD */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/60">Uso este mes</span>
+                    <span className="text-white/60">Usado este mes</span>
                     <span className="text-white">
-                      {monthlyUsage.reduce((acc, u) => acc + u.total_used, 0)} / {userProfile.user_plans.credits_per_month}
+                      {getUsageByType('final_image') + getUsageByType('video')} / {userProfile.user_plans.credits_hd || 0}
                     </span>
                   </div>
                   <div className="h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        getCreditUsagePercentage() > 90
+                        ((getUsageByType('final_image') + getUsageByType('video')) / (userProfile.user_plans.credits_hd || 1)) > 90
                           ? 'bg-red-500'
-                          : getCreditUsagePercentage() > 70
+                          : ((getUsageByType('final_image') + getUsageByType('video')) / (userProfile.user_plans.credits_hd || 1)) > 70
                             ? 'bg-yellow-500'
                             : 'bg-blue-500'
                       }`}
-                      style={{ width: `${getCreditUsagePercentage()}%` }}
+                      style={{ width: `${Math.min(((getUsageByType('final_image') + getUsageByType('video')) / (userProfile.user_plans.credits_hd || 1)) * 100, 100)}%` }}
                     />
                   </div>
                   <p className="text-xs text-white/40 text-right">
-                    {Math.round(getCreditUsagePercentage())}% utilizado
+                    Para imágenes HD y videos
                   </p>
                 </div>
               </div>
               
-              {/* Usage by Type */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">📝</span> Borradores
-                    </span>
-                    <span className="text-white font-bold">{getUsageByType('draft')}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">🖼️</span> Imágenes HD
-                    </span>
-                    <span className="text-white font-bold">{getUsageByType('final_image')}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">🎬</span> Videos
-                    </span>
-                    <span className="text-white font-bold">{getUsageByType('video')}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">📦</span> Productos
-                    </span>
-                    <span className="text-white font-bold">{getUsageByType('product_upload')}</span>
-                  </div>
+              {/* Borradores */}
+              <div className="bg-black/30 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-white/60">Borradores</span>
+                  <span className="text-5xl font-bold text-green-400">{userProfile.drafts}</span>
                 </div>
                 
-                <button
-                  onClick={() => window.location.href = '/panel'}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium mt-4"
-                >
-                  Obtener más créditos
-                </button>
+                {/* Monthly Progress Borradores */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-white/60">Usado este mes</span>
+                    <span className="text-white">
+                      {getUsageByType('draft')} / {userProfile.user_plans.drafts || 0}
+                    </span>
+                  </div>
+                  <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        (getUsageByType('draft') / (userProfile.user_plans.drafts || 1)) > 90
+                          ? 'bg-red-500'
+                          : (getUsageByType('draft') / (userProfile.user_plans.drafts || 1)) > 70
+                            ? 'bg-yellow-500'
+                            : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min((getUsageByType('draft') / (userProfile.user_plans.drafts || 1)) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-white/40 text-right">
+                    Imágenes rápidas con marca de agua
+                  </p>
+                </div>
               </div>
+            </div>
+            
+            {/* Usage by Type */}
+            <div className="mt-6 space-y-3">
+              <h3 className="text-sm font-semibold text-white/80">Uso por Categoría</h3>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/70 flex items-center gap-2">
+                    <span className="text-lg">📝</span> Borradores
+                  </span>
+                  <span className="text-white font-bold">{getUsageByType('draft')}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/70 flex items-center gap-2">
+                    <span className="text-lg">🖼️</span> Imágenes HD
+                  </span>
+                  <span className="text-white font-bold">{getUsageByType('final_image')}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/70 flex items-center gap-2">
+                    <span className="text-lg">🎬</span> Videos HD
+                  </span>
+                  <span className="text-white font-bold">{getUsageByType('video')}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-white/70 flex items-center gap-2">
+                    <span className="text-lg">📦</span> Productos
+                  </span>
+                  <span className="text-white font-bold">{getUsageByType('product_upload')}</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => window.location.href = '/panel'}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium mt-4"
+              >
+                Obtener más créditos
+              </button>
             </div>
           </div>
 
