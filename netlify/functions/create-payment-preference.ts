@@ -109,7 +109,7 @@ export const handler: Handler = async (event) => {
           title: `Plan ${plan.name} - Estudio 56`,
           description: `${plan.credits_per_month} créditos mensuales`,
           quantity: 1,
-          unit_price: plan.price,
+          unit_price: plan.price_with_iva || plan.price,
           currency_id: 'CLP',
         },
       ],

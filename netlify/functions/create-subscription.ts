@@ -114,7 +114,7 @@ export const handler: Handler = async (event) => {
       auto_recurring: {
         frequency: 1,
         frequency_type: 'months',
-        transaction_amount: plan.price,
+        transaction_amount: plan.price_with_iva || plan.price,
         currency_id: 'CLP',
         start_date: new Date().toISOString(),
         end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
