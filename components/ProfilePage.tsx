@@ -49,6 +49,8 @@ export const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', business_name: '' });
   const [activeTab, setActiveTab] = useState<'credits' | 'payments'>('credits');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
@@ -192,6 +194,42 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleCancelPlan = async () => {
+    if (!userProfile) return;
+    
+    try {
+      setIsCancelling(true);
+      
+      const response = await fetch('/.netlify/functions/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userProfile.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al cancelar suscripción');
+      }
+
+      // Update local state
+      setSubscription((prev) => prev ? { ...prev, status: 'cancelled' } : null);
+      setShowCancelModal(false);
+      
+      alert('✅ Plan cancelado exitosamente\n\nTu plan estará vigente hasta la fecha de renovación.');
+      
+    } catch (error: any) {
+      console.error('Error cancelando plan:', error);
+      alert(error.message);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   const getCreditUsagePercentage = () => {
     if (!userProfile) return 0;
     const totalUsed = monthlyUsage.reduce((acc, u) => acc + u.total_used, 0);
@@ -238,12 +276,52 @@ export const ProfilePage: React.FC = () => {
         <div className="text-center">
           <div className="text-white/50 text-6xl mb-4">👤</div>
           <h1 className="text-white text-xl mb-4">Perfil no encontrado</h1>
-          <button 
+          <button
             onClick={() => window.location.href = '/panel'}
             className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors"
           >
             Volver al Panel
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Modal de confirmación para cancelar plan
+  if (showCancelModal) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-white/20">
+          <div className="text-center">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-white mb-4">¿Cancelar tu plan?</h2>
+            <p className="text-white/70 mb-6">
+              Tu plan estará vigente hasta la fecha de renovación ({subscription?.next_payment_date
+                ? new Date(subscription.next_payment_date).toLocaleDateString('es-CL', {
+                    day: 'numeric',
+                    month: 'long'
+                  })
+                : 'próxima fecha'}).
+              Después de esa fecha perderás los beneficios de tu plan.
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={handleCancelPlan}
+                disabled={isCancelling}
+                className="w-full bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white py-3 rounded-xl transition-colors font-medium"
+              >
+                {isCancelling ? 'Cancelando...' : 'Sí, cancelar mi plan'}
+              </button>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={isCancelling}
+                className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors"
+              >
+                No, mantener mi plan
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -457,6 +535,29 @@ export const ProfilePage: React.FC = () => {
                 >
                   Cambiar Plan
                 </button>
+                
+                {/* Botón Cancelar Plan - solo para planes de pago */}
+                {userProfile.user_plans.price > 0 && subscription?.status !== 'cancelled' && (
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 rounded-xl transition-colors"
+                  >
+                    Cancelar Plan
+                  </button>
+                )}
+                
+                {/* Mensaje si el plan está cancelado */}
+                {subscription?.status === 'cancelled' && (
+                  <div className="w-full bg-yellow-500/20 text-yellow-300 py-3 rounded-xl text-center text-sm">
+                    Plan cancelado - Vigente hasta {subscription.next_payment_date
+                      ? new Date(subscription.next_payment_date).toLocaleDateString('es-CL', {
+                          day: 'numeric',
+                          month: 'short'
+                        })
+                      : 'próxima fecha'}
+                  </div>
+                )}
+                
                 <button
                   onClick={() => window.location.href = '/panel'}
                   className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors"
