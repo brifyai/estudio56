@@ -573,7 +573,7 @@ export const ProfilePage: React.FC = () => {
         {/* Middle Row - Credits & Usage */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           
-          {/* Contador de Créditos Principal - SEPARADO Borradores de Imágenes y Borradores de Videos */}
+          {/* Control de Créditos - col-span-2 */}
           <div className="lg:col-span-2 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
               <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
@@ -688,70 +688,37 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Estadísticas Completas de Consumo */}
+          {/* Estadísticas de Consumo */}
           <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
               <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">📊</span>
-              Estadísticas de Consumo
+              Estadísticas
             </h2>
             
             {/* Resumen de Créditos */}
             <div className="bg-black/30 rounded-2xl p-4 mb-4">
-              <h3 className="text-sm font-semibold text-white/80 mb-3">Resumen de Créditos</h3>
+              <h3 className="text-sm font-semibold text-white/80 mb-3">Resumen</h3>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Créditos HD disponibles</span>
+                  <span className="text-white/60 text-sm">Créditos HD</span>
                   <span className="text-blue-400 font-bold">{userProfile.credits}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Borradores disponibles</span>
+                  <span className="text-white/60 text-sm">Borradores</span>
                   <span className="text-green-400 font-bold">{userProfile.drafts}</span>
                 </div>
-                <div className="h-px bg-white/10 my-2"></div>
                 <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Total créditos mes</span>
-                  <span className="text-white font-bold">
-                    {(userProfile.user_plans.credits_hd || 0) + (userProfile.user_plans.drafts || 0)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-white/60 text-sm">Total usado este mes</span>
-                  <span className="text-white font-bold">
-                    {getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Para qué alcanzan los créditos */}
-            <div className="bg-black/30 rounded-2xl p-4">
-              <h3 className="text-sm font-semibold text-white/80 mb-3">¿Para qué alcanzan?</h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-2 bg-green-500/10 rounded-lg">
-                  <span className="text-white/70 text-sm">🖼️ Imágenes HD</span>
-                  <span className="text-green-400 font-bold">{userProfile.credits} unid.</span>
-                </div>
-                <div className="flex items-center justify-between p-2 bg-orange-500/10 rounded-lg">
-                  <span className="text-white/70 text-sm">🎬 Videos HD</span>
-                  <span className="text-orange-400 font-bold">{Math.floor(userProfile.credits / 10)} unid.</span>
-                </div>
-                <div className="flex items-center justify-between p-2 bg-blue-500/10 rounded-lg">
-                  <span className="text-white/70 text-sm">📝 Borradores</span>
-                  <span className="text-blue-400 font-bold">{userProfile.drafts} unid.</span>
-                </div>
-                <div className="flex items-center justify-between p-2 bg-purple-500/10 rounded-lg">
-                  <span className="text-white/70 text-sm">📦 Productos</span>
-                  <span className="text-purple-400 font-bold">{userProfile.credits} unid.</span>
+                  <span className="text-white/60 text-sm">Videos</span>
+                  <span className="text-orange-400 font-bold">{userProfile.drafts_video}</span>
                 </div>
               </div>
             </div>
             
             {/* Progreso general */}
-            <div className="mt-4 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4">
+            <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-white/80 text-sm">Progreso general del mes</span>
+                <span className="text-white/80 text-sm">Progreso mes</span>
                 <span className="text-white font-bold">
                   {Math.round(
                     ((getUsageByType('draft') + getUsageByType('final_image') + getUsageByType('video') + getUsageByType('product_upload')) /
@@ -773,7 +740,10 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Bottom Row - Transacciones */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Transacciones Recientes */}
           <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
             <div className="flex items-center justify-between mb-6">
@@ -829,54 +799,55 @@ export const ProfilePage: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Bottom Row - Payment History */}
-        <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold flex items-center gap-3">
-              <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">💳</span>
-              Historial de Pagos
-            </h2>
-          </div>
-          
-          {payments.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-white/50 text-4xl mb-3">📋</div>
-              <p className="text-white/70">No hay pagos registrados</p>
-              {userProfile.user_plans.name === 'GRATIS' && (
-                <p className="text-white/50 text-sm mt-2">Upgrade tu plan para ver el historial de pagos</p>
-              )}
+          {/* Historial de Pagos */}
+          <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-3">
+                <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">💳</span>
+                Historial de Pagos
+              </h2>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {payments.map((payment) => (
-                <div key={payment.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                  <div className="flex items-start justify-between mb-3">
+            
+            {payments.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-white/50 text-4xl mb-3">📋</div>
+                <p className="text-white/70">No hay pagos registrados</p>
+                {userProfile.user_plans.name === 'GRATIS' && (
+                  <p className="text-white/50 text-sm mt-2">Upgrade tu plan para ver el historial</p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {payments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                     <div>
-                      <p className="text-white font-medium">{payment.description || 'Pago de plan'}</p>
-                      <p className="text-white/50 text-sm">
+                      <p className="text-white font-medium text-sm">{payment.description || 'Pago de plan'}</p>
+                      <p className="text-white/50 text-xs">
                         {new Date(payment.created_at).toLocaleDateString('es-CL', {
                           year: 'numeric',
-                          month: 'long',
+                          month: 'short',
                           day: 'numeric'
                         })}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      payment.status === 'completed'
-                        ? 'bg-green-500/20 text-green-300'
-                        : 'bg-yellow-500/20 text-yellow-300'
-                    }`}>
-                      {payment.status}
-                    </span>
+                    <div className="text-right">
+                      <p className="text-green-400 font-bold">${payment.amount.toLocaleString('es-CL')}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        payment.status === 'completed'
+                          ? 'bg-green-500/20 text-green-300'
+                          : 'bg-yellow-500/20 text-yellow-300'
+                      }`}>
+                        {payment.status}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-green-400 font-bold text-xl">${payment.amount.toLocaleString('es-CL')}</p>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
       </div>
     </div>
   );
