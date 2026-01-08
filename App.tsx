@@ -1910,33 +1910,44 @@ progressAlert.updateProgress(60, 'Renderizando...');
       // 🎯 NUEVA LÓGICA: Construir prompt de fuerza con prefijo MODE
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
       
-      // 🎯 SOLUCIÓN RADICAL: Para Image-to-Image, usar prompt VACÍO
-      // El modelo debe basarse 100% en la imagen de referencia
-      // El NEGATIVE PROMPT controlará la calidad según el nivel
+      // 🎯 SOLUCIÓN: Para Image-to-Image, usar prompt NEUTRAL
+      // Un prompt que no describa contenido, solo calidad técnica
       const config = getRealityConfig(realityLevelTyped);
       
-      // Prompt vacío - la imagen de referencia es TODO
-      const technicalPrompt = '';  // Vacío para máxima fidelidad
+      // Mapeo de nivel a prompt técnico PURO (sin describir la escena)
+      const technicalPromptMap: Record<number, string> = {
+        1.0: 'low resolution photo quality',
+        1.5: 'basic smartphone photo quality',
+        2.0: 'standard smartphone photo quality',
+        2.5: 'good smartphone photo quality',
+        3.0: 'semi-professional photo quality',
+        3.5: 'professional photo quality',
+        4.0: 'commercial photo quality',
+        4.5: 'editorial photo quality',
+        5.0: 'cinematic photo quality'
+      };
+      
+      const technicalPrompt = technicalPromptMap[levelKey] || technicalPromptMap[2.5];
       
       // Negative prompt específico por nivel (controla la calidad)
       const qualityNegativeMap: Record<number, string> = {
-        1.0: 'high quality, sharp, clear, professional, polished, clean, crisp, detailed',  // Evitar calidad alta
-        1.5: 'professional lighting, studio quality, polished, perfect, crisp, ultra detailed',  // Evitar look profesional
+        1.0: 'high quality, sharp, clear, professional, polished, clean, crisp, detailed',
+        1.5: 'professional lighting, studio quality, polished, perfect, crisp, ultra detailed',
         2.0: 'studio lighting, professional setup, polished, perfect, magazine quality',
         2.5: 'studio lighting, theatrical, cinematic, perfect, ultra polished',
-        3.0: 'low quality, grainy, pixelated, blurry, compressed, poor lighting',  // Evitar calidad baja
+        3.0: 'low quality, grainy, pixelated, blurry, compressed, poor lighting',
         3.5: 'low quality, grainy, pixelated, blurry, compressed',
         4.0: 'low quality, grainy, pixelated, blurry',
         4.5: 'low quality, grainy, pixelated',
-        5.0: 'low quality, grainy'  // Evitar cualquier defecto
+        5.0: 'low quality, grainy'
       };
       
       const qualityNegative = qualityNegativeMap[levelKey] || qualityNegativeMap[2.5];
       const fullNegativePrompt = `${qualityNegative}, different composition, different person, different pose, different background, different scene, changed elements, text, letters, words`;
       
-      console.log('📝 [Reality] Prompt VACÍO - imagen de referencia es la fuente de verdad');
+      console.log('📝 [Reality] Prompt técnico:', technicalPrompt);
       console.log('🚫 [Reality] Negative prompt:', qualityNegative);
-      console.log('🖼️ [Reality] Strength 0.20 controlará los cambios');
+      console.log('🖼️ [Reality] Strength 0.20 + imagen de referencia controlarán los cambios');
       console.log('🎚️ [Reality] Nivel:', levelKey, '→', config.label);
       
       // 🔍 DIAGNÓSTICO: Verificar que tenemos imagen de referencia

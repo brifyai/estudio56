@@ -30,11 +30,22 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const { model, prompt, imageUrl, strength, guidanceScale, steps, seed, aspectRatio, negativePrompt } = body;
 
-    if (!model || !prompt) {
+    // Validación: model siempre requerido
+    // prompt requerido SOLO si NO hay imagen de referencia
+    if (!model) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'model y prompt son requeridos' }),
+        body: JSON.stringify({ error: 'model es requerido' }),
+      };
+    }
+    
+    // Si no hay imagen de referencia, el prompt es obligatorio
+    if (!imageUrl && !prompt) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'prompt es requerido cuando no hay imagen de referencia' }),
       };
     }
 
