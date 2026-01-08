@@ -20,10 +20,12 @@ async function updatePlans() {
     console.log(`📡 Connecting to: ${supabaseUrl}`);
 
     // Define the correct plans that match the new interface
+    const IVA_PERCENTAGE = 19;
+    
     const correctPlans = [
       {
         name: 'GRATIS',
-        price: 0.00,
+        price: 0,
         credits_hd: 0,
         drafts: 3,
         features: ['3 Borradores/día (Imagen)', 'Solo Visualización (Sin descarga)', 'Sin Créditos HD', 'Sin Generación de Video']
@@ -68,11 +70,20 @@ async function updatePlans() {
       if (upsertError) {
         console.warn(`⚠️  Warning updating ${plan.name}:`, upsertError.message);
       } else {
-        // Ahora actualizar los campos específicos
+        // Calcular IVA
+        const iva_amount = Math.round(plan.price * (IVA_PERCENTAGE / 100));
+        const price_with_iva = plan.price + iva_amount;
+        
+        console.log(`   💰 ${plan.name}: NETO $${plan.price} + IVA $${iva_amount} = TOTAL $${price_with_iva}`);
+        
+        // Ahora actualizar los campos específicos incluyendo IVA
         const { error: updateError } = await supabase
           .from('user_plans')
           .update({
             price: plan.price,
+            iva_percentage: IVA_PERCENTAGE,
+            iva_amount: iva_amount,
+            price_with_iva: price_with_iva,
             credits_hd: plan.credits_hd,
             drafts: plan.drafts,
             features: plan.features
