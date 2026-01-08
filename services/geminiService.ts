@@ -1512,9 +1512,9 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
     console.log(`📝 [GeminiService] Prompt corregido (${finalPrompt.length} chars):`, finalPrompt.substring(0, 200) + '...');
   }
   
-  // Timeout de 90 segundos para generación de imagen (mayor que timeout de Netlify 26s)
+  // Timeout de 3 minutos para generación de imagen (fal.ai queue puede tomar hasta 2 minutos)
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout de generación de imagen (90s)')), 90000);
+    setTimeout(() => reject(new Error('Timeout de generación de imagen (180s)')), 180000);
   });
   
   // Ensure aspectRatio is in the correct format for Gemini API
