@@ -2,7 +2,7 @@ import { Handler } from '@netlify/functions';
 
 // ============================================
 // PROXY PARA VIDEOS DE ALIBABA CLOUD
-// Soluciona problema de CORS al servir videos
+// Usa redirect 302 para evitar límites de payload
 // ============================================
 
 export const handler: Handler = async (event) => {
@@ -43,45 +43,18 @@ export const handler: Handler = async (event) => {
       throw new Error('URL no válida: solo se permiten URLs de Alibaba Cloud');
     }
 
-    console.log('⏳ [Video Proxy] Descargando video desde Alibaba Cloud...');
+    console.log('✅ [Video Proxy] Redirigiendo a URL de Alibaba Cloud...');
     
-    // Descargar el video desde Alibaba Cloud
-    const response = await fetch(videoUrl);
-    
-    if (!response.ok) {
-      console.error('❌ [Video Proxy] Error descargando video:', response.status);
-      throw new Error(`Error descargando video: ${response.status} ${response.statusText}`);
-    }
-
-    console.log('✅ [Video Proxy] Video descargado exitosamente');
-    console.log('📊 [Video Proxy] Content-Type:', response.headers.get('content-type'));
-    console.log('📊 [Video Proxy] Content-Length:', response.headers.get('content-length'));
-    
-    const contentLength = response.headers.get('content-length');
-    const sizeInMB = contentLength ? (parseInt(contentLength) / 1024 / 1024).toFixed(2) : 'unknown';
-    console.log('📊 [Video Proxy] Tamaño del video:', sizeInMB, 'MB');
-    
-    // Obtener el video como buffer
-    const videoBuffer = await response.arrayBuffer();
-    const videoBase64 = Buffer.from(videoBuffer).toString('base64');
-    
-    console.log('✅ [Video Proxy] Video convertido a base64');
-    console.log('📊 [Video Proxy] Tamaño base64:', (videoBase64.length / 1024 / 1024).toFixed(2), 'MB');
-
-    // Retornar el video con headers CORS correctos
+    // SOLUCIÓN: Hacer redirect 302 en lugar de proxy completo
+    // Esto evita límites de payload y timeout de Netlify Functions
     return {
-      statusCode: 200,
+      statusCode: 302,
       headers: {
-        'Content-Type': response.headers.get('content-type') || 'video/mp4',
-        'Content-Length': contentLength || videoBuffer.byteLength.toString(),
+        'Location': videoUrl,
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Cache-Control': 'public, max-age=86400', // Cache por 24 horas
-        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=3600', // Cache por 1 hora
       },
-      body: videoBase64,
-      isBase64Encoded: true,
+      body: '',
     };
 
   } catch (error: any) {

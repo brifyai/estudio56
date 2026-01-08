@@ -183,17 +183,17 @@ export const generateVideoAndWait = async (
 
     if (status.status === 'complete' && status.videoUrl) {
       console.log('✅ [AlibabaVideo] Video completado!');
-      console.log('🎬 [AlibabaVideo] Video URL original:', status.videoUrl.substring(0, 100) + '...');
+      console.log('🎬 [AlibabaVideo] Video URL:', status.videoUrl.substring(0, 100) + '...');
       
-      // Usar proxy para evitar problemas de CORS
-      const proxiedUrl = `/.netlify/functions/proxy-video?url=${encodeURIComponent(status.videoUrl)}`;
-      console.log('🔄 [AlibabaVideo] Video URL proxied:', proxiedUrl.substring(0, 100) + '...');
+      // SOLUCIÓN: Usar URL directa de Alibaba Cloud OSS
+      // OSS tiene CORS habilitado por defecto para videos
+      // No necesitamos proxy que causa errores 502
       
       if (onProgress) {
         onProgress(100, 'Video generado exitosamente');
       }
       
-      return proxiedUrl;
+      return status.videoUrl;
     }
 
     // Si aún está procesando, continuar polling
