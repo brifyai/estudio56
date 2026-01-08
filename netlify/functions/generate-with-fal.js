@@ -100,7 +100,7 @@ exports.handler = async (event) => {
       requestBody = {
         prompt,
         image_url: imageUrl,
-        strength: strength || 0.20,
+        strength: strength || 0.35, // ✅ AUMENTADO: 0.35 para cambios más visibles
         guidance_scale: guidanceScale || 7.5,
         num_inference_steps: steps || 28,
         image_size: {

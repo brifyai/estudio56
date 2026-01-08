@@ -1914,41 +1914,41 @@ progressAlert.updateProgress(60, 'Renderizando...');
       // Un prompt que no describa contenido, solo calidad técnica
       const config = getRealityConfig(realityLevelTyped);
       
-      // 🎯 PROMPTS OPTIMIZADOS PARA IMAGE-TO-IMAGE
+      // 🎯 PROMPTS EXTREMOS PARA CAMBIOS MÁS VISIBLES
       // Describen características técnicas ESPECÍFICAS de la foto
-      // NO describen contenido (personas, objetos, escenas)
+      // Prompts más fuertes para diferencias más notorias
       const technicalPromptMap: Record<number, string> = {
-        // NIVELES BAJOS (1.0-2.5): Características de foto de celular/amateur
-        1.0: 'low resolution, heavy compression artifacts, visible noise, poor dynamic range, washed out colors, soft focus',
-        1.5: 'smartphone camera quality, moderate grain, limited sharpness, basic auto-exposure, slight color cast',
-        2.0: 'standard mobile photo, acceptable sharpness, natural colors, basic lighting, everyday snapshot quality',
-        2.5: 'good smartphone photo, balanced exposure, accurate colors, decent detail, casual photography',
+        // NIVELES BAJOS (1.0-2.5): Características MUY MARCADAS de foto amateur
+        1.0: 'extremely low resolution, severe compression artifacts, heavy pixelation, very noisy, terrible dynamic range, completely washed out colors, very soft focus, blurry, grainy, poor quality, amateur snapshot, bad lighting, overexposed or underexposed',
+        1.5: 'low quality smartphone photo, heavy grain, poor sharpness, basic auto-exposure, strong color cast, visible compression, noisy, soft details, amateur photography, mediocre lighting',
+        2.0: 'standard mobile photo, moderate grain, acceptable sharpness, natural colors, basic lighting, everyday snapshot, some noise, casual photography, average quality',
+        2.5: 'good smartphone photo, slight grain, decent sharpness, balanced exposure, accurate colors, good detail, casual photography, clean image',
         
-        // NIVELES ALTOS (3.0-5.0): Características de foto profesional
-        3.0: 'semi-professional quality, sharp focus, good dynamic range, natural lighting, clean image',
-        3.5: 'professional photography, excellent sharpness, balanced lighting, rich colors, high detail',
-        4.0: 'commercial grade, perfect exposure, studio lighting quality, vibrant colors, crisp details',
-        4.5: 'editorial quality, exceptional clarity, professional color grading, perfect lighting, magazine standard',
-        5.0: 'cinematic quality, ultra sharp, perfect dynamic range, professional color science, film-like depth'
+        // NIVELES ALTOS (3.0-5.0): Características MUY MARCADAS de foto profesional
+        3.0: 'professional quality, very sharp focus, excellent dynamic range, professional lighting, clean image, no noise, high detail, semi-professional photography',
+        3.5: 'high-end professional photography, exceptional sharpness, perfect lighting, rich vibrant colors, very high detail, professional color grading, studio quality',
+        4.0: 'commercial grade photography, perfect exposure, professional studio lighting, extremely vibrant colors, ultra crisp details, professional color science, magazine quality, flawless image',
+        4.5: 'editorial photography, exceptional clarity, expert color grading, perfect professional lighting, ultra high detail, premium magazine standard, pristine quality',
+        5.0: 'cinematic photography, ultra sharp, perfect dynamic range, professional color science, film-like depth, Hollywood quality, pristine clarity, perfect in every way'
       };
       
       const technicalPrompt = technicalPromptMap[levelKey] || technicalPromptMap[2.5];
       
-      // 🚫 NEGATIVE PROMPTS OPTIMIZADOS
-      // Evitan características opuestas al nivel deseado
+      // 🚫 NEGATIVE PROMPTS MÁS FUERTES
+      // Evitan características opuestas de forma más agresiva
       const qualityNegativeMap: Record<number, string> = {
-        // NIVELES BAJOS: Evitar características profesionales
-        1.0: 'professional photography, studio lighting, perfect exposure, high resolution, sharp focus, color grading, post-processing, clean image, professional equipment',
-        1.5: 'professional quality, studio setup, perfect lighting, color correction, high-end camera, professional post-processing',
-        2.0: 'studio photography, professional lighting, color grading, high-end equipment, perfect exposure',
-        2.5: 'studio lighting, professional color grading, cinematic look, perfect post-processing',
+        // NIVELES BAJOS: Evitar TODO lo profesional
+        1.0: 'professional photography, studio lighting, perfect exposure, high resolution, sharp focus, color grading, post-processing, clean image, professional equipment, high quality, crisp details, vibrant colors, professional color science, flawless, pristine, perfect lighting, studio quality',
+        1.5: 'professional quality, studio setup, perfect lighting, color correction, high-end camera, professional post-processing, sharp focus, high resolution, clean image, vibrant colors, professional equipment',
+        2.0: 'studio photography, professional lighting, color grading, high-end equipment, perfect exposure, professional quality, ultra sharp, pristine, flawless',
+        2.5: 'studio lighting, professional color grading, cinematic look, perfect post-processing, ultra sharp, pristine quality',
         
-        // NIVELES ALTOS: Evitar características amateur/defectos
-        3.0: 'low resolution, compression artifacts, noise, grain, poor lighting, washed out colors, soft focus, blurry',
-        3.5: 'low quality, pixelated, noisy, poor exposure, color cast, compression, artifacts',
-        4.0: 'grainy, blurry, poor quality, compression, noise, artifacts',
-        4.5: 'noise, grain, compression, poor quality',
-        5.0: 'any defects, noise, compression'
+        // NIVELES ALTOS: Evitar TODO lo amateur
+        3.0: 'low resolution, compression artifacts, noise, grain, poor lighting, washed out colors, soft focus, blurry, pixelated, amateur, low quality, poor exposure, color cast, compression',
+        3.5: 'low quality, pixelated, noisy, poor exposure, color cast, compression, artifacts, grain, blurry, soft focus, amateur, washed out, poor lighting',
+        4.0: 'grainy, blurry, poor quality, compression, noise, artifacts, low resolution, pixelated, amateur, soft focus, poor lighting, washed out',
+        4.5: 'noise, grain, compression, poor quality, low resolution, blurry, soft focus, amateur, pixelated, artifacts',
+        5.0: 'any defects, noise, compression, grain, low quality, blurry, soft focus, amateur, pixelated, poor lighting, washed out'
       };
       
       const qualityNegative = qualityNegativeMap[levelKey] || qualityNegativeMap[2.5];

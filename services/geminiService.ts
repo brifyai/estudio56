@@ -2360,16 +2360,16 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
       console.log('📝 [Draft] Seed usado:', consistencySeed);
       console.log('🖼️ [Draft] Imagen de referencia disponible:', !!draftImageForHD);
       console.log('🖼️ [Draft] Imagen de referencia length:', draftImageForHD?.length || 0);
-      console.log('🎚️ [Draft] Strength configurado: 0.20 (máxima similitud)');
+      console.log('🎚️ [Draft] Strength configurado: 0.35 (cambios más visibles)');
       
       try {
-        // Usar Flux Dev Image-to-Image con strength moderado
+        // Usar Flux Dev Image-to-Image con strength más alto para cambios visibles
         const falResult = await generateRealityVariation(
           enhancedDescription,
           draftImageForHD,
           {
             seed: consistencySeed,
-            strength: 0.20, // ✅ 0.20 para máxima similitud
+            strength: 0.35, // ✅ AUMENTADO: 0.35 para cambios más visibles (antes 0.20)
             guidanceScale: 7.5,
             steps: 28, // Flux Dev usa 28 steps
             aspectRatio: aspectRatio,

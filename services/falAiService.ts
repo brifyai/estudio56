@@ -84,7 +84,7 @@ export const generateRealityVariation = async (
   prompt: string,
   referenceImageDataUrl: string,
   options: {
-    strength?: number; // 0.15-0.25 para variaciones de realidad (MÁXIMA SIMILITUD)
+    strength?: number; // 0.30-0.40 para cambios visibles en variaciones de realidad
     guidanceScale?: number;
     steps?: number;
     seed?: number;
@@ -93,7 +93,7 @@ export const generateRealityVariation = async (
   } = {}
 ): Promise<FalImg2ImgResponse> => {
   const {
-    strength = 0.20, // ✅ 0.20 para máxima similitud
+    strength = 0.35, // ✅ AUMENTADO: 0.35 para cambios más visibles (antes 0.20)
     guidanceScale = 7.5,
     steps = 28, // Flux Dev usa 28 steps por defecto
     seed,
@@ -105,7 +105,7 @@ export const generateRealityVariation = async (
   console.log(`📝 [fal.ai] Modelo: ${FAL_MODELS.FLUX_DEV_IMG2IMG}`);
   console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
   console.log(`🖼️ [fal.ai] Tiene imagen de referencia: ${!!referenceImageDataUrl}`);
-  console.log(`🖼️ [fal.ai] Strength: ${strength}`);
+  console.log(`🖼️ [fal.ai] Strength: ${strength} (cambios más visibles)`);
   console.log(`🖼️ [fal.ai] Steps: ${steps}`);
   console.log(`🖼️ [fal.ai] Seed: ${seed}`);
   
