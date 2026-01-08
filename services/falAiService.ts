@@ -16,15 +16,16 @@ const FAL_AI_API_KEY = import.meta.env.VITE_FAL_AI_API_KEY || process.env.FAL_AI
 const FAL_AI_BASE_URL = 'https://api.fal.ai/v1';
 
 // Modelos disponibles en fal.ai para img2img
+// Verificar modelos actualizados en: https://fal.ai/models
 export const FAL_MODELS = {
-  // Stable Diffusion XL - Alta calidad
-  SDXL_IMG2IMG: 'fal-ai/sdxl-img2img',
-  // Stable Diffusion 1.5 - Compatible con más estilos
+  // Stable Diffusion XL 1.0 img2img - Alta calidad
+  SDXL_IMG2IMG: 'fal-ai/stable-diffusion-xl-1.0/img2img',
+  // Stable Diffusion 1.5 img2img - Compatible con más estilos
   SD15_IMG2IMG: 'fal-ai/stable-diffusion-v1-5/img2img',
-  // Flux Schnell - Rápido y buena calidad
-  FLUX_SCHNELL_IMG2IMG: 'fal-ai/flux/schnell',
-  // Flux Dev - Mejor calidad
-  FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev',
+  // Flux Schnell img2img - Rápido y buena calidad
+  FLUX_SCHNELL_IMG2IMG: 'fal-ai/flux/schnell/img2img',
+  // Flux Dev img2img - Mejor calidad
+  FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev/img2img',
 } as const;
 
 export type FalModelId = typeof FAL_MODELS[keyof typeof FAL_MODELS];
@@ -138,8 +139,7 @@ export const generateHDWithImg2Img = async (
     console.log('📡 [fal.ai] Enviando request a fal.ai...');
 
     // Usar el modelo correcto de fal.ai
-    // NOTA: Verificar modelo exacto en https://docs.fal.ai/model-apis
-    const modelEndpoint = 'fal-ai/stable-diffusion-xl-1.0/img2img';
+    const modelEndpoint = FAL_MODELS.SDXL_IMG2IMG;
     console.log(`📡 [fal.ai] Usando modelo: ${modelEndpoint}`);
     
     const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
@@ -238,7 +238,7 @@ export const generateHDWithTxt2Img = async (
 
   try {
     // Usar el modelo correcto de fal.ai
-    const modelEndpoint = 'fal-ai/stable-diffusion-xl-1.0/img2img';
+    const modelEndpoint = FAL_MODELS.SDXL_IMG2IMG;
     const response = await fetch(`${FAL_AI_BASE_URL}/${modelEndpoint}`, {
       method: 'POST',
       headers: {
