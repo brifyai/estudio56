@@ -1794,8 +1794,12 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       console.log('📏 [DEBUG] overlayText:', localText || overlayText || initialOverlayText || '');
                       
                       try {
+                        // Determinar el ancho del contenedor visual según el aspect ratio
+                        // Esto es CRÍTICO para que el texto tenga el mismo wrap que en la vista HD
+                        const visualContainerWidth = aspectRatio === '1:1' ? 360 : 320;
+                        
                         // Usar composeAndExport para generar imagen completa con logo y texto
-                        // IMPORTANTE: Pasar visualContainerWidth=320px para que el texto tenga el mismo wrap que en la app
+                        // IMPORTANTE: Pasar visualContainerWidth correcto para que el texto tenga el mismo wrap que en la app
                         // CRÍTICO: Usar recoloredLogoUrl si existe (logo ya recoloreado), sino logoUrl original
                         const composedImageUrl = await composeAndExport({
                           imageUrl: hdImageUrl,
@@ -1812,7 +1816,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                           quality: 'hd',
                           containerWidth: getDimensionsForAspectRatio(aspectRatio, 'hd').width,
                           containerHeight: getDimensionsForAspectRatio(aspectRatio, 'hd').height,
-                          visualContainerWidth: 320 // Ancho del contenedor visual en la app
+                          visualContainerWidth: visualContainerWidth // Ancho del contenedor visual en la app (360px para 1:1, 320px para otros)
                         });
                         
                         // Descargar la imagen compuesta
