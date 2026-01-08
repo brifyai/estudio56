@@ -2266,7 +2266,7 @@ ${textIntegrationPrompt}
 ${productPromptSuffix}
 ${realismFilters}
 
-NO TEXT: Pure photographic image only. No letters, numbers, words, symbols, signs, menus, billboards, posters, banners, labels, or text on any surfaces. Blank walls, empty signs, plain products. Text will be added separately as overlay.
+NO TEXT: Pure photographic image only. ABSOLUTELY NO letters, numbers, words, symbols, signs, menus, billboards, posters, banners, labels, typography, or text on ANY surfaces. Blank walls, empty signs, plain products without writing. Text will be added separately as overlay by the user. DO NOT generate any readable or unreadable text elements.
 
 VISUAL REQUIREMENTS:
 - Clean, blank surfaces where text would normally appear
@@ -2301,7 +2301,8 @@ const industryGuardrail = IMAGE_GUARDRAILS[styleKey] || "";
 const baseNegativePrompt = "blur, low resolution, messy, watermark, text overlay, logo visible, deformed, disfigured, ugly, incomplete, extra fingers, poorly drawn hands, candles, smoke, steam, fog, water on floor, neon, fused objects, floating people, melting equipment, liquid floors";
 // AGREGAR ESCUDO ANATÓMICO para prevenir errores como pies en la cabeza
 // 🎚️ INCLUIR PROMPT NEGATIVO DE REALIDAD
-const finalNegativePrompt = `${baseNegativePrompt}, ${industryGuardrail}, ${ANTI_FANTASY_SHIELD}, ${ANATOMY_SHIELD}, ${realityNegativePrompt}`.replace(/\s+/g, ' ').trim();
+// 🔤 INCLUIR ESCUDO DE TEXTO COMPLETO para bloquear cualquier texto en la imagen
+const finalNegativePrompt = `${NEGATIVE_TEXT_SHIELD}, ${baseNegativePrompt}, ${industryGuardrail}, ${ANTI_FANTASY_SHIELD}, ${ANATOMY_SHIELD}, ${realityNegativePrompt}`.replace(/\s+/g, ' ').trim();
 
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
