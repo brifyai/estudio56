@@ -1920,6 +1920,17 @@ progressAlert.updateProgress(60, 'Renderizando...');
       
       console.log('📝 [Reality] Usando prompt simple para Image-to-Image:', simpleRealityPrompt);
       
+      // 🔍 DIAGNÓSTICO: Verificar que tenemos imagen de referencia
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('🔍 DIAGNÓSTICO REALITY - Estado antes de generar variación');
+      console.log('═══════════════════════════════════════════════════════════════');
+      console.log('📸 draftImageUrl disponible:', !!draftImageUrl);
+      console.log('📸 draftImageUrl length:', draftImageUrl?.length || 0);
+      console.log('📸 draftImageUrl prefix:', draftImageUrl?.substring(0, 100) || 'N/A');
+      console.log('🎚️ Nivel de realidad:', levelKey);
+      console.log('🎲 Seed:', seed);
+      console.log('═══════════════════════════════════════════════════════════════');
+      
       // Determinar artDirectionId para mantener la Dirección de Arte
       // Usamos el mismo mapeo que en handleGenerate para consistencia
       let artDirectionId: number | undefined = undefined;
