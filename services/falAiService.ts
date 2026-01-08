@@ -150,89 +150,52 @@ export const generateDraftWithZImage = async (
 
   try {
     if (!FAL_AI_API_KEY) {
-      throw new Error('FAL_AI_API_KEY no configurada');
+      console.warn('⚠️ [fal.ai] API Key no configurada en frontend, usando Netlify Function');
     }
 
-    console.log('📡 [fal.ai] Enviando request a Z-Image Turbo...');
-    console.log(`📡 [fal.ai] Endpoint: ${FAL_AI_BASE_URL}/${DRAFT_MODEL}`);
-    console.log(`📡 [fal.ai] Request body:`, JSON.stringify({
-      ...requestBody,
-      image_url: referenceImageDataUrl ? `[DATA_URL ${referenceImageDataUrl.length} chars]` : undefined
-    }, null, 2));
+    console.log('📡 [fal.ai] Enviando request a Z-Image Turbo via Netlify Function...');
     
-    const response = await fetch(`${FAL_AI_BASE_URL}/${DRAFT_MODEL}`, {
+    // Llamar a Netlify Function en lugar de fal.ai directamente
+    const response = await fetch('/.netlify/functions/generate-with-fal', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${FAL_AI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        model: DRAFT_MODEL,
+        prompt,
+        imageUrl: referenceImageDataUrl,
+        strength,
+        guidanceScale,
+        steps,
+        seed,
+        aspectRatio,
+        negativePrompt,
+      }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
-      throw new Error(`fal.ai Z-Image error: ${response.status} - ${errorText.substring(0, 200)}`);
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`fal.ai error: ${response.status} - ${errorData.error || 'Unknown error'}`);
     }
 
     const data = await response.json();
     console.log('✅ [fal.ai] Respuesta Z-Image recibida');
+    console.log('📦 [fal.ai] Response:', data);
 
-    // Manejar sistema de cola si es necesario
-    if (data.status === 'IN_QUEUE' || data.status === 'IN_PROGRESS') {
-      console.log('⏳ [fal.ai] Imagen en cola, esperando resultado...');
-      
-      const maxAttempts = 60; // 60 intentos = 2 minutos máximo
-      const pollInterval = 2000;
-      
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
-        
-        const statusResponse = await fetch(data.status_url, {
-          headers: { 'Authorization': `Key ${FAL_AI_API_KEY}` },
-        });
-        
-        if (!statusResponse.ok) continue;
-        
-        const statusData = await statusResponse.json();
-        
-        if (statusData.status === 'COMPLETED') {
-          const resultResponse = await fetch(data.response_url, {
-            headers: { 'Authorization': `Key ${FAL_AI_API_KEY}` },
-          });
-          
-          const resultData = await resultResponse.json();
-          const imageUrl = resultData.images?.[0]?.url || resultData.image?.url || resultData.url;
-          
-          if (!imageUrl) {
-            throw new Error('No se encontró imagen en resultado');
-          }
-          
-          console.log(`✅ [fal.ai] Borrador generado exitosamente`);
-          return {
-            success: true,
-            imageUrl,
-            seed: resultData.seed || seed,
-          };
-        } else if (statusData.status === 'FAILED') {
-          throw new Error(`Generación falló: ${statusData.error}`);
-        }
-      }
-      
-      throw new Error('Timeout esperando resultado (2 minutos)');
+    if (!data.success) {
+      throw new Error(data.error || 'Error en generación');
     }
 
-    // Respuesta síncrona
-    const imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
-    
-    if (!imageUrl) {
-      throw new Error('No se encontró imagen en respuesta');
+    if (!data.imageUrl) {
+      throw new Error('No se encontró imageUrl en respuesta');
     }
 
-    console.log(`✅ [fal.ai] Borrador generado exitosamente`);
+    console.log(`✅ [fal.ai] Imagen generada exitosamente`);
     return {
       success: true,
-      imageUrl,
+      imageUrl: data.imageUrl,
       seed: data.seed || seed,
     };
 
@@ -544,7 +507,8 @@ export const generateHDWithTxt2Img = async (
 // ============================================
 
 export const isFalAiConfigured = (): boolean => {
-  return !!FAL_AI_API_KEY;
+  // Siempre retornar true porque la Netlify Function maneja la API key
+  return true;
 };
 
 export const getFalAiStatus = (): { configured: boolean; model: string } => {
