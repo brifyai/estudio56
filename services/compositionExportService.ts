@@ -3,6 +3,13 @@ import { AspectRatio } from '../types';
 export interface CompositionOptions {
   imageUrl: string;
   logoUrl?: string | null;
+  logoColor?: string | null;
+  logoFilters?: {
+    grayscale: number;
+    brightness: number;
+    contrast: number;
+    opacity: number;
+  };
   productUrl?: string | null;
   overlayText?: string;
   textPosition: { x: number; y: number };
@@ -118,7 +125,60 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
   // Dibujar logo si existe
   if (options.logoUrl && options.logoPosition) {
     try {
-      const logoImage = await loadImage(options.logoUrl);
+      let logoImage = await loadImage(options.logoUrl);
+      
+      // 🎨 RECOLOREAR LOGO SI HAY logoColor
+      if (options.logoColor) {
+        console.log('🎨 Recoloreando logo con color:', options.logoColor);
+        
+        // Crear canvas temporal para recolorear
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = logoImage.width;
+        tempCanvas.height = logoImage.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        if (tempCtx) {
+          // Dibujar imagen original
+          tempCtx.drawImage(logoImage, 0, 0);
+          
+          // Obtener datos de imagen
+          const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+          const data = imageData.data;
+          
+          // Convertir hex a RGB
+          const hex = options.logoColor.replace('#', '');
+          const r = parseInt(hex.substring(0, 2), 16);
+          const g = parseInt(hex.substring(2, 4), 16);
+          const b = parseInt(hex.substring(4, 6), 16);
+          
+          // Recorrer cada píxel y aplicar el color
+          for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+            
+            if (alpha > 0) {
+              // Calcular luminosidad del píxel original
+              const lum = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
+              
+              // Aplicar color con luminosidad
+              data[i] = r * lum;     // R
+              data[i + 1] = g * lum; // G
+              data[i + 2] = b * lum; // B
+              // alpha permanece igual
+            }
+          }
+          
+          tempCtx.putImageData(imageData, 0, 0);
+          
+          // Crear nueva imagen desde el canvas recoloreado
+          const recoloredImage = new Image();
+          recoloredImage.src = tempCanvas.toDataURL('image/png');
+          await new Promise((resolve) => {
+            recoloredImage.onload = resolve;
+          });
+          logoImage = recoloredImage;
+          console.log('✅ Logo recoloreado exitosamente');
+        }
+      }
       
       // Escalar logo proporcionalmente al tamaño de la imagen
       // El width original (80px) está diseñado para mostrarse en un contenedor de ~320px
@@ -130,7 +190,16 @@ export async function composeAndExport(options: CompositionOptions): Promise<str
       const logoY = (options.logoPosition.y / 100) * canvasHeight - (logoWidth / 2);
       
       ctx.save();
-      ctx.globalAlpha = 0.9;
+      
+      // Aplicar filtros si existen
+      if (options.logoFilters) {
+        const filters = options.logoFilters;
+        ctx.globalAlpha = (filters.opacity / 100) * 0.9;
+        ctx.filter = `grayscale(${filters.grayscale}%) brightness(${filters.brightness}%) contrast(${filters.contrast}%)`;
+      } else {
+        ctx.globalAlpha = 0.9;
+      }
+      
       // Calcular altura proporcional
       const aspectRatio = logoImage.width / logoImage.height;
       const logoHeight = logoWidth / aspectRatio;

@@ -1796,6 +1796,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                         const composedImageUrl = await composeAndExport({
                           imageUrl: hdImageUrl,
                           logoUrl: logoUrl,
+                          logoColor: logoColor,
+                          logoFilters: logoFilters,
                           productUrl: productUrl,
                           overlayText: localText || overlayText || initialOverlayText || '',
                           textPosition: textPosition,
