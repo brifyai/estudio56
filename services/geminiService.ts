@@ -785,7 +785,7 @@ const generateWithVertexAI = async (
   }
 };
 
-// Define which styles allow landscapes. 
+// Define which styles allow landscapes.
 const OUTDOOR_STYLES: FlyerStyleKey[] = [
   'summer_beach', 
   'corporate', 
@@ -2375,42 +2375,35 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
         }
     }
   } else {
-    // HD: Usar Image-to-Image con el borrador como referencia para mantener consistencia visual
-    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen HD basada en borrador como referencia`);
+    // HD: Generar imagen HD manteniendo consistencia con el borrador
+    // Usamos análisis del borrador + txt2img con seed para maximizar similitud
+    console.log(`🎯 [${isVideoStyle ? 'Video HD' : 'HD'}] Generando imagen HD con análisis del borrador`);
     
+    // ============================================
+    // 🎯 ANÁLISIS DEL BORRADOR PARA HD CONSISTENTE
+    // Usar Gemini Vision para extraer detalles visuales del borrador
+    // ============================================
+    
+    let draftAnalysis = '';
     if (draftImageForHD) {
-      // Usar img2img: mejorar el borrador existente
-      console.log('🖼️ [HD] Usando Image-to-Image con borrador como referencia');
-      
       try {
-        // Convertir data URL a base64
+        console.log('🔍 [HD] Analizando borrador con Gemini Vision...');
         const base64Data = draftImageForHD.split(',')[1];
         
-        // Prompt específico para mejorar la imagen existente
-        // CRÍTICO: Describir el contenido del borrador para que Gemini mantenga la consistencia
-        const enhancementPrompt = `
-          REFERENCE IMAGE CONTENT: ${enhancedDescription.substring(0, 300)}
-          
-          TASK: Upscale and enhance this image while maintaining EXACT visual consistency.
-          
-          CRITICAL RULES - FOLLOW STRICTLY:
-          1. Keep EXACTLY the same: composition, subject placement, layout, colors, objects, and mood
-          2. Improve ONLY: lighting quality, shadow detail, texture sharpness, overall clarity
-          3. Do NOT change: composition, colors, objects, perspective, mood, or any element
-          4. Do NOT add any text, elements, or modify anything except quality improvement
-          5. The output must look like the SAME image but in higher quality (HD)
-          6. Maintain EXACTLY the same camera angle, lighting direction, and perspective
-          7. Keep the same aspect ratio: ${aspectRatio}
-          
-          This is a QUALITY ENHANCEMENT ONLY. Do not reinterpret or change the image content.
-        `.replace(/\n/g, ' ').trim();
-        
-        // Usar Gemini con imagen de referencia
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp', // Usar modelo que soporta img2img
+        const analysisResponse = await ai.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
           contents: {
             parts: [
-              { text: enhancementPrompt },
+              { text: `Analyze this image in extreme detail. Describe:
+              1. The main subject (person, object, scene)
+              2. Exact colors of key elements
+              3. Lighting direction and quality
+              4. Background/environment details
+              5. Camera angle and perspective
+              6. Composition and subject placement
+              7. Mood and atmosphere
+              
+              Format your response as a single detailed paragraph that could be used to recreate this exact image.` },
               {
                 inlineData: {
                   mimeType: 'image/jpeg',
@@ -2418,52 +2411,62 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
                 }
               }
             ]
-          },
-          config: {
-            seed: consistencySeed,
-            imageConfig: {
-              aspectRatio: aspectRatio,
-              imageSize: "1K"
-            }
           }
         });
-
-        const candidates = response.candidates;
-        if (!candidates || candidates.length === 0) throw new Error("API retornó 0 candidatos.");
-
-        const parts = candidates[0].content?.parts;
-        if (!parts || parts.length === 0) throw new Error("Respuesta vacía.");
-
-        // Buscar la imagen generada
-        for (let i = 0; i < parts.length; i++) {
-          const part = parts[i];
-          if (part.inlineData && part.inlineData.data) {
-            let base64Result = part.inlineData.data.replace(/\s/g, '');
-            imageDataUrl = `data:image/jpeg;base64,${base64Result}`;
-            console.log('✅ [HD] Imagen HD generada exitosamente con img2img');
-            break;
-          }
-        }
         
-        if (!imageDataUrl) {
-          throw new Error("No se encontraron datos de imagen en la respuesta HD");
+        const analysisText = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (analysisText) {
+          draftAnalysis = analysisText.trim();
+          console.log('✅ [HD] Análisis del borrador:', draftAnalysis.substring(0, 100) + '...');
         }
-      } catch (img2imgError: any) {
-        console.warn('⚠️ [HD] img2img falló, intentando con txt2img:', img2imgError.message);
-        // Fallback a txt2img si img2img falla
-        const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
+      } catch (analysisError: any) {
+        console.warn('⚠️ [HD] Error analizando borrador:', analysisError.message);
+        // Continuar sin análisis detallado
       }
-    } else {
-      // Fallback: Generar imagen nueva si no hay borrador de referencia
-      console.log('⚠️ [HD] No hay borrador de referencia, generando imagen nueva');
-      try {
-        const promptWithGuardrails = `${unifiedPrompt} AVOID: ${finalNegativePrompt}`;
-        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
-      } catch (error: any) {
-        if (error.message.includes('SAFETY_BLOCK')) {
-             throw new Error("⚠️ La imagen fue bloqueada por filtros de seguridad. Evita mencionar personas reales, celebridades o marcas registradas.");
-        }
+    }
+    
+    // ============================================
+    // 🎯 PROMPT HD ULTRA-ESPECÍFICO
+    // ============================================
+    
+    // Extraer elementos clave del prompt original
+    const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
+                        enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
+                        enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
+    const subjectDetail = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
+    
+    // Construir prompt HD con análisis del borrador
+    const hdSpecificPrompt = `
+      ${realityPrompt}
+      
+      REFERENCE IMAGE ANALYSIS: ${draftAnalysis || subjectDetail}
+      
+      CRITICAL CONSISTENCY RULES:
+      - RECREATE this image with HIGHER QUALITY (HD resolution)
+      - Keep EXACTLY the same: subject, composition, colors, lighting, perspective, mood, background
+      - Improve ONLY: resolution, sharpness, detail clarity, texture quality
+      - DO NOT change: subject identity, position, colors, composition, or style
+      
+      STYLE: ${activeStyleLabel}
+      COMPOSITION: ${compositionPrompt}
+      ASPECT RATIO: ${aspectRatio}
+      
+      THIS IS AN ENHANCEMENT OF A REFERENCE IMAGE. The output must look like the SAME image but in higher quality.
+    `.replace(/\n/g, ' ').trim();
+    
+    const hdNegativePrompt = `${finalNegativePrompt}, low resolution, blurry, pixelated, artifacts, noise, compression artifacts, oversaturated, oversharpened, different composition, different subject, different colors`;
+    
+    try {
+      const promptWithGuardrails = `${hdSpecificPrompt} AVOID: ${hdNegativePrompt}`;
+      imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
+      console.log('✅ [HD] Imagen HD generada con análisis de borrador');
+    } catch (error: any) {
+      if (error.message.includes('SAFETY_BLOCK')) {
+        console.warn('⚠️ [HD] Safety block, reintentando...');
+        const simplifiedPrompt = `Professional photo of ${draftAnalysis || subjectDetail}. ${activeStyleLabel} style. ${aspectRatio} format. High quality, sharp, detailed. Same composition as reference.`;
+        imageDataUrl = await executeImageGeneration(ai, model, simplifiedPrompt, consistencySeed, aspectRatio, isHDForVideo, '1K');
+        console.log('✅ [HD] Retry exitoso');
+      } else {
         throw error;
       }
     }
