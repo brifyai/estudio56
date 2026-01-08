@@ -68,21 +68,26 @@ exports.handler = async (event) => {
     // Construir request para fal.ai
     const requestBody = {
       prompt,
+      image_url: imageUrl,  // ✅ CORREGIDO: image_url (no imageUrl)
+      strength: strength || 0.20,
       guidance_scale: guidanceScale || 7.5,
       num_inference_steps: steps || 20,
-      image_size: dimensions,
+      seed: seed,
       enable_safety_checker: false,
     };
-
-    // Si hay imagen de referencia, agregar parámetros de img2img
-    if (imageUrl) {
-      requestBody.image_url = imageUrl;
-      requestBody.strength = strength || 0.3;
-    }
-
-    // Agregar seed si existe
-    if (seed !== undefined && seed !== null) {
-      requestBody.seed = seed;
+    
+    // Agregar image_size según aspect ratio
+    if (aspectRatio) {
+      const aspectRatioToSize: Record<string, string> = {
+        '9:16': 'portrait_16_9',
+        '1:1': 'square',
+        '16:9': 'landscape_16_9',
+        '4:5': 'portrait_4_3',
+        '3:4': 'portrait_4_3',
+      };
+      
+      const imageSize = aspectRatioToSize[aspectRatio] || 'auto';
+      requestBody.image_size = imageSize;
     }
 
     // Agregar negative prompt si existe

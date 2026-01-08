@@ -19,7 +19,7 @@ const FAL_AI_BASE_URL = 'https://queue.fal.run';
 // Modelos disponibles en fal.ai
 export const FAL_MODELS = {
   // Z-Image Turbo LoRA - RÁPIDO para borradores y variaciones de realidad
-  Z_IMAGE_TURBO: 'fal-ai/z-image/turbo/lora',
+  Z_IMAGE_TURBO: 'fal-ai/z-image/turbo/image-to-image/lora',  // ✅ CORREGIDO: Ruta completa con /image-to-image/
   // Clarity Upscaler - MEJOR para HD (mejora resolución sin cambiar contenido)
   CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
   // Flux Dev img2img - Mejor calidad y más confiable
