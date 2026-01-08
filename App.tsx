@@ -46,6 +46,7 @@ import { PaymentPendingPage } from './components/PaymentPendingPage';
 import { RechargeSuccessPage } from './components/RechargeSuccessPage';
 import { RechargeFailurePage } from './components/RechargeFailurePage';
 import { RechargePendingPage } from './components/RechargePendingPage';
+import { PaymentHistory } from './components/PaymentHistory';
 import { supabase } from './services/supabaseService';
 import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
 import { detectIndustryFromDescription } from './services/geminiService';
@@ -2226,6 +2227,8 @@ const handleGenerate = async () => {
                     <span className="text-white/40">|</span>
                     <a href="/condiciones" className="hover:text-green-400 transition-colors px-1">Condiciones</a>
                     <span className="text-white/40">|</span>
+                    <a href="/historial-pagos" className="hover:text-green-400 transition-colors px-1">Historial</a>
+                    <span className="text-white/40">|</span>
                     <span
                       className="cursor-pointer hover:text-green-400 transition-colors px-1"
                       onClick={async () => {
@@ -2523,6 +2526,9 @@ const App: React.FC = () => {
         <Route path="/recarga-exitosa" element={<RechargeSuccessPage />} />
         <Route path="/recarga-fallida" element={<RechargeFailurePage />} />
         <Route path="/recarga-pendiente" element={<RechargePendingPage />} />
+        
+        {/* Payment History Route */}
+        <Route path="/historial-pagos" element={<PaymentHistory />} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
