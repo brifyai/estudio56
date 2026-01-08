@@ -155,9 +155,45 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
   const handleRecharge = async (rechargeId: string) => {
     setSelectedPlanId(rechargeId);
-    onSelectPlan(rechargeId);
-    alert(`Plan ${rechargeId} seleccionado. Credits will be added to your account.`);
-    onClose();
+    
+    try {
+      setProcessingRecharge(rechargeId);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        alert('Debes iniciar sesión para recargar créditos');
+        return;
+      }
+
+      const response = await fetch('/.netlify/functions/create-recharge-preference', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.id,
+          rechargeType: rechargeId
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al crear preferencia de pago');
+      }
+
+      const data = await response.json();
+      
+      // Redirigir a MercadoPago
+      if (data.initPoint) {
+        window.location.href = data.initPoint;
+      }
+    } catch (error: any) {
+      console.error('Error al procesar recarga:', error);
+      alert(error.message || 'Hubo un error al procesar tu recarga. Por favor intenta nuevamente.');
+    } finally {
+      setProcessingRecharge(null);
+      setSelectedPlanId(null);
+    }
   };
 
   const handleFreePlan = () => {
