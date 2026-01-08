@@ -19,20 +19,20 @@ const FAL_AI_BASE_URL = 'https://api.fal.ai/v1';
 export const FAL_MODELS = {
   // Clarity Upscaler - MEJOR para HD (mejora resolución sin cambiar contenido)
   CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
+  // Flux Dev img2img - Mejor calidad y más confiable
+  FLUX_DEV_IMG2IMG: 'fal-ai/flux/dev/image-to-image',
+  // Flux Pro img2img - Máxima calidad
+  FLUX_PRO_IMG2IMG: 'fal-ai/flux-pro/v1.1/image-to-image',
   // Stable Diffusion XL 1.0 img2img - Alta calidad
-  SDXL_IMG2IMG: 'fal-ai/stable-diffusion-xl-1.0/img2img',
-  // Stable Diffusion 1.5 img2img - Compatible con más estilos
-  SD15_IMG2IMG: 'fal-ai/stable-diffusion-v1-5/img2img',
+  SDXL_IMG2IMG: 'fal-ai/fast-sdxl/image-to-image',
   // Flux Schnell - Rápido y buena calidad
   FLUX_SCHNELL: 'fal-ai/flux/schnell',
   // Flux Dev - Mejor calidad
   FLUX_DEV: 'fal-ai/flux/dev',
-  // SDXL Base - Modelo base
-  SDXL_BASE: 'fal-ai/stable-diffusion-xl/base',
 } as const;
 
-// Modelo principal para HD - SDXL img2img mantiene máxima similitud con el borrador
-const HD_MODEL = FAL_MODELS.SDXL_IMG2IMG;
+// Modelo principal para HD - Flux Dev img2img es más confiable y mantiene similitud
+const HD_MODEL = FAL_MODELS.FLUX_DEV_IMG2IMG;
 
 export type FalModelId = typeof FAL_MODELS[keyof typeof FAL_MODELS];
 
@@ -100,7 +100,7 @@ export const generateHDWithImg2Img = async (
     negativePrompt = 'blurry, low quality, pixelated, artifacts, noise, compression, distorted, deformed, extra limbs, bad anatomy, different composition, different colors, different subject, different lighting, different perspective, different size, different background, different mood, changed elements, modified layout, altered colors, different style'
   } = options;
 
-  console.log('🎯 [fal.ai] Iniciando SDXL Image-to-Image para HD...');
+  console.log('🎯 [fal.ai] Iniciando Flux Dev Image-to-Image para HD...');
   console.log(`📝 [fal.ai] Modelo: ${HD_MODEL}`);
   console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
   console.log(`📝 [fal.ai] Prompt (first 150): ${prompt.substring(0, 150)}...`);
@@ -127,11 +127,10 @@ export const generateHDWithImg2Img = async (
   // Extraer base64 de la imagen de referencia
   const imageBase64 = extractBase64(referenceImageDataUrl);
 
-  // Construir request para SDXL img2img
-  // Usar nombres exactos según documentación de fal.ai
+  // Construir request para Flux Dev img2img
+  // Flux usa nombres de parámetros diferentes a SDXL
   const requestBody: any = {
     prompt: prompt,
-    negative_prompt: negativePrompt,
     image_url: referenceImageDataUrl, // Enviar data URL completo
     strength: strength, // 0.15-0.25 = mantener similitud alta
     guidance_scale: guidanceScale, // 7-9 = seguir imagen de referencia
@@ -140,6 +139,7 @@ export const generateHDWithImg2Img = async (
       width: dimensions.width,
       height: dimensions.height,
     },
+    enable_safety_checker: false, // Desactivar para evitar falsos positivos
   };
 
   // Agregar seed si existe (CRÍTICO para reproducibilidad)
@@ -159,7 +159,7 @@ export const generateHDWithImg2Img = async (
       throw new Error('FAL_AI_API_KEY no configurada en .env');
     }
 
-    console.log('📡 [fal.ai] Enviando request a SDXL img2img...');
+    console.log('📡 [fal.ai] Enviando request a Flux Dev img2img...');
     console.log(`📡 [fal.ai] Endpoint: ${FAL_AI_BASE_URL}/${HD_MODEL}`);
 
     const response = await fetch(`${FAL_AI_BASE_URL}/${HD_MODEL}`, {
@@ -174,20 +174,20 @@ export const generateHDWithImg2Img = async (
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorText);
-      throw new Error(`fal.ai SDXL error: ${response.status} - ${errorText.substring(0, 200)}`);
+      throw new Error(`fal.ai Flux error: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
     const data = await response.json();
-    console.log('✅ [fal.ai] Respuesta SDXL recibida');
+    console.log('✅ [fal.ai] Respuesta Flux recibida');
     console.log('📦 [fal.ai] Response keys:', Object.keys(data));
 
-    // Extraer imagen de la respuesta SDXL
-    // SDXL retorna la imagen en 'images[0].url' o 'image.url'
+    // Extraer imagen de la respuesta Flux
+    // Flux retorna la imagen en 'images[0].url' o 'image.url'
     let imageUrl = data.images?.[0]?.url || data.image?.url || data.url;
     
     if (!imageUrl) {
       console.error('❌ [fal.ai] No se encontró imagen en la respuesta:', JSON.stringify(data, null, 2));
-      throw new Error('No se encontró imagen en la respuesta de fal.ai SDXL');
+      throw new Error('No se encontró imagen en la respuesta de fal.ai Flux');
     }
 
     // Si es URL relativa, convertir a URL completa

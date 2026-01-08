@@ -1563,11 +1563,24 @@ const handleGenerate = async () => {
               console.log(`🎨 [Story Art HD] industryId: ${upgradeArtDirectionId}`);
             }
             
+            // 🎯 CRÍTICO: Usar análisis detallado del borrador para mantener similitud
+            // El prompt debe describir exactamente lo que hay en el borrador
+            console.log('🔍 [HD] Analizando borrador antes de generar HD...');
+            console.log('📸 [HD] Draft URL length:', draftImageUrl?.length || 0);
+            console.log('📸 [HD] Draft URL disponible:', !!draftImageUrl);
+            
+            // Prompt que será enriquecido por geminiService con análisis del borrador
+            const hdPrompt = `High quality professional photograph. Maintain exact composition, colors, lighting, and subject placement. Improve only: sharpness, detail, texture quality.`;
+            
+            console.log('📝 [HD] Enviando a generateFlyerImage con draftImageForHD');
+            console.log('📝 [HD] Prompt HD:', hdPrompt);
+            console.log('📝 [HD] Seed:', seed);
+            console.log('📝 [HD] Draft image será analizado por Gemini Vision');
+            
             // Usar el borrador como referencia para Image-to-Image
-            // El prompt simple simula un strength bajo porque solo pide "mejorar calidad"
-            // sin dar instrucciones complejas que puedan alterar la imagen
+            // geminiService.ts se encargará de analizar el borrador con Gemini Vision
             const result = await generateFlyerImage(
-              hdPrompt, // Prompt simple que mantiene estructura
+              hdPrompt, // Prompt simple - será enriquecido con análisis del borrador
               styleKey,
               aspectRatio,
               'hd',
@@ -1577,7 +1590,7 @@ const handleGenerate = async () => {
               true, // enableIntelligentTextStyles
               undefined, // No pasar texto automático para HD
               undefined, // No pasar estilo de texto
-              draftImageUrl || undefined, // Usar borrador como referencia para Image-to-Image
+              draftImageUrl || undefined, // CRÍTICO: Pasar borrador para Image-to-Image
               upgradeArtDirectionId // NEW: artDirectionId para Story Art
             );
             url = result.imageDataUrl;
