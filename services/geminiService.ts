@@ -2345,36 +2345,72 @@ console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePromp
   }
   
   if (quality === 'draft') {
-    try {
-        // 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT DE DRAFT
-        // El prompt de draft también debe incluir los modificadores de realidad
+    // ============================================
+    // 🎯 SI HAY IMAGEN DE REFERENCIA, USAR FAL.AI IMG2IMG
+    // Esto garantiza similitud con la imagen original
+    // ============================================
+    if (isFalAiConfigured() && draftImageForHD) {
+      console.log('🚀 [Draft] Usando fal.ai Image-to-Image para mantener composición');
+      console.log('📝 [Draft] Seed usado:', consistencySeed);
+      console.log('🖼️ [Draft] Imagen de referencia disponible:', !!draftImageForHD);
+      
+      try {
+        // Usar strength bajo para mantener alta similitud
+        const falResult = await generateHDWithImg2Img(
+          enhancedDescription,
+          draftImageForHD,
+          {
+            seed: consistencySeed,
+            strength: 0.25, // Bajo para mantener composición similar
+            guidanceScale: 7.5,
+            steps: 25,
+            aspectRatio: aspectRatio,
+            negativePrompt: realityNegativePrompt
+          }
+        );
+        
+        imageDataUrl = falResult.imageDataUrl;
+        console.log('✅ [Draft] Imagen generada con fal.ai Image-to-Image');
+      } catch (error: any) {
+        console.error('❌ [Draft] Error con fal.ai, fallback a Vertex AI:', error);
+        // Fallback a Vertex AI si fal.ai falla
         const realityPromptForDraft = buildPowerPromptWithReality(enhancedDescription.split('.')[0], realityLevel);
         const ultraSimplePrompt = `Professional photo. ${realityPromptForDraft} Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
-        
-        console.log(`📝 [Draft] Prompt con realidad: ${ultraSimplePrompt.substring(0, 150)}...`);
-        
-        // Para imágenes draft: usar 480p
         imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
-    } catch (error: any) {
-        console.warn("Draft generation failed. Retrying with same parameters...", error.message);
-        
-        // Retry con prompt mínimo absoluto
-        try {
-            const minimalPrompt = `Professional photo of a local business. 9:16 format.`;
-            console.log(`📝 [Draft Retry] Prompt mínimo: ${minimalPrompt}`);
-            
-            // 🎯 USAR VERTEX AI DIRECTAMENTE PARA MODELOS DE IMAGEN
-            const isImagenModel = model.includes('imagen-');
-            if (isImagenModel) {
-              console.log(`📡 [Draft Retry] Usando Vertex AI para ${model}`);
-              imageDataUrl = await generateWithVertexAI(model, minimalPrompt, aspectRatio, '480p', consistencySeed);
-            } else {
-              imageDataUrl = await executeImageGeneration(ai, model, minimalPrompt, consistencySeed, aspectRatio, false, '480p');
-            }
-        } catch (retryError) {
-             console.error("Draft retry failed.", retryError);
-             throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
-        }
+      }
+    } else {
+      // Sin imagen de referencia, usar Vertex AI normal
+      try {
+          // 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT DE DRAFT
+          // El prompt de draft también debe incluir los modificadores de realidad
+          const realityPromptForDraft = buildPowerPromptWithReality(enhancedDescription.split('.')[0], realityLevel);
+          const ultraSimplePrompt = `Professional photo. ${realityPromptForDraft} Clean commercial photography, 9:16 vertical format, natural lighting, realistic local business aesthetic.`;
+          
+          console.log(`📝 [Draft] Prompt con realidad: ${ultraSimplePrompt.substring(0, 150)}...`);
+          
+          // Para imágenes draft: usar 480p
+          imageDataUrl = await executeImageGeneration(ai, model, ultraSimplePrompt, consistencySeed, aspectRatio, false, '480p');
+      } catch (error: any) {
+          console.warn("Draft generation failed. Retrying with same parameters...", error.message);
+          
+          // Retry con prompt mínimo absoluto
+          try {
+              const minimalPrompt = `Professional photo of a local business. 9:16 format.`;
+              console.log(`📝 [Draft Retry] Prompt mínimo: ${minimalPrompt}`);
+              
+              // 🎯 USAR VERTEX AI DIRECTAMENTE PARA MODELOS DE IMAGEN
+              const isImagenModel = model.includes('imagen-');
+              if (isImagenModel) {
+                console.log(`📡 [Draft Retry] Usando Vertex AI para ${model}`);
+                imageDataUrl = await generateWithVertexAI(model, minimalPrompt, aspectRatio, '480p', consistencySeed);
+              } else {
+                imageDataUrl = await executeImageGeneration(ai, model, minimalPrompt, consistencySeed, aspectRatio, false, '480p');
+              }
+          } catch (retryError) {
+               console.error("Draft retry failed.", retryError);
+               throw new Error("No se pudo generar el borrador. Intenta cambiar la descripción o usa el modo HD.");
+          }
+      }
     }
   } else {
     // HD: Generar imagen HD manteniendo consistencia con el borrador
