@@ -374,11 +374,13 @@ export const getOptimalGenerationOrder = (
 
 /**
  * Determina si se debe usar la imagen de referencia
- * Si el nivel de realidad es < 3.0, descartamos la referencia para forzar Text-to-Image puro
- * Esto evita que la IA se "pegue" al estilo profesional de la imagen anterior
+ * CRÍTICO: SIEMPRE usar imagen de referencia para mantener composición consistente
+ * Solo el prompt cambia para ajustar el nivel de realismo fotográfico
  */
 export const shouldUseReferenceImage = (stars: RealityLevel): boolean => {
-  return stars >= 3.0;
+  // SIEMPRE usar referencia para mantener la misma composición, pose, y escena
+  // El nivel de realismo se controla solo con el prompt
+  return true;
 };
 
 /**

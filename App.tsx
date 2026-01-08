@@ -1907,19 +1907,18 @@ progressAlert.updateProgress(60, 'Renderizando...');
       
       // 🎯 NUEVA LÓGICA: Construir prompt de fuerza con prefijo MODE
       const { english: enhancedPrompt } = await enhancePrompt(description, styleKey);
-      const realityPrompt = buildPowerPromptWithReality(enhancedPrompt, realityLevelTyped);
       
-      // ✅ CORRECCIÓN CRÍTICA: Si nivel < 3.0, descartamos la imagen de referencia
-      // para forzar Text-to-Image puro y evitar que la IA herede el "look profesional"
-      const useReference = shouldUseReferenceImage(realityLevelTyped);
-      const referenceImage = useReference ? (draftImageUrl || undefined) : undefined;
+      // 🎯 CRÍTICO: Para Image-to-Image, usar prompt SIMPLE que solo ajuste realismo
+      // NO redescribir la escena completa porque la imagen de referencia ya la tiene
+      const config = getRealityConfig(realityLevelTyped);
+      const simpleRealityPrompt = `
+        Maintain exact composition, subject, pose, and background.
+        Adjust only the photo quality to match: ${config.label} (${config.technicalProfile}).
+        ${config.camera}
+        Keep everything else identical to the reference image.
+      `.trim();
       
-      if (!useReference) {
-        console.log('🎚️ [Reality] Nivel < 3.0 - Descartando imagen de referencia para forzar Text-to-Image puro');
-      }
-      if (!referenceImage && useReference) {
-        console.warn('⚠️ [Reality] No hay imagen de referencia, la calidad puede variar');
-      }
+      console.log('📝 [Reality] Usando prompt simple para Image-to-Image:', simpleRealityPrompt);
       
       // Determinar artDirectionId para mantener la Dirección de Arte
       // Usamos el mismo mapeo que en handleGenerate para consistencia
@@ -1946,7 +1945,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
       }
       
       const result = await generateFlyerImage(
-        realityPrompt,
+        simpleRealityPrompt, // Prompt simple que solo ajusta calidad fotográfica
         styleKey,
         aspectRatio,
         'draft',
@@ -1956,7 +1955,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
         true,
         workMode === 'auto' && overlayText.trim() ? overlayText : undefined,
         workMode === 'auto' ? "modern and clean" : undefined,
-        referenceImage || undefined, // 🖼️ IMAGEN DE REFERENCIA para transformación controlada
+        draftImageUrl || undefined, // 🖼️ SIEMPRE usar imagen de referencia para mantener composición
         artDirectionId // 🎨 DIRECCIÓN DE ARTE preservada
       );
       
@@ -1976,7 +1975,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
             seed: seed,
             stars: levelKeyTyped,
             image_url: result.imageDataUrl,
-            prompt_used: realityPrompt,
+            prompt_used: simpleRealityPrompt,
             created_at: new Date(),
             cached: true
           });
