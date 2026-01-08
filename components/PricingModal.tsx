@@ -9,6 +9,7 @@ interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectPlan: (plan: string) => void;
+  isAdmin?: boolean;
 }
 
 interface RechargePlan {
@@ -22,7 +23,7 @@ interface RechargePlan {
   color: string;
 }
 
-export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan }) => {
+export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onSelectPlan, isAdmin = false }) => {
   const [equivalences, setEquivalences] = useState<CreditEquivalence[]>([]);
   const [loadingEquivalences, setLoadingEquivalences] = useState(true);
   const [processingRecharge, setProcessingRecharge] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
   const [userCredits, setUserCredits] = useState<number>(0);
   const [userPlanName, setUserPlanName] = useState<string>('');
   const [loadingUser, setLoadingUser] = useState(true);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,16 +46,16 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
       if (session?.user) {
         const { data: user } = await supabase
           .from('users')
-          .select('credits, user_plans(*)')
+          .select('credits, user_plans(*), is_admin')
           .eq('id', session.user.id)
           .single();
         
         if (user) {
           setUserCredits(user.credits || 0);
-          // user_plans es un array, obtener el primer elemento
           const userPlans = user.user_plans as any[];
           const planName = userPlans?.[0]?.name || 'GRATIS';
           setUserPlanName(planName);
+          setIsUserAdmin(user.is_admin || false);
         }
       }
     } catch (error) {
@@ -63,7 +65,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
     }
   };
 
-  // Calcular si el usuario tiene pocos créditos (menos de 20% del plan)
   const getLowCreditsWarning = () => {
     const planCredits: Record<string, number> = {
       'ESTOY PARTIENDO': 40,
@@ -97,7 +98,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
     }
   };
 
-  // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
     if (isOpen) {
       const originalStyle = window.getComputedStyle(document.body).overflow;
@@ -110,20 +110,22 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
   if (!isOpen) return null;
 
-  // Handle subscription plan payment (goes to MercadoPago with recurring billing)
   const handleSubscribe = async (planId: string) => {
+    if (isAdmin || isUserAdmin) {
+      alert('Los usuarios administradores no necesitan suscripción.');
+      return;
+    }
+    
     setSelectedPlanId(planId);
     try {
       setProcessingRecharge(planId);
       
-      // Get current user from Supabase
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         alert('Debes iniciar sesión para contratar un plan');
         return;
       }
 
-      // Create subscription with MercadoPago Preapproval API
       const response = await fetch('/.netlify/functions/create-subscription', {
         method: 'POST',
         headers: {
@@ -141,8 +143,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
       }
 
       const data = await response.json();
-
-      // Redirect to MercadoPago for payment authorization
       redirectToCheckout(data.initPoint);
     } catch (error) {
       console.error('Error al procesar suscripción:', error);
@@ -153,17 +153,10 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
     }
   };
 
-  // Handle credit recharge (just selects the plan, no MercadoPago)
   const handleRecharge = async (rechargeId: string) => {
     setSelectedPlanId(rechargeId);
-    
-    // Update the UI to show they "Selected" this plan
     onSelectPlan(rechargeId);
-    
-    // Show confirmation
     alert(`Plan ${rechargeId} seleccionado. Credits will be added to your account.`);
-    
-    // Close modal
     onClose();
   };
 
@@ -214,6 +207,8 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
     }).format(price);
   };
 
+  const isAdminUser = isAdmin || isUserAdmin;
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
       <div className="bg-[#0A0A0A] border border-white/10 w-full max-w-7xl rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
@@ -235,7 +230,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             Infraestructura de diseño de nivel empresarial, accesible para todos.
           </p>
           
-          {/* ADVERTENCIA DE CRÉDITOS BAJOS */}
           {lowCreditsWarning.show && (
             <div className={`mt-4 p-3 rounded-xl max-w-xl mx-auto ${
               lowCreditsWarning.type === 'warning'
@@ -248,7 +242,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             </div>
           )}
           
-          {/* INFO DEL USUARIO */}
           {!loadingUser && (
             <div className="mt-4 flex items-center justify-center gap-4 text-sm text-white/60">
               <span className="bg-white/10 px-3 py-1 rounded-lg">
@@ -263,7 +256,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-8 pb-4">
           
-          {/* PLAN Gratis */}
           <div className="bg-white/5 rounded-2xl border border-white/5 p-6 flex flex-col hover:border-white/20 transition-all group opacity-80 hover:opacity-100">
             <div className="flex items-center gap-2 mb-2">
               <Gift className="w-5 h-5 text-gray-400" />
@@ -296,7 +288,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             </button>
           </div>
 
-          {/* PLAN 1: ESTOY PARTIENDO */}
           <div className="bg-white/5 rounded-2xl border border-white/5 p-6 flex flex-col hover:border-white/20 transition-all group">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-5 h-5 text-blue-400" />
@@ -318,18 +309,19 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
             <button
               onClick={() => handleSubscribe('ESTOY PARTIENDO')}
-              disabled={selectedPlanId === 'ESTOY PARTIENDO'}
+              disabled={selectedPlanId === 'ESTOY PARTIENDO' || isAdminUser}
               className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
-                selectedPlanId === 'ESTOY PARTIENDO'
-                  ? 'bg-blue-500 text-black border-blue-500 cursor-default'
-                  : 'border-white/20 hover:bg-white hover:text-black'
+                isAdminUser
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700'
+                  : selectedPlanId === 'ESTOY PARTIENDO'
+                    ? 'bg-blue-500 text-black border-blue-500 cursor-default'
+                    : 'border-white/20 hover:bg-white hover:text-black'
               }`}
             >
-              {selectedPlanId === 'ESTOY PARTIENDO' ? 'Pagando...' : 'Elegir este'}
+              {isAdminUser ? 'Admin' : selectedPlanId === 'ESTOY PARTIENDO' ? 'Pagando...' : 'Elegir este'}
             </button>
           </div>
 
-          {/* PLAN 2: JEFE PYME */}
           <div className="bg-white/5 rounded-2xl border border-white/5 p-6 flex flex-col hover:border-white/20 transition-all group">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="w-5 h-5 text-purple-400" />
@@ -351,21 +343,22 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
             <button
               onClick={() => handleSubscribe('JEFE PYME')}
-              disabled={selectedPlanId === 'JEFE PYME'}
+              disabled={selectedPlanId === 'JEFE PYME' || isAdminUser}
               className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
-                selectedPlanId === 'JEFE PYME'
-                  ? 'bg-purple-500 text-black border-purple-500 cursor-default'
-                  : 'border-white/20 hover:bg-white hover:text-black'
+                isAdminUser
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700'
+                  : selectedPlanId === 'JEFE PYME'
+                    ? 'bg-purple-500 text-black border-purple-500 cursor-default'
+                    : 'border-white/20 hover:bg-white hover:text-black'
               }`}
             >
-              {selectedPlanId === 'JEFE PYME' ? 'Pagando...' : 'LO QUIERO'}
+              {isAdminUser ? 'Admin' : selectedPlanId === 'JEFE PYME' ? 'Pagando...' : 'LO QUIERO'}
             </button>
           </div>
 
-          {/* PLAN 3: AGENCIA */}
           <div className="bg-yellow-900/10 rounded-2xl border border-yellow-500/50 p-6 flex flex-col relative overflow-hidden group shadow-[0_0_50px_rgba(234,179,8,0.15)] transform hover:scale-[1.02] transition-all">
              <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[9px] font-bold px-3 py-1 rounded-bl-lg uppercase">🔥 Mejor Valor</div>
-             
+              
             <div className="flex items-center gap-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-400" />
               <h3 className="text-lg font-bold text-white">AGENCIA</h3>
@@ -386,20 +379,21 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
 
             <button
               onClick={() => handleSubscribe('AGENCIA')}
-              disabled={selectedPlanId === 'AGENCIA'}
+              disabled={selectedPlanId === 'AGENCIA' || isAdminUser}
               className={`w-full py-3 rounded-lg shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all text-sm font-bold ${
-                selectedPlanId === 'AGENCIA'
-                  ? 'bg-green-500 text-black border-green-500 cursor-default'
-                  : 'bg-yellow-500 hover:bg-yellow-400 text-black'
+                isAdminUser
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700'
+                  : selectedPlanId === 'AGENCIA'
+                    ? 'bg-green-500 text-black border-green-500 cursor-default'
+                    : 'bg-yellow-500 hover:bg-yellow-400 text-black'
               }`}
             >
-              {selectedPlanId === 'AGENCIA' ? 'Pagando...' : 'CONTRATAR AGENCIA'}
+              {isAdminUser ? 'Admin' : selectedPlanId === 'AGENCIA' ? 'Pagando...' : 'CONTRATAR AGENCIA'}
             </button>
           </div>
 
         </div>
 
-        {/* RECARGAS SECTION */}
         <div className="border-t border-white/10 p-6 bg-[#0A0A0A]">
           <h3 className="text-2xl font-bold text-white mb-6 text-center">
             Recarga de <span className="text-green-400">Créditos Sueltos</span>
@@ -452,7 +446,6 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
             ))}
           </div>
 
-          {/* EQUIVALENCIAS */}
           <div className="mt-6 bg-white/5 rounded-xl p-4 max-w-2xl mx-auto">
             <h4 className="text-xs font-bold uppercase tracking-widest text-white/50 mb-4 text-center">
               Resumen de Equivalencias

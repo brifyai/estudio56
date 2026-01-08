@@ -21,6 +21,7 @@ interface PlanSelectionModalProps {
   currentPlan: string;
   onSelectPlan: (planId: string) => void;
   isLoading?: boolean;
+  isAdmin?: boolean;
 }
 
 export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
@@ -28,7 +29,8 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
   onClose,
   currentPlan,
   onSelectPlan,
-  isLoading = false
+  isLoading = false,
+  isAdmin = false
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -314,22 +316,29 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (!isCurrentPlan) {
+                    if (!isCurrentPlan && !isAdmin) {
                       handleSubscribe(plan.id);
                     }
                   }}
-                  disabled={isCurrentPlan || isLoading || isSelected}
+                  disabled={isCurrentPlan || isLoading || isSelected || isAdmin}
                   className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                    isCurrentPlan
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : isSelected && plan.price > 0
-                        ? 'bg-blue-500 text-white cursor-wait'
-                        : plan.price === 0
-                          ? 'bg-green-500 text-white cursor-default'
-                          : `${colors.button} text-white hover:scale-105 active:scale-95`
+                    isAdmin
+                      ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                      : isCurrentPlan
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : isSelected && plan.price > 0
+                          ? 'bg-blue-500 text-white cursor-wait'
+                          : plan.price === 0
+                            ? 'bg-green-500 text-white cursor-default'
+                            : `${colors.button} text-white hover:scale-105 active:scale-95`
                   } ${isLoading ? 'opacity-50 cursor-wait' : ''}`}
                 >
-                  {isLoading ? (
+                  {isAdmin ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Crown className="w-4 h-4" />
+                      Admin
+                    </span>
+                  ) : isLoading ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Procesando...

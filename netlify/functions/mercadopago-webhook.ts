@@ -255,6 +255,22 @@ export const handler: Handler = async (event) => {
       if (status === 'approved') {
         console.log('✅ Payment approved! Updating user plan and credits...');
 
+        // Check if user is admin - skip processing for admins
+        const { data: userData } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', userId)
+          .single();
+
+        if (userData?.is_admin) {
+          console.log('👤 Admin user - skipping plan update');
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ message: 'Webhook processed - skipped for admin' }),
+          };
+        }
+
         // Get plan details
         const { data: plan } = await supabase
           .from('user_plans')

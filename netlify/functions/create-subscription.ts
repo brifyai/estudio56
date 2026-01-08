@@ -88,7 +88,7 @@ export const handler: Handler = async (event) => {
     // Get user details
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('email')
+      .select('email, is_admin')
       .eq('id', userId)
       .single();
 
@@ -98,6 +98,16 @@ export const handler: Handler = async (event) => {
         statusCode: 404,
         headers,
         body: JSON.stringify({ error: 'User not found' }),
+      };
+    }
+
+    // Check if user is admin - admins don't need subscriptions
+    if (user.is_admin) {
+      console.log('👤 Admin user - subscription not required');
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Admin users do not need subscriptions' }),
       };
     }
 

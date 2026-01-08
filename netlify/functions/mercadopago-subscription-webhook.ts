@@ -111,6 +111,22 @@ export const handler: Handler = async (event) => {
         .single();
 
       if (subData) {
+        // Check if user is admin - skip processing for admins
+        const { data: userData } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', subData.user_id)
+          .single();
+
+        if (userData?.is_admin) {
+          console.log('👤 Admin user - skipping subscription processing');
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ received: true, skipped: 'admin_user' }),
+          };
+        }
+
         await supabase
           .from('users')
           .update({
@@ -129,15 +145,23 @@ export const handler: Handler = async (event) => {
           break;
         case 'cancelled':
           console.log('❌ Subscription cancelled');
-          // Downgrade user to free plan
+          // Downgrade user to free plan (only if not admin)
           if (subData) {
-            await supabase
+            const { data: userData } = await supabase
               .from('users')
-              .update({
-                plan_id: 'GRATIS',
-                subscription_status: 'cancelled',
-              })
-              .eq('id', subData.user_id);
+              .select('is_admin')
+              .eq('id', subData.user_id)
+              .single();
+
+            if (!userData?.is_admin) {
+              await supabase
+                .from('users')
+                .update({
+                  plan_id: 'GRATIS',
+                  subscription_status: 'cancelled',
+                })
+                .eq('id', subData.user_id);
+            }
           }
           break;
         case 'paused':
