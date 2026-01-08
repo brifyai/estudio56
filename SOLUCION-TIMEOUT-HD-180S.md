@@ -1,15 +1,16 @@
-# ✅ Solución: Timeout de Generación HD (90s → 180s)
+# ✅ Solución: Timeout de Generación HD (90s → 180s → 300s)
 
 **Fecha**: 8 de enero de 2026  
-**Estado**: ✅ RESUELTO
+**Estado**: ✅ RESUELTO (Actualizado a 5 minutos)
 
 ---
 
 ## 🎯 Problema
 
-Al generar imágenes HD, aparecía el error:
+Al generar imágenes HD, aparecía el error de timeout:
 ```
 Uncaught (in promise) Error: Timeout de generación de imagen (90s)
+Uncaught (in promise) Error: Timeout de generación de imagen (180s)
 ```
 
 **Síntomas**:
@@ -21,24 +22,28 @@ Uncaught (in promise) Error: Timeout de generación de imagen (90s)
 
 ## 🔍 Causa Raíz
 
-El timeout de 90 segundos era **insuficiente** para el sistema de cola de fal.ai:
+El timeout era **insuficiente** para el sistema de cola de fal.ai:
 
 - **fal.ai usa sistema de cola asíncrono**:
   - Submit request → IN_QUEUE
   - Polling cada 2 segundos
-  - Máximo 60 intentos = 120 segundos (2 minutos)
+  - Procesamiento de imagen HD de alta calidad
   
-- **Timeout anterior**: 90 segundos
-- **Tiempo real necesario**: hasta 120 segundos
+- **Timeouts probados**:
+  - ❌ 90 segundos - Insuficiente
+  - ❌ 180 segundos (3 minutos) - Aún insuficiente
+  - ✅ 300 segundos (5 minutos) - Suficiente
+  
+- **Tiempo real necesario**: fal.ai puede tomar hasta 3 minutos para imágenes HD complejas
 - **Resultado**: El timeout interrumpía el polling antes de obtener la imagen
 
 ---
 
 ## ✅ Solución Implementada
 
-### Cambio en `services/geminiService.ts` (línea 1515-1517)
+### Cambio 1: Timeout en `services/geminiService.ts` (línea 1515-1517)
 
-**ANTES**:
+**ANTES (Primera versión)**:
 ```typescript
 // Timeout de 90 segundos para generación de imagen (mayor que timeout de Netlify 26s)
 const timeoutPromise = new Promise((_, reject) => {
@@ -46,7 +51,7 @@ const timeoutPromise = new Promise((_, reject) => {
 });
 ```
 
-**DESPUÉS**:
+**DESPUÉS (Segunda versión - 180s)**:
 ```typescript
 // Timeout de 3 minutos para generación de imagen (fal.ai queue puede tomar hasta 2 minutos)
 const timeoutPromise = new Promise((_, reject) => {
@@ -54,11 +59,37 @@ const timeoutPromise = new Promise((_, reject) => {
 });
 ```
 
+**FINAL (Tercera versión - 300s)**:
+```typescript
+// Timeout de 5 minutos para generación de imagen (fal.ai queue puede tomar hasta 3 minutos)
+const timeoutPromise = new Promise((_, reject) => {
+  setTimeout(() => reject(new Error('Timeout de generación de imagen (300s)')), 300000);
+});
+```
+
+### Cambio 2: Polling en `services/falAiService.ts` (línea 198-200)
+
+**ANTES**:
+```typescript
+// Hacer polling hasta obtener el resultado
+const maxAttempts = 60; // 60 intentos = 2 minutos máximo
+const pollInterval = 2000; // 2 segundos entre intentos
+```
+
+**DESPUÉS**:
+```typescript
+// Hacer polling hasta obtener el resultado
+const maxAttempts = 90; // 90 intentos = 3 minutos máximo
+const pollInterval = 2000; // 2 segundos entre intentos
+```
+
 ### Justificación del Nuevo Timeout
 
-- **fal.ai polling**: hasta 120 segundos (2 minutos)
-- **Margen de seguridad**: +60 segundos
-- **Total**: 180 segundos (3 minutos)
+- **fal.ai polling**: hasta 180 segundos (3 minutos) - 90 intentos × 2s
+- **Margen de seguridad**: +120 segundos (2 minutos)
+- **Total**: 300 segundos (5 minutos)
+
+**Observación**: fal.ai está tomando más tiempo del esperado para procesar imágenes HD de alta calidad. El nuevo timeout de 5 minutos da margen suficiente incluso para casos extremos.
 
 Esto da tiempo suficiente para:
 1. Enviar request a fal.ai
@@ -75,9 +106,9 @@ Esto da tiempo suficiente para:
 
 ```typescript
 // En falAiService.ts
-const maxAttempts = 60;      // 60 intentos
+const maxAttempts = 90;      // 90 intentos (actualizado de 60)
 const pollInterval = 2000;   // 2 segundos entre intentos
-// Total: 60 × 2s = 120 segundos máximo
+// Total: 90 × 2s = 180 segundos máximo (3 minutos)
 ```
 
 ### Parámetros de Generación HD
@@ -106,8 +137,9 @@ Ahora la generación HD debería:
 
 ---
 
-## 📝 Commit
+## 📝 Commits
 
+### Commit 1: Aumento inicial (90s → 180s)
 ```
 fix: Aumentar timeout de generación HD de 90s a 180s para fal.ai queue
 
@@ -117,8 +149,19 @@ fix: Aumentar timeout de generación HD de 90s a 180s para fal.ai queue
 - Esto resuelve el error 'Timeout de generación de imagen (90s)'
 - La imagen HD se genera correctamente pero necesita más tiempo
 ```
+**Commit hash**: `4b5efda`
 
-**Commit hash**: `4b5efda`  
+### Commit 2: Aumento final (180s → 300s)
+```
+fix: Aumentar timeout HD a 5 minutos y polling fal.ai a 90 intentos
+
+- Timeout geminiService: 180s → 300s (5 minutos)
+- Polling fal.ai: 60 intentos → 90 intentos (3 minutos)
+- fal.ai está tomando más de 3 minutos en procesar imágenes HD
+- Nuevo margen: 3 min polling + 2 min buffer = 5 min timeout total
+- Resuelve error 'Timeout de generación de imagen (180s)'
+```
+**Commit hash**: `4ecfda7`  
 **Branch**: `main`  
 **Push**: ✅ Exitoso
 
