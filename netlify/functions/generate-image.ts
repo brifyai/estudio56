@@ -58,18 +58,28 @@ export const handler: Handler = async (event) => {
     
     // Mapear modelos a sus endpoints correctos
     // Modelos disponibles en Vertex AI según la documentación oficial
+    // https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api
     const modelMap: Record<string, { endpoint: string; version: string }> = {
-      // Imagen 3 - Usar imagen-3.0-generate-002 (el único disponible públicamente)
+      // Imagen 3 - Usar imagegeneration@006 (modelo estable y disponible)
       'imagen-3.0-fast-001': {
-        endpoint: 'imagen-3.0-generate-002',
+        endpoint: 'imagegeneration@006',
         version: 'v1'
       },
       'imagen-3.0-pro-001': {
-        endpoint: 'imagen-3.0-generate-002',
+        endpoint: 'imagegeneration@006',
         version: 'v1'
       },
       'imagen-3.0-generate-002': {
-        endpoint: 'imagen-3.0-generate-002',
+        endpoint: 'imagegeneration@006',
+        version: 'v1'
+      },
+      // Imagen 2 (fallback más estable)
+      'imagegeneration@006': {
+        endpoint: 'imagegeneration@006',
+        version: 'v1'
+      },
+      'imagegeneration@005': {
+        endpoint: 'imagegeneration@005',
         version: 'v1'
       },
       // Imagen 4 (requiere habilitación en Model Garden)
