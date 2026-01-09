@@ -209,20 +209,24 @@ async function handleCheckStatus(request, env) {
     return jsonResponse({ error: 'taskId or statusUrl is required' }, 400);
   }
 
-  // Usar statusUrl si se proporciona, sino construir la URL
+  // Construir URL de status (igual que Netlify Function)
   let url;
-  if (statusUrl) {
-    url = statusUrl;
+  if (taskId && taskId.includes('/')) {
+    // Ya es una URL completa o path completo
+    url = taskId.startsWith('http') ? taskId : `https://queue.fal.run${taskId}`;
+  } else if (statusUrl) {
+    // Quitar /status del final si existe
+    url = statusUrl.replace(/\/status$/, '');
   } else {
-    // Construir URL de status
+    // Es solo el ID, construir URL SIN /status
     const modelPath = model === 'hd' ? MODELS.UPSCALE : MODELS.DRAFT;
-    url = `${FAL_AI_BASE_URL}/${modelPath}/requests/${taskId}/status`;
+    url = `https://queue.fal.run/${modelPath}/requests/${taskId}`;
   }
   
   console.log('[Worker] Consultando estado:', {
     taskId,
     model,
-    statusUrl: url,
+    url,
     hasStatusUrl: !!statusUrl,
     statusUrlProvided: statusUrl
   });
