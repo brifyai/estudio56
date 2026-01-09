@@ -18,13 +18,22 @@ export const handler: Handler = async (event) => {
   console.log('🔍 [Fal.ai Poll] HTTP Method:', event.httpMethod);
   console.log('🔍 [Fal.ai Poll] ===========================================');
   
-  if (event.httpMethod !== 'POST') {
+  // Aceptar tanto GET como POST para compatibilidad
+  if (event.httpMethod !== 'POST' && event.httpMethod !== 'GET') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
-    const body = JSON.parse(event.body || '{}');
-    const taskId = body.taskId;
+    // Obtener taskId del body (POST) o query params (GET)
+    let taskId: string;
+    
+    if (event.httpMethod === 'POST') {
+      const body = JSON.parse(event.body || '{}');
+      taskId = body.taskId;
+    } else {
+      // GET: obtener de query parameters
+      taskId = event.queryStringParameters?.taskId || '';
+    }
     
     console.log('🆔 [Fal.ai Poll] Request ID:', taskId);
     
