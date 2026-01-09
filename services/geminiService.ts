@@ -2795,10 +2795,12 @@ async function analyzeProductImage(imageDataUrl: string): Promise<string> {
 export const enhanceUserImage = async (
   imageDataUrl: string,
   realityMode: 'realist' | 'aspirational' | 'studio' = 'studio',
-  aspectRatio: AspectRatio = '1:1'
+  aspectRatio: AspectRatio = '1:1',
+  realityLevel: number = 1.5 // NEW: Nivel de transformación (0.5 = mínimo, 3.0 = máximo)
 ): Promise<string> => {
   console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen con Fal.ai...");
   console.log("📸 Modo de realismo:", realityMode);
+  console.log("🎚️ Nivel de realidad:", realityLevel);
 
   try {
     // Paso 1: Construir el prompt para Fal.ai (sin análisis de Gemini)
@@ -2807,6 +2809,21 @@ export const enhanceUserImage = async (
     // Importar el modo de estilo correspondiente
     const { REALITY_MODES } = await import('../src/constants/promptModifiers');
     const styleModifier = REALITY_MODES[realityMode];
+
+    // Calcular strength basado en realityLevel
+    // 0.5★ = 0.20 (cambios mínimos, máxima fidelidad)
+    // 1.5★ = 0.35 (cambios moderados, balance)
+    // 3.0★ = 0.55 (cambios máximos, transformación completa)
+    const strengthMap: Record<number, number> = {
+      0.5: 0.20,
+      1.0: 0.28,
+      1.5: 0.35,
+      2.0: 0.42,
+      2.5: 0.48,
+      3.0: 0.55
+    };
+    const strength = strengthMap[realityLevel] || 0.35;
+    console.log("💪 Strength calculado:", strength);
 
     // Prompt optimizado para Fal.ai Flux Dev img2img
     const regenerationPrompt = `
@@ -2837,7 +2854,7 @@ export const enhanceUserImage = async (
       {
         seed: Math.floor(Math.random() * 1000000),
         aspectRatio,
-        strength: 0.35, // Reducido para mayor fidelidad anatómica (era 0.40, luego 0.65)
+        strength, // Dinámico según realityLevel
         guidanceScale: 7.5,
         steps: 30,
         negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions'
@@ -2887,10 +2904,11 @@ export const enhanceUserImage = async (
  */
 export const quickEnhanceImage = async (
   imageDataUrl: string,
-  aspectRatio: AspectRatio = '1:1'
+  aspectRatio: AspectRatio = '1:1',
+  realityLevel: number = 1.5
 ): Promise<{ success: boolean; imageUrl?: string; error?: string }> => {
   try {
-    const result = await enhanceUserImage(imageDataUrl, 'studio', aspectRatio);
+    const result = await enhanceUserImage(imageDataUrl, 'studio', aspectRatio, realityLevel);
     return { success: true, imageUrl: result };
   } catch (error: any) {
     return { success: false, error: error.message };

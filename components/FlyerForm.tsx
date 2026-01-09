@@ -184,6 +184,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // NUEVO: Estados para el switch de modo de realismo
   const [realityMode, setRealityMode] = useState<RealityMode>('realist');
   
+  // NUEVO: Estado para el regulador de realidad en modo estudio
+  const [studioRealityLevel, setStudioRealityLevel] = useState<number>(1.5);
+  
   // NUEVO: Estados para STORY ART - DIRECCIÓN DE ARTE PROFESIONAL
   const [isStoryArtModeActive, setIsStoryArtModeActive] = useState(false);
   const [artDirectionApplied, setArtDirectionApplied] = useState(false);
@@ -485,7 +488,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       const result = await enhanceUserImage(
         uploadedImage,
         realityMode,
-        aspectRatio
+        aspectRatio,
+        studioRealityLevel // Pasar nivel de realidad
       );
       
       console.log('🔍 [DEBUG] Resultado recibido:', result ? `${result.substring(0, 50)}...` : 'null');
@@ -1075,6 +1079,38 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   ? 'Imágenes con luz natural y fondos sencillos para tu negocio local'
                   : 'Imágenes de alta gama con iluminación dramática y atmósfera lujosa'}
               </div>
+              
+              {/* Regulador de Realidad para Modo Estudio */}
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] font-bold text-white uppercase tracking-widest">
+                    Nivel de Transformación
+                  </label>
+                  <span className="text-xs text-white/70">{studioRealityLevel}★</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="3.0"
+                  step="0.5"
+                  value={studioRealityLevel}
+                  onChange={(e) => setStudioRealityLevel(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 2.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 2.5) * 100}%)`
+                  }}
+                />
+                <div className="flex justify-between text-[9px] text-white/40 mt-1">
+                  <span>Mínimo</span>
+                  <span>Moderado</span>
+                  <span>Máximo</span>
+                </div>
+                <div className="text-[10px] text-white/50 mt-2">
+                  {studioRealityLevel <= 1.0 && 'Cambios mínimos, máxima fidelidad a la original'}
+                  {studioRealityLevel > 1.0 && studioRealityLevel <= 2.0 && 'Balance entre fidelidad y mejora'}
+                  {studioRealityLevel > 2.0 && 'Transformación completa con máxima mejora'}
+                </div>
+              </div>
             </div>
             
             {/* Área de carga de imagen */}
@@ -1245,7 +1281,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     const storyImageUrl = await enhanceUserImage(
                       improvedImageUrl,
                       realityMode,
-                      '9:16' // Forzar formato story
+                      '9:16', // Forzar formato story
+                      studioRealityLevel // Usar mismo nivel de realidad
                     );
 
                     // Descargar versión story
