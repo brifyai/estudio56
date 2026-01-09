@@ -48,6 +48,7 @@ interface FlyerFormProps {
   onStyleDetected: (styleDescription: string, detectedText?: string, textStyle?: string) => void; // UPDATED: Include detected text
   onOpenGallery: () => void; // NEW PROP
   imageAnalysis?: ImageAnalysisResult | null; // NEW: Análisis de imagen
+  onImprovedImageChange?: (url: string | null) => void; // NEW: Callback para imagen mejorada en modo estudio
   intelligentTextStyles?: any; // NEW: Estilos de texto inteligentes
   contextualTypography?: any; // NEW: Tipografía contextual
   contrastAnalysis?: any; // NEW: Análisis de contraste
@@ -108,6 +109,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   onStyleDetected,
   onOpenGallery,
   imageAnalysis,
+  onImprovedImageChange, // NEW: Callback para imagen mejorada
   intelligentTextStyles,
   compositionAnalysis,
   autoTextValidation,
@@ -491,6 +493,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       
       setImprovedImageUrl(result);
       
+      // Notificar al padre sobre la imagen mejorada
+      if (onImprovedImageChange) {
+        onImprovedImageChange(result);
+      }
+      
       console.log('🔍 [DEBUG] Estado actualizado, improvedImageUrl debería tener valor');
       
       await Swal.fire({
@@ -517,6 +524,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const clearUploadedImage = () => {
     setUploadedImage(null);
     setImprovedImageUrl(null);
+    
+    // Notificar al padre
+    if (onImprovedImageChange) {
+      onImprovedImageChange(null);
+    }
   };
 
   const handleAnalyzeUrl = async () => {
@@ -1132,17 +1144,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             </div>
             
             {/* Vista previa de imagen subida */}
-            <div className="relative rounded-xl overflow-hidden border-4 border-red-500" style={{ backgroundColor: 'yellow', minHeight: '200px' }}>
+            <div className="relative rounded-xl overflow-hidden border border-white/20">
               {console.log('🖼️ [CONTAINER] Renderizando contenedor de imagen')}
               {console.log('🖼️ [CONTAINER] src que se usará:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL')}
-              <div style={{ backgroundColor: 'red', padding: '10px', color: 'white', fontWeight: 'bold' }}>
-                TEST: Si ves esto, el contenedor se renderiza
-              </div>
               <img
                 src={improvedImageUrl || uploadedImage}
                 alt="Imagen subida"
-                className="w-full h-48 object-contain"
-                style={{ display: 'block', visibility: 'visible', backgroundColor: 'blue', border: '5px solid green' }}
+                className="w-full h-48 object-contain bg-black/40"
                 onLoad={() => {
                   console.log('✅ [IMG] Imagen cargada exitosamente');
                   console.log('🔍 [IMG] Mostrando:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL');
@@ -1157,7 +1165,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <>
                   {console.log('🎨 [BADGE] Mostrando badge "Mejorada"')}
                   <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded z-10">
-                    ✓ Mejorada con IA
+                    ✓ Mejorada
                   </div>
                 </>
               )}

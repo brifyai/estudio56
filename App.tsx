@@ -142,6 +142,7 @@ const Dashboard: React.FC = () => {
   // URLs separadas para draft y HD (IMÁGENES)
   const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
   const [hdImageUrl, setHdImageUrl] = useState<string | null>(null);
+  const [improvedImageUrl, setImprovedImageUrl] = useState<string | null>(null); // NEW: Para modo estudio
   
   // URLs separadas para draft y HD (VIDEOS)
   const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
@@ -2194,6 +2195,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     setOverlayStyle={setOverlayStyle}
                     onOpenGallery={() => setShowGallery(true)}
                     imageAnalysis={imageAnalysis}
+                    onImprovedImageChange={setImprovedImageUrl} // NEW: Callback para imagen mejorada
                     intelligentTextStyles={intelligentTextStyles}
                     contextualTypography={contextualTypography}
                     contrastAnalysis={contrastAnalysis}
@@ -2238,9 +2240,9 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       w-full rounded-[1.5rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex flex-col overflow-hidden shadow-2xl relative
                     `}>
                       <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 p-2">
-                          {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: realityImageUrl → hdImageUrl → draftImageUrl */}
+                          {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: improvedImageUrl (estudio) → realityImageUrl → hdImageUrl → draftImageUrl */}
                           {(() => {
-                            const displayUrl = realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
+                            const displayUrl = improvedImageUrl || realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
                             return (
                               <FlyerDisplay
                                 imageUrl={displayUrl}

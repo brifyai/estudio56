@@ -2832,7 +2832,7 @@ export const enhanceUserImage = async (
       {
         seed: Math.floor(Math.random() * 1000000),
         aspectRatio,
-        strength: 0.40, // Moderado para mejorar pero mantener identidad
+        strength: 0.65, // Aumentado para cambios más visibles (era 0.40)
         guidanceScale: 7.5,
         steps: 30,
         negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape'
