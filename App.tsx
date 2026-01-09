@@ -2110,7 +2110,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
        </div>
 
        {/* LEFT PANEL: CONTROLS - En mobile portrait: full width, en lg: sidebar izquierdo */}
-       <aside className="w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-1 lg:p-2 pr-0 lg:pr-0">
+       <aside className={`w-full lg:w-[400px] flex-shrink-0 flex flex-col z-20 h-auto p-1 lg:p-2 pr-0 lg:pr-0 ${showRealityComparator ? 'lg:min-h-screen' : 'lg:h-screen'}`}>
           <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
             
             {/* Header */}
@@ -2347,7 +2347,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
 
       {/* CENTER: CANVAS - Solo visible en landscape (lg) */}
       <main className={`
-        flex-1 flex-col relative z-10 p-1 lg:p-2 overflow-hidden w-full hidden lg:flex h-screen
+        flex-1 flex-col relative z-10 p-1 lg:p-2 overflow-hidden w-full hidden lg:flex ${showRealityComparator ? 'min-h-screen' : 'h-screen'}
         pr-2 /* Espacio derecho consistente con calendarios */
       `}>
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
@@ -2495,7 +2495,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
         <aside className={`
           fixed inset-0 z-50 flex items-center justify-center p-2 transition-all duration-300
           lg:relative lg:inset-auto lg:z-40
-          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:h-screen lg:py-2 lg:pr-2 lg:pl-2
+          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:min-h-screen lg:py-2 lg:pr-2 lg:pl-2
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
@@ -2609,7 +2609,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
      
 
      {/* LEFT PANEL: CALENDAR - Donde estaba el Comparador de Realismo */}
-     <aside className="w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto lg:h-screen p-1 lg:p-2 pl-0 lg:pl-2">
+     <aside className={`w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto p-1 lg:p-2 pl-0 lg:pl-2 ${showRealityComparator ? 'lg:min-h-screen' : 'lg:h-screen'}`}>
        <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
          {/* Header */}
          <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
