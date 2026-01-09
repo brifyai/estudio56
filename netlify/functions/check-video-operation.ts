@@ -84,6 +84,7 @@ export const handler: Handler = async (event) => {
       
       if (!videoUrl) {
         console.error('❌ [Fal.ai Poll] No se encontró URL del video en la respuesta');
+        console.error('❌ [Fal.ai Poll] Data completo:', JSON.stringify(data, null, 2));
         throw new Error('No se encontró URL del video en la respuesta');
       }
       
@@ -95,10 +96,7 @@ export const handler: Handler = async (event) => {
         body: JSON.stringify({
           status: 'complete',
           videoUrl: videoUrl,
-          taskId: taskId,
-          duration: data.video?.duration,
-          width: data.video?.width,
-          height: data.video?.height
+          taskId: taskId
         }),
       };
     } else if (status === 'FAILED') {

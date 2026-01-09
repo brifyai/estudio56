@@ -13,12 +13,6 @@ if (!FAL_API_KEY) {
   throw new Error('FAL_API_KEY no está configurada en las variables de entorno');
 }
 
-// Resoluciones para Pika v2 Turbo
-const VIDEO_RESOLUTIONS = {
-  draft: { width: 1280, height: 720 },   // 720p para borrador
-  hd: { width: 1920, height: 1080 }      // 1080p para HD
-};
-
 interface VideoGenerationRequest {
   prompt: string;
   quality: 'draft' | 'hd';
@@ -47,12 +41,12 @@ export const handler: Handler = async (event) => {
       throw new Error("Falta parámetro requerido: prompt");
     }
 
-    // Obtener resolución según calidad
-    const resolution = VIDEO_RESOLUTIONS[body.quality];
+    // Obtener resolución según calidad (string enum)
+    const resolution = body.quality === 'hd' ? '1080p' : '720p';
     const duration = body.duration || 5; // 5 segundos por defecto
     
     console.log('🎯 [Fal.ai Video] Modelo:', FAL_MODEL);
-    console.log('📐 [Fal.ai Video] Resolución:', `${resolution.width}x${resolution.height}`);
+    console.log('📐 [Fal.ai Video] Resolución:', resolution);
     console.log('⏱️ [Fal.ai Video] Duración:', duration, 'segundos');
 
     // Limpiar y sanitizar prompt
@@ -67,14 +61,12 @@ export const handler: Handler = async (event) => {
     console.log('🌐 [Fal.ai Video] URL:', url);
 
     // Estructura del request para Pika v2 Turbo
+    // Documentación: https://fal.ai/models/fal-ai/pika/v2/turbo/text-to-video
     const requestBody = {
       prompt: cleanPrompt,
       aspect_ratio: body.aspectRatio || '9:16',
-      duration: duration,
-      resolution: {
-        width: resolution.width,
-        height: resolution.height
-      }
+      resolution: resolution,  // "720p" o "1080p"
+      duration: duration
     };
 
     console.log('📤 [Fal.ai Video] Request body:', JSON.stringify(requestBody, null, 2));
