@@ -112,7 +112,7 @@ const startPolling = async (
   onError?: (error: string) => void
 ) => {
   attemptCount = 0;
-  const maxAttempts = quality === 'draft' ? 24 : 72; // 2 min draft, 6 min HD
+  const maxAttempts = quality === 'draft' ? 60 : 120; // 5 min draft, 10 min HD
   const pollInterval = 5000; // 5 segundos
 
   const poll = async () => {
