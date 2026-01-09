@@ -8,7 +8,7 @@ import { checkVideoStatus } from './falAiService';
 import { checkVideoStatus as checkVideoStatusViaWorker } from './falAiVideoWorkerService';
 
 // Configuración: usar Worker o Netlify Functions
-const USE_CLOUDFLARE_WORKER = process.env.REACT_APP_USE_VIDEO_WORKER === 'true';
+const USE_CLOUDFLARE_WORKER = import.meta.env.REACT_APP_USE_VIDEO_WORKER === 'true';
 
 // ============================================
 // TIPOS

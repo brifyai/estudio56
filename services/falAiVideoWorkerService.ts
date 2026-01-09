@@ -17,7 +17,7 @@ import { AspectRatio } from '../types';
 // ============================================
 
 // URL del Cloudflare Worker
-const WORKER_URL = process.env.REACT_APP_VIDEO_WORKER_URL || 'https://estudio56-video-worker.brifyaimaster.workers.dev';
+const WORKER_URL = import.meta.env.REACT_APP_VIDEO_WORKER_URL || 'https://estudio56-video-worker.brifyaimaster.workers.dev';
 
 // ============================================
 // INTERFACES

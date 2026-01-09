@@ -1,119 +1,221 @@
-# 🔧 FIX: Error 405 Method Not Allowed en Polling de Video
-**Fecha**: 9 de Enero 2026  
-**Problema**: Función de polling rechazaba requests con error 405
+# 🔧 Fix: Error 405 Method Not Allowed en Polling de Video
+
+**Fecha**: 9 de enero de 2026  
+**Problema**: Error 405 al consultar estado del video  
+**Causa**: Variable de entorno faltante en Netlify  
+**Estado**: ⚠️ REQUIERE ACCIÓN
 
 ---
 
-## 🐛 PROBLEMA IDENTIFICADO
+## 🐛 Problema
 
-### Error en Consola del Navegador
+### Error en Consola
 ```
-POST https://www.estudio56.cl/.netlify/functions/check-video-operation 500 (Internal Server Error)
-❌ [Fal.ai Video] Error al verificar tarea: {error: 'Error: Error parseando respuesta: 405: Method Not Allowed'}
+❌ [fal.ai Video] Error HTTP 500:
+{error: 'Error: Error parseando respuesta: 405: Method Not Allowed'}
+
+POST https://www.estudio56.cl/.netlify/functions/check-video-status 500
 ```
 
 ### Causa Raíz
-La función `check-video-operation.ts` solo aceptaba **POST** requests, pero el código del frontend podría estar enviando **GET** requests en algunos casos.
+La app está intentando usar **Netlify Functions** en lugar del **Cloudflare Worker** porque la variable de entorno `REACT_APP_USE_VIDEO_WORKER` **NO está configurada en Netlify**.
 
-**Código problemático**:
-```typescript
-if (event.httpMethod !== 'POST') {
-  return { statusCode: 405, body: 'Method Not Allowed' };
-}
+### Flujo Actual (Incorrecto)
+```
+React App
+  ↓
+videoProgressAlert.ts detecta: USE_CLOUDFLARE_WORKER = false (por defecto)
+  ↓
+Usa falAiService (Netlify Functions)
+  ↓
+POST /.netlify/functions/check-video-status
+  ↓
+❌ Error 405: Method Not Allowed
+```
+
+### Flujo Esperado (Correcto)
+```
+React App
+  ↓
+videoProgressAlert.ts detecta: USE_CLOUDFLARE_WORKER = true
+  ↓
+Usa falAiVideoWorkerService (Cloudflare Worker)
+  ↓
+POST https://estudio56-video-worker.brifyaimaster.workers.dev/check-status
+  ↓
+✅ Respuesta exitosa
 ```
 
 ---
 
-## ✅ SOLUCIÓN APLICADA
+## ✅ Solución
 
-### Cambio Realizado
+### Paso 1: Agregar Variable en Netlify
 
-**netlify/functions/check-video-operation.ts**
+1. **Ir a Netlify Dashboard**
+   - URL: https://app.netlify.com/sites/estudio56/configuration/env
 
-```typescript
-// ANTES: Solo POST
-if (event.httpMethod !== 'POST') {
-  return { statusCode: 405, body: 'Method Not Allowed' };
-}
+2. **Agregar Nueva Variable**
+   - Click en "Add a variable" o "New variable"
+   - Key: `REACT_APP_USE_VIDEO_WORKER`
+   - Value: `true`
+   - Scope: "All deploys" (todos los deploys)
 
-const body = JSON.parse(event.body || '{}');
-const taskId = body.taskId;
+3. **Guardar**
+   - Click en "Save"
 
-// DESPUÉS: POST o GET
-if (event.httpMethod !== 'POST' && event.httpMethod !== 'GET') {
-  return { statusCode: 405, body: 'Method Not Allowed' };
-}
+### Paso 2: Agregar URL del Worker (si no existe)
 
-// Obtener taskId del body (POST) o query params (GET)
-let taskId: string;
+También necesitas la URL del Worker:
 
-if (event.httpMethod === 'POST') {
-  const body = JSON.parse(event.body || '{}');
-  taskId = body.taskId;
-} else {
-  // GET: obtener de query parameters
-  taskId = event.queryStringParameters?.taskId || '';
-}
+1. **En el mismo panel de variables**
+   - Key: `REACT_APP_VIDEO_WORKER_URL`
+   - Value: `https://estudio56-video-worker.brifyaimaster.workers.dev`
+   - Scope: "All deploys"
+
+2. **Guardar**
+
+### Paso 3: Trigger Redeploy
+
+Netlify debería hacer redeploy automáticamente, pero si no:
+
+1. Ir a: https://app.netlify.com/sites/estudio56/deploys
+2. Click en "Trigger deploy" → "Clear cache and deploy site"
+
+---
+
+## 📸 Captura de Pantalla de Referencia
+
+Las variables deberían verse así en Netlify:
+
+```
+Environment Variables:
+┌─────────────────────────────────┬──────────────────────────────────────────────────┐
+│ Key                             │ Value                                            │
+├─────────────────────────────────┼──────────────────────────────────────────────────┤
+│ REACT_APP_USE_VIDEO_WORKER      │ true                                             │
+│ REACT_APP_VIDEO_WORKER_URL      │ https://estudio56-video-worker.brifyaimaster...  │
+│ FAL_AI_API_KEY                  │ ********************************                 │
+│ ...                             │ ...                                              │
+└─────────────────────────────────┴──────────────────────────────────────────────────┘
 ```
 
-### Resultado
-Ahora la función acepta **ambos métodos HTTP**:
-- ✅ **POST** con taskId en el body
-- ✅ **GET** con taskId en query parameters
+---
+
+## 🧪 Verificación
+
+### Después del Redeploy
+
+1. **Abrir la app en producción**
+   - URL: https://www.estudio56.cl
+
+2. **Abrir consola del navegador**
+   - F12 o Cmd+Option+I
+
+3. **Generar un video**
+   - Ir a sección de videos
+   - Ingresar prompt
+   - Click "Generar Video"
+
+4. **Verificar logs**
+   Deberías ver:
+   ```
+   🚀 [Worker] Generando borrador via Cloudflare Worker...
+   ✅ [Worker] Respuesta recibida
+   🔄 [Worker] Consultando estado via Worker
+   ```
+
+   **NO deberías ver**:
+   ```
+   ❌ Error 405: Method Not Allowed
+   POST /.netlify/functions/check-video-status
+   ```
 
 ---
 
-## 🎯 VERIFICACIÓN
+## 🔍 Diagnóstico Adicional
 
-### Métodos HTTP Soportados
-- ✅ `POST /.netlify/functions/check-video-operation` con `{taskId: "..."}`
-- ✅ `GET /.netlify/functions/check-video-operation?taskId=...`
+### Verificar Variable en Build Logs
 
-### Funciones Afectadas
-- ✅ `check-video-operation.ts` - Actualizado para aceptar GET y POST
-- ✅ `generate-video.ts` - Sin cambios (ya funciona correctamente)
+Después del redeploy, revisar los logs de build en Netlify:
 
----
+```
+Build environment variables:
+  REACT_APP_USE_VIDEO_WORKER=true
+  REACT_APP_VIDEO_WORKER_URL=https://estudio56-video-worker...
+```
 
-## 📋 PRÓXIMOS PASOS
+Si no aparece, la variable no está configurada correctamente.
 
-1. **Hacer commit y push** de los cambios
-2. **Hacer nuevo deploy** en Netlify (automático con push)
-3. **Probar generación de video** - Debería funcionar completamente ahora
+### Verificar en Runtime
 
----
+En la consola del navegador, ejecutar:
+```javascript
+console.log('USE_WORKER:', process.env.REACT_APP_USE_VIDEO_WORKER);
+```
 
-## 🧪 PRUEBA
-
-Una vez deployado, probar:
-
-1. Ir a: https://www.estudio56.cl
-2. Seleccionar: **Tipo de medio** → **Video**
-3. Ingresar descripción: "Un cielo azul con nubes"
-4. Hacer clic en: **Generar Borrador**
-5. Esperar 1-3 minutos
-6. ✅ El video debería generarse sin errores 405
+Debería mostrar: `USE_WORKER: true`
 
 ---
 
-## 📊 IMPACTO
+## ⚠️ Notas Importantes
 
-- **Generación de video**: ✅ Ahora debería funcionar completamente
-- **Polling**: ✅ Acepta tanto POST como GET
-- **Compatibilidad**: ✅ Mayor flexibilidad en el método HTTP
+### Variables con Prefijo REACT_APP_
+
+En React/Vite, las variables de entorno **DEBEN** tener el prefijo `REACT_APP_` para estar disponibles en el cliente.
+
+### Redeploy Necesario
+
+Cambiar variables de entorno **requiere un redeploy** para que tomen efecto. No basta con guardarlas.
+
+### Caché del Navegador
+
+Si después del redeploy sigue fallando:
+1. Limpiar caché del navegador (Cmd+Shift+R o Ctrl+Shift+R)
+2. Abrir en ventana incógnita
+3. Verificar que el deploy se completó correctamente
 
 ---
 
-## 🔍 RESUMEN DE FIXES APLICADOS
+## 🎯 Checklist de Verificación
 
-### Fix 1: Nombre de Variable (Commit anterior)
-- Problema: `FAL_API_KEY` vs `FAL_AI_API_KEY`
-- Solución: Unificado a `FAL_AI_API_KEY`
-
-### Fix 2: Método HTTP (Este commit)
-- Problema: Solo aceptaba POST
-- Solución: Acepta POST y GET
+- [ ] Variable `REACT_APP_USE_VIDEO_WORKER=true` agregada en Netlify
+- [ ] Variable `REACT_APP_VIDEO_WORKER_URL` agregada en Netlify
+- [ ] Redeploy completado exitosamente
+- [ ] Build logs muestran las variables
+- [ ] Consola del navegador muestra logs del Worker
+- [ ] No hay errores 405 en consola
+- [ ] Video se genera correctamente
 
 ---
 
-**Estado**: ✅ CORREGIDO - Listo para deploy
+## 🔗 Enlaces Útiles
+
+### Netlify Dashboard
+- Variables: https://app.netlify.com/sites/estudio56/configuration/env
+- Deploys: https://app.netlify.com/sites/estudio56/deploys
+- Build logs: Click en el deploy más reciente
+
+### Cloudflare Worker
+- Dashboard: https://dash.cloudflare.com
+- Worker URL: https://estudio56-video-worker.brifyaimaster.workers.dev
+- Health check: https://estudio56-video-worker.brifyaimaster.workers.dev/health
+
+---
+
+## 📚 Documentación Relacionada
+
+- `QUE-HACER-AHORA-WORKER.md` - Guía de próximos pasos
+- `CLOUDFLARE-WORKER-VIDEO-SETUP.md` - Setup completo
+- `ESTADO-FINAL-WORKER-9-ENERO.md` - Estado del Worker
+
+---
+
+## 🚀 Resumen
+
+**Problema**: Error 405 porque usa Netlify Functions en lugar de Worker  
+**Causa**: Variable `REACT_APP_USE_VIDEO_WORKER` no configurada  
+**Solución**: Agregar variable en Netlify y hacer redeploy  
+**Tiempo**: 5 minutos  
+
+Una vez configurada la variable, el sistema usará el Cloudflare Worker y los errores 405 desaparecerán.
