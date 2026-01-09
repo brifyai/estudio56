@@ -1948,12 +1948,12 @@ progressAlert.updateProgress(60, 'Renderizando...');
         2.0: 'studio photography, professional lighting, color grading, high-end equipment, perfect exposure, professional quality, ultra sharp, pristine, flawless',
         2.5: 'studio lighting, professional color grading, cinematic look, perfect post-processing, ultra sharp, pristine quality',
         
-        // NIVELES ALTOS: Evitar TODO lo amateur
-        3.0: 'low resolution, compression artifacts, noise, grain, poor lighting, washed out colors, soft focus, blurry, pixelated, amateur, low quality, poor exposure, color cast, compression',
-        3.5: 'low quality, pixelated, noisy, poor exposure, color cast, compression, artifacts, grain, blurry, soft focus, amateur, washed out, poor lighting',
-        4.0: 'grainy, blurry, poor quality, compression, noise, artifacts, low resolution, pixelated, amateur, soft focus, poor lighting, washed out',
-        4.5: 'noise, grain, compression, poor quality, low resolution, blurry, soft focus, amateur, pixelated, artifacts',
-        5.0: 'any defects, noise, compression, grain, low quality, blurry, soft focus, amateur, pixelated, poor lighting, washed out'
+        // NIVELES ALTOS: Evitar TODO lo amateur + rayos de sol
+        3.0: 'low resolution, compression artifacts, noise, grain, poor lighting, washed out colors, soft focus, blurry, pixelated, amateur, low quality, poor exposure, color cast, compression, sun rays, god rays, light rays, lens flare, sunbeams',
+        3.5: 'low quality, pixelated, noisy, poor exposure, color cast, compression, artifacts, grain, blurry, soft focus, amateur, washed out, poor lighting, sun rays, god rays, light rays, lens flare, sunbeams',
+        4.0: 'grainy, blurry, poor quality, compression, noise, artifacts, low resolution, pixelated, amateur, soft focus, poor lighting, washed out, sun rays, god rays, light rays, lens flare, sunbeams',
+        4.5: 'noise, grain, compression, poor quality, low resolution, blurry, soft focus, amateur, pixelated, artifacts, sun rays, god rays, light rays, lens flare, sunbeams',
+        5.0: 'any defects, noise, compression, grain, low quality, blurry, soft focus, amateur, pixelated, poor lighting, washed out, sun rays, god rays, light rays, lens flare, sunbeams'
       };
       
       const qualityNegative = qualityNegativeMap[levelKey] || qualityNegativeMap[2.5];
@@ -2503,18 +2503,16 @@ progressAlert.updateProgress(60, 'Renderizando...');
             onClick={() => setShowRealityComparator(false)}
           />
           <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-none lg:h-full">
-            {/* Botón cerrar - Posicionado arriba sin tapar contenido */}
-            <div className="flex-shrink-0 flex items-center justify-center px-4 py-3 border-b border-white/5 bg-gradient-to-b from-black/40 to-transparent">
-              <button
-                onClick={() => setShowRealityComparator(false)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-lg transition-colors cursor-pointer"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span className="text-xs font-medium">Cerrar comparación</span>
-              </button>
-            </div>
+            {/* Botón cerrar - Flotante en esquina superior derecha */}
+            <button
+              onClick={() => setShowRealityComparator(false)}
+              className="absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center bg-red-500/80 hover:bg-red-500 rounded-full transition-colors cursor-pointer shadow-lg"
+              title="Cerrar comparación"
+            >
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             <div className="flex-1 overflow-y-auto">
               <RealityComparator
                 key={`comparator-${Object.keys(realityVariations).length}-${realityLevel}`}
