@@ -209,18 +209,19 @@ async function handleCheckStatus(request, env) {
     return jsonResponse({ error: 'taskId or statusUrl is required' }, 400);
   }
 
-  // Construir URL de status (igual que Netlify Function)
+  // Construir URL de status
   let url;
-  if (taskId && taskId.includes('/')) {
+  if (statusUrl) {
+    // Usar statusUrl tal cual viene de fal.ai
+    url = statusUrl;
+  } else if (taskId && taskId.includes('/')) {
     // Ya es una URL completa o path completo
     url = taskId.startsWith('http') ? taskId : `https://queue.fal.run${taskId}`;
-  } else if (statusUrl) {
-    // Quitar /status del final si existe
-    url = statusUrl.replace(/\/status$/, '');
   } else {
-    // Es solo el ID, construir URL SIN /status
-    const modelPath = model === 'hd' ? MODELS.UPSCALE : MODELS.DRAFT;
-    url = `https://queue.fal.run/${modelPath}/requests/${taskId}`;
+    // Es solo el ID, construir URL con /status al final
+    // IMPORTANTE: Usar el modelo base sin /text-to-video/lora
+    const modelPath = model === 'hd' ? 'fal-ai/seedvr' : 'fal-ai/ltx-2-19b';
+    url = `https://queue.fal.run/${modelPath}/requests/${taskId}/status`;
   }
   
   console.log('[Worker] Consultando estado:', {
