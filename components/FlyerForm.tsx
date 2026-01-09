@@ -1102,7 +1102,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             {/* Vista previa de imagen subida */}
             <div className="relative rounded-xl overflow-hidden border border-white/20">
               <img
-                src={uploadedImage}
+                src={improvedImageUrl || uploadedImage}
                 alt="Imagen subida"
                 className="w-full h-48 object-contain bg-black/40"
               />
