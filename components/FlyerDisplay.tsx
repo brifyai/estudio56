@@ -1963,10 +1963,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               );
             })()}
             {/* OCULTAR OVERLAYS EN VIDEOS Y STORY ART Y DURANTE COMPARACIÓN */}
-            {mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && renderLogo()}
-            {mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && renderProduct()}
-            {/* Ocultar texto durante comparación para evitar duplicado */}
-            {!showComparison && renderText()}
+            {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && renderLogo()}
+            {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && renderProduct()}
+            {/* Ocultar texto durante comparación y en modo estudio para evitar duplicado */}
+            {!showComparison && mediaType !== 'product_study' && renderText()}
             
             {/* BOTÓN FLOTANTE PARA MOVER TEXTO - Solo visible en mobile */}
             <div className="lg:hidden absolute bottom-4 right-4 z-[150]">
@@ -2131,10 +2131,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               );
             })()}
             {/* OCULTAR OVERLAYS EN VIDEOS Y STORY ART Y DURANTE COMPARACIÓN */}
-            {mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && renderLogo()}
-            {mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && renderProduct()}
-            {/* Ocultar texto durante comparación para evitar duplicado */}
-            {!showComparison && renderText()}
+            {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && renderLogo()}
+            {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && renderProduct()}
+            {/* Ocultar texto durante comparación y en modo estudio para evitar duplicado */}
+            {!showComparison && mediaType !== 'product_study' && renderText()}
           </div>
         </div>
       </div>
