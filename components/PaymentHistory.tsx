@@ -413,7 +413,9 @@ export const PaymentHistory: React.FC = () => {
           <div className="space-y-4">
             {recharges.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-6xl mb-4">⚡</div>
+                <svg className="w-24 h-24 mx-auto mb-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
                 <h3 className="text-xl font-medium mb-2">Sin recargas</h3>
                 <p className="text-white/50">Aún no has recargado créditos</p>
               </div>
