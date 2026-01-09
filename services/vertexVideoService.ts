@@ -1,9 +1,12 @@
 /**
- * Servicio para generación de videos usando Alibaba Cloud Model Studio (Wanx)
+ * Servicio para generación de videos usando Fal.ai Pika v2 Turbo
  * 
- * Modelos TEXT-TO-VIDEO (T2V):
- * - wan2.1-t2v-turbo (480P - ultra rápido, draft)
- * - wan2.5-t2v-preview (720P - alta calidad, HD)
+ * Modelo TEXT-TO-VIDEO (T2V):
+ * - fal-ai/pika/v2/turbo/text-to-video
+ * 
+ * Resoluciones:
+ * - Draft: 720p (1280x720)
+ * - HD: 1080p (1920x1080)
  * 
  * NOTA: T2V genera video directamente desde prompt, sin necesidad de imagen base
  */
@@ -28,14 +31,14 @@ export interface VideoGenerationResult {
 }
 
 /**
- * Genera un video usando Alibaba Cloud Model Studio
+ * Genera un video usando Fal.ai Pika v2 Turbo
  */
 export const generateVideo = async (
   options: VideoGenerationOptions
 ): Promise<VideoGenerationResult> => {
-  console.log('🎬 [AlibabaVideo] Iniciando generación de video TEXT-TO-VIDEO...');
-  console.log('🎬 [AlibabaVideo] Prompt:', options.prompt.substring(0, 100));
-  console.log('🎬 [AlibabaVideo] Quality:', options.quality);
+  console.log('🎬 [Fal.ai Video] Iniciando generación de video TEXT-TO-VIDEO...');
+  console.log('🎬 [Fal.ai Video] Prompt:', options.prompt.substring(0, 100));
+  console.log('🎬 [Fal.ai Video] Quality:', options.quality);
   
   try {
     const response = await fetch('/.netlify/functions/generate-video', {
@@ -54,13 +57,13 @@ export const generateVideo = async (
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('❌ [AlibabaVideo] Error en generación:', data);
+      console.error('❌ [Fal.ai Video] Error en generación:', data);
       throw new Error(data.error || 'Error al generar video');
     }
 
     // Si es 202, la tarea está en proceso
     if (response.status === 202) {
-      console.log('🔄 [AlibabaVideo] Video en proceso. Task ID:', data.taskId);
+      console.log('🔄 [Fal.ai Video] Video en proceso. Task ID:', data.taskId);
       return {
         taskId: data.taskId,
         status: 'processing',
@@ -68,9 +71,9 @@ export const generateVideo = async (
       };
     }
 
-    // Si es 200, el video está completo (poco probable con Alibaba Cloud)
+    // Si es 200, el video está completo (poco probable con Fal.ai)
     if (data.videoUrl) {
-      console.log('✅ [AlibabaVideo] Video generado inmediatamente');
+      console.log('✅ [Fal.ai Video] Video generado inmediatamente');
       return {
         videoUrl: data.videoUrl,
         status: 'complete'
@@ -80,7 +83,7 @@ export const generateVideo = async (
     throw new Error('Respuesta inesperada del servidor');
 
   } catch (error: any) {
-    console.error('❌ [AlibabaVideo] Error fatal:', error);
+    console.error('❌ [Fal.ai Video] Error fatal:', error);
     return {
       status: 'error',
       error: error.message
@@ -108,14 +111,14 @@ export const checkVideoTask = async (
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('❌ [AlibabaVideo] Error al verificar tarea:', data);
+      console.error('❌ [Fal.ai Video] Error al verificar tarea:', data);
       throw new Error(data.error || 'Error al verificar tarea');
     }
 
     return data;
 
   } catch (error: any) {
-    console.error('❌ [AlibabaVideo] Error fatal:', error);
+    console.error('❌ [Fal.ai Video] Error fatal:', error);
     return {
       status: 'error',
       error: error.message
@@ -130,7 +133,7 @@ export const generateVideoAndWait = async (
   options: VideoGenerationOptions,
   onProgress?: (progress: number, message?: string) => void
 ): Promise<string> => {
-  console.log('🎬 [AlibabaVideo] Generando video y esperando...');
+  console.log('🎬 [Fal.ai Video] Generando video y esperando...');
   
   // Iniciar generación
   const result = await generateVideo(options);
@@ -148,9 +151,9 @@ export const generateVideoAndWait = async (
   }
 
   // Polling hasta que esté completo
-  console.log('🔄 [AlibabaVideo] Iniciando polling...');
+  console.log('🔄 [Fal.ai Video] Iniciando polling...');
   
-  // Alibaba Cloud: videos típicamente toman 1-5 minutos
+  // Fal.ai: videos típicamente toman 1-3 minutos
   // Polling cada 5 segundos durante máximo 10 minutos
   const maxAttempts = 120; // 10 minutos máximo (5 segundos * 120)
   const pollInterval = 5000; // 5 segundos
@@ -161,7 +164,7 @@ export const generateVideoAndWait = async (
     attempts++;
 
     const progress = Math.min((attempts / maxAttempts) * 100, 95); // Máximo 95% hasta que complete
-    console.log(`🔄 [AlibabaVideo] Verificando estado (intento ${attempts}/${maxAttempts})... ${progress.toFixed(0)}%`);
+    console.log(`🔄 [Fal.ai Video] Verificando estado (intento ${attempts}/${maxAttempts})... ${progress.toFixed(0)}%`);
     
     if (onProgress) {
       onProgress(progress, `Generando video... ${progress.toFixed(0)}%`);
@@ -178,16 +181,12 @@ export const generateVideoAndWait = async (
     }
 
     if (status.status === 'expired') {
-      throw new Error('La tarea expiró (>24 horas). Por favor, intenta nuevamente.');
+      throw new Error('La tarea expiró. Por favor, intenta nuevamente.');
     }
 
     if (status.status === 'complete' && status.videoUrl) {
-      console.log('✅ [AlibabaVideo] Video completado!');
-      console.log('🎬 [AlibabaVideo] Video URL:', status.videoUrl.substring(0, 100) + '...');
-      
-      // SOLUCIÓN: Usar URL directa de Alibaba Cloud OSS
-      // OSS tiene CORS habilitado por defecto para videos
-      // No necesitamos proxy que causa errores 502
+      console.log('✅ [Fal.ai Video] Video completado!');
+      console.log('🎬 [Fal.ai Video] Video URL:', status.videoUrl.substring(0, 100) + '...');
       
       if (onProgress) {
         onProgress(100, 'Video generado exitosamente');
@@ -198,7 +197,7 @@ export const generateVideoAndWait = async (
 
     // Si aún está procesando, continuar polling
     if (status.status === 'processing') {
-      console.log('⏳ [AlibabaVideo] Video aún en proceso...');
+      console.log('⏳ [Fal.ai Video] Video aún en proceso...');
     }
   }
 
