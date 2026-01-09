@@ -1918,7 +1918,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           </div>
         )}
         
-        {/* VISTA MOBILE - Solo visible en mobile (oculta en lg y superior) */}
+        {/* VISTA MOBILE - Solo visible en mobile (oculta en lg y superior) - OCULTAR EN MODO ESTUDIO */}
+        {!(mediaType === 'product_study' && improvedImageUrl && uploadedImageUrl) && (
         <div
           id="flyer-container-mobile"
           className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden
@@ -2085,8 +2086,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             )}
           </div>
         </div>
+        )}
 
-        {/* VISTA DESKTOP - Solo visible en desktop (lg y superior) */}
+        {/* VISTA DESKTOP - Solo visible en desktop (lg y superior) - OCULTAR EN MODO ESTUDIO */}
+        {!(mediaType === 'product_study' && improvedImageUrl && uploadedImageUrl) && (
         <div
           id="flyer-container-desktop"
           className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden hidden lg:block
@@ -2137,13 +2140,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             {!showComparison && mediaType !== 'product_study' && renderText()}
           </div>
         </div>
-      </div>
+        )}
 
-      {/* SPACER PEQUEÑO - Empuja los controles hacia abajo de la imagen */}
-      <div className="h-4" />
+      {/* SPACER PEQUEÑO - Empuja los controles hacia abajo de la imagen - OCULTAR EN MODO ESTUDIO */}
+      {!(mediaType === 'product_study' && improvedImageUrl && uploadedImageUrl) && <div className="h-4" />}
       
-      {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto - OCULTAR DURANTE COMPARACIÓN */}
-      {!showComparison && (
+      {/* REFINEMENT AREA - Debajo de la imagen, no superpuesto - OCULTAR DURANTE COMPARACIÓN Y EN MODO ESTUDIO */}
+      {!showComparison && !(mediaType === 'product_study' && improvedImageUrl && uploadedImageUrl) && (
         <div className="w-full max-w-[280px] flex flex-col gap-2">
         {/* Campo de refinamiento */}
         <div className="flex items-center gap-2 bg-white/5 backdrop-blur-xl p-2 pr-2.5 pl-3 rounded-xl border border-white/10">
@@ -2178,8 +2181,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
       {/* ELIMINADO: StyleFusionSelector movido a App.tsx (panel lateral izquierdo) */}
 
-      {/* BOTÓN GENERAR HD - Solo visible en mobile cuando hay borrador */}
-      {isDraft && imageUrl && !showComparison && (
+      {/* BOTÓN GENERAR HD - Solo visible en mobile cuando hay borrador - OCULTAR EN MODO ESTUDIO */}
+      {isDraft && imageUrl && !showComparison && !(mediaType === 'product_study' && improvedImageUrl && uploadedImageUrl) && (
         <button
           onClick={onUpgradeToHD}
           disabled={status.isLoading}
@@ -2203,8 +2206,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </button>
       )}
 
-      {/* EDITOR DE REALIDAD - Debajo del botón HD para mayor visibilidad */}
-      {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
+      {/* EDITOR DE REALIDAD - Debajo del botón HD para mayor visibilidad - OCULTAR EN MODO ESTUDIO */}
+      {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
         <div className="w-full max-w-[600px] mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
           <RealitySlider
             value={realityLevel as RealityLevel}
@@ -2222,6 +2225,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
       )}
       
+    </div>
     </div>
   );
 };
