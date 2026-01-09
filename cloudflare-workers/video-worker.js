@@ -19,7 +19,7 @@ const FAL_AI_BASE_URL = 'https://queue.fal.run';
 
 // Modelos
 const MODELS = {
-  DRAFT: 'fal-ai/ltx-2-19b/text-to-video/lora',
+  DRAFT: 'fal-ai/longcat-video/distilled/text-to-video/480p',
   UPSCALE: 'fal-ai/seedvr/upscale/video'
 };
 
@@ -93,25 +93,17 @@ async function handleGenerateDraft(request, env) {
   // Mapear aspect ratio a dimensiones
   const dimensions = getVideoDimensions(aspectRatio, '480p');
 
-  // Request body para fal.ai
+  // Request body para fal.ai (LongCat Distilled 480p)
   const requestBody = {
     prompt: prompt,
-    video_size: {
-      width: dimensions.width,
-      height: dimensions.height
-    },
-    num_frames: 121,  // 5 segundos @ 25fps
-    video_quality: 'low',
-    acceleration: 'full',
-    num_inference_steps: 30,
-    use_multiscale: false,
-    guidance_scale: 3,
-    fps: 25,
-    generate_audio: false,
+    num_frames: 162,  // ~10.8 segundos @ 15fps
+    num_inference_steps: 12,
+    aspect_ratio: aspectRatio,
+    fps: 15,
     enable_safety_checker: true,
     video_output_type: 'X264 (.mp4)',
-    video_write_mode: 'fast',
-    loras: []
+    video_quality: 'high',
+    video_write_mode: 'fast'
   };
 
   // Llamar a fal.ai
@@ -219,8 +211,8 @@ async function handleCheckStatus(request, env) {
     url = taskId.startsWith('http') ? taskId : `https://queue.fal.run${taskId}`;
   } else {
     // Es solo el ID, construir URL con /status al final
-    // IMPORTANTE: Usar el modelo base sin /text-to-video/lora
-    const modelPath = model === 'hd' ? 'fal-ai/seedvr' : 'fal-ai/ltx-2-19b';
+    // IMPORTANTE: Usar el modelo base para la URL de status
+    const modelPath = model === 'hd' ? 'fal-ai/seedvr' : 'fal-ai/longcat-video';
     url = `https://queue.fal.run/${modelPath}/requests/${taskId}/status`;
   }
   
