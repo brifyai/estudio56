@@ -1744,28 +1744,29 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         {console.log('🔍 [FLYER DISPLAY] mediaType:', mediaType)}
         {console.log('🔍 [FLYER DISPLAY] Mostrar comparador?', !!(improvedImageUrl && uploadedImageUrl && mediaType === 'product_study'))}
         
-        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada */}
-        {improvedImageUrl && uploadedImageUrl && mediaType === 'product_study' && (
-          <div className="w-full max-w-4xl mx-auto p-4">
+        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada - SIEMPRE VISIBLE PARA TEST */}
+        {(improvedImageUrl && uploadedImageUrl) && (
+          <div className="w-full max-w-4xl mx-auto p-8 bg-red-500 border-8 border-yellow-500">
             {console.log('✅ [FLYER DISPLAY] Renderizando comparador modo estudio')}
             <div className="text-center mb-4">
-              <h3 className="text-white text-lg font-bold">Comparar con original</h3>
+              <h3 className="text-white text-3xl font-bold bg-blue-500 p-4">COMPARADOR MODO ESTUDIO - SI VES ESTO FUNCIONA</h3>
+              <p className="text-white text-xl">mediaType: {mediaType}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="text-white/70 text-sm text-center">Original</div>
+              <div className="space-y-2 bg-green-500 p-4">
+                <div className="text-white text-2xl font-bold text-center">Original</div>
                 <img
                   src={uploadedImageUrl}
                   alt="Original"
-                  className="w-full h-auto object-contain bg-black/20 rounded-lg border border-white/10"
+                  className="w-full h-auto object-contain bg-white rounded-lg border-8 border-black"
                 />
               </div>
-              <div className="space-y-2">
-                <div className="text-green-400 text-sm text-center">Mejorada con IA</div>
+              <div className="space-y-2 bg-purple-500 p-4">
+                <div className="text-white text-2xl font-bold text-center">Mejorada con IA</div>
                 <img
                   src={improvedImageUrl}
                   alt="Mejorada"
-                  className="w-full h-auto object-contain bg-black/20 rounded-lg border border-green-500/30"
+                  className="w-full h-auto object-contain bg-white rounded-lg border-8 border-black"
                 />
               </div>
             </div>
