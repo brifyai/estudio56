@@ -1686,41 +1686,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     );
   };
 
-  // Componente del logo flotante que se mueve con el scroll
-  const FloatingLogo = () => {
-    const [scrollY, setScrollY] = useState(0);
-
-    useEffect(() => {
-      const handleScroll = () => {
-        setScrollY(window.scrollY);
-      };
-
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    return (
-      <div
-        className="fixed top-6 right-6 z-[100] transition-all duration-300 ease-out cursor-pointer hover:scale-110"
-        style={{
-          transform: `translateY(${scrollY * 0.1}px)`,
-        }}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      >
-        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xs">56</span>
-          </div>
-          <span className="text-white font-bold text-xs tracking-wider">ESTUDIO 56</span>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start animate-fade-in">
-      {/* Logo flotante que se mueve con el scroll - OCULTAR DURANTE COMPARACIÓN */}
-      {!showComparison && <FloatingLogo />}
 
       {/* CERRAR COMPARACIÓN DE IMÁGENES - Centrado debajo del botón "Generar nuevo borrador" */}
       {showComparison && (
