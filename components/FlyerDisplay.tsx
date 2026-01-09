@@ -148,6 +148,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   const [showTextControls, setShowTextControls] = useState(false);
   const [isDraggingText, setIsDraggingText] = useState(false);
   
+  // Estado para el Bottom Sheet del editor de realidad en mobile
+  const [showRealityBottomSheet, setShowRealityBottomSheet] = useState(false);
+  
   // Estado para tracking de touch en texto (declarado a nivel del componente, no dentro de renderText)
   const [isTextTouching, setIsTextTouching] = useState(false);
   
@@ -2043,6 +2046,18 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               </div>
             )}
           </div>
+          
+          {/* 🎚️ FAB PARA ABRIR EDITOR DE REALIDAD - Solo mobile, solo cuando hay imagen y no es video/story */}
+          {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
+            <button
+              onClick={() => setShowRealityBottomSheet(true)}
+              className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 shadow-[0_4px_20px_rgba(139,92,246,0.5)] transition-all hover:scale-105 active:scale-95 border border-white/20"
+              aria-label="Abrir editor de realidad"
+            >
+              <span className="text-lg">🎚️</span>
+              <span className="text-white text-xs font-medium">Realismo</span>
+            </button>
+          )}
         </div>
         )}
 
@@ -2164,15 +2179,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </button>
       )}
 
-      {/* EDITOR DE REALIDAD - Debajo del botón HD para mayor visibilidad - OCULTAR EN MODO ESTUDIO */}
+      {/* EDITOR DE REALIDAD - Debajo del botón HD para mayor visibilidad - OCULTAR EN MODO ESTUDIO - SOLO DESKTOP */}
       {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
-        <div className="w-full max-w-[600px] mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
+        <div className="hidden lg:block w-full max-w-[600px] mt-6 p-4 bg-white/5 rounded-2xl border border-white/10">
           <RealitySlider
             value={realityLevel as RealityLevel}
             sceneId={sceneId}
             currentImageUrl={imageUrl}
             seed={seed}
-            aspectRatio={aspectRatio}
             onLevelChange={onRealityLevelChange}
             disabled={isGeneratingReality}
             cachedVariations={cachedRealityVariations}
@@ -2180,6 +2194,74 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             isRealityVariation={isRealityVariation}
             onOpenComparator={onOpenRealityComparator}
           />
+        </div>
+      )}
+      
+      {/* 🎚️ BOTTOM SHEET - EDITOR DE REALIDAD MOBILE */}
+      {showRealityBottomSheet && imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && realityLevel !== undefined && onRealityLevelChange && (
+        <div className="lg:hidden fixed inset-0 z-[200]">
+          {/* Overlay oscuro */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowRealityBottomSheet(false)}
+          />
+          
+          {/* Bottom Sheet */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0a0a] to-[#1a1a1a] rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-slide-up">
+            {/* Handle para arrastrar */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+            </div>
+            
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎚️</span>
+                <div>
+                  <h3 className="text-white font-semibold text-sm">Editor de Realidad</h3>
+                  <p className="text-white/50 text-[10px]">Ajusta el nivel de realismo de tu imagen</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRealityBottomSheet(false)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-white/20 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Contenido - RealitySlider en modo compacto */}
+            <div className="p-5 pb-8">
+              <RealitySlider
+                value={realityLevel as RealityLevel}
+                sceneId={sceneId}
+                currentImageUrl={imageUrl}
+                seed={seed}
+                onLevelChange={(level) => {
+                  onRealityLevelChange(level);
+                  // Cerrar el bottom sheet después de aplicar cambios
+                  setTimeout(() => setShowRealityBottomSheet(false), 300);
+                }}
+                disabled={isGeneratingReality}
+                cachedVariations={cachedRealityVariations}
+                onGenerationStart={() => {
+                  onRealityGenerationStart?.();
+                  setShowRealityBottomSheet(false);
+                }}
+                isRealityVariation={isRealityVariation}
+                onOpenComparator={() => {
+                  onOpenRealityComparator?.();
+                  setShowRealityBottomSheet(false);
+                }}
+                compact={false}
+              />
+            </div>
+            
+            {/* Safe area para dispositivos con notch */}
+            <div className="h-safe-area-inset-bottom" />
+          </div>
         </div>
       )}
       
