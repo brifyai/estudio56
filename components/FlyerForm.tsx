@@ -52,6 +52,7 @@ interface FlyerFormProps {
   onUploadedImageChange?: (url: string | null) => void; // NEW: Callback para imagen original subida
   studioRealityLevel?: number; // NEW: Nivel de transformación en modo estudio
   onStudioRealityLevelChange?: (level: number) => void; // NEW: Callback para cambiar nivel
+  triggerStudioImprove?: number; // NEW: Trigger para mejorar imagen
   intelligentTextStyles?: any; // NEW: Estilos de texto inteligentes
   contextualTypography?: any; // NEW: Tipografía contextual
   contrastAnalysis?: any; // NEW: Análisis de contraste
@@ -116,6 +117,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   onUploadedImageChange, // NEW: Callback para imagen original
   studioRealityLevel: studioRealityLevelProp = 1.5, // NEW: Nivel de transformación
   onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
+  triggerStudioImprove = 0, // NEW: Trigger para mejorar
   intelligentTextStyles,
   compositionAnalysis,
   autoTextValidation,
@@ -326,6 +328,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       setMagicModeResult(null);
     }
   }, [description, mediaType]);
+
+  // NUEVO: Observar trigger para mejorar imagen en modo estudio
+  useEffect(() => {
+    if (triggerStudioImprove > 0 && uploadedImage && mediaType === 'product_study') {
+      console.log('🎯 [TRIGGER] Mejorando imagen con nuevo nivel:', studioRealityLevel);
+      handleImproveUploadedImage();
+    }
+  }, [triggerStudioImprove]);
 
   // NUEVO: Activar Modo Magia para VIDEOS cuando cambie la descripción
   useEffect(() => {

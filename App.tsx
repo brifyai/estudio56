@@ -145,6 +145,7 @@ const Dashboard: React.FC = () => {
   const [improvedImageUrl, setImprovedImageUrl] = useState<string | null>(null); // NEW: Para modo estudio
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // NEW: Imagen original subida en modo estudio
   const [studioRealityLevel, setStudioRealityLevel] = useState<number>(1.5); // NEW: Nivel de transformación en modo estudio
+  const [triggerStudioImprove, setTriggerStudioImprove] = useState<number>(0); // NEW: Trigger para mejorar imagen en modo estudio
   
   // URLs separadas para draft y HD (VIDEOS)
   const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
@@ -924,6 +925,11 @@ const Dashboard: React.FC = () => {
       setOverlayText(detectedText);
       console.log('🤖 TEXTO AUTOMÁTICO DETECTADO:', detectedText);
     }
+  };
+
+  // NEW: Función para aplicar cambios en modo estudio
+  const handleApplyStudioChanges = () => {
+    setTriggerStudioImprove(prev => prev + 1);
   };
 
 const handleGenerate = async () => {
@@ -2201,6 +2207,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     onUploadedImageChange={setUploadedImageUrl} // NEW: Callback para imagen original
                     studioRealityLevel={studioRealityLevel} // NEW: Nivel de transformación
                     onStudioRealityLevelChange={setStudioRealityLevel} // NEW: Callback para cambiar nivel
+                    triggerStudioImprove={triggerStudioImprove} // NEW: Trigger para mejorar
                     intelligentTextStyles={intelligentTextStyles}
                     contextualTypography={contextualTypography}
                     contrastAnalysis={contrastAnalysis}
@@ -2257,6 +2264,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 uploadedImageUrl={uploadedImageUrl}
                                 studioRealityLevel={studioRealityLevel}
                                 onStudioRealityLevelChange={setStudioRealityLevel}
+                                onApplyStudioChanges={handleApplyStudioChanges}
                                 draftVideoUrl={draftVideoUrl}
                                 hdVideoUrl={hdVideoUrl}
                                 status={status}
@@ -2450,6 +2458,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       uploadedImageUrl={uploadedImageUrl}
                       studioRealityLevel={studioRealityLevel}
                       onStudioRealityLevelChange={setStudioRealityLevel}
+                      onApplyStudioChanges={handleApplyStudioChanges}
                       draftVideoUrl={draftVideoUrl}
                       hdVideoUrl={hdVideoUrl}
                       status={status}

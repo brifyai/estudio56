@@ -21,6 +21,7 @@ interface FlyerDisplayProps {
   uploadedImageUrl?: string | null; // NEW: Imagen original subida en modo estudio
   studioRealityLevel?: number; // NEW: Nivel de transformación en modo estudio
   onStudioRealityLevelChange?: (level: number) => void; // NEW: Callback para cambiar nivel
+  onApplyStudioChanges?: () => void; // NEW: Callback para aplicar cambios y regenerar
   status: GenerationStatus;
   aspectRatio: AspectRatio;
   logoUrl: string | null;
@@ -90,6 +91,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   uploadedImageUrl, // NEW: Imagen original subida en modo estudio
   studioRealityLevel = 1.5, // NEW: Nivel de transformación
   onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
+  onApplyStudioChanges, // NEW: Callback para aplicar cambios
   status,
   aspectRatio,
   logoUrl,
@@ -1828,6 +1830,19 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                     {studioRealityLevel > 1.0 && studioRealityLevel <= 2.0 && 'Balance entre fidelidad y mejora'}
                     {studioRealityLevel > 2.0 && 'Transformación completa con máxima mejora'}
                   </div>
+                  
+                  {/* Botón Aplicar Cambios */}
+                  {onApplyStudioChanges && (
+                    <button
+                      onClick={onApplyStudioChanges}
+                      className="w-full mt-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-sm flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Aplicar cambios</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}
