@@ -2495,14 +2495,14 @@ progressAlert.updateProgress(60, 'Renderizando...');
         <aside className={`
           fixed inset-0 z-50 flex items-center justify-center p-2 transition-all duration-300
           lg:relative lg:inset-auto lg:z-40
-          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:py-2 lg:pr-2 lg:pl-2
+          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:h-screen lg:py-2 lg:pr-2 lg:pl-2
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
             className="absolute inset-0 bg-black/80 lg:hidden touch-none"
             onClick={() => setShowRealityComparator(false)}
           />
-          <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
+          <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-none lg:h-full">
             {/* Botón cerrar - Posicionado arriba sin tapar contenido */}
             <div className="flex-shrink-0 flex items-center justify-center px-4 py-3 border-b border-white/5 bg-gradient-to-b from-black/40 to-transparent">
               <button
