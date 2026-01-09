@@ -24,15 +24,18 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    // Obtener taskId del body (POST) o query params (GET)
+    // Obtener taskId y statusUrl del body (POST) o query params (GET)
     let taskId: string;
+    let statusUrl: string | undefined;
     
     if (event.httpMethod === 'POST') {
       const body = JSON.parse(event.body || '{}');
       taskId = body.taskId;
+      statusUrl = body.statusUrl; // URL completa proporcionada por Fal.ai
     } else {
       // GET: obtener de query parameters
       taskId = event.queryStringParameters?.taskId || '';
+      statusUrl = event.queryStringParameters?.statusUrl;
     }
     
     console.log('🆔 [Fal.ai Poll] Request ID:', taskId);
@@ -41,12 +44,13 @@ export const handler: Handler = async (event) => {
       throw new Error("Falta el parámetro taskId");
     }
 
-    // URL para consultar el estado de la tarea en Fal.ai
-    const url = `https://queue.fal.run/fal-ai/pika/v2/turbo/text-to-video/requests/${taskId}/status`;
+    // Usar la URL proporcionada por Fal.ai o construirla como fallback
+    const url = statusUrl || `https://queue.fal.run/fal-ai/pika/requests/${taskId}/status`;
     console.log('🌐 [Fal.ai Poll] URL de consulta:', url);
 
     console.log('⏳ [Fal.ai Poll] Consultando estado de la tarea...');
     
+    // IMPORTANTE: Fal.ai requiere GET para consultar el estado, no POST
     const response = await fetch(url, {
       method: 'GET',
       headers: {

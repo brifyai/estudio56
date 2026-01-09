@@ -95,7 +95,8 @@ export const generateVideo = async (
  * Verifica el estado de una tarea de video
  */
 export const checkVideoTask = async (
-  taskId: string
+  taskId: string,
+  statusUrl?: string
 ): Promise<VideoGenerationResult> => {
   try {
     const response = await fetch('/.netlify/functions/check-video-operation', {
@@ -104,7 +105,8 @@ export const checkVideoTask = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        taskId
+        taskId,
+        statusUrl // Pasar la URL completa proporcionada por Fal.ai
       }),
     });
 
@@ -150,6 +152,10 @@ export const generateVideoAndWait = async (
     throw new Error('No se recibió taskId');
   }
 
+  // Guardar statusUrl para usarlo en el polling
+  const statusUrl = (result as any).statusUrl;
+  console.log('📊 [Fal.ai Video] Status URL para polling:', statusUrl);
+
   // Polling hasta que esté completo
   console.log('🔄 [Fal.ai Video] Iniciando polling...');
   
@@ -170,7 +176,7 @@ export const generateVideoAndWait = async (
       onProgress(progress, `Generando video... ${progress.toFixed(0)}%`);
     }
     
-    const status = await checkVideoTask(result.taskId);
+    const status = await checkVideoTask(result.taskId, statusUrl);
 
     if (status.status === 'error') {
       throw new Error(status.error || 'Error al generar video');
