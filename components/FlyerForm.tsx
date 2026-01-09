@@ -1370,43 +1370,45 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* GENERATE BUTTON */}
-        <div className="pt-4 md:pt-6">
-          <button
-              onClick={async () => {
-                // Mostrar alerta de progreso si es imagen y calidad draft
-                if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
-                  // Abrir alerta de progreso con SweetAlert2
-                  const alert = estudioAlerts.progress('Generando imagen en borrador');
-                  progressAlertRef.current = alert;
-                  console.log('📊 Alerta de progreso abierta');
-                }
-                // Ejecutar generación normal
-                onSubmit();
-              }}
-              disabled={isLoading || !canGenerate}
-              className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group cursor-pointer disabled:cursor-not-allowed
-              ${!canGenerate 
-                  ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
-                  : isStoryArtModeActive
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/40'
-                  : mediaType === 'video'
-                  ? 'bg-indigo-600 text-white shadow-indigo-900/40'
-                  : 'bg-white text-black shadow-white/20'}`}
-          >
-              {isLoading ? (
-                  <>
-                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                       <span>PROCESANDO...</span>
-                  </>
-              ) : (
-                  <>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                      <span>✨ GENERAR {isStoryArtModeActive ? 'STORY ART' : mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
-                  </>
-              )}
-          </button>
-        </div>
+        {/* GENERATE BUTTON - Oculto en modo estudio */}
+        {mediaType !== 'product_study' && (
+          <div className="pt-4 md:pt-6">
+            <button
+                onClick={async () => {
+                  // Mostrar alerta de progreso si es imagen y calidad draft
+                  if (mediaType === 'image' && imageQuality === 'draft' && !isLoading) {
+                    // Abrir alerta de progreso con SweetAlert2
+                    const alert = estudioAlerts.progress('Generando imagen en borrador');
+                    progressAlertRef.current = alert;
+                    console.log('📊 Alerta de progreso abierta');
+                  }
+                  // Ejecutar generación normal
+                  onSubmit();
+                }}
+                disabled={isLoading || !canGenerate}
+                className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group cursor-pointer disabled:cursor-not-allowed
+                ${!canGenerate 
+                    ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
+                    : isStoryArtModeActive
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-purple-900/40'
+                    : mediaType === 'video'
+                    ? 'bg-indigo-600 text-white shadow-indigo-900/40'
+                    : 'bg-white text-black shadow-white/20'}`}
+            >
+                {isLoading ? (
+                    <>
+                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                         <span>PROCESANDO...</span>
+                    </>
+                ) : (
+                    <>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                        <span>✨ GENERAR {isStoryArtModeActive ? 'STORY ART' : mediaType === 'video' ? 'VIDEO' : 'CAMPAÑA'}</span>
+                    </>
+                )}
+            </button>
+          </div>
+        )}
 
       </div>
     </>
