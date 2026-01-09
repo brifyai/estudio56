@@ -2357,8 +2357,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 )}
             </div>
             
-            {/* Minimal Footer - Con z-index apropiado y safe-area */}
-            <div className="footer-legal flex-shrink-0 p-3 lg:p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex flex-col md:flex-row justify-between items-center gap-2 font-mono pb-safe">
+            {/* Minimal Footer - Solo visible en desktop */}
+            <div className="footer-legal hidden lg:flex flex-shrink-0 p-3 lg:p-4 border-t border-white/5 bg-black/20 text-[10px] text-white flex-col md:flex-row justify-between items-center gap-2 font-mono pb-safe">
                 <div className="flex gap-2">
                     <span>V2.0.0_ESTABLE</span>
                 </div>
@@ -2675,6 +2675,35 @@ progressAlert.updateProgress(60, 'Renderizando...');
          </div>
        </div>
      </aside>
+     
+     {/* Footer Mobile - Solo visible en mobile, después del calendario */}
+     <footer className="lg:hidden w-full p-3 border-t border-white/5 bg-black/40 text-[10px] text-white flex flex-col justify-center items-center gap-2 font-mono pb-safe">
+       <div className="flex gap-2">
+         <span>V2.0.0_ESTABLE</span>
+       </div>
+       <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 max-w-full">
+         <a href="/privacidad" className="hover:text-green-400 transition-colors px-1">Privacidad</a>
+         <span className="text-white/40">|</span>
+         <a href="/cookies" className="hover:text-green-400 transition-colors px-1">Cookies</a>
+         <span className="text-white/40">|</span>
+         <a href="/terminos" className="hover:text-green-400 transition-colors px-1">Términos</a>
+         <span className="text-white/40">|</span>
+         <a href="/condiciones" className="hover:text-green-400 transition-colors px-1">Condiciones</a>
+         <span className="text-white/40">|</span>
+         <a href="/historial-pagos" className="hover:text-green-400 transition-colors px-1">Historial</a>
+         <span className="text-white/40">|</span>
+         <span
+           className="cursor-pointer hover:text-green-400 transition-colors px-1"
+           onClick={async () => {
+             await supabase.auth.signOut();
+             setHasKey(false);
+             window.location.href = '/';
+           }}
+         >
+           DESCONECTAR
+         </span>
+       </div>
+     </footer>
    </div>
  );
 };
