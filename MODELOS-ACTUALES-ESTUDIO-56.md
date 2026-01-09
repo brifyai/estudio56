@@ -16,13 +16,15 @@ fal-ai/flux/schnell
 - ✅ **Tipo**: Text-to-Image
 - ✅ **Uso**: Generación inicial de borradores
 - ✅ **Calidad**: Buena para previews rápidos
+- ✅ **Usado en**: Story Art (Borrador)
 
 **Código**:
 ```typescript
 const DRAFT_MODEL = FAL_MODELS.FLUX_SCHNELL;
 ```
 
-**Ubicación**: `services/falAiService.ts` línea 34
+**Ubicación**: `services/falAiService.ts` línea 34  
+**Llamado desde**: `services/geminiService.ts` línea 2453
 
 ---
 
@@ -36,14 +38,18 @@ fal-ai/flux/dev/image-to-image
 - ✅ **Tipo**: Image-to-Image
 - ✅ **Uso**: Mejora de calidad del borrador a HD
 - ✅ **Calidad**: Alta calidad, mantiene composición
-- ✅ **Strength**: 0.15 (muy similar al borrador)
+- ✅ **Strength**: 0.20 (muy similar al borrador)
+- ✅ **Usado en**: Story Art (HD)
 
 **Código**:
 ```typescript
 const HD_MODEL = FAL_MODELS.FLUX_DEV_IMG2IMG;
 ```
 
-**Ubicación**: `services/falAiService.ts` línea 36
+**Ubicación**: `services/falAiService.ts` línea 36  
+**Llamado desde**: `services/geminiService.ts` línea 2593
+
+**Nota importante**: El comentario en el código dice "SDXL img2img" pero en realidad usa `FLUX_DEV_IMG2IMG` (Flux Dev Image-to-Image), que es el modelo configurado en `HD_MODEL`.
 
 ---
 
@@ -135,23 +141,33 @@ fal-ai/clarity-upscaler
 1. Usuario solicita borrador
    ↓
 2. Flux Schnell (text-to-image)
-   - Genera imagen inicial
+   - Genera imagen inicial desde prompt
    - 2-3 segundos
+   - Modelo: fal-ai/flux/schnell
    ↓
 3. Usuario solicita HD
    ↓
 4. Flux Dev Image-to-Image
    - Mejora calidad manteniendo composición
-   - Strength: 0.15 (muy similar)
+   - Usa imagen del borrador como referencia
+   - Strength: 0.20 (muy similar)
    - 5-10 segundos
+   - Modelo: fal-ai/flux/dev/image-to-image
    ↓
 5. (Opcional) Usuario ajusta realidad
    ↓
 6. Flux Dev Image-to-Image
    - Ajusta nivel de realismo
+   - Usa imagen HD como referencia
    - Strength: 0.35 (cambios visibles)
    - 5-10 segundos
+   - Modelo: fal-ai/flux/dev/image-to-image
 ```
+
+**Resumen**: 
+- ✅ **Borrador**: Flux Schnell (text-to-image) - genera desde cero
+- ✅ **HD**: Flux Dev img2img - mejora el borrador
+- ✅ **Editor de Realidad**: Flux Dev img2img - ajusta realismo del HD
 
 ### Para Videos
 
