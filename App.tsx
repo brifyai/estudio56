@@ -2504,11 +2504,11 @@ progressAlert.updateProgress(60, 'Renderizando...');
             onClick={() => setShowRealityComparator(false)}
           />
           <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-full lg:h-full">
-            {/* Botón cerrar centrado */}
-            <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
+            {/* Botón cerrar - Posicionado arriba sin tapar contenido */}
+            <div className="flex-shrink-0 flex items-center justify-center px-4 py-3 border-b border-white/5 bg-gradient-to-b from-black/40 to-transparent">
               <button
                 onClick={() => setShowRealityComparator(false)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-lg transition-colors cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

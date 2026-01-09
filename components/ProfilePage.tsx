@@ -253,7 +253,11 @@ export const ProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
           <h1 className="text-white text-xl mb-4">Error</h1>
           <p className="text-white/70 mb-6">{error}</p>
           <button 
@@ -271,7 +275,11 @@ export const ProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="text-white/50 text-6xl mb-4">👤</div>
+          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
           <h1 className="text-white text-xl mb-4">Perfil no encontrado</h1>
           <button
             onClick={() => window.location.href = '/panel'}
@@ -289,7 +297,11 @@ export const ProfilePage: React.FC = () => {
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-white/20">
           <div className="text-center">
-            <div className="text-6xl mb-4">⚠️</div>
+            <div className="w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
             <h2 className="text-2xl font-bold text-white mb-4">¿Cancelar tu plan?</h2>
             <p className="text-white/70 mb-6">
               Tu plan estará vigente hasta la fecha de renovación ({subscription?.next_payment_date
@@ -361,9 +373,13 @@ export const ProfilePage: React.FC = () => {
           
           {/* Información Personal */}
           <div className="lg:col-span-2 bg-white/5 rounded-3xl p-8 border border-white/10">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold flex items-center gap-3">
-                <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">👤</span>
+                <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </span>
                 Información Personal
               </h2>
               {!isEditing && (
@@ -460,7 +476,11 @@ export const ProfilePage: React.FC = () => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6 relative z-10">
-              <span className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center text-2xl">💎</span>
+              <span className="w-10 h-10 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </span>
               Tu Plan
             </h2>
             
@@ -495,7 +515,11 @@ export const ProfilePage: React.FC = () => {
               {userProfile.user_plans.price > 0 ? (
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">🔄</span>
+                    <span className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </span>
                     <div>
                       <p className="text-white/60 text-sm">Próxima renovación</p>
                       <p className="text-white font-bold">
@@ -567,7 +591,11 @@ export const ProfilePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-3 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-3xl p-8 border border-white/10">
             <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
-              <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-2xl">💰</span>
+              <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </span>
               Control de Créditos
             </h2>
             
@@ -607,12 +635,16 @@ export const ProfilePage: React.FC = () => {
                   <p className="text-xs text-white/50 mb-2">Con estos créditos puedes generar:</p>
                   <div className="flex gap-3">
                     <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-                      <span className="text-lg">🖼️</span>
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
                       <span className="text-white font-bold">{userProfile.drafts}</span>
                       <span className="text-white/50 text-xs">borradores</span>
                     </div>
                     <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-                      <span className="text-lg">✨</span>
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
                       <span className="text-white font-bold">{Math.floor(userProfile.credits / 5)}</span>
                       <span className="text-white/50 text-xs">imágenes HD</span>
                     </div>
@@ -655,12 +687,16 @@ export const ProfilePage: React.FC = () => {
                   <p className="text-xs text-white/50 mb-2">Con estos créditos puedes generar:</p>
                   <div className="flex gap-3">
                     <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-                      <span className="text-lg">🎬</span>
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
                       <span className="text-white font-bold">{userProfile.drafts_video}</span>
                       <span className="text-white/50 text-xs">videos</span>
                     </div>
                     <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-                      <span className="text-lg">⏱️</span>
+                      <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
                       <span className="text-white font-bold">{userProfile.drafts_video * 5}</span>
                       <span className="text-white/50 text-xs">segundos</span>
                     </div>
@@ -676,25 +712,37 @@ export const ProfilePage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                     <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">📝</span> Borradores
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Borradores
                     </span>
                     <span className="text-white font-bold">{getUsageByType('draft')}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                     <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">🖼️</span> Imágenes HD
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Imágenes HD
                     </span>
                     <span className="text-white font-bold">{getUsageByType('final_image')}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                     <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">🎬</span> Videos HD
+                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Videos HD
                     </span>
                     <span className="text-white font-bold">{getUsageByType('video')}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                     <span className="text-white/70 flex items-center gap-2">
-                      <span className="text-lg">📦</span> Productos
+                      <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      Productos
                     </span>
                     <span className="text-white font-bold">{getUsageByType('product_upload')}</span>
                   </div>
@@ -763,7 +811,11 @@ export const ProfilePage: React.FC = () => {
           <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold flex items-center gap-3">
-                <span className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl">📊</span>
+                <span className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </span>
                 Transacciones
               </h2>
               <button
@@ -779,7 +831,11 @@ export const ProfilePage: React.FC = () => {
             
             {creditTransactions.length === 0 ? (
               <div className="text-center py-8">
-                <div className="text-white/50 text-4xl mb-3">📋</div>
+                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
                 <p className="text-white/70">Sin transacciones</p>
                 <p className="text-white/50 text-sm mt-2">Usa tus créditos para ver actividad</p>
               </div>
@@ -818,14 +874,22 @@ export const ProfilePage: React.FC = () => {
           <div className="bg-white/5 rounded-3xl p-8 border border-white/10">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold flex items-center gap-3">
-                <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl">💳</span>
+                <span className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </span>
                 Historial de Pagos
               </h2>
             </div>
             
             {payments.length === 0 ? (
               <div className="text-center py-8">
-                <div className="text-white/50 text-4xl mb-3">📋</div>
+                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
                 <p className="text-white/70">No hay pagos registrados</p>
                 {userProfile.user_plans.name === 'GRATIS' && (
                   <p className="text-white/50 text-sm mt-2">Upgrade tu plan para ver el historial</p>
