@@ -19,7 +19,10 @@ export default defineConfig(({ mode }) => {
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        // Cloudflare Worker variables
+        'import.meta.env.REACT_APP_USE_VIDEO_WORKER': JSON.stringify(env.REACT_APP_USE_VIDEO_WORKER),
+        'import.meta.env.REACT_APP_VIDEO_WORKER_URL': JSON.stringify(env.REACT_APP_VIDEO_WORKER_URL)
       },
       resolve: {
         alias: {
