@@ -1419,6 +1419,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
           await showVideoProgressAlert({
             taskId: result.taskId,
             quality: imageQuality === 'draft' ? 'draft' : 'hd',
+            statusUrl: result.statusUrl, // IMPORTANTE: pasar statusUrl para polling correcto
             onComplete: (videoUrl) => {
               console.log('✅ Video generado:', videoUrl.substring(0, 100) + '...');
               

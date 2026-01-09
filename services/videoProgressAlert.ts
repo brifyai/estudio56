@@ -82,7 +82,7 @@ export const showVideoProgressAlert = async (config: ProgressConfig): Promise<vo
           <strong>0%</strong> completado
         </p>
         <p style="margin-top: 5px; font-size: 0.85em; color: #999;">
-          Tiempo estimado: ${quality === 'draft' ? '1-2 minutos' : '3-6 minutos'}
+          Tiempo estimado: ${quality === 'draft' ? '2-5 minutos' : '5-10 minutos'}
         </p>
       </div>
     `,
@@ -112,7 +112,7 @@ const startPolling = async (
   onError?: (error: string) => void
 ) => {
   attemptCount = 0;
-  const maxAttempts = quality === 'draft' ? 60 : 120; // 5 min draft, 10 min HD
+  const maxAttempts = quality === 'draft' ? 120 : 180; // 10 min draft, 15 min HD
   const pollInterval = 5000; // 5 segundos
 
   const poll = async () => {
