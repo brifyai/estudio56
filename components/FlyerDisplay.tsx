@@ -1742,32 +1742,33 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         {console.log('🔍 [FLYER DISPLAY] improvedImageUrl:', improvedImageUrl ? 'EXISTS' : 'NULL')}
         {console.log('🔍 [FLYER DISPLAY] uploadedImageUrl:', uploadedImageUrl ? 'EXISTS' : 'NULL')}
         {console.log('🔍 [FLYER DISPLAY] mediaType:', mediaType)}
-        {console.log('🔍 [FLYER DISPLAY] Mostrar comparador?', !!(improvedImageUrl && uploadedImageUrl && mediaType === 'product_study'))}
-        
-        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada - SIEMPRE VISIBLE PARA TEST */}
-        {(improvedImageUrl && uploadedImageUrl) && (
-          <div className="w-full max-w-4xl mx-auto p-8 bg-red-500 border-8 border-yellow-500">
-            {console.log('✅ [FLYER DISPLAY] Renderizando comparador modo estudio')}
-            <div className="text-center mb-4">
-              <h3 className="text-white text-3xl font-bold bg-blue-500 p-4">COMPARADOR MODO ESTUDIO - SI VES ESTO FUNCIONA</h3>
-              <p className="text-white text-xl">mediaType: {mediaType}</p>
+        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada */}
+        {(improvedImageUrl && uploadedImageUrl && mediaType === 'product_study') && (
+          <div className="w-full max-w-5xl mx-auto p-6">
+            <div className="text-center mb-6">
+              <h3 className="text-white text-xl font-bold mb-2">Comparar con original</h3>
+              <p className="text-white/60 text-sm">Desliza para ver las diferencias</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 bg-green-500 p-4">
-                <div className="text-white text-2xl font-bold text-center">Original</div>
-                <img
-                  src={uploadedImageUrl}
-                  alt="Original"
-                  className="w-full h-auto object-contain bg-white rounded-lg border-8 border-black"
-                />
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="text-white/80 text-sm font-medium text-center">Original</div>
+                <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/20 shadow-2xl">
+                  <img
+                    src={uploadedImageUrl}
+                    alt="Original"
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
               </div>
-              <div className="space-y-2 bg-purple-500 p-4">
-                <div className="text-white text-2xl font-bold text-center">Mejorada con IA</div>
-                <img
-                  src={improvedImageUrl}
-                  alt="Mejorada"
-                  className="w-full h-auto object-contain bg-white rounded-lg border-8 border-black"
-                />
+              <div className="space-y-3">
+                <div className="text-green-400 text-sm font-medium text-center">Mejorada con IA</div>
+                <div className="relative rounded-2xl overflow-hidden border border-green-500/30 bg-black/20 shadow-2xl shadow-green-500/10">
+                  <img
+                    src={improvedImageUrl}
+                    alt="Mejorada"
+                    className="w-full h-auto object-contain"
+                  />
+                </div>
               </div>
             </div>
           </div>
