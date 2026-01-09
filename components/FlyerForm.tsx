@@ -481,6 +481,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       console.log('🔍 [DEBUG] Resultado recibido:', result ? `${result.substring(0, 50)}...` : 'null');
       console.log('🔍 [DEBUG] Tipo de resultado:', typeof result);
       console.log('🔍 [DEBUG] Es data URL?', result?.startsWith('data:'));
+      console.log('🔍 [DEBUG] Tamaño del resultado:', result?.length, 'bytes');
+      console.log('🔍 [DEBUG] Tamaño en MB:', (result?.length / 1024 / 1024).toFixed(2), 'MB');
+      
+      // Validar que no sea demasiado grande
+      if (result && result.length > 10 * 1024 * 1024) { // 10MB
+        console.warn('⚠️ [DEBUG] Imagen muy grande, puede causar problemas de renderizado');
+      }
       
       setImprovedImageUrl(result);
       
@@ -1121,11 +1128,23 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 src={improvedImageUrl || uploadedImage}
                 alt="Imagen subida"
                 className="w-full h-48 object-contain bg-black/40"
+                onLoad={() => {
+                  console.log('✅ [IMG] Imagen cargada exitosamente');
+                  console.log('🔍 [IMG] Mostrando:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL');
+                }}
+                onError={(e) => {
+                  console.error('❌ [IMG] Error cargando imagen:', e);
+                  console.error('🔍 [IMG] src:', (e.target as HTMLImageElement).src?.substring(0, 100));
+                }}
+                key={improvedImageUrl || uploadedImage} // Force re-render cuando cambia
               />
               {improvedImageUrl && (
-                <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded">
-                  ✓ Mejorada
-                </div>
+                <>
+                  {console.log('🎨 [BADGE] Mostrando badge "Mejorada"')}
+                  <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded">
+                    ✓ Mejorada
+                  </div>
+                </>
               )}
             </div>
             
