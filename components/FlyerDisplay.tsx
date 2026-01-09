@@ -4,6 +4,7 @@ import { downloadComposedImage, getDimensionsForAspectRatio, composeAndExport } 
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
 import { useSurfaceDetection, SurfaceType, SURFACE_CONFIGS } from '../hooks/useSurfaceDetection';
 import RealitySlider from './RealitySlider';
+import { ImageComparisonSlider } from './ImageComparisonSlider';
 import Swal from 'sweetalert2';
 
 interface LogoFilters {
@@ -1748,109 +1749,23 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         {console.log('🔍 [FLYER DISPLAY] improvedImageUrl:', improvedImageUrl ? 'EXISTS' : 'NULL')}
         {console.log('🔍 [FLYER DISPLAY] uploadedImageUrl:', uploadedImageUrl ? 'EXISTS' : 'NULL')}
         {console.log('🔍 [FLYER DISPLAY] mediaType:', mediaType)}
-        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada */}
+        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada con Slider Interactivo */}
         {(improvedImageUrl && uploadedImageUrl && mediaType === 'product_study') && (
-          <div className="w-full max-w-5xl mx-auto p-6">
-            <div className="text-center mb-6">
-              <h3 className="text-white text-xl font-bold mb-2">Comparar con original</h3>
-              <p className="text-white/60 text-sm">Desliza para ver las diferencias</p>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div className="text-white/80 text-sm font-medium text-center">Original</div>
-                <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/20 shadow-2xl">
-                  <img
-                    src={uploadedImageUrl}
-                    alt="Original"
-                    className="w-full h-auto object-contain"
-                  />
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-green-400 text-sm font-medium text-center">Mejorada con IA</div>
-                <div className="relative rounded-2xl overflow-hidden border border-green-500/30 bg-black/20 shadow-2xl shadow-green-500/10">
-                  <img
-                    src={improvedImageUrl}
-                    alt="Mejorada"
-                    className="w-full h-auto object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Botón de descarga - Centrado debajo del comparador */}
-            <div className="mt-8 flex justify-center">
-              <button
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = improvedImageUrl;
-                  link.download = `estudio56-mejorada-${Date.now()}.jpg`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span>Descargar imagen mejorada</span>
-              </button>
-            </div>
-            
-            {/* Regulador de Transformación - Debajo del botón de descarga */}
-            {onStudioRealityLevelChange && (
-              <div className="mt-8 max-w-md mx-auto">
-                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-sm font-bold text-white uppercase tracking-wide">
-                      Nivel de Transformación
-                    </label>
-                    <span className="text-lg text-white font-bold">{studioRealityLevel}★</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="5.0"
-                    step="0.5"
-                    value={studioRealityLevel}
-                    onChange={(e) => onStudioRealityLevelChange(parseFloat(e.target.value))}
-                    className="w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 4.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 4.5) * 100}%)`
-                    }}
-                  />
-                  <div className="grid grid-cols-5 text-[10px] text-white/50 mt-2">
-                    <span className="text-left">Sutil</span>
-                    <span className="text-center">Moderado</span>
-                    <span className="text-center">Notable</span>
-                    <span className="text-center">Fuerte</span>
-                    <span className="text-right">Máximo</span>
-                  </div>
-                  <div className="text-sm text-white/60 mt-3 text-center">
-                    {studioRealityLevel <= 1.5 && 'Mejora conservadora - Mantiene la identidad de tu foto'}
-                    {studioRealityLevel > 1.5 && studioRealityLevel <= 2.5 && 'Mejora notable - Cambios visibles pero controlados'}
-                    {studioRealityLevel > 2.5 && studioRealityLevel <= 3.5 && 'Transformación visible - Cambios significativos'}
-                    {studioRealityLevel > 3.5 && studioRealityLevel <= 4.5 && 'Transformación fuerte - Cambios dramáticos'}
-                    {studioRealityLevel > 4.5 && 'Transformación máxima - Resultado completamente profesional'}
-                  </div>
-                  
-                  {/* Botón Aplicar Cambios */}
-                  {onApplyStudioChanges && (
-                    <button
-                      onClick={onApplyStudioChanges}
-                      className="w-full mt-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-sm flex items-center justify-center gap-2"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Aplicar cambios</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <ImageComparisonSlider
+            originalImage={uploadedImageUrl}
+            improvedImage={improvedImageUrl}
+            realityLevel={studioRealityLevel}
+            onRealityLevelChange={onStudioRealityLevelChange}
+            onApplyChanges={onApplyStudioChanges}
+            onDownload={() => {
+              const link = document.createElement('a');
+              link.href = improvedImageUrl;
+              link.download = `estudio56-mejorada-${Date.now()}.jpg`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+          />
         )}
         
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}

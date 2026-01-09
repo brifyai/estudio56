@@ -595,6 +595,114 @@ export const generateHDWithTxt2Img = async (
 */
 
 // ============================================
+// 🎨 CLARITY UPSCALER - Mejora resolución sin cambiar contenido
+// ============================================
+
+/**
+ * Mejora una imagen usando Clarity Upscaler de fal.ai
+ * Este modelo SOLO mejora la resolución y calidad sin cambiar el contenido
+ * Perfecto para modo estudio donde el cliente quiere su foto MEJOR pero IGUAL
+ */
+export const enhanceImageWithClarityUpscaler = async (
+  imageDataUrl: string,
+  options: {
+    creativity?: number; // 0-1, qué tan creativo puede ser (default: 0.35)
+    resemblance?: number; // 0-1, qué tanto se parece al original (default: 0.6)
+    upscaleFactor?: number; // Factor de escalado (default: 2)
+    guidanceScale?: number; // CFG scale (default: 4)
+    numInferenceSteps?: number; // Número de steps (default: 18)
+    prompt?: string; // Prompt opcional (default: "masterpiece, best quality, highres")
+    negativePrompt?: string;
+    seed?: number;
+  } = {}
+): Promise<FalImg2ImgResponse> => {
+  const {
+    creativity = 0.35, // Bajo = más conservador
+    resemblance = 0.6, // Alto = más parecido al original
+    upscaleFactor = 2,
+    guidanceScale = 4,
+    numInferenceSteps = 18,
+    prompt = 'masterpiece, best quality, highres',
+    negativePrompt = '(worst quality, low quality, normal quality:2)',
+    seed
+  } = options;
+
+  console.log('🎯 [fal.ai] Iniciando Clarity Upscaler...');
+  console.log(`📝 [fal.ai] Modelo: ${FAL_MODELS.CLARITY_UPSCALER}`);
+  console.log(`🎨 [fal.ai] Creativity: ${creativity} (0 = conservador, 1 = creativo)`);
+  console.log(`🔍 [fal.ai] Resemblance: ${resemblance} (0 = diferente, 1 = idéntico)`);
+  console.log(`📏 [fal.ai] Upscale Factor: ${upscaleFactor}x`);
+  console.log(`🎚️ [fal.ai] Guidance Scale: ${guidanceScale}`);
+  console.log(`🔢 [fal.ai] Steps: ${numInferenceSteps}`);
+
+  try {
+    // Comprimir imagen antes de enviar
+    console.log('🗜️ [fal.ai] Comprimiendo imagen antes de enviar...');
+    let compressedImage: string;
+    try {
+      compressedImage = await compressImageDataUrl(imageDataUrl, 1024, 0.85);
+      console.log('✅ [fal.ai] Imagen comprimida exitosamente');
+    } catch (compressionError: any) {
+      console.warn('⚠️ [fal.ai] Error comprimiendo imagen, usando original:', compressionError.message);
+      compressedImage = imageDataUrl;
+    }
+    
+    console.log('📡 [fal.ai] Enviando request via Netlify Function...');
+    
+    // Llamar a Netlify Function
+    const response = await fetch('/.netlify/functions/generate-with-fal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: FAL_MODELS.CLARITY_UPSCALER,
+        imageUrl: compressedImage,
+        prompt,
+        creativity,
+        resemblance,
+        upscaleFactor,
+        guidanceScale,
+        numInferenceSteps,
+        negativePrompt,
+        seed,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`fal.ai error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ [fal.ai] Respuesta recibida');
+
+    if (!data.success) {
+      throw new Error(data.error || 'Error en generación');
+    }
+
+    if (!data.imageUrl) {
+      throw new Error('No se encontró imageUrl en respuesta');
+    }
+
+    console.log(`✅ [fal.ai] Imagen mejorada con Clarity Upscaler exitosamente`);
+    return {
+      success: true,
+      imageUrl: data.imageUrl,
+      seed: data.seed || seed,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido en fal.ai',
+    };
+  }
+};
+
+// ============================================
 // 📋 HELPERS
 // ============================================
 

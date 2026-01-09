@@ -38,7 +38,22 @@ exports.handler = async (event) => {
     console.log('✅ FAL_AI_API_KEY configurada correctamente');
     
     const body = JSON.parse(event.body || '{}');
-    const { model, prompt, imageUrl, strength, guidanceScale, steps, seed, aspectRatio, negativePrompt } = body;
+    const { 
+      model, 
+      prompt, 
+      imageUrl, 
+      strength, 
+      guidanceScale, 
+      steps, 
+      seed, 
+      aspectRatio, 
+      negativePrompt,
+      // Clarity Upscaler params
+      creativity,
+      resemblance,
+      upscaleFactor,
+      numInferenceSteps
+    } = body;
 
     // Validación: model siempre requerido
     // prompt requerido SOLO si NO hay imagen de referencia
@@ -78,8 +93,36 @@ exports.handler = async (event) => {
     // Construir request según el modelo
     let requestBody;
     
+    // Clarity Upscaler: Mejora resolución sin cambiar contenido
+    if (model === 'fal-ai/clarity-upscaler') {
+      console.log('🚀 [fal.ai Function] Usando Clarity Upscaler');
+      
+      if (!imageUrl) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'imageUrl es requerido para clarity-upscaler' }),
+        };
+      }
+      
+      requestBody = {
+        image_url: imageUrl,
+        prompt: prompt || 'masterpiece, best quality, highres',
+        upscale_factor: upscaleFactor || 2,
+        negative_prompt: negativePrompt || '(worst quality, low quality, normal quality:2)',
+        creativity: creativity !== undefined ? creativity : 0.35,
+        resemblance: resemblance !== undefined ? resemblance : 0.6,
+        guidance_scale: guidanceScale || 4,
+        num_inference_steps: numInferenceSteps || 18,
+        enable_safety_checker: false,
+      };
+      
+      if (seed !== undefined && seed !== null) {
+        requestBody.seed = seed;
+      }
+    }
     // Flux Schnell: Modelo rápido para borradores (solo text-to-image)
-    if (model === 'fal-ai/flux/schnell') {
+    else if (model === 'fal-ai/flux/schnell') {
       console.log('🚀 [fal.ai Function] Usando Flux Schnell (text-to-image)');
       requestBody = {
         prompt,

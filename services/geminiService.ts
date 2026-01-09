@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
-import { generateHDWithImg2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxSchnell } from "./falAiService";
+import { generateHDWithImg2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxSchnell, enhanceImageWithClarityUpscaler } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2798,81 +2798,77 @@ export const enhanceUserImage = async (
   aspectRatio: AspectRatio = '1:1',
   realityLevel: number = 1.5 // NEW: Nivel de transformación (0.5 = sutil, 5.0 = máximo, default 1.5 - conservador)
 ): Promise<string> => {
-  console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen con Fal.ai...");
+  console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen con Fal.ai Clarity Upscaler...");
   console.log("📸 Modo de realismo:", realityMode);
   console.log("🎚️ Nivel de realidad:", realityLevel);
 
   try {
-    // Paso 1: Construir el prompt para Fal.ai (sin análisis de Gemini)
-    console.log("🔨 Paso 1: Construyendo prompt para Fal.ai...");
-    
     // Importar el modo de estilo correspondiente
     const { REALITY_MODES } = await import('../src/constants/promptModifiers');
     const styleModifier = REALITY_MODES[realityMode];
 
-    // Calcular strength basado en realityLevel
-    // 0.5★ = 0.20 (cambios sutiles, máxima fidelidad)
-    // 1.5★ = 0.35 (mejora profesional conservadora - DEFAULT RECOMENDADO)
-    // 2.5★ = 0.50 (cambios notorios, balance)
-    // 3.5★ = 0.65 (transformación visible)
-    // 4.5★ = 0.75 (transformación fuerte, cambios dramáticos)
-    // 5.0★ = 0.85 (transformación máxima, resultado profesional de estudio)
-    const strengthMap: Record<number, number> = {
-      0.5: 0.20,
-      1.0: 0.28,
-      1.5: 0.35,
-      2.0: 0.42,
-      2.5: 0.50,
-      3.0: 0.58,
-      3.5: 0.65,
-      4.0: 0.70,
-      4.5: 0.75,
-      5.0: 0.85
+    // Mapear realityLevel (0.5-5.0★) a parámetros de Clarity Upscaler
+    // creativity: qué tan creativo puede ser (0-1)
+    // resemblance: qué tanto se parece al original (0-1)
+    // 
+    // ESTRATEGIA:
+    // - Niveles bajos (0.5-2.0★): Alta resemblance, baja creativity = conservador
+    // - Niveles medios (2.5-3.5★): Balance entre resemblance y creativity
+    // - Niveles altos (4.0-5.0★): Baja resemblance, alta creativity = transformación
+    
+    const parameterMap: Record<number, { creativity: number; resemblance: number }> = {
+      0.5: { creativity: 0.20, resemblance: 0.85 }, // Máxima fidelidad
+      1.0: { creativity: 0.25, resemblance: 0.80 },
+      1.5: { creativity: 0.30, resemblance: 0.75 }, // DEFAULT - Conservador
+      2.0: { creativity: 0.35, resemblance: 0.70 },
+      2.5: { creativity: 0.40, resemblance: 0.65 }, // Balance
+      3.0: { creativity: 0.45, resemblance: 0.60 },
+      3.5: { creativity: 0.50, resemblance: 0.55 },
+      4.0: { creativity: 0.60, resemblance: 0.45 },
+      4.5: { creativity: 0.70, resemblance: 0.35 },
+      5.0: { creativity: 0.80, resemblance: 0.25 }  // Máxima transformación
     };
-    const strength = strengthMap[realityLevel] || 0.35;
-    console.log("💪 Strength calculado:", strength);
+    
+    const params = parameterMap[realityLevel] || parameterMap[1.5];
+    console.log("💪 Parámetros calculados:", params);
 
-    // Prompt ULTRA CONSERVADOR para Fal.ai Flux Dev img2img
-    // El objetivo es SOLO mejorar calidad sin agregar ni cambiar nada
-    const regenerationPrompt = `
-      Enhance image quality only.
-      Improve sharpness, clarity, and lighting.
-      DO NOT add new objects, DO NOT change composition, DO NOT add elements.
-      Keep everything exactly as it is in the original image.
-      Only improve: resolution, sharpness, color balance, lighting quality.
-      
+    // Prompt para Clarity Upscaler
+    const enhancementPrompt = `
       ${styleModifier}
+      
+      Enhance image quality: improve sharpness, clarity, lighting, and color balance.
+      Maintain original composition and content.
+      Professional photography quality.
       
       CRITICAL: Preserve perfect human anatomy - hands with exactly 5 fingers each, natural body proportions, realistic limbs and joints.
       Maintain accurate facial features and skin texture.
       Keep all human elements photorealistic and anatomically correct.
-      
-      NO text, NO logos, NO watermarks, NO new objects, NO added elements.
     `.replace(/\s+/g, ' ').trim();
     
-    console.log("📝 Prompt para Fal.ai:", regenerationPrompt.substring(0, 150) + '...');
+    console.log("📝 Prompt para Clarity Upscaler:", enhancementPrompt.substring(0, 150) + '...');
 
-    // Paso 2: Generar con Fal.ai Flux Dev img2img
-    console.log("✨ Paso 2: Generando imagen mejorada con Fal.ai Flux Dev img2img...");
+    // Generar con Clarity Upscaler
+    console.log("✨ Generando imagen mejorada con Clarity Upscaler...");
     
-    const falResult = await generateHDWithImg2Img(
-      regenerationPrompt,
-      imageDataUrl, // Usar imagen original como referencia
+    const falResult = await enhanceImageWithClarityUpscaler(
+      imageDataUrl,
       {
-        seed: Math.floor(Math.random() * 1000000),
-        aspectRatio,
-        strength, // Dinámico según realityLevel
-        guidanceScale: 5.0, // Reducido de 7.5 a 5.0 para mayor fidelidad a la imagen original
-        steps: 30,
-        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions, added objects, new elements, extra items, additional objects, changed composition, different background, added decorations, extra furniture, new props'
+        creativity: params.creativity,
+        resemblance: params.resemblance,
+        upscaleFactor: 2,
+        guidanceScale: 4,
+        numInferenceSteps: 18,
+        prompt: enhancementPrompt,
+        negativePrompt: '(worst quality, low quality, normal quality:2), blurry, distorted, deformed, text, watermark, logo, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions',
+        seed: Math.floor(Math.random() * 1000000)
       }
     );
 
     if (!falResult.success || !falResult.imageUrl) {
-      throw new Error(falResult.error || 'Error generando imagen con Fal.ai');
+      throw new Error(falResult.error || 'Error generando imagen con Clarity Upscaler');
     }
 
-    console.log("✅ [EnhanceUserImage] Imagen generada con Fal.ai");
+    console.log("✅ [EnhanceUserImage] Imagen generada con Clarity Upscaler");
     
     // Descargar imagen de Fal.ai y convertir a data URL
     try {
