@@ -1212,7 +1212,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     // Mostrar loading
                     Swal.fire({
                       title: 'Preparando descargas...',
-                      html: 'Generando formato original y story 9:16',
+                      html: 'Generando formato original y story 9:16 con IA',
                       allowOutsideClick: false,
                       showConfirmButton: false,
                       background: '#1a1a1a',
@@ -1233,62 +1233,28 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     // Esperar un momento entre descargas
                     await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // 2. Crear versión story 9:16
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    
-                    await new Promise((resolve, reject) => {
-                      img.onload = resolve;
-                      img.onerror = reject;
-                      img.src = improvedImageUrl;
+                    // 2. Generar versión story 9:16 con IA (mejor composición)
+                    Swal.update({
+                      html: 'Generando versión story 9:16 optimizada con IA...'
                     });
 
-                    // Crear canvas para formato 9:16
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+                    // Importar función de mejora
+                    const { enhanceUserImage } = await import('../services/geminiService');
                     
-                    // Dimensiones para 9:16 (1080x1920 para alta calidad)
-                    const targetWidth = 1080;
-                    const targetHeight = 1920;
-                    canvas.width = targetWidth;
-                    canvas.height = targetHeight;
+                    // Generar versión story con IA
+                    const storyImageUrl = await enhanceUserImage(
+                      improvedImageUrl,
+                      realityMode,
+                      '9:16' // Forzar formato story
+                    );
 
-                    // Calcular crop centrado
-                    const sourceAspect = img.width / img.height;
-                    const targetAspect = targetWidth / targetHeight;
-                    
-                    let sx, sy, sWidth, sHeight;
-                    
-                    if (sourceAspect > targetAspect) {
-                      // Imagen más ancha, crop horizontal
-                      sHeight = img.height;
-                      sWidth = img.height * targetAspect;
-                      sx = (img.width - sWidth) / 2;
-                      sy = 0;
-                    } else {
-                      // Imagen más alta, crop vertical
-                      sWidth = img.width;
-                      sHeight = img.width / targetAspect;
-                      sx = 0;
-                      sy = (img.height - sHeight) / 2;
-                    }
-
-                    // Dibujar imagen recortada
-                    ctx?.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
-
-                    // Convertir a blob y descargar
-                    canvas.toBlob((blob) => {
-                      if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const linkStory = document.createElement('a');
-                        linkStory.href = url;
-                        linkStory.download = `estudio56-mejorada-story-${Date.now()}.jpg`;
-                        document.body.appendChild(linkStory);
-                        linkStory.click();
-                        document.body.removeChild(linkStory);
-                        URL.revokeObjectURL(url);
-                      }
-                    }, 'image/jpeg', 0.95);
+                    // Descargar versión story
+                    const linkStory = document.createElement('a');
+                    linkStory.href = storyImageUrl;
+                    linkStory.download = `estudio56-mejorada-story-${Date.now()}.jpg`;
+                    document.body.appendChild(linkStory);
+                    linkStory.click();
+                    document.body.removeChild(linkStory);
 
                     // Esperar a que termine la segunda descarga
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1296,7 +1262,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     Swal.fire({
                       icon: 'success',
                       title: '¡Descargadas!',
-                      html: '✅ Formato original<br>✅ Formato story 9:16',
+                      html: '✅ Formato original<br>✅ Formato story 9:16 optimizado',
                       timer: 3000,
                       showConfirmButton: false,
                       background: '#1a1a1a',

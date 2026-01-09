@@ -2818,6 +2818,11 @@ export const enhanceUserImage = async (
       The product is the clear focal point, centered composition.
       High-quality lighting and professional presentation.
       Enhance quality while maintaining the exact product identity.
+      
+      CRITICAL: Preserve perfect human anatomy - hands with exactly 5 fingers each, natural body proportions, realistic limbs and joints.
+      Maintain accurate facial features and skin texture.
+      Keep all human elements photorealistic and anatomically correct.
+      
       NO text, NO logos, NO watermarks.
     `.replace(/\s+/g, ' ').trim();
     
@@ -2832,10 +2837,10 @@ export const enhanceUserImage = async (
       {
         seed: Math.floor(Math.random() * 1000000),
         aspectRatio,
-        strength: 0.65, // Aumentado para cambios más visibles (era 0.40)
+        strength: 0.35, // Reducido para mayor fidelidad anatómica (era 0.40, luego 0.65)
         guidanceScale: 7.5,
         steps: 30,
-        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape'
+        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions'
       }
     );
 
