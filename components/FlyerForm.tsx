@@ -1048,7 +1048,25 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Modo de Estilo</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setRealityMode('realist')}
+                  onClick={() => {
+                    setRealityMode('realist');
+                    // Limpiar imagen mejorada para forzar regeneración
+                    if (improvedImageUrl) {
+                      setImprovedImageUrl(null);
+                      if (onImprovedImageChange) {
+                        onImprovedImageChange(null);
+                      }
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Modo cambiado',
+                        text: 'Haz clic en "Mejorar con IA" para aplicar el nuevo estilo',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: '#1a1a1a',
+                        color: '#ffffff'
+                      });
+                    }
+                  }}
                   className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'realist'
                       ? 'bg-blue-500/30 border-blue-400 text-white'
@@ -1061,7 +1079,25 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   Local / Realista
                 </button>
                 <button
-                  onClick={() => setRealityMode('aspirational')}
+                  onClick={() => {
+                    setRealityMode('aspirational');
+                    // Limpiar imagen mejorada para forzar regeneración
+                    if (improvedImageUrl) {
+                      setImprovedImageUrl(null);
+                      if (onImprovedImageChange) {
+                        onImprovedImageChange(null);
+                      }
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Modo cambiado',
+                        text: 'Haz clic en "Mejorar con IA" para aplicar el nuevo estilo',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: '#1a1a1a',
+                        color: '#ffffff'
+                      });
+                    }
+                  }}
                   className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'aspirational'
                       ? 'bg-purple-500/30 border-purple-400 text-white'
@@ -1152,7 +1188,25 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Modo de Estilo</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setRealityMode('realist')}
+                  onClick={() => {
+                    setRealityMode('realist');
+                    // Limpiar imagen mejorada para forzar regeneración
+                    if (improvedImageUrl) {
+                      setImprovedImageUrl(null);
+                      if (onImprovedImageChange) {
+                        onImprovedImageChange(null);
+                      }
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Modo cambiado',
+                        text: 'Haz clic en "Mejorar con IA" para aplicar el nuevo estilo',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: '#1a1a1a',
+                        color: '#ffffff'
+                      });
+                    }
+                  }}
                   className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'realist'
                       ? 'bg-blue-500/30 border-blue-400 text-white'
@@ -1165,7 +1219,25 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   Local / Realista
                 </button>
                 <button
-                  onClick={() => setRealityMode('aspirational')}
+                  onClick={() => {
+                    setRealityMode('aspirational');
+                    // Limpiar imagen mejorada para forzar regeneración
+                    if (improvedImageUrl) {
+                      setImprovedImageUrl(null);
+                      if (onImprovedImageChange) {
+                        onImprovedImageChange(null);
+                      }
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Modo cambiado',
+                        text: 'Haz clic en "Mejorar con IA" para aplicar el nuevo estilo',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: '#1a1a1a',
+                        color: '#ffffff'
+                      });
+                    }
+                  }}
                   className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'aspirational'
                       ? 'bg-purple-500/30 border-purple-400 text-white'
@@ -1269,29 +1341,66 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     // Esperar un momento entre descargas
                     await new Promise(resolve => setTimeout(resolve, 500));
 
-                    // 2. Generar versión story 9:16 con IA (mejor composición)
+                    // 2. Generar versión story 9:16 (crop inteligente sin re-procesar)
                     Swal.update({
-                      html: 'Generando versión story 9:16 optimizada con IA...'
+                      html: 'Generando versión story 9:16 optimizada...'
                     });
 
-                    // Importar función de mejora
-                    const { enhanceUserImage } = await import('../services/geminiService');
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
                     
-                    // Generar versión story con IA
-                    const storyImageUrl = await enhanceUserImage(
-                      improvedImageUrl,
-                      realityMode,
-                      '9:16', // Forzar formato story
-                      studioRealityLevel // Usar mismo nivel de realidad
-                    );
+                    await new Promise((resolve, reject) => {
+                      img.onload = resolve;
+                      img.onerror = reject;
+                      img.src = improvedImageUrl;
+                    });
 
-                    // Descargar versión story
-                    const linkStory = document.createElement('a');
-                    linkStory.href = storyImageUrl;
-                    linkStory.download = `estudio56-mejorada-story-${Date.now()}.jpg`;
-                    document.body.appendChild(linkStory);
-                    linkStory.click();
-                    document.body.removeChild(linkStory);
+                    // Crear canvas para formato 9:16
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Dimensiones para 9:16 (1080x1920 para alta calidad)
+                    const targetWidth = 1080;
+                    const targetHeight = 1920;
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+
+                    // Calcular escala y posición para crop inteligente
+                    const sourceAspect = img.width / img.height;
+                    const targetAspect = targetWidth / targetHeight;
+                    
+                    let sx, sy, sWidth, sHeight;
+                    
+                    if (sourceAspect > targetAspect) {
+                      // Imagen más ancha que 9:16, crop horizontal centrado
+                      sHeight = img.height;
+                      sWidth = img.height * targetAspect;
+                      sx = (img.width - sWidth) / 2;
+                      sy = 0;
+                    } else {
+                      // Imagen más alta o igual, crop vertical centrado
+                      sWidth = img.width;
+                      sHeight = img.width / targetAspect;
+                      sx = 0;
+                      sy = (img.height - sHeight) / 2;
+                    }
+
+                    // Dibujar imagen recortada con alta calidad
+                    ctx?.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+
+                    // Convertir a blob y descargar
+                    canvas.toBlob((blob) => {
+                      if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const linkStory = document.createElement('a');
+                        linkStory.href = url;
+                        linkStory.download = `estudio56-mejorada-story-${Date.now()}.jpg`;
+                        document.body.appendChild(linkStory);
+                        linkStory.click();
+                        document.body.removeChild(linkStory);
+                        URL.revokeObjectURL(url);
+                      }
+                    }, 'image/jpeg', 0.95);
 
                     // Esperar a que termine la segunda descarga
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1299,7 +1408,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                     Swal.fire({
                       icon: 'success',
                       title: '¡Descargadas!',
-                      html: '✅ Formato original<br>✅ Formato story 9:16 optimizado',
+                      html: '✅ Formato original<br>✅ Formato story 9:16',
                       timer: 3000,
                       showConfirmButton: false,
                       background: '#1a1a1a',
