@@ -6,11 +6,12 @@ import { Handler } from '@netlify/functions';
 // ============================================
 
 // API Key de Fal.ai (desde variable de entorno)
-const FAL_API_KEY = process.env.FAL_API_KEY;
+// IMPORTANTE: Usar el mismo nombre que generate-with-fal.js para consistencia
+const FAL_API_KEY = process.env.FAL_AI_API_KEY;
 const FAL_MODEL = 'fal-ai/pika/v2/turbo/text-to-video';
 
 if (!FAL_API_KEY) {
-  throw new Error('FAL_API_KEY no está configurada en las variables de entorno');
+  throw new Error('FAL_AI_API_KEY no está configurada en las variables de entorno');
 }
 
 interface VideoGenerationRequest {
