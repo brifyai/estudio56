@@ -1754,9 +1754,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           <ImageComparisonSlider
             originalImage={uploadedImageUrl}
             improvedImage={improvedImageUrl}
-            realityLevel={studioRealityLevel}
-            onRealityLevelChange={onStudioRealityLevelChange}
-            onApplyChanges={onApplyStudioChanges}
             onDownload={() => {
               const link = document.createElement('a');
               link.href = improvedImageUrl;

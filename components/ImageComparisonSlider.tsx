@@ -4,9 +4,6 @@ interface ImageComparisonSliderProps {
   originalImage: string;
   improvedImage: string;
   onDownload?: () => void;
-  realityLevel?: number;
-  onRealityLevelChange?: (level: number) => void;
-  onApplyChanges?: () => void;
 }
 
 /**
@@ -16,10 +13,7 @@ interface ImageComparisonSliderProps {
 export const ImageComparisonSlider: React.FC<ImageComparisonSliderProps> = ({
   originalImage,
   improvedImage,
-  onDownload,
-  realityLevel = 1.5,
-  onRealityLevelChange,
-  onApplyChanges
+  onDownload
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50); // Posición del slider (0-100%)
   const [isDragging, setIsDragging] = useState(false);
@@ -152,59 +146,6 @@ export const ImageComparisonSlider: React.FC<ImageComparisonSliderProps> = ({
             </svg>
             <span>Descargar imagen mejorada</span>
           </button>
-        </div>
-      )}
-
-      {/* Regulador de Transformación */}
-      {onRealityLevelChange && (
-        <div className="mt-8 max-w-md mx-auto">
-          <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-bold text-white uppercase tracking-wide">
-                Nivel de Transformación
-              </label>
-              <span className="text-lg text-white font-bold">{realityLevel}★</span>
-            </div>
-            <input
-              type="range"
-              min="0.5"
-              max="5.0"
-              step="0.5"
-              value={realityLevel}
-              onChange={(e) => onRealityLevelChange(parseFloat(e.target.value))}
-              className="w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((realityLevel - 0.5) / 4.5) * 100}%, rgba(255,255,255,0.1) ${((realityLevel - 0.5) / 4.5) * 100}%)`
-              }}
-            />
-            <div className="grid grid-cols-5 text-[10px] text-white/50 mt-2">
-              <span className="text-left">Sutil</span>
-              <span className="text-center">Moderado</span>
-              <span className="text-center">Notable</span>
-              <span className="text-center">Fuerte</span>
-              <span className="text-right">Máximo</span>
-            </div>
-            <div className="text-sm text-white/60 mt-3 text-center">
-              {realityLevel <= 1.5 && 'Mejora conservadora - Mantiene la identidad de tu foto'}
-              {realityLevel > 1.5 && realityLevel <= 2.5 && 'Mejora notable - Cambios visibles pero controlados'}
-              {realityLevel > 2.5 && realityLevel <= 3.5 && 'Transformación visible - Cambios significativos'}
-              {realityLevel > 3.5 && realityLevel <= 4.5 && 'Transformación fuerte - Cambios dramáticos'}
-              {realityLevel > 4.5 && 'Transformación máxima - Resultado completamente profesional'}
-            </div>
-            
-            {/* Botón Aplicar Cambios */}
-            {onApplyChanges && (
-              <button
-                onClick={onApplyChanges}
-                className="w-full mt-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all text-sm flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Aplicar cambios</span>
-              </button>
-            )}
-          </div>
         </div>
       )}
     </div>

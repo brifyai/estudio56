@@ -2796,53 +2796,34 @@ export const enhanceUserImage = async (
   imageDataUrl: string,
   realityMode: 'realist' | 'aspirational' | 'studio' = 'studio',
   aspectRatio: AspectRatio = '1:1',
-  realityLevel: number = 1.5 // NEW: Nivel de transformación (0.5 = sutil, 5.0 = máximo, default 1.5 - conservador)
+  realityLevel: number = 1.5 // Parámetro mantenido por compatibilidad pero no se usa
 ): Promise<string> => {
   console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen con Fal.ai Clarity Upscaler...");
   console.log("📸 Modo de realismo:", realityMode);
-  console.log("🎚️ Nivel de realidad:", realityLevel);
 
   try {
     // Importar el modo de estilo correspondiente
     const { REALITY_MODES } = await import('../src/constants/promptModifiers');
     const styleModifier = REALITY_MODES[realityMode];
 
-    // Mapear realityLevel (0.5-5.0★) a parámetros de Clarity Upscaler
-    // creativity: qué tan creativo puede ser (0-1)
-    // resemblance: qué tanto se parece al original (0-1)
-    // 
-    // ESTRATEGIA:
-    // - Niveles bajos (0.5-2.0★): Alta resemblance, baja creativity = conservador
-    // - Niveles medios (2.5-3.5★): Balance entre resemblance y creativity
-    // - Niveles altos (4.0-5.0★): Baja resemblance, alta creativity = transformación
-    
-    const parameterMap: Record<number, { creativity: number; resemblance: number }> = {
-      0.5: { creativity: 0.20, resemblance: 0.85 }, // Máxima fidelidad
-      1.0: { creativity: 0.25, resemblance: 0.80 },
-      1.5: { creativity: 0.30, resemblance: 0.75 }, // DEFAULT - Conservador
-      2.0: { creativity: 0.35, resemblance: 0.70 },
-      2.5: { creativity: 0.40, resemblance: 0.65 }, // Balance
-      3.0: { creativity: 0.45, resemblance: 0.60 },
-      3.5: { creativity: 0.50, resemblance: 0.55 },
-      4.0: { creativity: 0.60, resemblance: 0.45 },
-      4.5: { creativity: 0.70, resemblance: 0.35 },
-      5.0: { creativity: 0.80, resemblance: 0.25 }  // Máxima transformación
+    // VALORES FIJOS ULTRA CONSERVADORES
+    // Después de testing, estos valores producen el mejor resultado sin cambiar la imagen
+    const params = {
+      creativity: 0.15,    // MUY bajo = casi no cambia nada
+      resemblance: 0.90    // MUY alto = máxima fidelidad al original
     };
     
-    const params = parameterMap[realityLevel] || parameterMap[1.5];
-    console.log("💪 Parámetros calculados:", params);
+    console.log("💪 Parámetros ULTRA CONSERVADORES:", params);
 
-    // Prompt para Clarity Upscaler
+    // Prompt minimalista para Clarity Upscaler
     const enhancementPrompt = `
       ${styleModifier}
       
-      Enhance image quality: improve sharpness, clarity, lighting, and color balance.
-      Maintain original composition and content.
-      Professional photography quality.
+      High quality, sharp, clear.
+      Preserve original composition and content exactly.
       
-      CRITICAL: Preserve perfect human anatomy - hands with exactly 5 fingers each, natural body proportions, realistic limbs and joints.
-      Maintain accurate facial features and skin texture.
-      Keep all human elements photorealistic and anatomically correct.
+      CRITICAL: Preserve perfect human anatomy and skin tones.
+      Maintain accurate facial features and natural skin texture.
     `.replace(/\s+/g, ' ').trim();
     
     console.log("📝 Prompt para Clarity Upscaler:", enhancementPrompt.substring(0, 150) + '...');
@@ -2856,10 +2837,10 @@ export const enhanceUserImage = async (
         creativity: params.creativity,
         resemblance: params.resemblance,
         upscaleFactor: 2,
-        guidanceScale: 4,
-        numInferenceSteps: 18,
+        guidanceScale: 3.5,  // Reducido de 4 a 3.5 para menos cambios
+        numInferenceSteps: 15, // Reducido de 18 a 15 para menos procesamiento
         prompt: enhancementPrompt,
-        negativePrompt: '(worst quality, low quality, normal quality:2), blurry, distorted, deformed, text, watermark, logo, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions',
+        negativePrompt: '(worst quality, low quality, normal quality:2), blurry, distorted, deformed, text, watermark, logo, different skin tone, changed face, altered features, modified composition',
         seed: Math.floor(Math.random() * 1000000)
       }
     );
