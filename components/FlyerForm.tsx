@@ -730,7 +730,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       {/* 1. ENTRADA UNIFICADA - MODO MAGIA */}
       <div className="space-y-4">
          <div className="text-center">
-             <h2 className="text-xl font-bold text-white mb-2">✨ Crea tu Diseño</h2>
+             <h2 className="text-xl font-bold text-white mb-2 flex items-center justify-center gap-2">
+               <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+               </svg>
+               Crea tu Diseño
+             </h2>
              <p className="text-sm text-white/70">Pega una URL o describe tu negocio</p>
          </div>
          
@@ -785,9 +790,23 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
              <button
                onClick={handleAnalyzeUrl}
                disabled={isAnalyzing}
-               className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-blue-500/30 cursor-pointer disabled:cursor-not-allowed"
+               className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-blue-500/30 cursor-pointer disabled:cursor-not-allowed flex items-center gap-2"
              >
-               {isAnalyzing ? '🔄 Analizando...' : '🔍 Analizar URL'}
+               {isAnalyzing ? (
+                 <>
+                   <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                   </svg>
+                   Analizando...
+                 </>
+               ) : (
+                 <>
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                   </svg>
+                   Analizar URL
+                 </>
+               )}
              </button>
            </div>
          )}
@@ -878,7 +897,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
               <div className="flex flex-col items-center gap-1 md:gap-2">
-                <div className="text-xl md:text-2xl">✨</div>
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                 <div className="text-xs md:text-sm font-bold">Imágenes</div>
                 <div className="text-[8px] md:text-[10px] text-white/60">Generar diseño</div>
               </div>
@@ -900,7 +921,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
               <div className="flex flex-col items-center gap-1 md:gap-2">
-                <div className="text-xl md:text-2xl">🎬</div>
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
                 <div className="text-xs md:text-sm font-bold">Video</div>
                 <div className="text-[8px] md:text-[10px] text-white/60">Motion graphics</div>
               </div>
@@ -923,7 +946,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
               <div className="flex flex-col items-center gap-1 md:gap-2">
-                <div className="text-xl md:text-2xl">📸</div>
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
                 <div className="text-xs md:text-sm font-bold">Estudio</div>
                 <div className="text-[8px] md:text-[10px] text-white/60">Mejora tu foto</div>
               </div>
@@ -946,7 +972,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
             >
               <div className="flex flex-col items-center gap-1 md:gap-2">
-                <div className="text-xl md:text-2xl">🎨</div>
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                </svg>
                 <div className="text-xs md:text-sm font-bold">Story Art</div>
                 <div className="text-[8px] md:text-[10px] text-white/60">7 Estilos Únicos</div>
               </div>
@@ -966,23 +994,29 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setRealityMode('realist')}
-                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'realist'
                       ? 'bg-blue-500/30 border-blue-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
                   }`}
                 >
-                  🏪 Local / Realista
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Local / Realista
                 </button>
                 <button
                   onClick={() => setRealityMode('aspirational')}
-                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'aspirational'
                       ? 'bg-purple-500/30 border-purple-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
                   }`}
                 >
-                  ✨ Premium / Lujo
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  Premium / Lujo
                 </button>
               </div>
               <div className="text-[10px] text-white/50">
@@ -1008,7 +1042,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <div className="text-4xl">📷</div>
                 <div className="text-white text-sm">Sube tu imagen de producto</div>
                 <div className="text-white/50 text-xs">JPG, PNG - Máx 10MB</div>
-                <div className="text-green-400 text-xs mt-2">✨ La mejoraremos con IA</div>
+                <div className="text-green-400 text-xs mt-2 flex items-center justify-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  La mejoraremos con IA
+                </div>
               </label>
             </div>
           </div>
@@ -1023,23 +1062,29 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setRealityMode('realist')}
-                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'realist'
                       ? 'bg-blue-500/30 border-blue-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
                   }`}
                 >
-                  🏪 Local / Realista
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Local / Realista
                 </button>
                 <button
                   onClick={() => setRealityMode('aspirational')}
-                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     realityMode === 'aspirational'
                       ? 'bg-purple-500/30 border-purple-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
                   }`}
                 >
-                  ✨ Premium / Lujo
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  Premium / Lujo
                 </button>
               </div>
             </div>
