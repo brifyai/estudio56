@@ -766,7 +766,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                    // Usar el handler del padre para limpiar análisis automático
                    onClearInput?.();
                  }}
-                 className="absolute top-3 right-3 text-[10px] text-white/30 hover:text-white/50 transition-colors bg-black/40 rounded px-2 py-1"
+                 className="absolute top-3 right-3 text-[10px] text-white/30 hover:text-white/50 transition-colors bg-black/40 rounded px-2 py-1 cursor-pointer"
                >
                  ✕ Limpiar
                </button>
@@ -785,7 +785,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
              <button
                onClick={handleAnalyzeUrl}
                disabled={isAnalyzing}
-               className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-blue-500/30"
+               className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-blue-500/30 cursor-pointer disabled:cursor-not-allowed"
              >
                {isAnalyzing ? '🔄 Analizando...' : '🔍 Analizar URL'}
              </button>
@@ -799,7 +799,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           <div className="space-y-3">
             <div className="flex justify-between items-end">
                 <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Estilo</label>
-                <button onClick={onOpenGallery} className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors">Cambiar</button>
+                <button onClick={onOpenGallery} className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors cursor-pointer">Cambiar</button>
             </div>
             
             <div
@@ -828,7 +828,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   {/* 1:1 - Universal */}
                   <button
                       onClick={() => setAspectRatio('1:1')}
-                      className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                      className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                       ${aspectRatio === '1:1'
                           ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-blue-400/50 text-white shadow-lg'
                           : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
@@ -845,7 +845,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   {/* 9:16 - Stories */}
                   <button
                       onClick={() => setAspectRatio('9:16')}
-                      className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden
+                      className={`p-3 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                       ${aspectRatio === '9:16'
                           ? 'bg-gradient-to-br from-pink-500/20 to-red-500/20 border-pink-400/50 text-white shadow-lg'
                           : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
@@ -872,7 +872,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 clearUploadedImage();
                 setIsStoryArtModeActive(false);
               }}
-              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                 ${mediaType === 'image' && !uploadedImage && mediaType !== 'product_study' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
@@ -894,7 +894,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 clearUploadedImage();
                 setIsStoryArtModeActive(false);
               }}
-              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                 ${mediaType === 'video' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
@@ -917,7 +917,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 setImprovedImageUrl(null);
                 setIsStoryArtModeActive(false);
               }}
-              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                 ${mediaType === 'product_study' && !isStoryArtModeActive
                   ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
@@ -940,7 +940,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 setAspectRatio('9:16'); // Forzar 9:16
                 clearUploadedImage();
               }}
-              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden
+              className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                 ${isStoryArtModeActive
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 text-white shadow-lg'
                   : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
@@ -966,7 +966,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setRealityMode('realist')}
-                  className={`p-2 rounded-lg border text-xs transition-all ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
                     realityMode === 'realist'
                       ? 'bg-blue-500/30 border-blue-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
@@ -976,7 +976,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 </button>
                 <button
                   onClick={() => setRealityMode('aspirational')}
-                  className={`p-2 rounded-lg border text-xs transition-all ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
                     realityMode === 'aspirational'
                       ? 'bg-purple-500/30 border-purple-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
@@ -1023,7 +1023,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setRealityMode('realist')}
-                  className={`p-2 rounded-lg border text-xs transition-all ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
                     realityMode === 'realist'
                       ? 'bg-blue-500/30 border-blue-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
@@ -1033,7 +1033,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 </button>
                 <button
                   onClick={() => setRealityMode('aspirational')}
-                  className={`p-2 rounded-lg border text-xs transition-all ${
+                  className={`p-2 rounded-lg border text-xs transition-all cursor-pointer ${
                     realityMode === 'aspirational'
                       ? 'bg-purple-500/30 border-purple-400 text-white'
                       : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
@@ -1048,7 +1048,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">📸 Tu Foto</label>
               <button
                 onClick={clearUploadedImage}
-                className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+                className="text-[10px] text-red-400 hover:text-red-300 transition-colors cursor-pointer"
               >
                 ✕ Eliminar
               </button>
@@ -1072,7 +1072,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             <button
               onClick={handleImproveUploadedImage}
               disabled={isImprovingImage}
-              className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2
+              className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed
                 ${isImprovingImage
                   ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
                   : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-400 hover:to-emerald-400'}`}
@@ -1340,7 +1340,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 onSubmit();
               }}
               disabled={isLoading || !canGenerate}
-              className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group
+              className={`w-full py-3 md:py-4 rounded-xl font-bold text-sm tracking-wide shadow-2xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3 relative overflow-hidden group cursor-pointer disabled:cursor-not-allowed
               ${!canGenerate 
                   ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
                   : isStoryArtModeActive

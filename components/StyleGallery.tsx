@@ -155,7 +155,7 @@ export const StyleGallery: React.FC<StyleGalleryProps> = ({ isOpen, onClose, onS
                   <div className="flex flex-col items-center justify-center h-full text-white/20 pb-20">
                       <span className="text-6xl mb-4 opacity-50">🔭</span>
                       <p className="font-mono text-lg">Sin resultados para "{searchQuery}"</p>
-                      <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 hover:underline">Limpiar búsqueda</button>
+                      <button onClick={() => setSearchQuery('')} className="mt-4 text-blue-500 hover:underline cursor-pointer">Limpiar búsqueda</button>
                   </div>
               )}
           </div>

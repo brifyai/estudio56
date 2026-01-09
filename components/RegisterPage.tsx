@@ -254,7 +254,7 @@ Serás redirigido al login.`);
         
         {/* Header */}
         <div className="text-center mb-8">
-            <button onClick={() => navigate('/')} className="absolute top-0 left-0 text-white/30 hover:text-white transition-colors text-sm">
+            <button onClick={() => navigate('/')} className="absolute top-0 left-0 text-white/30 hover:text-white transition-colors text-sm cursor-pointer">
                 ← Volver
             </button>
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">

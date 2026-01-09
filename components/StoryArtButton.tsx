@@ -176,7 +176,7 @@ export function StoryArtButton({
           {/* Botón Flyer Tradicional */}
           <button
             type="button"
-            className={`content-type-btn ${contentType === 'flyer' ? 'active' : ''}`}
+            className={`content-type-btn ${contentType === 'flyer' ? 'active' : ''} cursor-pointer`}
             onClick={() => handleContentTypeChange('flyer')}
             disabled={disabled}
           >
@@ -188,7 +188,7 @@ export function StoryArtButton({
           {/* Botón STORY ART (9:16) - 7 ESTILOS VISUALES ÚNICOS */}
           <button
             type="button"
-            className={`content-type-btn story-art-btn ${contentType === 'story_art' ? 'active' : ''}`}
+            className={`content-type-btn story-art-btn ${contentType === 'story_art' ? 'active' : ''} cursor-pointer`}
             onClick={() => handleContentTypeChange('story_art')}
             disabled={disabled}
           >
@@ -200,7 +200,7 @@ export function StoryArtButton({
           {/* Botón Reel Cover */}
           <button
             type="button"
-            className={`content-type-btn ${contentType === 'reel_cover' ? 'active' : ''}`}
+            className={`content-type-btn ${contentType === 'reel_cover' ? 'active' : ''} cursor-pointer`}
             onClick={() => handleContentTypeChange('reel_cover')}
             disabled={disabled}
           >
@@ -245,14 +245,14 @@ export function StoryArtButton({
             <div className="info-actions">
               <button
                 type="button"
-                className="info-toggle-style"
+                className="info-toggle-style cursor-pointer"
                 onClick={() => setShowStyleSelector(!showStyleSelector)}
               >
                 {showStyleSelector ? 'Ocultar estilos' : '🎭 Ver estilos visuales'}
               </button>
               <button
                 type="button"
-                className="info-toggle"
+                className="info-toggle cursor-pointer"
                 onClick={() => setShowRubros(!showRubros)}
               >
                 {showRubros ? 'Ocultar' : 'Ver otros rubros'}
@@ -285,7 +285,7 @@ export function StoryArtButton({
                   <button
                     key={rubro.id}
                     type="button"
-                    className={`rubro-item ${rubro.id === industryId ? 'active' : ''}`}
+                    className={`rubro-item ${rubro.id === industryId ? 'active' : ''} cursor-pointer`}
                     onClick={() => {
                       setShowRubros(false);
                     }}

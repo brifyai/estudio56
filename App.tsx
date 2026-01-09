@@ -2362,7 +2362,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       {/* Mobile Menu Button */}
                       <button
                         onClick={() => setShowMobileMenu(true)}
-                        className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                        className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -2377,7 +2377,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                   <div className="flex items-center gap-2">
                       <button
                           onClick={() => window.location.href = '/perfil'}
-                          className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors"
+                          className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded transition-colors cursor-pointer"
                           title="Ver perfil de cuenta"
                       >
                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2418,7 +2418,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                         handleGenerate();
                       }}
                       disabled={status.isLoading}
-                      className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-2"
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.001 0 01-15.357-2m15.357 2H15" />
@@ -2508,7 +2508,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
             <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
               <button
                 onClick={() => setShowRealityComparator(false)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
