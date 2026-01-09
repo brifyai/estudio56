@@ -206,6 +206,13 @@ async function handleCheckStatus(request, env) {
   // Construir URL de status
   const modelPath = model === 'hd' ? MODELS.UPSCALE : MODELS.DRAFT;
   const statusUrl = `${FAL_AI_BASE_URL}/${modelPath}/requests/${taskId}/status`;
+  
+  console.log('[Worker] Consultando estado:', {
+    taskId,
+    model,
+    modelPath,
+    statusUrl
+  });
 
   // Consultar estado
   const response = await fetch(statusUrl, {
@@ -215,8 +222,28 @@ async function handleCheckStatus(request, env) {
       'Content-Type': 'application/json'
     }
   });
+  
+  console.log('[Worker] Respuesta de fal.ai:', {
+    status: response.status,
+    statusText: response.statusText,
+    headers: Object.fromEntries(response.headers)
+  });
 
-  const data = await response.json();
+  // Leer el body una sola vez como texto
+  const responseText = await response.text();
+  
+  // Intentar parsear como JSON
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (parseError) {
+    // Si no es JSON, probablemente es HTML (error de fal.ai)
+    console.error('Error parseando respuesta de fal.ai:', responseText.substring(0, 200));
+    return jsonResponse({ 
+      error: `Error parseando respuesta de fal.ai: ${response.status}`,
+      details: responseText.substring(0, 200)
+    }, 500);
+  }
 
   if (!response.ok) {
     return jsonResponse({ 
