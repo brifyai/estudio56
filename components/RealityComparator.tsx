@@ -261,19 +261,7 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
 
   return (
     <div className="relative flex flex-col items-center">
-      {/* Header con solo botón cerrar */}
-      <div className="flex items-center justify-end w-full mb-4">
-        {/* Botón cerrar */}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] transition-colors"
-          >
-            ✕
-          </button>
-        )}
-      </div>
-      <p className="text-white/50 text-xs text-center">
+      <p className="text-white text-xs text-center mb-4">
         Arrastra para comparar las diferencias
       </p>
 
