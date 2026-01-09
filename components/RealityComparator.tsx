@@ -169,7 +169,9 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
           </div>
           
           <div className="text-center relative z-10">
-            <span className="text-3xl mb-2 block">🎨</span>
+            <svg className="w-12 h-12 mx-auto mb-2 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            </svg>
             <span className="text-white/50 text-xs block mb-3">Variación no generada</span>
             
             {onGenerate && (
@@ -238,7 +240,9 @@ const RealityComparator: React.FC<RealityComparatorProps> = ({
   if (!leftVariation && !rightVariation) {
     return (
       <div className="p-6 bg-black/40 rounded-[1.5rem] border border-white/10 text-center">
-        <span className="text-3xl mb-3 block">🔍</span>
+        <svg className="w-12 h-12 mx-auto mb-3 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
         <p className="text-white/60 text-sm">
           Genera variaciones primero para comparar
         </p>
