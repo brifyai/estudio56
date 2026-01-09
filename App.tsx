@@ -2352,7 +2352,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
       `}>
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
           <div className={`
-            hidden lg:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col overflow-hidden shadow-2xl relative
+            hidden lg:flex w-full h-full min-h-0 rounded-[2rem] border border-white/5 bg-gradient-to-b from-[#0A0A0A] to-[#050505] flex-col shadow-2xl relative
           `}>
               
               {/* Top Bar */}
@@ -2388,7 +2388,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
              </header>
 
             {/* Viewport */}
-            <div className="flex-1 overflow-hidden relative flex items-start justify-start bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 w-full pt-4">
+            <div className="flex-1 overflow-y-auto relative flex items-start justify-start bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 w-full pt-4">
                 {/* Grid Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
