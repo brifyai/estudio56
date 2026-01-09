@@ -317,7 +317,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
               className={`w-full py-3 rounded-lg border transition-all text-sm font-bold ${
                 selectedPlanId === 'GRATIS'
                   ? 'bg-green-500 text-black border-green-500 cursor-default'
-                  : 'border-white/20 hover:bg-white hover:text-black'
+                  : 'border-white/20 hover:bg-white hover:text-black cursor-pointer'
               }`}
             >
               {selectedPlanId === 'GRATIS' ? '✓ Seleccionado' : 'Probar Ahora'}
@@ -351,7 +351,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700'
                   : selectedPlanId === 'ESTOY PARTIENDO'
                     ? 'bg-blue-500 text-black border-blue-500 cursor-default'
-                    : 'border-white/20 hover:bg-white hover:text-black'
+                    : 'border-white/20 hover:bg-white hover:text-black cursor-pointer'
               }`}
             >
               {isAdminUser ? 'Admin' : selectedPlanId === 'ESTOY PARTIENDO' ? 'Pagando...' : 'Elegir este'}
@@ -385,7 +385,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700'
                   : selectedPlanId === 'JEFE PYME'
                     ? 'bg-purple-500 text-black border-purple-500 cursor-default'
-                    : 'border-white/20 hover:bg-white hover:text-black'
+                    : 'border-white/20 hover:bg-white hover:text-black cursor-pointer'
               }`}
             >
               {isAdminUser ? 'Admin' : selectedPlanId === 'JEFE PYME' ? 'Pagando...' : 'LO QUIERO'}
@@ -421,7 +421,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose, onS
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed border-gray-700'
                   : selectedPlanId === 'AGENCIA'
                     ? 'bg-green-500 text-black border-green-500 cursor-default'
-                    : 'bg-yellow-500 hover:bg-yellow-400 text-black'
+                    : 'bg-yellow-500 hover:bg-yellow-400 text-black cursor-pointer'
               }`}
             >
               {isAdminUser ? 'Admin' : selectedPlanId === 'AGENCIA' ? 'Pagando...' : 'CONTRATAR AGENCIA'}

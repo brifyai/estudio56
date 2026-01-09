@@ -209,7 +209,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
           <h2 className="text-lg font-bold text-white">Mis Marcas</h2>
           <button 
             onClick={onClose}
-            className="text-white/50 hover:text-white transition-colors"
+            className="text-white/50 hover:text-white transition-colors cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -247,7 +247,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
                       industry: ''
                     });
                   }}
-                  className="text-white/50 hover:text-white text-xs"
+                  className="text-white/50 hover:text-white text-xs cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -372,7 +372,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                className="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? 'Guardando...' : editingBrand ? 'Actualizar' : 'Crear Marca'}
               </button>
@@ -386,7 +386,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
                   <p className="text-white/70 text-sm mb-4">Aún no tienes marcas registradas</p>
                   <button
                     onClick={() => setShowForm(true)}
-                    className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition-colors cursor-pointer"
                   >
                     + Agregar tu primera marca
                   </button>
@@ -421,7 +421,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
                           {selectedBrand?.id !== brand.id && (
                             <button
                               onClick={() => handleSelectBrand(brand)}
-                              className="text-[8px] bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded transition-colors"
+                              className="text-[8px] bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded transition-colors cursor-pointer"
                             >
                               Seleccionar
                             </button>
@@ -470,20 +470,20 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
                         {!brand.is_default && (
                           <button
                             onClick={() => handleSetDefault(brand.id)}
-                            className="text-[8px] text-white/50 hover:text-yellow-300 transition-colors"
+                            className="text-[8px] text-white/50 hover:text-yellow-300 transition-colors cursor-pointer"
                           >
                             ⭐ Predeterminada
                           </button>
                         )}
                         <button
                           onClick={() => handleEdit(brand)}
-                          className="text-[8px] text-white/50 hover:text-white transition-colors"
+                          className="text-[8px] text-white/50 hover:text-white transition-colors cursor-pointer"
                         >
                           ⚙️ Editar
                         </button>
                         <button
                           onClick={() => handleDelete(brand.id)}
-                          className="text-[8px] text-white/50 hover:text-red-300 transition-colors ml-auto"
+                          className="text-[8px] text-white/50 hover:text-red-300 transition-colors ml-auto cursor-pointer"
                         >
                           🗑️ Eliminar
                         </button>
@@ -501,7 +501,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ isOpen, onClose, onBrand
           <div className="p-4 border-t border-white/10">
             <button
               onClick={() => setShowForm(true)}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>+</span>
               <span>Agregar nueva marca</span>

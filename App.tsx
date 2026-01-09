@@ -2347,8 +2347,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
 
       {/* CENTER: CANVAS - Solo visible en landscape (lg) */}
       <main className={`
-        flex-1 flex-col relative z-10 p-1 lg:p-2 overflow-hidden w-full hidden lg:flex
-        items-stretch /* Esto iguala las alturas con el sidebar */
+        flex-1 flex-col relative z-10 p-1 lg:p-2 overflow-hidden w-full hidden lg:flex h-screen
         pr-2 /* Espacio derecho consistente con calendarios */
       `}>
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
