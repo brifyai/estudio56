@@ -349,10 +349,12 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
                                 const prompt = await generateEventPrompt(selectedBrand, event.name, eventDate);
                                 onGenerateForEvent(event, prompt);
                               }}
-                              className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors"
+                              className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors flex items-center justify-center cursor-pointer"
                               title="Generar oferta para este evento"
                             >
-                              ✨
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                              </svg>
                             </button>
                           )}
                         </div>
@@ -416,10 +418,12 @@ export const CommercialCalendar: React.FC<CommercialCalendarProps> = ({ onGenera
                         const prompt = await generateEventPrompt(selectedBrand, event.name, eventDate);
                         onGenerateForEvent(event, prompt);
                       }}
-                      className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors"
+                      className="text-[8px] bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded transition-colors flex items-center justify-center cursor-pointer"
                       title="Generar oferta para este evento"
                     >
-                      ✨
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
                     </button>
                   )}
                 </div>

@@ -10,6 +10,10 @@ import {
   buildRealityPrompt,
   getRealityLevelValue 
 } from './realityMapper';
+import { 
+  getProgressiveElementsForIndustry, 
+  getForbiddenElementsForIndustry 
+} from './progressiveElementsByIndustry';
 
 /**
  * 🎚️ SERVICIO DE GESTIÓN DEL REGULADOR DE REALIDAD
@@ -418,8 +422,7 @@ export const buildPowerPromptWithReality = (
   const config = getRealityConfig(levelKey);
   const negativePrompt = getRealityConfig(stars).negative;
   
-  // 🎨 IMPORTAR función de elementos progresivos por industria
-  const { getProgressiveElementsForIndustry, getForbiddenElementsForIndustry } = require('./progressiveElementsByIndustry');
+  // 🎨 Obtener elementos progresivos por industria
   const progressiveElements = getProgressiveElementsForIndustry(levelKey, industryId);
   const forbiddenElements = getForbiddenElementsForIndustry(levelKey, industryId);
   
