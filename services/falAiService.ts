@@ -30,8 +30,8 @@ export const FAL_MODELS = {
   CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
 } as const;
 
-// Modelo para borradores y variaciones de realidad - Flux Dev para consistencia
-const DRAFT_MODEL = FAL_MODELS.FLUX_DEV;
+// Modelo para borradores y variaciones de realidad - Flux Schnell es más rápido (2-3s)
+const DRAFT_MODEL = FAL_MODELS.FLUX_SCHNELL;
 // Modelo principal para HD - Flux Dev img2img es más confiable y mantiene similitud
 const HD_MODEL = FAL_MODELS.FLUX_DEV_IMG2IMG;
 
