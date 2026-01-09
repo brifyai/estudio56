@@ -954,10 +954,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             {/* ESTUDIO DE PRODUCTO */}
             <button
               onClick={() => {
+                console.log('🎯 [ESTUDIO] Activando modo estudio...');
+                console.log('🎯 [ESTUDIO] uploadedImage antes:', uploadedImage ? 'EXISTE' : 'NULL');
+                console.log('🎯 [ESTUDIO] improvedImageUrl antes:', improvedImageUrl ? 'EXISTE' : 'NULL');
+                
                 setMediaType('product_study');
                 setUploadedImage(null);
                 setImprovedImageUrl(null);
                 setIsStoryArtModeActive(false);
+                
+                console.log('🎯 [ESTUDIO] Modo estudio activado');
+                console.log('🎯 [ESTUDIO] mediaType ahora:', 'product_study');
               }}
               className={`p-3 md:p-4 rounded-xl border-2 transition-all relative overflow-hidden cursor-pointer
                 ${mediaType === 'product_study' && !isStoryArtModeActive
@@ -1005,6 +1012,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         </div>
 
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
+        {console.log('🔍 [RENDER ESTUDIO] mediaType:', mediaType, 'uploadedImage:', uploadedImage ? 'EXISTE' : 'NULL')}
+        {console.log('🔍 [RENDER ESTUDIO] Condición:', mediaType === 'product_study' && !uploadedImage)}
         {mediaType === 'product_study' && !uploadedImage && (
           <div className="space-y-3">
             {/* SWITCH DE MODO DE REALISMO */}
@@ -1145,11 +1154,38 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <>
                   {console.log('🎨 [BADGE] Mostrando badge "Mejorada"')}
                   <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded z-10">
-                    ✓ Mejorada
+                    ✓ Mejorada con IA
                   </div>
                 </>
               )}
             </div>
+            
+            {/* Comparador antes/después */}
+            {improvedImageUrl && (
+              <div className="space-y-2">
+                <div className="text-[10px] text-white/70 text-center">
+                  Comparar con original
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <div className="text-[9px] text-white/50 text-center">Original</div>
+                    <img
+                      src={uploadedImage}
+                      alt="Original"
+                      className="w-full h-24 object-contain bg-black/20 rounded border border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[9px] text-green-400 text-center">Mejorada</div>
+                    <img
+                      src={improvedImageUrl}
+                      alt="Mejorada"
+                      className="w-full h-24 object-contain bg-black/20 rounded border border-green-500/30"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Botón para mejorar */}
             <button
