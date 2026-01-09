@@ -2503,10 +2503,10 @@ progressAlert.updateProgress(60, 'Renderizando...');
             onClick={() => setShowRealityComparator(false)}
           />
           <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-none lg:h-full">
-            {/* Botón cerrar - Flotante en esquina superior derecha, 36px arriba del borde */}
+            {/* Botón cerrar - Flotante en esquina superior derecha, 64px arriba del borde */}
             <button
               onClick={() => setShowRealityComparator(false)}
-              className="absolute -top-9 right-2 z-20 w-8 h-8 flex items-center justify-center bg-red-500/80 hover:bg-red-500 rounded-full transition-colors cursor-pointer shadow-lg"
+              className="absolute -top-16 right-2 z-20 w-8 h-8 flex items-center justify-center bg-red-500/80 hover:bg-red-500 rounded-full transition-colors cursor-pointer shadow-lg"
               title="Cerrar comparación"
             >
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
