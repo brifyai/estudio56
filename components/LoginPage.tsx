@@ -143,7 +143,7 @@ export const LoginPage: React.FC = () => {
                 <p className="text-white/40 text-xs mb-2">¿Aún no tienes cuenta?</p>
                 <button
                     onClick={() => navigate('/registrarse')}
-                    className="text-blue-400 hover:text-blue-300 text-sm font-bold transition-colors"
+                    className="text-blue-400 hover:text-blue-300 text-sm font-bold transition-colors cursor-pointer"
                 >
                     Crear cuenta nueva →
                 </button>

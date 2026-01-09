@@ -379,7 +379,7 @@ Serás redirigido al login.`);
                 <p className="text-white/40 text-xs mb-2">¿Ya eres parte del estudio?</p>
                 <button
                     onClick={() => navigate('/iniciar-sesion')}
-                    className="text-green-400 hover:text-green-300 text-sm font-bold transition-colors"
+                    className="text-green-400 hover:text-green-300 text-sm font-bold transition-colors cursor-pointer"
                 >
                     Iniciar Sesión →
                 </button>
