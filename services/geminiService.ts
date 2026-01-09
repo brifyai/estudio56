@@ -2801,39 +2801,8 @@ export const enhanceUserImage = async (
   console.log("📸 Modo de realismo:", realityMode);
 
   try {
-    // Paso 1: Análisis con Gemini Vision (solo para entender la imagen)
-    console.log("🔍 Paso 1: Analizando imagen con Gemini Vision...");
-    const ai = getAiClient();
-    const base64Data = imageDataUrl.split(',')[1];
-    
-    const analysisResponse = await ai.models.generateContent({
-      model: 'gemini-1.5-pro',
-      contents: {
-        parts: [
-          { 
-            text: `Analyze this product image and describe:
-            1. What is the main product/subject?
-            2. What are its key colors and materials?
-            3. What is its shape and form?
-            4. What type of product is it?
-            
-            Provide a concise description (max 100 words) that captures the essence of the product.`
-          },
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: base64Data
-            }
-          }
-        ]
-      }
-    });
-    
-    const productDescription = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Professional product';
-    console.log("✅ Análisis completado:", productDescription.substring(0, 100) + '...');
-
-    // Paso 2: Construir el prompt para Fal.ai
-    console.log("🔨 Paso 2: Construyendo prompt para Fal.ai...");
+    // Paso 1: Construir el prompt para Fal.ai (sin análisis de Gemini)
+    console.log("🔨 Paso 1: Construyendo prompt para Fal.ai...");
     
     // Importar el modo de estilo correspondiente
     const { REALITY_MODES } = await import('../src/constants/promptModifiers');
@@ -2841,20 +2810,21 @@ export const enhanceUserImage = async (
 
     // Prompt optimizado para Fal.ai Flux Dev img2img
     const regenerationPrompt = `
-      ${productDescription}
+      Professional product photography.
       
       ${styleModifier}
       
-      Professional product photography, ${aspectRatio} format.
+      ${aspectRatio} format.
       The product is the clear focal point, centered composition.
       High-quality lighting and professional presentation.
+      Enhance quality while maintaining the exact product identity.
       NO text, NO logos, NO watermarks.
     `.replace(/\s+/g, ' ').trim();
     
     console.log("📝 Prompt para Fal.ai:", regenerationPrompt.substring(0, 150) + '...');
 
-    // Paso 3: Generar con Fal.ai Flux Dev img2img
-    console.log("✨ Paso 3: Generando imagen mejorada con Fal.ai Flux Dev img2img...");
+    // Paso 2: Generar con Fal.ai Flux Dev img2img
+    console.log("✨ Paso 2: Generando imagen mejorada con Fal.ai Flux Dev img2img...");
     
     const falResult = await generateHDWithImg2Img(
       regenerationPrompt,
