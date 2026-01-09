@@ -21,6 +21,7 @@ export interface VideoGenerationOptions {
 export interface VideoGenerationResult {
   videoUrl?: string;
   taskId?: string;
+  statusUrl?: string;
   status: 'processing' | 'complete' | 'error' | 'failed' | 'expired';
   error?: string;
   requestId?: string;
@@ -64,8 +65,10 @@ export const generateVideo = async (
     // Si es 202, la tarea está en proceso
     if (response.status === 202) {
       console.log('🔄 [Fal.ai Video] Video en proceso. Task ID:', data.taskId);
+      console.log('📊 [Fal.ai Video] Status URL recibida:', data.statusUrl);
       return {
         taskId: data.taskId,
+        statusUrl: data.statusUrl,
         status: 'processing',
         requestId: data.requestId
       };
@@ -153,8 +156,12 @@ export const generateVideoAndWait = async (
   }
 
   // Guardar statusUrl para usarlo en el polling
-  const statusUrl = (result as any).statusUrl;
+  const statusUrl = result.statusUrl;
   console.log('📊 [Fal.ai Video] Status URL para polling:', statusUrl);
+  
+  if (!statusUrl) {
+    console.warn('⚠️ [Fal.ai Video] statusUrl no está disponible, se usará fallback');
+  }
 
   // Polling hasta que esté completo
   console.log('🔄 [Fal.ai Video] Iniciando polling...');
