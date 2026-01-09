@@ -28,6 +28,10 @@ export const FAL_MODELS = {
   SDXL_IMG2IMG: 'fal-ai/fast-sdxl/image-to-image',
   // Clarity Upscaler - Para mejorar resolución sin cambiar contenido
   CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
+  // Video - LTX-2-19B Text-to-Video con LoRA
+  VIDEO_TEXT_TO_VIDEO: 'fal-ai/ltx-2-19b/text-to-video/lora',
+  // Video - SeedVR Upscaler para mejorar resolución de videos
+  VIDEO_UPSCALER: 'fal-ai/seedvr/upscale/video',
 } as const;
 
 // Modelo para borradores y variaciones de realidad - Flux Schnell es más rápido (2-3s)
@@ -57,6 +61,23 @@ export interface FalImg2ImgResponse {
   success: boolean;
   imageUrl?: string;
   imageDataUrl?: string;
+  seed?: number;
+  error?: string;
+}
+
+export interface FalVideoRequest {
+  prompt: string;
+  quality: 'draft' | 'hd';
+  aspectRatio?: string;
+  videoUrl?: string; // Para upscale HD
+}
+
+export interface FalVideoResponse {
+  success: boolean;
+  taskId?: string;
+  statusUrl?: string;
+  status?: string;
+  videoUrl?: string;
   seed?: number;
   error?: string;
 }
@@ -716,4 +737,178 @@ export const getFalAiStatus = (): { configured: boolean; model: string } => {
     configured: isFalAiConfigured(),
     model: FAL_MODELS.SDXL_IMG2IMG,
   };
+};
+
+// ============================================
+// 🎬 VIDEO: GENERAR BORRADOR (480p)
+// ============================================
+
+/**
+ * Genera un video borrador en 480p usando LTX-2-19B
+ * Rápido y económico para iteración
+ */
+export const generateDraftVideo = async (
+  prompt: string,
+  options: {
+    aspectRatio?: AspectRatio;
+  } = {}
+): Promise<FalVideoResponse> => {
+  const { aspectRatio = '9:16' } = options;
+
+  console.log('🎬 [fal.ai Video] Generando borrador 480p...');
+  console.log(`📝 [fal.ai Video] Prompt: ${prompt.substring(0, 100)}...`);
+  console.log(`📐 [fal.ai Video] Aspect Ratio: ${aspectRatio}`);
+
+  try {
+    const response = await fetch('/.netlify/functions/generate-video', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        quality: 'draft',
+        aspectRatio,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai Video] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`Error generando video: ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ [fal.ai Video] Tarea de borrador iniciada:', data.taskId);
+
+    return {
+      success: true,
+      taskId: data.taskId,
+      statusUrl: data.statusUrl,
+      status: data.status,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai Video] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido',
+    };
+  }
+};
+
+// ============================================
+// 🎨 VIDEO: UPSCALE A HD (1080p)
+// ============================================
+
+/**
+ * Upscale un video borrador a 1080p usando SeedVR
+ * Requiere URL del video borrador
+ */
+export const upscaleVideoToHD = async (
+  videoUrl: string
+): Promise<FalVideoResponse> => {
+  console.log('🎨 [fal.ai Video] Upscaling a HD 1080p...');
+  console.log(`📹 [fal.ai Video] Video URL: ${videoUrl.substring(0, 100)}...`);
+
+  try {
+    const response = await fetch('/.netlify/functions/generate-video', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        quality: 'hd',
+        videoUrl,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai Video] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`Error upscaling video: ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ [fal.ai Video] Tarea de upscale iniciada:', data.taskId);
+
+    return {
+      success: true,
+      taskId: data.taskId,
+      statusUrl: data.statusUrl,
+      status: data.status,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai Video] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido',
+    };
+  }
+};
+
+// ============================================
+// 🔄 VIDEO: POLLING DE ESTADO
+// ============================================
+
+/**
+ * Consulta el estado de una tarea de video
+ * Usar en loop hasta que status sea COMPLETED o FAILED
+ */
+export const checkVideoStatus = async (
+  taskId: string
+): Promise<FalVideoResponse> => {
+  console.log('🔄 [fal.ai Video] Consultando estado:', taskId);
+
+  try {
+    const response = await fetch('/.netlify/functions/check-video-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ taskId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai Video] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`Error consultando estado: ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    console.log('📊 [fal.ai Video] Estado:', data.status);
+
+    if (data.status === 'COMPLETED') {
+      console.log('✅ [fal.ai Video] Video completado:', data.videoUrl);
+      return {
+        success: true,
+        status: 'COMPLETED',
+        videoUrl: data.videoUrl,
+        seed: data.seed,
+      };
+    }
+
+    if (data.status === 'FAILED') {
+      console.error('❌ [fal.ai Video] Video falló:', data.error);
+      return {
+        success: false,
+        status: 'FAILED',
+        error: data.error || 'Error desconocido',
+      };
+    }
+
+    // IN_PROGRESS o IN_QUEUE
+    return {
+      success: true,
+      status: data.status,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai Video] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido',
+    };
+  }
 };

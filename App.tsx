@@ -48,6 +48,8 @@ import { RechargeFailurePage } from './components/RechargeFailurePage';
 import { RechargePendingPage } from './components/RechargePendingPage';
 import { PaymentHistory } from './components/PaymentHistory';
 import { supabase } from './services/supabaseService';
+import { showVideoProgressAlert } from './services/videoProgressAlert';
+import { generateDraftVideo, upscaleVideoToHD } from './services/falAiVideoWorkerService';
 import { getUserBrands, getDefaultBrand, Brand, generateEventPrompt } from './services/brandService';
 import { detectIndustryFromDescription } from './services/geminiService';
 import { enhancePrompt, generateFlyerImage, refineDescription, generatePersuasiveText, GeneratedImageResult } from './services/geminiService';
@@ -1358,21 +1360,16 @@ progressAlert.updateProgress(60, 'Renderizando...');
         // 🎚️ INICIALIZAR sceneId PARA REALITY SLIDER - useEffect separado
         // Esto garantiza que sceneId se setee cada vez que se genera una imagen
       } else {
-        // ✅ GENERACIÓN DE VIDEO CON ALIBABA CLOUD TEXT-TO-VIDEO (T2V)
+        // ✅ GENERACIÓN DE VIDEO CON FAL.AI (LTX-2-19B + SeedVR)
         const effectiveVideoStyleKey = videoStyleKey || 'video_retail_sale';
-progressAlert.updateProgress(60, 'Renderizando...');
         console.log('🎬 Generating video with aspectRatio:', aspectRatio, '| videoStyleKey:', effectiveVideoStyleKey);
         
-        // Importar el servicio de video
-        const { generateVideoAndWait } = await import('./services/vertexVideoService');
-        
         try {
-          // TEXT-TO-VIDEO: Generar video directamente desde prompt (sin imagen base)
-          console.log('🎬 Generando video con Alibaba Cloud TEXT-TO-VIDEO...');
-progressAlert.updateProgress(60, 'Renderizando...');
+          // TEXT-TO-VIDEO: Generar video directamente desde prompt
+          console.log('🎬 Generando video con fal.ai...');
+          progressAlert.updateProgress(50, 'Iniciando generación de video...');
           
           // IMPORTANTE: Remover cualquier mención de texto del prompt para videos
-          // Los videos NO deben tener texto superpuesto (se agrega después en la UI)
           const videoPrompt = enhancedPrompt
             .replace(/with text[^.]*\./gi, '.')
             .replace(/text overlay[^.]*\./gi, '.')
@@ -1386,43 +1383,54 @@ progressAlert.updateProgress(60, 'Renderizando...');
             .replace(/\s+/g, ' ')
             .trim();
           
-          console.log('📝 [Video] Prompt original length:', enhancedPrompt.length);
           console.log('📝 [Video] Prompt sin texto length:', videoPrompt.length);
           
-          const videoUrl = await generateVideoAndWait(
-            {
-              prompt: videoPrompt, // ← Usar prompt sin texto
-              // ← NO requiere imageUrl (T2V genera directamente desde prompt)
-              quality: imageQuality === 'draft' ? 'draft' : 'hd', // ← 'draft' (480P) o 'hd' (720P)
-              aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1',
-              duration: 5 // 5 segundos por defecto
-            },
-            (progress, message) => {
-progressAlert.updateProgress(60, 'Renderizando...');
-            }
-          );
+          // Cerrar alerta de progreso anterior
+          progressAlert.close();
           
-          console.log('✅ Video generado:', videoUrl.substring(0, 100) + '...');
+          // Iniciar generación de video
+          const result = await generateDraftVideo(videoPrompt, {
+            aspectRatio: aspectRatio as '9:16' | '16:9' | '1:1'
+          });
           
-          // Establecer el video generado
-          setImageUrl(videoUrl);
-          
-          if (imageQuality === 'draft') {
-            setDraftVideoUrl(videoUrl);
-          } else {
-            setHdVideoUrl(videoUrl);
+          if (!result.success || !result.taskId) {
+            throw new Error(result.error || 'Error iniciando generación de video');
           }
           
-          setIsDraft(imageQuality === 'draft');
-          
-          // Mostrar mensaje de éxito
-          estudioAlerts.success('Video generado', 'Video generado exitosamente. Nota: La URL expira en 24 horas.');
+          // Mostrar SweetAlert con progreso
+          await showVideoProgressAlert({
+            taskId: result.taskId,
+            quality: imageQuality === 'draft' ? 'draft' : 'hd',
+            onComplete: (videoUrl) => {
+              console.log('✅ Video generado:', videoUrl.substring(0, 100) + '...');
+              
+              // Establecer el video generado
+              setImageUrl(videoUrl);
+              
+              if (imageQuality === 'draft') {
+                setDraftVideoUrl(videoUrl);
+              } else {
+                setHdVideoUrl(videoUrl);
+              }
+              
+              setIsDraft(imageQuality === 'draft');
+              
+              // Mostrar mensaje de éxito
+              estudioAlerts.success('Video generado', 'Video generado exitosamente.');
+            },
+            onError: (error) => {
+              console.error('❌ Error generando video:', error);
+              estudioAlerts.error(`No se pudo generar el video: ${error}`);
+            }
+          });
           
         } catch (videoError: any) {
           console.error('❌ Error generando video:', videoError);
           
           // Fallback: Generar imagen estática si falla el video
           console.log('⚠️ Fallback: Generando imagen estática');
+          progressAlert.updateProgress(60, 'Generando imagen alternativa...');
+          
           const videoSeed = Math.floor(Math.random() * 2000000000);
           const imageResult = await generateFlyerImage(
             enhancedPrompt,
@@ -1443,11 +1451,12 @@ progressAlert.updateProgress(60, 'Renderizando...');
           }
           setIsDraft(imageQuality === 'draft');
           
+          progressAlert.updateProgress(100, '¡Completado!');
+          setTimeout(() => progressAlert.close(), 500);
+          
           estudioAlerts.warning(`No se pudo generar el video: ${videoError.message}. Se generó una imagen estática.`);
         }
       }
-      progressAlert.updateProgress(100, '¡Completado!');
-      setTimeout(() => progressAlert.close(), 500);
       console.log('🎉 Generation completed successfully');
     } catch (error: any) {
       console.error('❌ Generation failed:', error);

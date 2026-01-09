@@ -1,14 +1,16 @@
 import { Handler } from '@netlify/functions';
 
 // ============================================
-// FAL.AI - PIKA V2 TURBO TEXT-TO-VIDEO
-// TEXT-TO-VIDEO (T2V) - Genera video directamente desde prompt
+// FAL.AI - VIDEO GENERATION
+// BORRADOR: fal-ai/ltx-2-19b/text-to-video/lora (480p rápido)
+// HD: fal-ai/seedvr/upscale/video (upscale a 1080p)
 // ============================================
 
-// API Key de Fal.ai (desde variable de entorno)
-// IMPORTANTE: Usar el mismo nombre que generate-with-fal.js para consistencia
 const FAL_API_KEY = process.env.FAL_AI_API_KEY;
-const FAL_MODEL = 'fal-ai/pika/v2/turbo/text-to-video';
+
+// Modelos
+const DRAFT_MODEL = 'fal-ai/ltx-2-19b/text-to-video/lora';
+const UPSCALE_MODEL = 'fal-ai/seedvr/upscale/video';
 
 if (!FAL_API_KEY) {
   throw new Error('FAL_AI_API_KEY no está configurada en las variables de entorno');
@@ -19,6 +21,7 @@ interface VideoGenerationRequest {
   quality: 'draft' | 'hd';
   aspectRatio?: string;
   duration?: number;
+  videoUrl?: string; // Para upscale HD
 }
 
 export const handler: Handler = async (event) => {
@@ -34,131 +37,19 @@ export const handler: Handler = async (event) => {
 
   try {
     const body: VideoGenerationRequest = JSON.parse(event.body || '{}');
-    console.log('📝 [Fal.ai Video] Prompt recibido (primeros 100 chars):', (body.prompt || 'SIN PROMPT').substring(0, 100));
     console.log('🎯 [Fal.ai Video] Quality:', body.quality);
-    console.log('📐 [Fal.ai Video] AspectRatio:', body.aspectRatio);
     
-    if (!body.prompt) {
-      throw new Error("Falta parámetro requerido: prompt");
+    // FLUJO 1: BORRADOR (480p rápido)
+    if (body.quality === 'draft') {
+      return await generateDraftVideo(body);
     }
-
-    // Obtener resolución según calidad (string enum)
-    const resolution = body.quality === 'hd' ? '1080p' : '720p';
-    const duration = body.duration || 5; // 5 segundos por defecto
     
-    console.log('🎯 [Fal.ai Video] Modelo:', FAL_MODEL);
-    console.log('📐 [Fal.ai Video] Resolución:', resolution);
-    console.log('⏱️ [Fal.ai Video] Duración:', duration, 'segundos');
-
-    // Limpiar y sanitizar prompt
-    const maxPromptLength = 2000;
-    let cleanPrompt = body.prompt.slice(0, maxPromptLength).trim();
-    
-    console.log('📝 [Fal.ai Video] Prompt length:', cleanPrompt.length);
-    console.log('📝 [Fal.ai Video] Prompt:', cleanPrompt.substring(0, 200));
-
-    // URL para generación de video con Fal.ai
-    const url = `https://queue.fal.run/${FAL_MODEL}`;
-    console.log('🌐 [Fal.ai Video] URL:', url);
-
-    // Estructura del request para Pika v2 Turbo
-    // Documentación: https://fal.ai/models/fal-ai/pika/v2/turbo/text-to-video
-    const requestBody = {
-      prompt: cleanPrompt,
-      aspect_ratio: body.aspectRatio || '9:16',
-      resolution: resolution,  // "720p" o "1080p"
-      duration: duration
-    };
-
-    console.log('📤 [Fal.ai Video] Request body:', JSON.stringify(requestBody, null, 2));
-    console.log('⏳ [Fal.ai Video] Enviando petición a Fal.ai...');
-    
-    // Timeout de 120 segundos para la creación de la tarea
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-    
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Key ${FAL_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-    } catch (fetchError: any) {
-      clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
-        console.error('❌ [Fal.ai Video] Timeout: Fal.ai tardó más de 120 segundos');
-        throw new Error("Timeout: Fal.ai tardó más de 120 segundos");
-      }
-      throw fetchError;
+    // FLUJO 2: HD (upscale a 1080p)
+    if (body.quality === 'hd') {
+      return await upscaleVideoToHD(body);
     }
-
-    console.log('✅ [Fal.ai Video] Respuesta de Fal.ai recibida. Status:', response.status);
     
-    // Leer el texto de la respuesta primero
-    const responseText = await response.text();
-    console.log('📄 [Fal.ai Video] Respuesta raw (primeros 500 chars):', responseText.substring(0, 500));
-    
-    let data: any;
-    try {
-      data = JSON.parse(responseText);
-      console.log('📊 [Fal.ai Video] Respuesta keys:', Object.keys(data));
-    } catch (parseError) {
-      console.error('❌ [Fal.ai Video] Error parseando JSON:', parseError);
-      console.error('❌ [Fal.ai Video] Respuesta completa:', responseText);
-      throw new Error(`Error parseando respuesta de Fal.ai: ${responseText.substring(0, 200)}`);
-    }
-
-    if (!response.ok) {
-      console.error('❌ [Fal.ai Video] Error HTTP de Fal.ai:', response.status);
-      console.error('❌ [Fal.ai Video] Error details:', JSON.stringify(data, null, 2));
-      
-      const errorMessage = data.message || data.error || JSON.stringify(data);
-      
-      // Manejar errores específicos de Fal.ai
-      if (response.status === 401) {
-        throw new Error('API Key de Fal.ai inválida');
-      }
-      if (response.status === 429) {
-        throw new Error('Límite de cuota excedido en Fal.ai');
-      }
-      if (errorMessage.includes('inappropriate') || errorMessage.includes('content policy')) {
-        throw new Error('El contenido del prompt fue rechazado por filtros de seguridad. Intenta con una descripción más simple y profesional.');
-      }
-      
-      return { 
-        statusCode: response.status, 
-        body: JSON.stringify({
-          error: errorMessage,
-          details: data
-        })
-      };
-    }
-
-    // Fal.ai devuelve un request_id para polling
-    if (data.request_id) {
-      console.log('🔄 [Fal.ai Video] Tarea de video iniciada:', data.request_id);
-      console.log('📊 [Fal.ai Video] Status URL:', data.status_url);
-      
-      // Retornar el request_id para polling
-      return {
-        statusCode: 202,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          taskId: data.request_id,
-          statusUrl: data.status_url,
-          status: 'IN_QUEUE'
-        }),
-      };
-    }
-
-    console.error('❌ [Fal.ai Video] Estructura de respuesta inesperada:', JSON.stringify(data, null, 2));
-    throw new Error("Respuesta inesperada de Fal.ai - no se encontró request_id");
+    throw new Error('Quality debe ser "draft" o "hd"');
 
   } catch (error: any) {
     console.error('❌ [Fal.ai Video] Error fatal:', error.message);
@@ -172,3 +63,221 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+// ============================================
+// FLUJO 1: GENERAR BORRADOR (480p)
+// ============================================
+async function generateDraftVideo(body: VideoGenerationRequest) {
+  console.log('📝 [Draft] Generando borrador 480p...');
+  console.log('📝 [Draft] Prompt:', body.prompt?.substring(0, 100));
+  
+  if (!body.prompt) {
+    throw new Error("Falta parámetro requerido: prompt");
+  }
+
+  // Limpiar prompt
+  const maxPromptLength = 2000;
+  const cleanPrompt = body.prompt.slice(0, maxPromptLength).trim();
+  
+  // Convertir aspect ratio a dimensiones 480p
+  const aspectRatioMap: Record<string, { width: number; height: number }> = {
+    '9:16': { width: 480, height: 854 },  // 480p vertical
+    '16:9': { width: 854, height: 480 },  // 480p horizontal
+    '1:1': { width: 480, height: 480 },   // 480p cuadrado
+  };
+  
+  const aspectRatio = body.aspectRatio || '9:16';
+  const dimensions = aspectRatioMap[aspectRatio] || aspectRatioMap['9:16'];
+  
+  console.log('📐 [Draft] Dimensiones:', dimensions);
+  console.log('🎯 [Draft] Modelo:', DRAFT_MODEL);
+
+  // Request body para LTX-2-19B
+  const requestBody = {
+    prompt: cleanPrompt,
+    video_size: {
+      width: dimensions.width,
+      height: dimensions.height
+    },
+    num_frames: 121,  // 5 segundos @ 25fps (121 frames)
+    video_quality: 'low',  // Calidad baja para velocidad
+    acceleration: 'full',  // Máxima aceleración
+    num_inference_steps: 30,  // Menos pasos = más rápido
+    use_multiscale: false,  // Desactivar para velocidad
+    guidance_scale: 3,
+    fps: 25,
+    generate_audio: false,  // Sin audio para velocidad
+    enable_safety_checker: true,
+    video_output_type: 'X264 (.mp4)',
+    video_write_mode: 'fast',  // Escritura rápida
+    loras: []
+  };
+
+  console.log('📤 [Draft] Request body:', JSON.stringify(requestBody, null, 2));
+  
+  const url = `https://queue.fal.run/${DRAFT_MODEL}`;
+  console.log('🌐 [Draft] URL:', url);
+  console.log('⏳ [Draft] Enviando petición...');
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+  
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+  } catch (fetchError: any) {
+    clearTimeout(timeoutId);
+    if (fetchError.name === 'AbortError') {
+      throw new Error("Timeout: Fal.ai tardó más de 120 segundos");
+    }
+    throw fetchError;
+  }
+
+  console.log('✅ [Draft] Respuesta recibida. Status:', response.status);
+  
+  const responseText = await response.text();
+  console.log('📄 [Draft] Respuesta (primeros 500 chars):', responseText.substring(0, 500));
+  
+  let data: any;
+  try {
+    data = JSON.parse(responseText);
+  } catch (parseError) {
+    throw new Error(`Error parseando respuesta: ${responseText.substring(0, 200)}`);
+  }
+
+  if (!response.ok) {
+    console.error('❌ [Draft] Error HTTP:', response.status, data);
+    const errorMessage = data.message || data.error || JSON.stringify(data);
+    
+    if (response.status === 401) throw new Error('API Key de Fal.ai inválida');
+    if (response.status === 429) throw new Error('Límite de cuota excedido');
+    if (errorMessage.includes('inappropriate')) {
+      throw new Error('Contenido rechazado por filtros de seguridad');
+    }
+    
+    return { 
+      statusCode: response.status, 
+      body: JSON.stringify({ error: errorMessage, details: data })
+    };
+  }
+
+  if (data.request_id) {
+    console.log('🔄 [Draft] Tarea iniciada:', data.request_id);
+    return {
+      statusCode: 202,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        taskId: data.request_id,
+        statusUrl: data.status_url,
+        status: 'IN_QUEUE',
+        quality: 'draft'
+      }),
+    };
+  }
+
+  throw new Error("No se encontró request_id en respuesta");
+}
+
+// ============================================
+// FLUJO 2: UPSCALE A HD (1080p)
+// ============================================
+async function upscaleVideoToHD(body: VideoGenerationRequest) {
+  console.log('🎨 [HD] Upscaling video a 1080p...');
+  console.log('📹 [HD] Video URL:', body.videoUrl?.substring(0, 100));
+  
+  if (!body.videoUrl) {
+    throw new Error("Falta parámetro requerido: videoUrl (URL del video borrador)");
+  }
+
+  console.log('🎯 [HD] Modelo:', UPSCALE_MODEL);
+
+  // Request body para SeedVR Upscaler
+  const requestBody = {
+    video_url: body.videoUrl,
+    upscale_mode: 'target',  // Usar resolución objetivo
+    target_resolution: '1080p',  // Objetivo: 1080p
+    noise_scale: 0.1,  // Bajo = más conservador
+    output_format: 'X264 (.mp4)',
+    output_quality: 'high',
+    output_write_mode: 'balanced'
+  };
+
+  console.log('📤 [HD] Request body:', JSON.stringify(requestBody, null, 2));
+  
+  const url = `https://queue.fal.run/${UPSCALE_MODEL}`;
+  console.log('🌐 [HD] URL:', url);
+  console.log('⏳ [HD] Enviando petición...');
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutos para upscale
+  
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+  } catch (fetchError: any) {
+    clearTimeout(timeoutId);
+    if (fetchError.name === 'AbortError') {
+      throw new Error("Timeout: Upscale tardó más de 3 minutos");
+    }
+    throw fetchError;
+  }
+
+  console.log('✅ [HD] Respuesta recibida. Status:', response.status);
+  
+  const responseText = await response.text();
+  console.log('📄 [HD] Respuesta (primeros 500 chars):', responseText.substring(0, 500));
+  
+  let data: any;
+  try {
+    data = JSON.parse(responseText);
+  } catch (parseError) {
+    throw new Error(`Error parseando respuesta: ${responseText.substring(0, 200)}`);
+  }
+
+  if (!response.ok) {
+    console.error('❌ [HD] Error HTTP:', response.status, data);
+    const errorMessage = data.message || data.error || JSON.stringify(data);
+    
+    if (response.status === 401) throw new Error('API Key de Fal.ai inválida');
+    if (response.status === 429) throw new Error('Límite de cuota excedido');
+    
+    return { 
+      statusCode: response.status, 
+      body: JSON.stringify({ error: errorMessage, details: data })
+    };
+  }
+
+  if (data.request_id) {
+    console.log('🔄 [HD] Tarea de upscale iniciada:', data.request_id);
+    return {
+      statusCode: 202,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        taskId: data.request_id,
+        statusUrl: data.status_url,
+        status: 'IN_QUEUE',
+        quality: 'hd'
+      }),
+    };
+  }
+
+  throw new Error("No se encontró request_id en respuesta");
+}

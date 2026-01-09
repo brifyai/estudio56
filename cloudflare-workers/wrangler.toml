@@ -1,0 +1,23 @@
+# Cloudflare Worker Configuration
+name = "estudio56-video-worker"
+main = "video-worker.js"
+compatibility_date = "2024-01-09"
+
+# Variables de entorno (configurar en Cloudflare Dashboard)
+[vars]
+# FAL_AI_API_KEY se configura como secret (ver abajo)
+
+# Secrets (configurar con: wrangler secret put FAL_AI_API_KEY)
+# wrangler secret put FAL_AI_API_KEY
+
+# Routes (configurar tu dominio custom - opcional)
+# routes = [
+#   { pattern = "video-api.estudio56.cl/*", zone_name = "estudio56.cl" }
+# ]
+
+# Usar workers.dev subdomain (gratis)
+workers_dev = true
+
+# Observability (opcional - para debugging)
+[observability]
+enabled = true
