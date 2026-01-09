@@ -144,7 +144,7 @@ const Dashboard: React.FC = () => {
   const [hdImageUrl, setHdImageUrl] = useState<string | null>(null);
   const [improvedImageUrl, setImprovedImageUrl] = useState<string | null>(null); // NEW: Para modo estudio
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // NEW: Imagen original subida en modo estudio
-  const [studioRealityLevel, setStudioRealityLevel] = useState<number>(2.5); // NEW: Nivel de transformación en modo estudio (default 2.5★)
+  const [studioRealityLevel, setStudioRealityLevel] = useState<number>(1.5); // NEW: Nivel de transformación en modo estudio (default 1.5★ - conservador)
   const [triggerStudioImprove, setTriggerStudioImprove] = useState<number>(0); // NEW: Trigger para mejorar imagen en modo estudio
   
   // URLs separadas para draft y HD (VIDEOS)

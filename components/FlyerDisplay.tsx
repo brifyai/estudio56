@@ -89,7 +89,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   hdImageUrl,
   improvedImageUrl, // NEW: Imagen mejorada en modo estudio
   uploadedImageUrl, // NEW: Imagen original subida en modo estudio
-  studioRealityLevel = 2.5, // NEW: Nivel de transformación (default 2.5★)
+  studioRealityLevel = 1.5, // NEW: Nivel de transformación (default 1.5★ - conservador)
   onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
   onApplyStudioChanges, // NEW: Callback para aplicar cambios
   status,
@@ -1828,11 +1828,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                     <span className="text-right">Máximo</span>
                   </div>
                   <div className="text-sm text-white/60 mt-3 text-center">
-                    {studioRealityLevel <= 1.5 && 'Cambios sutiles - Máxima fidelidad a la original'}
-                    {studioRealityLevel > 1.5 && studioRealityLevel <= 2.5 && 'Mejora profesional - Balance ideal'}
-                    {studioRealityLevel > 2.5 && studioRealityLevel <= 3.5 && 'Cambios notorios - Transformación visible'}
+                    {studioRealityLevel <= 1.5 && 'Mejora conservadora - Mantiene la identidad de tu foto'}
+                    {studioRealityLevel > 1.5 && studioRealityLevel <= 2.5 && 'Mejora notable - Cambios visibles pero controlados'}
+                    {studioRealityLevel > 2.5 && studioRealityLevel <= 3.5 && 'Transformación visible - Cambios significativos'}
                     {studioRealityLevel > 3.5 && studioRealityLevel <= 4.5 && 'Transformación fuerte - Cambios dramáticos'}
-                    {studioRealityLevel > 4.5 && 'Transformación máxima - Resultado profesional de estudio'}
+                    {studioRealityLevel > 4.5 && 'Transformación máxima - Resultado completamente profesional'}
                   </div>
                   
                   {/* Botón Aplicar Cambios */}

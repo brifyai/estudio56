@@ -115,7 +115,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   imageAnalysis,
   onImprovedImageChange, // NEW: Callback para imagen mejorada
   onUploadedImageChange, // NEW: Callback para imagen original
-  studioRealityLevel: studioRealityLevelProp = 2.5, // NEW: Nivel de transformación (default 2.5★)
+  studioRealityLevel: studioRealityLevelProp = 1.5, // NEW: Nivel de transformación (default 1.5★ - conservador)
   onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
   triggerStudioImprove = 0, // NEW: Trigger para mejorar
   intelligentTextStyles,
