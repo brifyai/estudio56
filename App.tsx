@@ -2502,18 +2502,20 @@ progressAlert.updateProgress(60, 'Renderizando...');
             className="absolute inset-0 bg-black/80 lg:hidden touch-none"
             onClick={() => setShowRealityComparator(false)}
           />
-          <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-w-[320px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative z-10 lg:max-h-none lg:h-full">
-            {/* Botón cerrar - Flotante en esquina superior derecha, 64px arriba del borde */}
+          {/* Contenedor relativo para posicionar el botón */}
+          <div className="relative w-full max-w-[320px] z-10">
+            {/* Botón cerrar - Flotante FUERA del panel con overflow-hidden */}
             <button
               onClick={() => setShowRealityComparator(false)}
-              className="absolute -top-16 right-2 z-20 w-8 h-8 flex items-center justify-center bg-red-500/80 hover:bg-red-500 rounded-full transition-colors cursor-pointer shadow-lg"
+              className="absolute -top-12 right-2 z-30 w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded-full transition-colors cursor-pointer shadow-xl"
               title="Cerrar comparación"
             >
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="flex-1 overflow-y-auto">
+            <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative lg:max-h-none lg:h-full">
+              <div className="flex-1 overflow-y-auto">
               <RealityComparator
                 key={`comparator-${Object.keys(realityVariations).length}-${realityLevel}`}
                 sceneId={sceneId}
@@ -2534,6 +2536,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 originalImage={draftImageUrl || undefined}
               />
             </div>
+          </div>
           </div>
         </aside>
       )}
