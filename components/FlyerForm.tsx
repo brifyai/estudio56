@@ -1182,33 +1182,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               )}
             </div>
             
-            {/* Comparador antes/después */}
-            {improvedImageUrl && (
-              <div className="space-y-2">
-                <div className="text-[10px] text-white/70 text-center">
-                  Comparar con original
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <div className="text-[9px] text-white/50 text-center">Original</div>
-                    <img
-                      src={uploadedImage}
-                      alt="Original"
-                      className="w-full h-24 object-contain bg-black/20 rounded border border-white/10"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[9px] text-green-400 text-center">Mejorada</div>
-                    <img
-                      src={improvedImageUrl}
-                      alt="Mejorada"
-                      className="w-full h-24 object-contain bg-black/20 rounded border border-green-500/30"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* Botón para mejorar */}
             <button
               onClick={handleImproveUploadedImage}
