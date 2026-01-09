@@ -30,8 +30,8 @@ export const FAL_MODELS = {
   CLARITY_UPSCALER: 'fal-ai/clarity-upscaler',
 } as const;
 
-// Modelo para borradores y variaciones de realidad - Flux Schnell es más rápido (2-3s)
-const DRAFT_MODEL = FAL_MODELS.FLUX_SCHNELL;
+// Modelo para borradores y variaciones de realidad - Flux Dev para consistencia
+const DRAFT_MODEL = FAL_MODELS.FLUX_DEV;
 // Modelo principal para HD - Flux Dev img2img es más confiable y mantiene similitud
 const HD_MODEL = FAL_MODELS.FLUX_DEV_IMG2IMG;
 
@@ -119,7 +119,85 @@ const compressImageDataUrl = async (dataUrl: string, maxWidth: number = 768, qua
 };
 
 // ============================================
-// 🚀 GENERAR BORRADOR CON FLUX SCHNELL (TEXT-TO-IMAGE)
+// 🚀 GENERAR BORRADOR CON FLUX DEV (TEXT-TO-IMAGE)
+// ============================================
+
+/**
+ * Genera un borrador usando Flux Dev (text-to-image)
+ * Mismo modelo que HD para consistencia de calidad
+ */
+export const generateDraftWithFluxDev = async (
+  prompt: string,
+  options: {
+    seed?: number;
+    aspectRatio?: AspectRatio;
+    negativePrompt?: string;
+  } = {}
+): Promise<FalImg2ImgResponse> => {
+  const {
+    seed,
+    aspectRatio = '9:16',
+    negativePrompt,
+  } = options;
+
+  console.log('🚀 [fal.ai] Iniciando Flux Dev para borrador...');
+  console.log(`📝 [fal.ai] Modelo: ${FAL_MODELS.FLUX_DEV}`);
+  console.log(`📝 [fal.ai] Prompt length: ${prompt.length} chars`);
+  console.log(`🖼️ [fal.ai] Aspect Ratio: ${aspectRatio}`);
+  console.log(`🎲 [fal.ai] Seed: ${seed}`);
+
+  try {
+    console.log('📡 [fal.ai] Enviando request via Netlify Function...');
+    
+    const response = await fetch('/.netlify/functions/generate-with-fal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: FAL_MODELS.FLUX_DEV,
+        prompt,
+        seed,
+        aspectRatio,
+        negativePrompt,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ [fal.ai] Error HTTP ${response.status}:`, errorData);
+      throw new Error(`fal.ai error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ [fal.ai] Respuesta recibida');
+
+    if (!data.success) {
+      throw new Error(data.error || 'Error en generación');
+    }
+
+    if (!data.imageUrl) {
+      throw new Error('No se encontró imageUrl en respuesta');
+    }
+
+    console.log(`✅ [fal.ai] Borrador generado exitosamente con Flux Dev`);
+    return {
+      success: true,
+      imageUrl: data.imageUrl,
+      seed: data.seed || seed,
+    };
+
+  } catch (error: any) {
+    console.error('❌ [fal.ai] Error:', error.message);
+    return {
+      success: false,
+      error: error.message || 'Error desconocido',
+    };
+  }
+};
+
+// ============================================
+// 🚀 GENERAR BORRADOR CON FLUX SCHNELL (TEXT-TO-IMAGE) - LEGACY
 // ============================================
 
 /**

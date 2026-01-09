@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, ImageQuality, StoryArtStyleId, RealityLevel } from "../types";
-import { generateHDWithImg2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxSchnell } from "./falAiService";
+import { generateHDWithImg2Img, isFalAiConfigured, FAL_MODELS, generateRealityVariation, generateDraftWithFluxDev } from "./falAiService";
 import {
   MASTER_STYLE,
   MASTER_STYLE_DRAFT,
@@ -2448,9 +2448,9 @@ STRICT RULES:
 ${NEGATIVE_TEXT_SHIELD}
         `.replace(/\n/g, ' ').trim();
         
-        console.log('📝 [Draft] Prompt simplificado para Flux Schnell:', schnellPrompt.substring(0, 200) + '...');
+        console.log('📝 [Draft] Prompt simplificado para Flux Dev:', schnellPrompt.substring(0, 200) + '...');
         
-        const falResult = await generateDraftWithFluxSchnell(
+        const falResult = await generateDraftWithFluxDev(
           schnellPrompt, // ✅ Usar prompt simplificado
           {
             seed: consistencySeed,
@@ -2459,7 +2459,7 @@ ${NEGATIVE_TEXT_SHIELD}
           }
         );
         
-        console.log('📦 [Draft] Resultado de fal.ai Flux Schnell:', {
+        console.log('📦 [Draft] Resultado de fal.ai Flux Dev:', {
           success: falResult.success,
           hasImageUrl: !!falResult.imageUrl,
           imageUrlLength: falResult.imageUrl?.length || 0,
