@@ -1124,10 +1124,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             
             {/* Vista previa de imagen subida */}
             <div className="relative rounded-xl overflow-hidden border border-white/20">
+              {console.log('🖼️ [CONTAINER] Renderizando contenedor de imagen')}
+              {console.log('🖼️ [CONTAINER] src que se usará:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL')}
               <img
                 src={improvedImageUrl || uploadedImage}
                 alt="Imagen subida"
                 className="w-full h-48 object-contain bg-black/40"
+                style={{ display: 'block', visibility: 'visible' }} // Forzar visibilidad
                 onLoad={() => {
                   console.log('✅ [IMG] Imagen cargada exitosamente');
                   console.log('🔍 [IMG] Mostrando:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL');
@@ -1141,7 +1144,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               {improvedImageUrl && (
                 <>
                   {console.log('🎨 [BADGE] Mostrando badge "Mejorada"')}
-                  <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded z-10">
                     ✓ Mejorada
                   </div>
                 </>
