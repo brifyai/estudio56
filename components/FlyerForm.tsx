@@ -1132,14 +1132,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             </div>
             
             {/* Vista previa de imagen subida */}
-            <div className="relative rounded-xl overflow-hidden border border-white/20">
+            <div className="relative rounded-xl overflow-hidden border-4 border-red-500" style={{ backgroundColor: 'yellow', minHeight: '200px' }}>
               {console.log('🖼️ [CONTAINER] Renderizando contenedor de imagen')}
               {console.log('🖼️ [CONTAINER] src que se usará:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL')}
+              <div style={{ backgroundColor: 'red', padding: '10px', color: 'white', fontWeight: 'bold' }}>
+                TEST: Si ves esto, el contenedor se renderiza
+              </div>
               <img
                 src={improvedImageUrl || uploadedImage}
                 alt="Imagen subida"
-                className="w-full h-48 object-contain bg-black/40"
-                style={{ display: 'block', visibility: 'visible' }} // Forzar visibilidad
+                className="w-full h-48 object-contain"
+                style={{ display: 'block', visibility: 'visible', backgroundColor: 'blue', border: '5px solid green' }}
                 onLoad={() => {
                   console.log('✅ [IMG] Imagen cargada exitosamente');
                   console.log('🔍 [IMG] Mostrando:', improvedImageUrl ? 'MEJORADA' : 'ORIGINAL');
@@ -1148,7 +1151,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   console.error('❌ [IMG] Error cargando imagen:', e);
                   console.error('🔍 [IMG] src:', (e.target as HTMLImageElement).src?.substring(0, 100));
                 }}
-                key={improvedImageUrl || uploadedImage} // Force re-render cuando cambia
+                key={improvedImageUrl || uploadedImage}
               />
               {improvedImageUrl && (
                 <>
