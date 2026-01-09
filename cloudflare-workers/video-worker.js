@@ -273,8 +273,32 @@ async function handleCheckStatus(request, env) {
   const status = data.status;
   
   if (status === 'COMPLETED') {
-    const videoUrl = data.video?.url || data.data?.video?.url;
-    const seed = data.seed || data.data?.seed;
+    // Si ya tiene el video en la respuesta de status, usarlo
+    let videoUrl = data.video?.url || data.data?.video?.url;
+    let seed = data.seed || data.data?.seed;
+    
+    // Si no tiene videoUrl, consultar el endpoint de resultado
+    if (!videoUrl) {
+      console.log('[Worker] Status COMPLETED pero sin videoUrl, consultando resultado...');
+      
+      // Construir URL de resultado (sin /status al final)
+      const resultUrl = url.replace('/status', '');
+      
+      const resultResponse = await fetch(resultUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Key ${env.FAL_AI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (resultResponse.ok) {
+        const resultData = await resultResponse.json();
+        videoUrl = resultData.video?.url;
+        seed = resultData.seed;
+        console.log('[Worker] Video obtenido del resultado:', videoUrl);
+      }
+    }
     
     return jsonResponse({
       success: true,
