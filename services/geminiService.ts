@@ -2308,41 +2308,18 @@ const finalNegativePrompt = `${NEGATIVE_TEXT_SHIELD}, ${baseNegativePrompt}, ${i
 console.log('🛡️ [Guardrails] Negative prompt aplicado:', finalNegativePrompt);
 
   // ============================================
-  // 🎯 ARQUITECTURA CORRECTA: Modelos de Imagen (NO Gemini)
+  // 🎯 SOLO FAL.AI - NO VERTEX AI
   // ============================================
-  // Draft: imagen-3.0-fast-001 (modelo disponible)
-  // HD: imagen-3.0-fast-001 (mismo modelo para ambas calidades)
-  // Gemini 2.0 Flash: SOLO para razonamiento, NO para imágenes
+  // Draft: Flux Schnell (text-to-image) - 2-3 segundos
+  // HD: Flux Dev img2img - 5-10 segundos
   // ============================================
   
   // Detectar si es estilo de video (contiene prefijo 'video_')
   const isVideoStyle = styleKey && typeof styleKey === 'string' && styleKey.startsWith('video_');
   
-  let model: string;
-  let isHDForVideo = false;
-  
   if (isVideoStyle && quality !== 'draft') {
-    // Videos HD: Modelos específicos
-    // Video HD: Veo 1.0
-    model = 'veo-1.0-preview-001';
-    isHDForVideo = true;
-    console.log('🎬 [Video HD] Usando veo-1.0-preview-001 + 1K');
-  } else {
-    // ============================================
-    // 🎯 IMÁGENES: USAR MODELOS DE IMAGEN (NO Gemini)
-    // Draft: imagen-3.0-fast-001 (garantizado disponible)
-    // HD: imagen-4.0-generate-001 (mejor calidad, habilitar en Model Garden)
-    // gemini-2.0-flash-exp NO tiene capacidades de generación de imágenes
-    // ============================================
-    if (quality === 'draft') {
-      // Draft: imagen-3.0-fast-001 (modelo rápido y disponible)
-      model = 'imagen-3.0-fast-001';
-      console.log('🖼️ [Image Draft] Usando imagen-3.0-fast-001');
-    } else {
-      // HD: imagen-4.0-generate-001 (mejor calidad)
-      model = 'imagen-4.0-generate-001';
-      console.log('💎 [Image HD] Usando imagen-4.0-generate-001 (habilitado en Model Garden)');
-    }
+    console.warn('⚠️ [Video] Generación de video no está soportada actualmente');
+    throw new Error('La generación de video no está disponible. Por favor, usa generación de imágenes.');
   }
   
   if (quality === 'draft') {
@@ -2632,90 +2609,15 @@ ${NEGATIVE_TEXT_SHIELD}
           imageDataUrl = falResult.imageUrl;
         }
       } else {
-        console.warn('⚠️ [HD] SDXL img2img falló, usando fallback:', falResult.error);
-        // Continuar con el método original (txt2img)
+        console.error('❌ [HD] Fal.ai img2img falló:', falResult.error);
+        throw new Error(`Error generando HD con Fal.ai: ${falResult.error || 'Error desconocido'}`);
       }
     }
     
-    // Fallback: Si fal.ai no está configurado o falló, usar txt2img con análisis
+    // Si no hay imageDataUrl, significa que fal.ai no está configurado o no hay borrador
     if (!imageDataUrl) {
-      console.log('🔄 [HD] Usando fallback: txt2img con análisis del borrador');
-      
-      let draftAnalysis = '';
-      if (draftImageForHD) {
-        try {
-          console.log('🔍 [HD] Analizando borrador con Gemini Vision...');
-          const base64Data = draftImageForHD.split(',')[1];
-          
-          const analysisResponse = await ai.models.generateContent({
-            model: 'gemini-2.0-flash-exp',
-            contents: {
-              parts: [
-                { text: `Analyze this image in extreme detail. Describe:
-                1. The main subject (person, object, scene)
-                2. Exact colors of key elements
-                3. Lighting direction and quality
-                4. Background/environment details
-                5. Camera angle and perspective
-                6. Composition and subject placement
-                7. Mood and atmosphere
-                
-                Format your response as a single detailed paragraph.` },
-                {
-                  inlineData: {
-                    mimeType: 'image/jpeg',
-                    data: base64Data
-                  }
-                }
-              ]
-            }
-          });
-          
-          const analysisText = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (analysisText) {
-            draftAnalysis = analysisText.trim();
-            console.log('✅ [HD] Análisis completado');
-          }
-        } catch (analysisError: any) {
-          console.warn('⚠️ [HD] Error analizando borrador:', analysisError.message);
-        }
-      }
-      
-      // Extraer elementos clave del prompt original
-      const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
-                          enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
-                          enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
-      const subjectDetail = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
-      
-      // Construir prompt HD
-      const hdSpecificPrompt = `
-        ${realityPrompt}
-        
-        REFERENCE IMAGE ANALYSIS: ${draftAnalysis || subjectDetail}
-        
-        CRITICAL: RECREATE this image with HIGHER QUALITY.
-        Keep EXACTLY the same: subject, composition, colors, lighting, perspective, mood.
-        Improve ONLY: resolution, sharpness, detail clarity.
-        
-        STYLE: ${activeStyleLabel}
-        ASPECT RATIO: ${aspectRatio}
-      `.replace(/\n/g, ' ').trim();
-      
-      const hdNegativePrompt = `${finalNegativePrompt}, low resolution, blurry, pixelated, artifacts, noise, compression, different composition, different colors`;
-      
-      try {
-        const promptWithGuardrails = `${hdSpecificPrompt} AVOID: ${hdNegativePrompt}`;
-        imageDataUrl = await executeImageGeneration(ai, model, promptWithGuardrails, consistencySeed, aspectRatio, isHDForVideo, '1K');
-        console.log('✅ [HD] Fallback exitoso');
-      } catch (error: any) {
-        if (error.message.includes('SAFETY_BLOCK')) {
-          console.warn('⚠️ [HD] Safety block, reintentando...');
-          const simplifiedPrompt = `Professional photo of ${draftAnalysis || subjectDetail}. ${activeStyleLabel} style. ${aspectRatio} format. High quality.`;
-          imageDataUrl = await executeImageGeneration(ai, model, simplifiedPrompt, consistencySeed, aspectRatio, isHDForVideo, '1K');
-        } else {
-          throw error;
-        }
-      }
+      console.error('❌ [HD] Fal.ai no está configurado o no hay imagen de borrador');
+      throw new Error('Fal.ai no está configurado correctamente. Por favor, verifica la configuración de FAL_AI_API_KEY.');
     }
   }
 
