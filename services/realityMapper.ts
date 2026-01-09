@@ -48,6 +48,75 @@ const ASPIRACIONAL_MODIFIERS = {
 };
 
 // ============================================
+// 🎨 ELEMENTOS PROGRESIVOS POR NIVEL DE REALIDAD
+// Elementos que se AGREGAN al subir de nivel y se QUITAN al bajar
+// ============================================
+
+/**
+ * Define qué elementos decorativos/atmosféricos están permitidos en cada nivel
+ * Niveles bajos (1.0-2.5): SIN elementos de lujo
+ * Niveles altos (4.0-5.0): CON elementos de lujo
+ */
+export const PROGRESSIVE_ELEMENTS: Record<RealityLevel, {
+  allowed: string[];  // Elementos permitidos en este nivel
+  forbidden: string[]; // Elementos prohibidos en este nivel
+}> = {
+  1.0: {
+    allowed: ['basic equipment', 'worn surfaces', 'visible cables', 'plain walls'],
+    forbidden: ['candles', 'smoke', 'fog', 'steam', 'decorative lighting', 'plants', 'artwork', 'luxury materials', 'marble', 'gold accents', 'crystal', 'silk fabrics']
+  },
+  1.5: {
+    allowed: ['basic equipment', 'simple furniture', 'plain walls', 'basic lighting'],
+    forbidden: ['candles', 'smoke', 'fog', 'steam', 'decorative lighting', 'luxury plants', 'artwork', 'marble', 'gold accents', 'crystal']
+  },
+  2.0: {
+    allowed: ['standard equipment', 'functional furniture', 'basic decor', 'overhead lighting'],
+    forbidden: ['candles', 'smoke', 'fog', 'steam', 'luxury materials', 'marble', 'gold accents', 'crystal', 'silk fabrics']
+  },
+  2.5: {
+    allowed: ['modern equipment', 'clean furniture', 'minimal decor', 'natural light'],
+    forbidden: ['candles', 'smoke', 'fog', 'steam', 'luxury materials', 'marble', 'excessive gold', 'crystal chandeliers']
+  },
+  3.0: {
+    allowed: ['professional equipment', 'quality furniture', 'simple plants', 'balanced lighting'],
+    forbidden: ['candles', 'smoke', 'fog', 'steam', 'marble floors', 'gold accents', 'crystal', 'luxury fabrics']
+  },
+  3.5: {
+    allowed: ['high-end equipment', 'designer furniture', 'decorative plants', 'ambient lighting', 'subtle artwork'],
+    forbidden: ['candles', 'smoke', 'fog', 'marble palace', 'excessive gold', 'crystal chandeliers']
+  },
+  4.0: {
+    allowed: ['premium equipment', 'luxury furniture', 'decorative plants', 'soft ambient lighting', 'artwork', 'subtle candles (if appropriate)'],
+    forbidden: ['smoke', 'fog', 'steam', 'floating objects', 'excessive luxury']
+  },
+  4.5: {
+    allowed: ['luxury equipment', 'designer furniture', 'tropical plants', 'dramatic lighting', 'artwork', 'decorative candles', 'subtle fog effects (if appropriate)'],
+    forbidden: ['floating objects', 'unrealistic physics', 'excessive smoke']
+  },
+  5.0: {
+    allowed: ['ultra-luxury equipment', 'bespoke furniture', 'exotic plants', 'cinematic lighting', 'fine art', 'luxury candles', 'atmospheric fog', 'water features', 'marble surfaces', 'gold accents'],
+    forbidden: ['floating objects', 'impossible physics', 'distorted anatomy']
+  }
+};
+
+/**
+ * Genera el prompt de elementos permitidos/prohibidos según el nivel
+ */
+export const getProgressiveElementsPrompt = (stars: RealityLevel): string => {
+  const config = PROGRESSIVE_ELEMENTS[stars];
+  
+  const allowedPrompt = config.allowed.length > 0
+    ? `ALLOWED ELEMENTS: ${config.allowed.join(', ')}`
+    : '';
+  
+  const forbiddenPrompt = config.forbidden.length > 0
+    ? `STRICTLY FORBIDDEN: ${config.forbidden.join(', ')}`
+    : '';
+  
+  return `${allowedPrompt}\n${forbiddenPrompt}`.trim();
+};
+
+// ============================================
 // 🛡️ NEGATIVE PROMPTS ESPECIALIZADOS POR CATEGORÍA
 // ============================================
 

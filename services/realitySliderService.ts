@@ -407,18 +407,27 @@ export const buildGeminiPromptWithReality = (
 
 /**
  * Genera el prompt de "fuerza" con prefijo MODE al inicio
- * El orden es clave: Realidad > Sujeto > Escudo Anti-Texto
+ * El orden es clave: Realidad > Sujeto > Elementos Progresivos por Industria > Escudo Anti-Texto
  */
 export const buildPowerPromptWithReality = (
   basePrompt: string,
-  stars: RealityLevel
+  stars: RealityLevel,
+  industryId?: number // 🎨 NUEVO: ID del rubro (1-60) para elementos específicos
 ): string => {
   const levelKey: RealityLevel = Math.round(stars * 2) / 2 as RealityLevel;
   const config = getRealityConfig(levelKey);
   const negativePrompt = getRealityConfig(stars).negative;
   
+  // 🎨 IMPORTAR función de elementos progresivos por industria
+  const { getProgressiveElementsForIndustry, getForbiddenElementsForIndustry } = require('./progressiveElementsByIndustry');
+  const progressiveElements = getProgressiveElementsForIndustry(levelKey, industryId);
+  const forbiddenElements = getForbiddenElementsForIndustry(levelKey, industryId);
+  
   // El bloqueo de texto siempre va primero en las reglas negativas
   const textBlock = 'text, letters, words, typography, signature, watermark, text overlay, captions, titles, menu boards, price tags, signs, billboards, posters, written characters';
+  
+  // Combinar elementos prohibidos específicos de la industria con el negative prompt general
+  const combinedNegative = `${textBlock}, ${forbiddenElements.join(', ')}, ${negativePrompt}`;
   
   return `
     [MODE: ${config.label.toUpperCase()} PHOTO]
@@ -428,6 +437,12 @@ export const buildPowerPromptWithReality = (
     ${config.atmosphere}
     ${config.camera}
     ${config.human}
+    
+    ${progressiveElements}
+    
+    AVOID: ${combinedNegative}
+  `.trim();
+};
     AVOID: ${textBlock}, ${negativePrompt}
   `.trim();
 };

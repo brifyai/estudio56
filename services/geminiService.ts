@@ -2107,7 +2107,8 @@ export const generateFlyerImage = async (
   // 🎚️ APLICAR MODIFICADORES DE REALIDAD AL PROMPT
   // Esto asegura que la imagen inicial se genere con el nivel de realidad correcto
   console.log(`🎚️ [generateFlyerImage] Aplicando nivel de realidad: ${realityLevel}`);
-  const realityPrompt = buildPowerPromptWithReality(enhancedDescription, realityLevel);
+  console.log(`🎨 [generateFlyerImage] Rubro/Industria ID: ${artDirectionId || 'No especificado'}`);
+  const realityPrompt = buildPowerPromptWithReality(enhancedDescription, realityLevel, artDirectionId);
   const realityNegativePrompt = getNegativePromptForLevel(realityLevel);
   console.log(`🎚️ [generateFlyerImage] Prompt con realidad: ${realityPrompt.substring(0, 100)}...`);
   
