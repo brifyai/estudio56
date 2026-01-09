@@ -49,6 +49,7 @@ interface FlyerFormProps {
   onOpenGallery: () => void; // NEW PROP
   imageAnalysis?: ImageAnalysisResult | null; // NEW: Análisis de imagen
   onImprovedImageChange?: (url: string | null) => void; // NEW: Callback para imagen mejorada en modo estudio
+  onUploadedImageChange?: (url: string | null) => void; // NEW: Callback para imagen original subida
   intelligentTextStyles?: any; // NEW: Estilos de texto inteligentes
   contextualTypography?: any; // NEW: Tipografía contextual
   contrastAnalysis?: any; // NEW: Análisis de contraste
@@ -110,6 +111,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   onOpenGallery,
   imageAnalysis,
   onImprovedImageChange, // NEW: Callback para imagen mejorada
+  onUploadedImageChange, // NEW: Callback para imagen original
   intelligentTextStyles,
   compositionAnalysis,
   autoTextValidation,
@@ -455,6 +457,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         const result = ev.target?.result as string;
         setUploadedImage(result);
         setImprovedImageUrl(null);
+        
+        // Notificar al padre sobre la imagen subida
+        if (onUploadedImageChange) {
+          onUploadedImageChange(result);
+        }
+        
         // Limpiar descripción si el usuario sube su imagen
         setDescription('');
       };
@@ -526,6 +534,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     setImprovedImageUrl(null);
     
     // Notificar al padre
+    if (onUploadedImageChange) {
+      onUploadedImageChange(null);
+    }
     if (onImprovedImageChange) {
       onImprovedImageChange(null);
     }

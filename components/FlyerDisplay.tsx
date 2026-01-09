@@ -17,6 +17,8 @@ interface FlyerDisplayProps {
   imageUrl: string | null;
   draftImageUrl?: string | null;
   hdImageUrl?: string | null;
+  improvedImageUrl?: string | null; // NEW: Imagen mejorada en modo estudio
+  uploadedImageUrl?: string | null; // NEW: Imagen original subida en modo estudio
   status: GenerationStatus;
   aspectRatio: AspectRatio;
   logoUrl: string | null;
@@ -82,6 +84,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   imageUrl,
   draftImageUrl,
   hdImageUrl,
+  improvedImageUrl, // NEW: Imagen mejorada en modo estudio
+  uploadedImageUrl, // NEW: Imagen original subida en modo estudio
   status,
   aspectRatio,
   logoUrl,
@@ -1735,6 +1739,33 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
       {/* CANVAS - Padding aumentado arriba para que los botones no tapen la imagen */}
       <div className="w-full flex flex-col items-center justify-start px-2 md:px-0 pt-2 md:py-12 relative z-0">
+        {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada */}
+        {improvedImageUrl && uploadedImageUrl && mediaType === 'product_study' && (
+          <div className="w-full max-w-4xl mx-auto p-4">
+            <div className="text-center mb-4">
+              <h3 className="text-white text-lg font-bold">Comparar con original</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="text-white/70 text-sm text-center">Original</div>
+                <img
+                  src={uploadedImageUrl}
+                  alt="Original"
+                  className="w-full h-auto object-contain bg-black/20 rounded-lg border border-white/10"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="text-green-400 text-sm text-center">Mejorada con IA</div>
+                <img
+                  src={improvedImageUrl}
+                  alt="Mejorada"
+                  className="w-full h-auto object-contain bg-black/20 rounded-lg border border-green-500/30"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
           <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">

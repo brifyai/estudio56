@@ -143,6 +143,7 @@ const Dashboard: React.FC = () => {
   const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
   const [hdImageUrl, setHdImageUrl] = useState<string | null>(null);
   const [improvedImageUrl, setImprovedImageUrl] = useState<string | null>(null); // NEW: Para modo estudio
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // NEW: Imagen original subida en modo estudio
   
   // URLs separadas para draft y HD (VIDEOS)
   const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
@@ -2196,6 +2197,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     onOpenGallery={() => setShowGallery(true)}
                     imageAnalysis={imageAnalysis}
                     onImprovedImageChange={setImprovedImageUrl} // NEW: Callback para imagen mejorada
+                    onUploadedImageChange={setUploadedImageUrl} // NEW: Callback para imagen original
                     intelligentTextStyles={intelligentTextStyles}
                     contextualTypography={contextualTypography}
                     contrastAnalysis={contrastAnalysis}
@@ -2248,6 +2250,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 imageUrl={displayUrl}
                                 draftImageUrl={draftImageUrl}
                                 hdImageUrl={hdImageUrl}
+                                improvedImageUrl={improvedImageUrl}
+                                uploadedImageUrl={uploadedImageUrl}
                                 draftVideoUrl={draftVideoUrl}
                                 hdVideoUrl={hdVideoUrl}
                                 status={status}
