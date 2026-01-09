@@ -150,6 +150,23 @@ ALIBABA_API_KEY=...
 
 ---
 
+## ⚠️ IMPORTANTE: Videos Antiguos de Alibaba Cloud
+
+**Los videos generados ANTES de esta migración NO funcionarán** debido a problemas de CORS con Alibaba Cloud OSS.
+
+**Síntomas:**
+- Error: `Access to video at 'https://dashscope-result-sgp.oss-ap-southeast-1.aliyuncs.com/...' has been blocked by CORS policy`
+- Error: `net::ERR_FAILED 206 (Partial Content)`
+
+**Solución:**
+1. Genera nuevos videos usando el botón de video en la aplicación
+2. Los nuevos videos usarán Fal.ai y funcionarán correctamente
+3. Fal.ai tiene CORS habilitado por defecto, no hay problemas de acceso
+
+**Nota:** No es necesario usar el proxy de video con Fal.ai, ya que sus URLs tienen CORS habilitado.
+
+---
+
 ## Notas Técnicas
 
 - **Duración:** 5 segundos por defecto
