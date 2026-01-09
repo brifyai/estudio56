@@ -443,9 +443,6 @@ export const buildPowerPromptWithReality = (
     AVOID: ${combinedNegative}
   `.trim();
 };
-    AVOID: ${textBlock}, ${negativePrompt}
-  `.trim();
-};
 
 /**
  * Genera una imagen con nivel de realidad específico
