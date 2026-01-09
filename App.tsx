@@ -1369,8 +1369,11 @@ progressAlert.updateProgress(60, 'Renderizando...');
           console.log('🎬 Generando video con fal.ai...');
           progressAlert.updateProgress(50, 'Iniciando generación de video...');
           
-          // IMPORTANTE: Remover cualquier mención de texto del prompt para videos
-          const videoPrompt = enhancedPrompt
+          // IMPORTANTE: Transformar prompt de imagen a prompt de video
+          // 1. Remover TODAS las menciones de texto, logos, tipografía
+          // 2. Agregar instrucciones de movimiento y personas
+          let videoPrompt = enhancedPrompt
+            // Remover menciones de texto
             .replace(/with text[^.]*\./gi, '.')
             .replace(/text overlay[^.]*\./gi, '.')
             .replace(/typography[^.]*\./gi, '.')
@@ -1380,10 +1383,25 @@ progressAlert.updateProgress(60, 'Renderizando...');
             .replace(/headline[^.]*\./gi, '.')
             .replace(/title[^.]*\./gi, '.')
             .replace(/caption[^.]*\./gi, '.')
+            .replace(/logo[^.]*\./gi, '.')
+            .replace(/brand[^.]*\./gi, '.')
+            .replace(/slogan[^.]*\./gi, '.')
+            .replace(/banner[^.]*\./gi, '.')
+            .replace(/sign[^.]*\./gi, '.')
+            .replace(/label[^.]*\./gi, '.')
+            .replace(/watermark[^.]*\./gi, '.')
+            .replace(/subtitle[^.]*\./gi, '.')
+            // Limpiar espacios múltiples
             .replace(/\s+/g, ' ')
             .trim();
           
-          console.log('📝 [Video] Prompt sin texto length:', videoPrompt.length);
+          // Agregar prefijo y sufijo para videos de alta calidad sin texto
+          const videoPrefix = "Cinematic video, smooth camera movement, natural lighting, ";
+          const videoSuffix = ". People actively using the equipment or service, realistic human movements, no text, no logos, no watermarks, no subtitles, no overlays, professional videography, 4K quality.";
+          
+          videoPrompt = videoPrefix + videoPrompt + videoSuffix;
+          
+          console.log('📝 [Video] Prompt optimizado:', videoPrompt.substring(0, 200) + '...');
           
           // Cerrar alerta de progreso anterior
           progressAlert.close();
