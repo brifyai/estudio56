@@ -89,7 +89,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   hdImageUrl,
   improvedImageUrl, // NEW: Imagen mejorada en modo estudio
   uploadedImageUrl, // NEW: Imagen original subida en modo estudio
-  studioRealityLevel = 1.5, // NEW: Nivel de transformación
+  studioRealityLevel = 2.5, // NEW: Nivel de transformación (default 2.5★)
   onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
   onApplyStudioChanges, // NEW: Callback para aplicar cambios
   status,
@@ -1811,24 +1811,28 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                   <input
                     type="range"
                     min="0.5"
-                    max="3.0"
+                    max="5.0"
                     step="0.5"
                     value={studioRealityLevel}
                     onChange={(e) => onStudioRealityLevelChange(parseFloat(e.target.value))}
                     className="w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer"
                     style={{
-                      background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 2.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 2.5) * 100}%)`
+                      background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 4.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 4.5) * 100}%)`
                     }}
                   />
                   <div className="flex justify-between text-xs text-white/50 mt-2">
-                    <span>Mínimo</span>
+                    <span>Sutil</span>
                     <span>Moderado</span>
+                    <span>Notable</span>
+                    <span>Fuerte</span>
                     <span>Máximo</span>
                   </div>
                   <div className="text-sm text-white/60 mt-3 text-center">
-                    {studioRealityLevel <= 1.0 && 'Cambios mínimos, máxima fidelidad a la original'}
-                    {studioRealityLevel > 1.0 && studioRealityLevel <= 2.0 && 'Balance entre fidelidad y mejora'}
-                    {studioRealityLevel > 2.0 && 'Transformación completa con máxima mejora'}
+                    {studioRealityLevel <= 1.5 && 'Cambios sutiles - Máxima fidelidad a la original'}
+                    {studioRealityLevel > 1.5 && studioRealityLevel <= 2.5 && 'Mejora profesional - Balance ideal'}
+                    {studioRealityLevel > 2.5 && studioRealityLevel <= 3.5 && 'Cambios notorios - Transformación visible'}
+                    {studioRealityLevel > 3.5 && studioRealityLevel <= 4.5 && 'Transformación fuerte - Cambios dramáticos'}
+                    {studioRealityLevel > 4.5 && 'Transformación máxima - Resultado profesional de estudio'}
                   </div>
                   
                   {/* Botón Aplicar Cambios */}

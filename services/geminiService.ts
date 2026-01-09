@@ -2796,7 +2796,7 @@ export const enhanceUserImage = async (
   imageDataUrl: string,
   realityMode: 'realist' | 'aspirational' | 'studio' = 'studio',
   aspectRatio: AspectRatio = '1:1',
-  realityLevel: number = 1.5 // NEW: Nivel de transformación (0.5 = mínimo, 3.0 = máximo)
+  realityLevel: number = 2.5 // NEW: Nivel de transformación (0.5 = sutil, 5.0 = máximo, default 2.5)
 ): Promise<string> => {
   console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen con Fal.ai...");
   console.log("📸 Modo de realismo:", realityMode);
@@ -2811,18 +2811,25 @@ export const enhanceUserImage = async (
     const styleModifier = REALITY_MODES[realityMode];
 
     // Calcular strength basado en realityLevel
-    // 0.5★ = 0.20 (cambios mínimos, máxima fidelidad)
-    // 1.5★ = 0.35 (cambios moderados, balance)
-    // 3.0★ = 0.55 (cambios máximos, transformación completa)
+    // 0.5★ = 0.20 (cambios sutiles, máxima fidelidad)
+    // 1.5★ = 0.35 (cambios ligeros)
+    // 2.5★ = 0.50 (mejora profesional, balance ideal - DEFAULT)
+    // 3.5★ = 0.65 (cambios notorios, transformación visible)
+    // 4.5★ = 0.75 (transformación fuerte, cambios dramáticos)
+    // 5.0★ = 0.85 (transformación máxima, resultado profesional de estudio)
     const strengthMap: Record<number, number> = {
       0.5: 0.20,
       1.0: 0.28,
       1.5: 0.35,
       2.0: 0.42,
-      2.5: 0.48,
-      3.0: 0.55
+      2.5: 0.50,
+      3.0: 0.58,
+      3.5: 0.65,
+      4.0: 0.70,
+      4.5: 0.75,
+      5.0: 0.85
     };
-    const strength = strengthMap[realityLevel] || 0.35;
+    const strength = strengthMap[realityLevel] || 0.50;
     console.log("💪 Strength calculado:", strength);
 
     // Prompt optimizado para Fal.ai Flux Dev img2img
