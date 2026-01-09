@@ -2832,22 +2832,22 @@ export const enhanceUserImage = async (
     const strength = strengthMap[realityLevel] || 0.35;
     console.log("💪 Strength calculado:", strength);
 
-    // Prompt optimizado para Fal.ai Flux Dev img2img
+    // Prompt ULTRA CONSERVADOR para Fal.ai Flux Dev img2img
+    // El objetivo es SOLO mejorar calidad sin agregar ni cambiar nada
     const regenerationPrompt = `
-      Professional product photography.
+      Enhance image quality only.
+      Improve sharpness, clarity, and lighting.
+      DO NOT add new objects, DO NOT change composition, DO NOT add elements.
+      Keep everything exactly as it is in the original image.
+      Only improve: resolution, sharpness, color balance, lighting quality.
       
       ${styleModifier}
-      
-      ${aspectRatio} format.
-      The product is the clear focal point, centered composition.
-      High-quality lighting and professional presentation.
-      Enhance quality while maintaining the exact product identity.
       
       CRITICAL: Preserve perfect human anatomy - hands with exactly 5 fingers each, natural body proportions, realistic limbs and joints.
       Maintain accurate facial features and skin texture.
       Keep all human elements photorealistic and anatomically correct.
       
-      NO text, NO logos, NO watermarks.
+      NO text, NO logos, NO watermarks, NO new objects, NO added elements.
     `.replace(/\s+/g, ' ').trim();
     
     console.log("📝 Prompt para Fal.ai:", regenerationPrompt.substring(0, 150) + '...');
@@ -2862,9 +2862,9 @@ export const enhanceUserImage = async (
         seed: Math.floor(Math.random() * 1000000),
         aspectRatio,
         strength, // Dinámico según realityLevel
-        guidanceScale: 7.5,
+        guidanceScale: 5.0, // Reducido de 7.5 a 5.0 para mayor fidelidad a la imagen original
         steps: 30,
-        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions'
+        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape, extra fingers, missing fingers, mutated hands, fused fingers, bad anatomy, disfigured hands, malformed limbs, extra limbs, missing limbs, bad proportions, added objects, new elements, extra items, additional objects, changed composition, different background, added decorations, extra furniture, new props'
       }
     );
 
