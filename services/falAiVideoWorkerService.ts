@@ -225,3 +225,14 @@ export const checkWorkerHealth = async (): Promise<boolean> => {
     return false;
   }
 };
+
+// ============================================
+// EXPORTS COMPATIBLES CON App.tsx
+// ============================================
+
+/**
+ * Alias para compatibilidad con App.tsx
+ */
+export const generateDraftVideo = generateDraftVideoViaWorker;
+export const upscaleVideoToHD = upscaleVideoToHDViaWorker;
+export const checkVideoStatus = checkVideoStatusViaWorker;
