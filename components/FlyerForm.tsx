@@ -1207,33 +1207,122 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             {/* Botón de descarga - Solo visible cuando hay imagen mejorada */}
             {improvedImageUrl && (
               <button
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = improvedImageUrl;
-                  link.download = `estudio56-mejorada-${Date.now()}.jpg`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  
-                  Swal.fire({
-                    icon: 'success',
-                    title: '¡Descargada!',
-                    text: 'Tu imagen mejorada se ha descargado correctamente',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    background: '#1a1a1a',
-                    color: '#ffffff',
-                    customClass: {
-                      popup: 'border border-green-500/30 shadow-2xl rounded-2xl'
+                onClick={async () => {
+                  try {
+                    // Mostrar loading
+                    Swal.fire({
+                      title: 'Preparando descargas...',
+                      html: 'Generando formato original y story 9:16',
+                      allowOutsideClick: false,
+                      showConfirmButton: false,
+                      background: '#1a1a1a',
+                      color: '#ffffff',
+                      didOpen: () => {
+                        Swal.showLoading();
+                      }
+                    });
+
+                    // 1. Descargar imagen original (formato completo)
+                    const linkOriginal = document.createElement('a');
+                    linkOriginal.href = improvedImageUrl;
+                    linkOriginal.download = `estudio56-mejorada-original-${Date.now()}.jpg`;
+                    document.body.appendChild(linkOriginal);
+                    linkOriginal.click();
+                    document.body.removeChild(linkOriginal);
+
+                    // Esperar un momento entre descargas
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // 2. Crear versión story 9:16
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    await new Promise((resolve, reject) => {
+                      img.onload = resolve;
+                      img.onerror = reject;
+                      img.src = improvedImageUrl;
+                    });
+
+                    // Crear canvas para formato 9:16
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Dimensiones para 9:16 (1080x1920 para alta calidad)
+                    const targetWidth = 1080;
+                    const targetHeight = 1920;
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+
+                    // Calcular crop centrado
+                    const sourceAspect = img.width / img.height;
+                    const targetAspect = targetWidth / targetHeight;
+                    
+                    let sx, sy, sWidth, sHeight;
+                    
+                    if (sourceAspect > targetAspect) {
+                      // Imagen más ancha, crop horizontal
+                      sHeight = img.height;
+                      sWidth = img.height * targetAspect;
+                      sx = (img.width - sWidth) / 2;
+                      sy = 0;
+                    } else {
+                      // Imagen más alta, crop vertical
+                      sWidth = img.width;
+                      sHeight = img.width / targetAspect;
+                      sx = 0;
+                      sy = (img.height - sHeight) / 2;
                     }
-                  });
+
+                    // Dibujar imagen recortada
+                    ctx?.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+
+                    // Convertir a blob y descargar
+                    canvas.toBlob((blob) => {
+                      if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const linkStory = document.createElement('a');
+                        linkStory.href = url;
+                        linkStory.download = `estudio56-mejorada-story-${Date.now()}.jpg`;
+                        document.body.appendChild(linkStory);
+                        linkStory.click();
+                        document.body.removeChild(linkStory);
+                        URL.revokeObjectURL(url);
+                      }
+                    }, 'image/jpeg', 0.95);
+
+                    // Esperar a que termine la segunda descarga
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    Swal.fire({
+                      icon: 'success',
+                      title: '¡Descargadas!',
+                      html: '✅ Formato original<br>✅ Formato story 9:16',
+                      timer: 3000,
+                      showConfirmButton: false,
+                      background: '#1a1a1a',
+                      color: '#ffffff',
+                      customClass: {
+                        popup: 'border border-green-500/30 shadow-2xl rounded-2xl'
+                      }
+                    });
+                  } catch (error) {
+                    console.error('Error descargando imágenes:', error);
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Error',
+                      text: 'Hubo un problema al descargar las imágenes',
+                      background: '#1a1a1a',
+                      color: '#ffffff',
+                      confirmButtonColor: '#ef4444'
+                    });
+                  }
                 }}
                 className="w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                <span>Descargar imagen mejorada</span>
+                <span>Descargar (Original + Story)</span>
               </button>
             )}
             
