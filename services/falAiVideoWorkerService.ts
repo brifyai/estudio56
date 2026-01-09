@@ -45,7 +45,7 @@ export interface VideoResponse {
 /**
  * Genera un video borrador en 480p
  */
-export const generateDraftVideoViaWorker = async (
+export const generateDraftVideo = async (
   prompt: string,
   options: {
     aspectRatio?: AspectRatio;
@@ -101,7 +101,7 @@ export const generateDraftVideoViaWorker = async (
 /**
  * Upscale un video borrador a 1080p
  */
-export const upscaleVideoToHDViaWorker = async (
+export const upscaleVideoToHD = async (
   videoUrl: string
 ): Promise<VideoResponse> => {
   console.log('🚀 [Worker] Upscaling a HD via Cloudflare Worker...');
@@ -150,7 +150,7 @@ export const upscaleVideoToHDViaWorker = async (
 /**
  * Consulta el estado de una tarea de video
  */
-export const checkVideoStatusViaWorker = async (
+export const checkVideoStatus = async (
   taskId: string,
   model: 'draft' | 'hd' = 'draft'
 ): Promise<VideoResponse> => {
@@ -225,14 +225,3 @@ export const checkWorkerHealth = async (): Promise<boolean> => {
     return false;
   }
 };
-
-// ============================================
-// EXPORTS COMPATIBLES CON App.tsx
-// ============================================
-
-/**
- * Alias para compatibilidad con App.tsx
- */
-export const generateDraftVideo = generateDraftVideoViaWorker;
-export const upscaleVideoToHD = upscaleVideoToHDViaWorker;
-export const checkVideoStatus = checkVideoStatusViaWorker;

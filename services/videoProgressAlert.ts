@@ -5,7 +5,7 @@
 
 import Swal from 'sweetalert2';
 import { checkVideoStatus } from './falAiService';
-import { checkVideoStatusViaWorker } from './falAiVideoWorkerService';
+import { checkVideoStatus as checkVideoStatusViaWorker } from './falAiVideoWorkerService';
 
 // Configuración: usar Worker o Netlify Functions
 const USE_CLOUDFLARE_WORKER = process.env.REACT_APP_USE_VIDEO_WORKER === 'true';
