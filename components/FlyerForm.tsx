@@ -1437,14 +1437,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 <span>Descargar (Original + Story)</span>
               </button>
             )}
-            
-            {improvedImageUrl && (
-              <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-                <div className="text-green-300 text-sm text-center">
-                  ✓ Tu imagen ha sido mejorada con IA
-                </div>
-              </div>
-            )}
           </div>
         )}
 
