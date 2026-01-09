@@ -133,6 +133,12 @@ async function handleGenerateDraft(request, env) {
     }, response.status);
   }
 
+  console.log('[Worker] Respuesta de generate-draft:', {
+    request_id: data.request_id,
+    status_url: data.status_url,
+    status: data.status
+  });
+
   return jsonResponse({
     success: true,
     taskId: data.request_id,
@@ -216,7 +222,9 @@ async function handleCheckStatus(request, env) {
   console.log('[Worker] Consultando estado:', {
     taskId,
     model,
-    statusUrl: url
+    statusUrl: url,
+    hasStatusUrl: !!statusUrl,
+    statusUrlProvided: statusUrl
   });
 
   // Consultar estado
@@ -230,7 +238,8 @@ async function handleCheckStatus(request, env) {
   
   console.log('[Worker] Respuesta de fal.ai:', {
     status: response.status,
-    statusText: response.statusText
+    statusText: response.statusText,
+    url: url
   });
 
   // Leer el body una sola vez como texto
