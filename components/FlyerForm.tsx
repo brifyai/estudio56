@@ -1245,8 +1245,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 4. OBJETIVO DEL DISEÑO - BRANDING O LEADS (OCULTO PARA VIDEO Y STORY ART) */}
-        {mediaType !== 'video' && mediaType !== 'story_art' && (
+        {/* 4. OBJETIVO DEL DISEÑO - BRANDING O LEADS (OCULTO PARA VIDEO, STORY ART Y ESTUDIO) */}
+        {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && (
           <div className="space-y-3">
             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">4. ¿Qué quieres lograr?</label>
             
