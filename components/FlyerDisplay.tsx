@@ -1771,39 +1771,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 </div>
               </div>
             </div>
-            
-            {/* Botón de descarga */}
-            <div className="mt-8 flex justify-center">
-              <button
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = improvedImageUrl;
-                  link.download = `estudio56-mejorada-${Date.now()}.jpg`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  
-                  Swal.fire({
-                    icon: 'success',
-                    title: '¡Descargada!',
-                    text: 'Tu imagen mejorada se ha descargado correctamente',
-                    timer: 2000,
-                    showConfirmButton: false,
-                    background: '#1a1a1a',
-                    color: '#ffffff',
-                    customClass: {
-                      popup: 'border border-green-500/30 shadow-2xl rounded-2xl'
-                    }
-                  });
-                }}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg hover:shadow-green-500/20 cursor-pointer"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span>Descargar imagen mejorada</span>
-              </button>
-            </div>
           </div>
         )}
         

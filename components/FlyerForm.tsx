@@ -1204,6 +1204,39 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               )}
             </button>
             
+            {/* Botón de descarga - Solo visible cuando hay imagen mejorada */}
+            {improvedImageUrl && (
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = improvedImageUrl;
+                  link.download = `estudio56-mejorada-${Date.now()}.jpg`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  
+                  Swal.fire({
+                    icon: 'success',
+                    title: '¡Descargada!',
+                    text: 'Tu imagen mejorada se ha descargado correctamente',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: '#1a1a1a',
+                    color: '#ffffff',
+                    customClass: {
+                      popup: 'border border-green-500/30 shadow-2xl rounded-2xl'
+                    }
+                  });
+                }}
+                className="w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>Descargar imagen mejorada</span>
+              </button>
+            )}
+            
             {improvedImageUrl && (
               <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
                 <div className="text-green-300 text-sm text-center">
