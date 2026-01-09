@@ -466,6 +466,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     
     setIsImprovingImage(true);
     try {
+      console.log('🔍 [DEBUG] Iniciando mejora de imagen...');
+      console.log('🔍 [DEBUG] uploadedImage length:', uploadedImage.length);
+      console.log('🔍 [DEBUG] realityMode:', realityMode);
+      console.log('🔍 [DEBUG] aspectRatio:', aspectRatio);
+      
       // Usar la nueva función enhanceUserImage con reconstrucción semántica
       const result = await enhanceUserImage(
         uploadedImage,
@@ -473,7 +478,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         aspectRatio
       );
       
+      console.log('🔍 [DEBUG] Resultado recibido:', result ? `${result.substring(0, 50)}...` : 'null');
+      console.log('🔍 [DEBUG] Tipo de resultado:', typeof result);
+      console.log('🔍 [DEBUG] Es data URL?', result?.startsWith('data:'));
+      
       setImprovedImageUrl(result);
+      
+      console.log('🔍 [DEBUG] Estado actualizado, improvedImageUrl debería tener valor');
+      
       await Swal.fire({
         title: '¡Imagen mejorada!',
         text: `Tu imagen ha sido mejorada con el modo: ${REALITY_MODE_LABELS[realityMode]}`,
@@ -1056,6 +1068,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         {/* Vista previa de imagen subida y botón mejorar */}
         {uploadedImage && (
           <div className="space-y-3">
+            {/* DEBUG: Mostrar estado actual */}
+            {console.log('🔍 [RENDER] uploadedImage:', uploadedImage ? `${uploadedImage.substring(0, 50)}...` : 'null')}
+            {console.log('🔍 [RENDER] improvedImageUrl:', improvedImageUrl ? `${improvedImageUrl.substring(0, 50)}...` : 'null')}
+            
             {/* SWITCH DE MODO DE REALISMO */}
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Modo de Estilo</label>
