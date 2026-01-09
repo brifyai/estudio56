@@ -135,6 +135,16 @@ fal-ai/clarity-upscaler
 
 ## 🎯 FLUJO DE GENERACIÓN ACTUAL
 
+### Modelos Gemini en Uso:
+- ✅ **Principal (Texto/Razonamiento)**: `gemini-3-flash-preview`
+- ✅ **Análisis de Imágenes**: `gemini-1.5-pro`
+- ✅ **Regeneración**: `gemini-1.5-pro`
+- ✅ **Mejora de Imágenes**: `gemini-1.5-pro`
+- ✅ **Contenido Social**: `gemini-1.5-pro`
+- ✅ **Fallback**: `gemini-1.5-flash`
+
+**Nota**: Los modelos `gemini-2.0-pro-exp` y `gemini-2.0-flash-exp` fueron reemplazados por `gemini-1.5-pro` debido a que no están disponibles (404 Not Found).
+
 ### Para Imágenes (Story Art)
 
 ```

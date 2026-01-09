@@ -1522,15 +1522,15 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
   
   // ============================================
-  // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 2.0 FLASH EXP
-  // El modelo gemini-2.0-flash-exp tiene una API específica más simple
+  // ESTRUCTURA DE REQUEST CORRECTA PARA GEMINI 1.5 PRO
+  // El modelo gemini-1.5-pro tiene una API específica más simple
   // ============================================
   
   // ============================================
   // DETECTAR TIPO DE MODELO PARA USAR API CORRECTA
   // ============================================
   const isImagenModel = model.includes('imagen-');
-  const isGemini20Flash = model.includes('gemini-2.0-flash-exp');
+  const isGemini15Pro = model.includes('gemini-1.5-pro');
   
   let apiConfig: any;
   
@@ -1549,8 +1549,8 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       }
     };
     console.log(`📐 [GeminiService] Usando config VERTEX AI para ${model}`);
-  } else if (isGemini20Flash) {
-    // Para gemini-2.0-flash-exp: estructura mínima según documentación oficial
+  } else if (isGemini15Pro) {
+    // Para gemini-1.5-pro: estructura mínima según documentación oficial
     apiConfig = {
       model,
       contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
@@ -1597,8 +1597,8 @@ const executeImageGeneration = async (ai: GoogleGenAI, model: string, prompt: st
       // Si Vertex AI falla, intentar con Gemini API como fallback
       console.warn('⚠️ [GeminiService] Vertex AI falló, intentando con Gemini API como fallback...');
       
-      // Usar Gemini 2.0 Flash Exp como fallback
-      const fallbackModel = 'gemini-2.0-flash-exp';
+      // Usar Gemini 1.5 Pro como fallback
+      const fallbackModel = 'gemini-1.5-pro';
       const fallbackApiConfig = {
         model: fallbackModel,
         contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
@@ -2015,8 +2015,8 @@ export const generateHDFromDraft = async (
   `.replace(/\n/g, ' ').trim();
 
   try {
-    // Usar gemini-2.0-flash-exp que soporta Image-to-Image correctamente
-    const model = 'gemini-2.0-flash-exp';
+    // Usar gemini-1.5-pro que soporta Image-to-Image correctamente
+    const model = 'gemini-1.5-pro';
     console.log(`📡 [HD From Draft] Usando modelo: ${model} con img2img`);
     
     const response = await ai.models.generateContent({
@@ -2495,62 +2495,21 @@ ${NEGATIVE_TEXT_SHIELD}
       console.log('🖼️ [HD] Draft disponible:', !!draftImageForHD);
       
       // ============================================
-      // 🎯 ANÁLISIS DETALLADO DEL BORRADOR
-      // Usar Gemini Vision para extraer descripción precisa
+      // 🎯 PROMPT SIMPLIFICADO PARA FLUX DEV IMG2IMG
+      // Usa la descripción original directamente, sin análisis de Gemini
+      // Flux Dev img2img mantiene la composición automáticamente
       // ============================================
       
-      let draftAnalysis = '';
-      try {
-        console.log('🔍 [HD] Analizando borrador con Gemini Vision...');
-        const base64Data = draftImageForHD.split(',')[1];
-        
-        const analysisResponse = await ai.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
-          contents: {
-            parts: [
-              { text: `Analyze this image in extreme detail. Describe:
-              1. The main subject (person, object, scene) - be very specific
-              2. Exact colors of key elements (not just "blue", but "navy blue", "sky blue", etc.)
-              3. Lighting direction and quality (e.g., "overhead fluorescent", "soft window light from left")
-              4. Background/environment details (what's in the background, what's the setting)
-              5. Camera angle and perspective (eye level, slightly above, below, etc.)
-              6. Composition and subject placement (centered, left side, right side, etc.)
-              7. Mood and atmosphere (professional, casual, energetic, calm, etc.)
-              8. Subject size in frame (small, medium, large, fills most of frame)
-              9. Any text or graphics present (describe them even though they will be removed)
-              
-              Format your response as a detailed paragraph that could be used to recreate this exact image.` },
-              {
-                inlineData: {
-                  mimeType: 'image/jpeg',
-                  data: base64Data
-                }
-              }
-            ]
-          }
-        });
-        
-        const analysisText = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (analysisText) {
-          draftAnalysis = analysisText.trim();
-          console.log('✅ [HD] Análisis completado:', draftAnalysis.substring(0, 200) + '...');
-        }
-      } catch (analysisError: any) {
-        console.warn('⚠️ [HD] Error analizando borrador:', analysisError.message);
-        // Usar la descripción original como fallback
-        const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
-                            enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
-                            enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
-        draftAnalysis = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
-      }
+      console.log('🚀 [HD] Usando descripción original para Flux Dev img2img');
       
-      // ============================================
-      // 🎯 PROMPT SIMPLIFICADO PARA SDXL IMG2IMG
-      // Prompt corto y directo = máxima similitud con el borrador
-      // ============================================
+      // Extraer descripción principal
+      const subjectMatch = enhancedDescription.match(/SUBJECT:\s*([^\n]+)/i) ||
+                          enhancedDescription.match(/OBJECTIVE:\s*([^\n]+)/i) ||
+                          enhancedDescription.match(/SCENE:\s*([^\n]+)/i);
+      const draftAnalysis = subjectMatch ? subjectMatch[1].trim() : enhancedDescription.split('.')[0];
       
-      // Construir prompt SIMPLE y DIRECTO para SDXL img2img
-      // SDXL img2img funciona mejor con prompts cortos (200-500 chars)
+      // Construir prompt SIMPLE y DIRECTO para Flux Dev img2img
+      // Flux Dev img2img funciona mejor con prompts cortos (200-500 chars)
       const hdPrompt = `
         High quality professional photograph.
         ${draftAnalysis}
@@ -2838,81 +2797,110 @@ export const enhanceUserImage = async (
   realityMode: 'realist' | 'aspirational' | 'studio' = 'studio',
   aspectRatio: AspectRatio = '1:1'
 ): Promise<string> => {
-  console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen...");
+  console.log("🎯 [EnhanceUserImage] Iniciando mejora de imagen con Fal.ai...");
   console.log("📸 Modo de realismo:", realityMode);
 
   try {
-    // Paso 1: Análisis con Gemini Vision
+    // Paso 1: Análisis con Gemini Vision (solo para entender la imagen)
     console.log("🔍 Paso 1: Analizando imagen con Gemini Vision...");
-    const productDescription = await analyzeProductImage(imageDataUrl);
+    const ai = getAiClient();
+    const base64Data = imageDataUrl.split(',')[1];
+    
+    const analysisResponse = await ai.models.generateContent({
+      model: 'gemini-1.5-pro',
+      contents: {
+        parts: [
+          { 
+            text: `Analyze this product image and describe:
+            1. What is the main product/subject?
+            2. What are its key colors and materials?
+            3. What is its shape and form?
+            4. What type of product is it?
+            
+            Provide a concise description (max 100 words) that captures the essence of the product.`
+          },
+          {
+            inlineData: {
+              mimeType: 'image/jpeg',
+              data: base64Data
+            }
+          }
+        ]
+      }
+    });
+    
+    const productDescription = analysisResponse.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Professional product';
+    console.log("✅ Análisis completado:", productDescription.substring(0, 100) + '...');
 
-    // Paso 2: Construir el prompt de regeneración
-    console.log("🔨 Paso 2: Construyendo prompt de regeneración...");
+    // Paso 2: Construir el prompt para Fal.ai
+    console.log("🔨 Paso 2: Construyendo prompt para Fal.ai...");
     
     // Importar el modo de estilo correspondiente
     const { REALITY_MODES } = await import('../src/constants/promptModifiers');
     const styleModifier = REALITY_MODES[realityMode];
 
-    // Prompt que combina la descripción del producto con el estilo
+    // Prompt optimizado para Fal.ai Flux Dev img2img
     const regenerationPrompt = `
-      PRODUCT TO RENDER: ${productDescription}
+      ${productDescription}
       
       ${styleModifier}
       
-      COMPOSITION: Professional product photography layout.
-      The product should be the clear focal point, centered or slightly off-center.
-      Aspect ratio: ${aspectRatio}
-      
-      IMPORTANT RULES:
-      1. Maintain the exact appearance, colors, materials, and form of the product described above
-      2. Create a professional, clean environment appropriate for the product
-      3. Do NOT add any text to the image
-      4. Do NOT change the product's identity or key features
-      5. Focus on high-quality lighting and professional presentation
-    `.replace(/\n/g, ' ').trim();
-
-    // Paso 3: Generar la nueva imagen
-    console.log("✨ Paso 3: Generando imagen mejorada...");
-    const ai = getAiClient();
-    const model = "gemini-2.0-pro-exp";
+      Professional product photography, ${aspectRatio} format.
+      The product is the clear focal point, centered composition.
+      High-quality lighting and professional presentation.
+      NO text, NO logos, NO watermarks.
+    `.replace(/\s+/g, ' ').trim();
     
-    const response = await ai.models.generateContent({
-      model,
-      contents: { parts: [{ text: regenerationPrompt }] },
-      config: {
-        imageConfig: {
-          aspectRatio: aspectRatio,
-          imageSize: "1K"
-        }
+    console.log("📝 Prompt para Fal.ai:", regenerationPrompt.substring(0, 150) + '...');
+
+    // Paso 3: Generar con Fal.ai Flux Dev img2img
+    console.log("✨ Paso 3: Generando imagen mejorada con Fal.ai Flux Dev img2img...");
+    
+    const falResult = await generateHDWithImg2Img(
+      regenerationPrompt,
+      imageDataUrl, // Usar imagen original como referencia
+      {
+        seed: Math.floor(Math.random() * 1000000),
+        aspectRatio,
+        strength: 0.40, // Moderado para mejorar pero mantener identidad
+        guidanceScale: 7.5,
+        steps: 30,
+        negativePrompt: 'blurry, low quality, distorted, deformed, text, watermark, logo, different product, changed colors, different shape'
       }
-    });
+    );
 
-    // Extraer la imagen de la respuesta
-    const candidates = response.candidates;
-    if (!candidates || candidates.length === 0) {
-      throw new Error("API retornó 0 candidatos");
+    if (!falResult.success || !falResult.imageUrl) {
+      throw new Error(falResult.error || 'Error generando imagen con Fal.ai');
     }
 
-    const parts = candidates[0].content?.parts;
-    if (!parts || parts.length === 0) {
-      throw new Error("Respuesta vacía");
-    }
-
-    // Buscar la imagen generada
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        let base64Result = part.inlineData.data.replace(/\s/g, '');
-        const imageDataUrl = `data:image/jpeg;base64,${base64Result}`;
-        
-        console.log("✅ [EnhanceUserImage] Imagen mejorada generada exitosamente");
-        
-        // Aplicar diagnóstico para evitar imágenes en negro
-        const correctedImageUrl = await diagnoseAndFixBlackImage(imageDataUrl);
-        return correctedImageUrl;
+    console.log("✅ [EnhanceUserImage] Imagen generada con Fal.ai");
+    
+    // Descargar imagen de Fal.ai y convertir a data URL
+    try {
+      const imageResponse = await fetch(falResult.imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Error descargando imagen: ${imageResponse.status}`);
       }
+      const imageBlob = await imageResponse.blob();
+      const reader = new FileReader();
+      
+      const finalImageDataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageBlob);
+      });
+      
+      console.log("✅ [EnhanceUserImage] Imagen descargada y convertida");
+      
+      // Aplicar diagnóstico para evitar imágenes en negro
+      const correctedImageUrl = await diagnoseAndFixBlackImage(finalImageDataUrl);
+      return correctedImageUrl;
+      
+    } catch (downloadError: any) {
+      console.warn("⚠️ Error descargando imagen, usando URL directa:", downloadError.message);
+      return falResult.imageUrl;
     }
 
-    throw new Error("No se encontraron datos de imagen en la respuesta");
   } catch (error: any) {
     console.error("❌ [EnhanceUserImage] Error:", error);
     throw new Error(`Falló la mejora de imagen: ${error.message}`);
