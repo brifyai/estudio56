@@ -144,6 +144,7 @@ const Dashboard: React.FC = () => {
   const [hdImageUrl, setHdImageUrl] = useState<string | null>(null);
   const [improvedImageUrl, setImprovedImageUrl] = useState<string | null>(null); // NEW: Para modo estudio
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null); // NEW: Imagen original subida en modo estudio
+  const [studioRealityLevel, setStudioRealityLevel] = useState<number>(1.5); // NEW: Nivel de transformación en modo estudio
   
   // URLs separadas para draft y HD (VIDEOS)
   const [draftVideoUrl, setDraftVideoUrl] = useState<string | null>(null);
@@ -2198,6 +2199,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     imageAnalysis={imageAnalysis}
                     onImprovedImageChange={setImprovedImageUrl} // NEW: Callback para imagen mejorada
                     onUploadedImageChange={setUploadedImageUrl} // NEW: Callback para imagen original
+                    studioRealityLevel={studioRealityLevel} // NEW: Nivel de transformación
+                    onStudioRealityLevelChange={setStudioRealityLevel} // NEW: Callback para cambiar nivel
                     intelligentTextStyles={intelligentTextStyles}
                     contextualTypography={contextualTypography}
                     contrastAnalysis={contrastAnalysis}
@@ -2252,6 +2255,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 hdImageUrl={hdImageUrl}
                                 improvedImageUrl={improvedImageUrl}
                                 uploadedImageUrl={uploadedImageUrl}
+                                studioRealityLevel={studioRealityLevel}
+                                onStudioRealityLevelChange={setStudioRealityLevel}
                                 draftVideoUrl={draftVideoUrl}
                                 hdVideoUrl={hdVideoUrl}
                                 status={status}
@@ -2443,6 +2448,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       hdImageUrl={hdImageUrl}
                       improvedImageUrl={improvedImageUrl}
                       uploadedImageUrl={uploadedImageUrl}
+                      studioRealityLevel={studioRealityLevel}
+                      onStudioRealityLevelChange={setStudioRealityLevel}
                       draftVideoUrl={draftVideoUrl}
                       hdVideoUrl={hdVideoUrl}
                       status={status}

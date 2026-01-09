@@ -19,6 +19,8 @@ interface FlyerDisplayProps {
   hdImageUrl?: string | null;
   improvedImageUrl?: string | null; // NEW: Imagen mejorada en modo estudio
   uploadedImageUrl?: string | null; // NEW: Imagen original subida en modo estudio
+  studioRealityLevel?: number; // NEW: Nivel de transformación en modo estudio
+  onStudioRealityLevelChange?: (level: number) => void; // NEW: Callback para cambiar nivel
   status: GenerationStatus;
   aspectRatio: AspectRatio;
   logoUrl: string | null;
@@ -86,6 +88,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   hdImageUrl,
   improvedImageUrl, // NEW: Imagen mejorada en modo estudio
   uploadedImageUrl, // NEW: Imagen original subida en modo estudio
+  studioRealityLevel = 1.5, // NEW: Nivel de transformación
+  onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
   status,
   aspectRatio,
   logoUrl,
@@ -1791,6 +1795,42 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 <span>Descargar imagen mejorada</span>
               </button>
             </div>
+            
+            {/* Regulador de Transformación - Debajo del botón de descarga */}
+            {onStudioRealityLevelChange && (
+              <div className="mt-8 max-w-md mx-auto">
+                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm font-bold text-white uppercase tracking-wide">
+                      Nivel de Transformación
+                    </label>
+                    <span className="text-lg text-white font-bold">{studioRealityLevel}★</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="3.0"
+                    step="0.5"
+                    value={studioRealityLevel}
+                    onChange={(e) => onStudioRealityLevelChange(parseFloat(e.target.value))}
+                    className="w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 2.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 2.5) * 100}%)`
+                    }}
+                  />
+                  <div className="flex justify-between text-xs text-white/50 mt-2">
+                    <span>Mínimo</span>
+                    <span>Moderado</span>
+                    <span>Máximo</span>
+                  </div>
+                  <div className="text-sm text-white/60 mt-3 text-center">
+                    {studioRealityLevel <= 1.0 && 'Cambios mínimos, máxima fidelidad a la original'}
+                    {studioRealityLevel > 1.0 && studioRealityLevel <= 2.0 && 'Balance entre fidelidad y mejora'}
+                    {studioRealityLevel > 2.0 && 'Transformación completa con máxima mejora'}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
         

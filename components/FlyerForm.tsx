@@ -50,6 +50,8 @@ interface FlyerFormProps {
   imageAnalysis?: ImageAnalysisResult | null; // NEW: Análisis de imagen
   onImprovedImageChange?: (url: string | null) => void; // NEW: Callback para imagen mejorada en modo estudio
   onUploadedImageChange?: (url: string | null) => void; // NEW: Callback para imagen original subida
+  studioRealityLevel?: number; // NEW: Nivel de transformación en modo estudio
+  onStudioRealityLevelChange?: (level: number) => void; // NEW: Callback para cambiar nivel
   intelligentTextStyles?: any; // NEW: Estilos de texto inteligentes
   contextualTypography?: any; // NEW: Tipografía contextual
   contrastAnalysis?: any; // NEW: Análisis de contraste
@@ -112,6 +114,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   imageAnalysis,
   onImprovedImageChange, // NEW: Callback para imagen mejorada
   onUploadedImageChange, // NEW: Callback para imagen original
+  studioRealityLevel: studioRealityLevelProp = 1.5, // NEW: Nivel de transformación
+  onStudioRealityLevelChange, // NEW: Callback para cambiar nivel
   intelligentTextStyles,
   compositionAnalysis,
   autoTextValidation,
@@ -184,8 +188,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   // NUEVO: Estados para el switch de modo de realismo
   const [realityMode, setRealityMode] = useState<RealityMode>('realist');
   
-  // NUEVO: Estado para el regulador de realidad en modo estudio
-  const [studioRealityLevel, setStudioRealityLevel] = useState<number>(1.5);
+  // NUEVO: Usar el nivel de transformación del prop (eliminado estado local)
+  const studioRealityLevel = studioRealityLevelProp;
+  const setStudioRealityLevel = onStudioRealityLevelChange || (() => {});
   
   // NUEVO: Estados para STORY ART - DIRECCIÓN DE ARTE PROFESIONAL
   const [isStoryArtModeActive, setIsStoryArtModeActive] = useState(false);
@@ -1114,38 +1119,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                 {realityMode === 'realist'
                   ? 'Imágenes con luz natural y fondos sencillos para tu negocio local'
                   : 'Imágenes de alta gama con iluminación dramática y atmósfera lujosa'}
-              </div>
-              
-              {/* Regulador de Realidad para Modo Estudio */}
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] font-bold text-white uppercase tracking-widest">
-                    Nivel de Transformación
-                  </label>
-                  <span className="text-xs text-white/70">{studioRealityLevel}★</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="3.0"
-                  step="0.5"
-                  value={studioRealityLevel}
-                  onChange={(e) => setStudioRealityLevel(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 2.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 2.5) * 100}%)`
-                  }}
-                />
-                <div className="flex justify-between text-[9px] text-white/40 mt-1">
-                  <span>Mínimo</span>
-                  <span>Moderado</span>
-                  <span>Máximo</span>
-                </div>
-                <div className="text-[10px] text-white/50 mt-2">
-                  {studioRealityLevel <= 1.0 && 'Cambios mínimos, máxima fidelidad a la original'}
-                  {studioRealityLevel > 1.0 && studioRealityLevel <= 2.0 && 'Balance entre fidelidad y mejora'}
-                  {studioRealityLevel > 2.0 && 'Transformación completa con máxima mejora'}
-                </div>
               </div>
             </div>
             
