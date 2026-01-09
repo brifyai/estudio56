@@ -1820,12 +1820,12 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${((studioRealityLevel - 0.5) / 4.5) * 100}%, rgba(255,255,255,0.1) ${((studioRealityLevel - 0.5) / 4.5) * 100}%)`
                     }}
                   />
-                  <div className="flex justify-between text-xs text-white/50 mt-2">
-                    <span>Sutil</span>
-                    <span>Moderado</span>
-                    <span>Notable</span>
-                    <span>Fuerte</span>
-                    <span>Máximo</span>
+                  <div className="grid grid-cols-5 text-[10px] text-white/50 mt-2">
+                    <span className="text-left">Sutil</span>
+                    <span className="text-center">Moderado</span>
+                    <span className="text-center">Notable</span>
+                    <span className="text-center">Fuerte</span>
+                    <span className="text-right">Máximo</span>
                   </div>
                   <div className="text-sm text-white/60 mt-3 text-center">
                     {studioRealityLevel <= 1.5 && 'Cambios sutiles - Máxima fidelidad a la original'}
