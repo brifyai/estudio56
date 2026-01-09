@@ -91,7 +91,7 @@ export const showVideoProgressAlert = async (config: ProgressConfig): Promise<vo
     showConfirmButton: false,
     didOpen: () => {
       // Iniciar polling
-      startPolling(taskId, quality, messages, onComplete, onError);
+      startPolling(taskId, quality, config.statusUrl, messages, onComplete, onError);
     },
   });
 };
@@ -106,6 +106,7 @@ let attemptCount = 0;
 const startPolling = async (
   taskId: string,
   quality: VideoQuality,
+  statusUrl: string | undefined,
   messages: typeof MESSAGES.draft,
   onComplete: (videoUrl: string) => void,
   onError?: (error: string) => void
@@ -120,7 +121,7 @@ const startPolling = async (
     try {
       // Consultar estado (Worker o Netlify)
       const status = USE_CLOUDFLARE_WORKER
-        ? await checkVideoStatusViaWorker(taskId, quality, config.statusUrl)
+        ? await checkVideoStatusViaWorker(taskId, quality, statusUrl)
         : await checkVideoStatus(taskId);
 
       // Actualizar mensaje según estado
