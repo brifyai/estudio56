@@ -1739,9 +1739,15 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
       {/* CANVAS - Padding aumentado arriba para que los botones no tapen la imagen */}
       <div className="w-full flex flex-col items-center justify-start px-2 md:px-0 pt-2 md:py-12 relative z-0">
+        {console.log('🔍 [FLYER DISPLAY] improvedImageUrl:', improvedImageUrl ? 'EXISTS' : 'NULL')}
+        {console.log('🔍 [FLYER DISPLAY] uploadedImageUrl:', uploadedImageUrl ? 'EXISTS' : 'NULL')}
+        {console.log('🔍 [FLYER DISPLAY] mediaType:', mediaType)}
+        {console.log('🔍 [FLYER DISPLAY] Mostrar comparador?', !!(improvedImageUrl && uploadedImageUrl && mediaType === 'product_study'))}
+        
         {/* COMPARADOR MODO ESTUDIO - Original vs Mejorada */}
         {improvedImageUrl && uploadedImageUrl && mediaType === 'product_study' && (
           <div className="w-full max-w-4xl mx-auto p-4">
+            {console.log('✅ [FLYER DISPLAY] Renderizando comparador modo estudio')}
             <div className="text-center mb-4">
               <h3 className="text-white text-lg font-bold">Comparar con original</h3>
             </div>
