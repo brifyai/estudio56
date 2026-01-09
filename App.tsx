@@ -70,17 +70,13 @@ const Dashboard: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [hasShownFreePlanModal, setHasShownFreePlanModal] = useState(false);
   
-  // Block body scroll when calendar overlay is open on mobile
-  useEffect(() => {
-    if (showCalendar && window.innerWidth < 768) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+  // Función para hacer scroll suave al calendario en mobile
+  const scrollToCalendar = () => {
+    const calendarElement = document.getElementById('calendario-comercial');
+    if (calendarElement) {
+      calendarElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showCalendar]);
+  };
   
   // User Data State
   const [activePlan, setActivePlan] = useState<string>('GRATIS');
@@ -2189,7 +2185,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setShowCalendar(!showCalendar);
+                        scrollToCalendar();
                       }}
                       className="flex lg:hidden items-center justify-center h-7 w-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 transition-all hover:border-white/30 active:scale-95 cursor-pointer touch-manipulation z-[60] relative"
                       title="Ver calendario"
@@ -2662,7 +2658,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
      
 
      {/* LEFT PANEL: CALENDAR - Donde estaba el Comparador de Realismo */}
-     <aside className={`w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto p-1 lg:p-2 pl-0 lg:pl-2 ${showRealityComparator ? 'lg:min-h-screen' : 'lg:h-screen'}`}>
+     <aside id="calendario-comercial" className={`w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto p-1 lg:p-2 pl-0 lg:pl-2 ${showRealityComparator ? 'lg:min-h-screen' : 'lg:h-screen'}`}>
        <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
          {/* Header */}
          <div className="h-14 flex-shrink-0 flex items-center justify-center px-4 border-b border-white/5">
