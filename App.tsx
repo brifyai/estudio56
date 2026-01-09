@@ -2433,14 +2433,16 @@ progressAlert.updateProgress(60, 'Renderizando...');
                   </div>
                 )}
                 
-                {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: realityImageUrl → hdImageUrl → draftImageUrl */}
+                {/* 🎯 PRIORIDAD DE VISUALIZACIÓN: improvedImageUrl (estudio) → realityImageUrl → hdImageUrl → draftImageUrl */}
                 {(() => {
-                  const displayUrl = realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
+                  const displayUrl = improvedImageUrl || realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
                   return (
                     <FlyerDisplay
                       imageUrl={displayUrl}
                       draftImageUrl={draftImageUrl}
                       hdImageUrl={hdImageUrl}
+                      improvedImageUrl={improvedImageUrl}
+                      uploadedImageUrl={uploadedImageUrl}
                       draftVideoUrl={draftVideoUrl}
                       hdVideoUrl={hdVideoUrl}
                       status={status}
