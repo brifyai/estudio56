@@ -1737,21 +1737,21 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         
         {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
-          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-2 lg:p-4">
             {/* Contenedor vertical para alinear imágenes y botón */}
-            <div className="flex flex-col items-center">
-              <div className="flex gap-4 lg:gap-8 items-center justify-center">
+            <div className="flex flex-col items-center w-full max-w-6xl">
+              <div className="flex flex-col lg:flex-row gap-2 lg:gap-8 items-center justify-center w-full">
                 {/* BORRADOR - Gemini 2.5 Flash */}
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-yellow-400 text-xs font-mono font-bold">BORRADOR</span>
+                  <div className="flex items-center gap-2 mb-1 lg:mb-2">
+                    <span className="text-yellow-400 text-[10px] lg:text-xs font-mono font-bold">BORRADOR</span>
                   </div>
                   <div
-                    className={`relative bg-black rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-yellow-500/30 overflow-hidden
-                      ${aspectRatio === '9:16' ? 'w-[200px] h-[356px]' :
-                        aspectRatio === '1:1' ? 'w-[225px] h-[225px]' :
-                        aspectRatio === '4:5' ? 'w-[200px] h-[250px]' :
-                        'w-[200px] h-[356px]'}`}
+                    className={`relative bg-black rounded-lg lg:rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-2 lg:border-[4px] border-yellow-500/30 overflow-hidden
+                      ${aspectRatio === '9:16' ? 'w-[140px] h-[249px] lg:w-[200px] lg:h-[356px]' :
+                        aspectRatio === '1:1' ? 'w-[160px] h-[160px] lg:w-[225px] lg:h-[225px]' :
+                        aspectRatio === '4:5' ? 'w-[140px] h-[175px] lg:w-[200px] lg:h-[250px]' :
+                        'w-[140px] h-[249px] lg:w-[200px] lg:h-[356px]'}`}
                   >
                     <div className="w-full h-full relative">
                       <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" crossOrigin="anonymous" />
@@ -1763,21 +1763,21 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 </div>
                 
                 {/* VS */}
-                <div className="flex flex-col items-center">
-                  <span className="text-white/30 text-xl lg:text-3xl font-mono">VS</span>
+                <div className="flex flex-col items-center py-1 lg:py-0">
+                  <span className="text-white/30 text-sm lg:text-3xl font-mono">VS</span>
                 </div>
                 
                 {/* HD - Gemini 3.0 Pro */}
                 <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-emerald-400 text-xs font-mono font-bold">HD</span>
+                  <div className="flex items-center gap-2 mb-1 lg:mb-2">
+                    <span className="text-emerald-400 text-[10px] lg:text-xs font-mono font-bold">HD</span>
                   </div>
                   <div
-                    className={`relative bg-black rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-[4px] border-emerald-500/50 overflow-hidden hd-download-container
-                      ${aspectRatio === '9:16' ? 'w-[320px] h-[569px]' :
-                        aspectRatio === '1:1' ? 'w-[360px] h-[360px]' :
-                        aspectRatio === '4:5' ? 'w-[320px] h-[400px]' :
-                        'w-[320px] h-[569px]'}`}
+                    className={`relative bg-black rounded-lg lg:rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-2 lg:border-[4px] border-emerald-500/50 overflow-hidden hd-download-container
+                      ${aspectRatio === '9:16' ? 'w-[160px] h-[284px] lg:w-[320px] lg:h-[569px]' :
+                        aspectRatio === '1:1' ? 'w-[180px] h-[180px] lg:w-[360px] lg:h-[360px]' :
+                        aspectRatio === '4:5' ? 'w-[160px] h-[200px] lg:w-[320px] lg:h-[400px]' :
+                        'w-[160px] h-[284px] lg:w-[320px] lg:h-[569px]'}`}
                   >
                     <div className="w-full h-full relative">
                       <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" crossOrigin="anonymous" />
@@ -1790,7 +1790,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               </div>
               
               {/* BOTÓN DESCARGAR IMAGEN HD - Centrado exactamente debajo de las imágenes */}
-              <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="mt-3 lg:mt-6 flex flex-col items-center gap-2 lg:gap-3">
                 <button
                   onClick={async () => {
                     // Componer imagen con todos los overlays usando canvas
@@ -1864,14 +1864,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       });
                     }
                   }}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-2 lg:py-3 px-4 lg:px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-xs lg:text-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   <span>Descargar imagen HD</span>
                 </button>
-                <p className="text-white/40 text-[10px] font-mono">
+                <p className="text-white/40 text-[9px] lg:text-[10px] font-mono text-center px-2">
                   Descarga la versión HD con texto y logo
                 </p>
               </div>
@@ -1881,6 +1881,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         
         {/* VISTA MOBILE - Solo visible en mobile (oculta en lg y superior) - OCULTAR EN MODO ESTUDIO */}
         {!(mediaType === 'product_study' && improvedImageUrl && uploadedImageUrl) && (
+        <>
         <div
           id="flyer-container-mobile"
           className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden
@@ -2046,19 +2047,22 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               </div>
             )}
           </div>
-          
-          {/* 🎚️ FAB PARA ABRIR EDITOR DE REALIDAD - Solo mobile, solo cuando hay imagen y no es video/story */}
-          {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
+        </div>
+        
+        {/* 🎚️ FAB PARA ABRIR EDITOR DE REALIDAD - Solo mobile, fuera del contenedor para evitar overflow */}
+        {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
+          <div className="lg:hidden relative w-full flex justify-center mt-4">
             <button
               onClick={() => setShowRealityBottomSheet(true)}
-              className="absolute -bottom-14 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 shadow-[0_4px_20px_rgba(139,92,246,0.5)] transition-all hover:scale-105 active:scale-95 border border-white/20"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 shadow-[0_4px_20px_rgba(139,92,246,0.5)] transition-all hover:scale-105 active:scale-95 border border-white/20"
               aria-label="Abrir editor de realidad"
             >
               <span className="text-lg">🎚️</span>
               <span className="text-white text-xs font-medium">Realismo</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
+        </>
         )}
 
         {/* VISTA DESKTOP - Solo visible en desktop (lg y superior) - OCULTAR EN MODO ESTUDIO */}
