@@ -262,7 +262,7 @@ export const ProfilePage: React.FC = () => {
           <p className="text-white/70 mb-6">{error}</p>
           <button 
             onClick={() => window.location.href = '/panel'}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors cursor-pointer"
           >
             Volver al Panel
           </button>
@@ -283,7 +283,7 @@ export const ProfilePage: React.FC = () => {
           <h1 className="text-white text-xl mb-4">Perfil no encontrado</h1>
           <button
             onClick={() => window.location.href = '/panel'}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors cursor-pointer"
           >
             Volver al Panel
           </button>
@@ -317,14 +317,14 @@ export const ProfilePage: React.FC = () => {
               <button
                 onClick={handleCancelPlan}
                 disabled={isCancelling}
-                className="w-full bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white py-3 rounded-xl transition-colors font-medium"
+                className="w-full bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white py-3 rounded-xl transition-colors font-medium cursor-pointer"
               >
                 {isCancelling ? 'Cancelando...' : 'Sí, cancelar mi plan'}
               </button>
               <button
                 onClick={() => setShowCancelModal(false)}
                 disabled={isCancelling}
-                className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors"
+                className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors cursor-pointer"
               >
                 No, mantener mi plan
               </button>
@@ -348,13 +348,13 @@ export const ProfilePage: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowPlanModal(true)}
-                className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer"
               >
                 Cambiar Plan
               </button>
               <button
                 onClick={handleLogout}
-                className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors text-sm flex items-center gap-2"
+                className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -385,7 +385,7 @@ export const ProfilePage: React.FC = () => {
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="text-blue-400 hover:text-blue-300 transition-colors text-sm flex items-center gap-1"
+                  className="text-blue-400 hover:text-blue-300 transition-colors text-sm flex items-center gap-1 cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.2325 5.2325l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -427,7 +427,7 @@ export const ProfilePage: React.FC = () => {
                   <div className="flex gap-3 pt-2">
                     <button
                       onClick={handleSaveProfile}
-                      className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-colors font-medium"
+                      className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl transition-colors font-medium cursor-pointer"
                     >
                       Guardar Cambios
                     </button>
@@ -436,7 +436,7 @@ export const ProfilePage: React.FC = () => {
                         setIsEditing(false);
                         setEditForm({ name: userProfile.name || '', business_name: userProfile.business_name || '' });
                       }}
-                      className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl transition-colors"
+                      className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl transition-colors cursor-pointer"
                     >
                       Cancelar
                     </button>
@@ -559,7 +559,7 @@ export const ProfilePage: React.FC = () => {
                 {userProfile.user_plans.price > 0 && subscription?.status !== 'cancelled' && (
                   <button
                     onClick={() => setShowCancelModal(true)}
-                    className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 rounded-xl transition-colors"
+                    className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 py-3 rounded-xl transition-colors cursor-pointer"
                   >
                     Cancelar Plan
                   </button>
@@ -578,7 +578,7 @@ export const ProfilePage: React.FC = () => {
                 
                 <button
                   onClick={() => window.location.href = '/panel'}
-                  className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors"
+                  className="w-full bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl transition-colors cursor-pointer"
                 >
                   Volver al Panel →
                 </button>
@@ -797,7 +797,7 @@ export const ProfilePage: React.FC = () => {
               <div className="flex items-center">
                 <button
                   onClick={() => setShowPricingModal(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium"
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl transition-colors font-medium cursor-pointer"
                 >
                   Obtener más créditos
                 </button>
@@ -820,7 +820,7 @@ export const ProfilePage: React.FC = () => {
               </h2>
               <button
                 onClick={loadUserProfile}
-                className="text-white/50 hover:text-white transition-colors"
+                className="text-white/50 hover:text-white transition-colors cursor-pointer"
                 title="Actualizar"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
