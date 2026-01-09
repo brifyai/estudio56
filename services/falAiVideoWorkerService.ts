@@ -152,7 +152,8 @@ export const upscaleVideoToHD = async (
  */
 export const checkVideoStatus = async (
   taskId: string,
-  model: 'draft' | 'hd' = 'draft'
+  model: 'draft' | 'hd' = 'draft',
+  statusUrl?: string
 ): Promise<VideoResponse> => {
   console.log('🔄 [Worker] Consultando estado via Worker:', taskId);
 
@@ -162,7 +163,7 @@ export const checkVideoStatus = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ taskId, model }),
+      body: JSON.stringify({ taskId, model, statusUrl }),
     });
 
     if (!response.ok) {

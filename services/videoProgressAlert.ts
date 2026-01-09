@@ -19,6 +19,7 @@ type VideoQuality = 'draft' | 'hd';
 interface ProgressConfig {
   taskId: string;
   quality: VideoQuality;
+  statusUrl?: string; // URL de status de fal.ai
   onComplete: (videoUrl: string) => void;
   onError?: (error: string) => void;
 }
@@ -119,7 +120,7 @@ const startPolling = async (
     try {
       // Consultar estado (Worker o Netlify)
       const status = USE_CLOUDFLARE_WORKER
-        ? await checkVideoStatusViaWorker(taskId, quality)
+        ? await checkVideoStatusViaWorker(taskId, quality, config.statusUrl)
         : await checkVideoStatus(taskId);
 
       // Actualizar mensaje según estado

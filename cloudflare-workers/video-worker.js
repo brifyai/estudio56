@@ -197,25 +197,30 @@ async function handleGenerateHD(request, env) {
 
 async function handleCheckStatus(request, env) {
   const body = await request.json();
-  const { taskId, model = 'draft' } = body;
+  const { taskId, model = 'draft', statusUrl } = body;
 
-  if (!taskId) {
-    return jsonResponse({ error: 'taskId is required' }, 400);
+  if (!taskId && !statusUrl) {
+    return jsonResponse({ error: 'taskId or statusUrl is required' }, 400);
   }
 
-  // Construir URL de status
-  const modelPath = model === 'hd' ? MODELS.UPSCALE : MODELS.DRAFT;
-  const statusUrl = `${FAL_AI_BASE_URL}/${modelPath}/requests/${taskId}/status`;
+  // Usar statusUrl si se proporciona, sino construir la URL
+  let url;
+  if (statusUrl) {
+    url = statusUrl;
+  } else {
+    // Construir URL de status
+    const modelPath = model === 'hd' ? MODELS.UPSCALE : MODELS.DRAFT;
+    url = `${FAL_AI_BASE_URL}/${modelPath}/requests/${taskId}/status`;
+  }
   
   console.log('[Worker] Consultando estado:', {
     taskId,
     model,
-    modelPath,
-    statusUrl
+    statusUrl: url
   });
 
   // Consultar estado
-  const response = await fetch(statusUrl, {
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Authorization': `Key ${env.FAL_AI_API_KEY}`,
@@ -225,8 +230,7 @@ async function handleCheckStatus(request, env) {
   
   console.log('[Worker] Respuesta de fal.ai:', {
     status: response.status,
-    statusText: response.statusText,
-    headers: Object.fromEntries(response.headers)
+    statusText: response.statusText
   });
 
   // Leer el body una sola vez como texto
