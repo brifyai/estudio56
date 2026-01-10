@@ -1735,23 +1735,26 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           />
         )}
         
-        {/* IMAGE COMPARISON MODE - SIDE BY SIDE */}
+        {/* IMAGE COMPARISON MODE - OPTIMIZADO PARA MOBILE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
-          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center p-2 lg:p-4">
-            {/* Contenedor vertical para alinear imágenes y botón */}
-            <div className="flex flex-col items-center w-full max-w-6xl">
-              <div className="flex flex-col lg:flex-row gap-2 lg:gap-8 items-center justify-center w-full">
+          <div className="fixed inset-0 z-50 bg-checkered flex items-start lg:items-center justify-center overflow-y-auto">
+            {/* Contenedor principal con scroll en mobile */}
+            <div className="flex flex-col items-center w-full max-w-6xl py-4 lg:py-0 px-3 lg:px-4 min-h-full lg:min-h-0">
+              
+              {/* Layout: Columna en mobile, fila en desktop */}
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center justify-center w-full">
+                
                 {/* BORRADOR - Gemini 2.5 Flash */}
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-1 lg:mb-2">
-                    <span className="text-yellow-400 text-[10px] lg:text-xs font-mono font-bold">BORRADOR</span>
+                <div className="flex flex-col items-center w-full lg:w-auto">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-yellow-400 text-xs font-mono font-bold">BORRADOR</span>
                   </div>
                   <div
-                    className={`relative bg-black rounded-lg lg:rounded-[1rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-2 lg:border-[4px] border-yellow-500/30 overflow-hidden
-                      ${aspectRatio === '9:16' ? 'w-[140px] h-[249px] lg:w-[200px] lg:h-[356px]' :
-                        aspectRatio === '1:1' ? 'w-[160px] h-[160px] lg:w-[225px] lg:h-[225px]' :
-                        aspectRatio === '4:5' ? 'w-[140px] h-[175px] lg:w-[200px] lg:h-[250px]' :
-                        'w-[140px] h-[249px] lg:w-[200px] lg:h-[356px]'}`}
+                    className={`relative bg-black rounded-xl shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[3px] border-yellow-500/40 overflow-hidden
+                      ${aspectRatio === '9:16' ? 'w-[240px] h-[427px] lg:w-[200px] lg:h-[356px]' :
+                        aspectRatio === '1:1' ? 'w-[260px] h-[260px] lg:w-[225px] lg:h-[225px]' :
+                        aspectRatio === '4:5' ? 'w-[240px] h-[300px] lg:w-[200px] lg:h-[250px]' :
+                        'w-[240px] h-[427px] lg:w-[200px] lg:h-[356px]'}`}
                   >
                     <div className="w-full h-full relative">
                       <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" crossOrigin="anonymous" />
@@ -1762,22 +1765,22 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                   </div>
                 </div>
                 
-                {/* VS */}
-                <div className="flex flex-col items-center py-1 lg:py-0">
-                  <span className="text-white/30 text-sm lg:text-3xl font-mono">VS</span>
+                {/* VS - Oculto en mobile */}
+                <div className="hidden lg:flex flex-col items-center">
+                  <span className="text-white/30 text-3xl font-mono">VS</span>
                 </div>
                 
                 {/* HD - Gemini 3.0 Pro */}
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-1 lg:mb-2">
-                    <span className="text-emerald-400 text-[10px] lg:text-xs font-mono font-bold">HD</span>
+                <div className="flex flex-col items-center w-full lg:w-auto">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-emerald-400 text-xs font-mono font-bold">HD ⭐</span>
                   </div>
                   <div
-                    className={`relative bg-black rounded-lg lg:rounded-[1rem] shadow-[0_0_30px_rgba(16,185,129,0.3)] border-2 lg:border-[4px] border-emerald-500/50 overflow-hidden hd-download-container
-                      ${aspectRatio === '9:16' ? 'w-[160px] h-[284px] lg:w-[320px] lg:h-[569px]' :
-                        aspectRatio === '1:1' ? 'w-[180px] h-[180px] lg:w-[360px] lg:h-[360px]' :
-                        aspectRatio === '4:5' ? 'w-[160px] h-[200px] lg:w-[320px] lg:h-[400px]' :
-                        'w-[160px] h-[284px] lg:w-[320px] lg:h-[569px]'}`}
+                    className={`relative bg-black rounded-xl shadow-[0_0_40px_rgba(16,185,129,0.4)] border-[3px] border-emerald-500/60 overflow-hidden hd-download-container
+                      ${aspectRatio === '9:16' ? 'w-[280px] h-[498px] lg:w-[320px] lg:h-[569px]' :
+                        aspectRatio === '1:1' ? 'w-[300px] h-[300px] lg:w-[360px] lg:h-[360px]' :
+                        aspectRatio === '4:5' ? 'w-[280px] h-[350px] lg:w-[320px] lg:h-[400px]' :
+                        'w-[280px] h-[498px] lg:w-[320px] lg:h-[569px]'}`}
                   >
                     <div className="w-full h-full relative">
                       <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" crossOrigin="anonymous" />
@@ -1789,8 +1792,8 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 </div>
               </div>
               
-              {/* BOTÓN DESCARGAR IMAGEN HD - Centrado exactamente debajo de las imágenes */}
-              <div className="mt-3 lg:mt-6 flex flex-col items-center gap-2 lg:gap-3">
+              {/* BOTÓN DESCARGAR IMAGEN HD */}
+              <div className="mt-6 flex flex-col items-center gap-3 w-full max-w-[300px]">
                 <button
                   onClick={async () => {
                     // Componer imagen con todos los overlays usando canvas
@@ -1864,15 +1867,27 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       });
                     }
                   }}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-2 lg:py-3 px-4 lg:px-8 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-xs lg:text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  <span>Descargar imagen HD</span>
+                  <span>Descargar HD</span>
                 </button>
-                <p className="text-white/40 text-[9px] lg:text-[10px] font-mono text-center px-2">
-                  Descarga la versión HD con texto y logo
+                
+                {/* Botón cerrar comparación */}
+                <button
+                  onClick={() => setShowComparison(false)}
+                  className="w-full bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 font-medium py-2.5 px-6 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>Cerrar</span>
+                </button>
+                
+                <p className="text-white/40 text-[10px] font-mono text-center">
+                  Descarga incluye texto y logo
                 </p>
               </div>
             </div>
