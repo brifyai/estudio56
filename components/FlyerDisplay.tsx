@@ -1788,8 +1788,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 </div>
               </div>
               
-              {/* BOTÓN DESCARGAR IMAGEN HD */}
-              <div className="mt-4 flex flex-col items-center gap-2 w-full max-w-[300px]">
+              {/* BOTONES DE ACCIÓN - Fila horizontal debajo de las imágenes */}
+              <div className="mt-4 flex flex-col lg:flex-row items-center justify-center gap-3 w-full max-w-4xl px-3">
+                {/* Botón Descargar HD */}
                 <button
                   onClick={async () => {
                     // Componer imagen con todos los overlays usando canvas
@@ -1863,7 +1864,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                       });
                     }
                   }}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3 px-6 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full lg:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1874,7 +1875,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 {/* Botón cerrar comparación */}
                 <button
                   onClick={() => setShowComparison(false)}
-                  className="w-full bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 font-medium py-2.5 px-6 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                  className="w-full lg:w-auto px-6 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 font-medium rounded-xl transition-all text-sm flex items-center justify-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
