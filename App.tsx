@@ -2268,7 +2268,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
                 {imageUrl && (
-                  <div className="lg:hidden p-4 animate-in fade-in slide-in-from-bottom-2 duration-300 flex-shrink-0">
+                  <div className="lg:hidden p-4 pt-2 animate-in fade-in slide-in-from-bottom-2 duration-300 flex-shrink-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs font-medium text-green-400">👁️ Vista Previa</span>
                     </div>
