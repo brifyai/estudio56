@@ -135,6 +135,14 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   isRealityVariation,
   onOpenRealityComparator
 }) => {
+  console.log('🎚️ [FlyerDisplay Props]', {
+    hasImageUrl: !!imageUrl,
+    mediaType,
+    realityLevel,
+    hasOnRealityLevelChange: !!onRealityLevelChange,
+    sceneId,
+    cachedVariationsCount: Object.keys(cachedRealityVariations || {}).length
+  });
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   
