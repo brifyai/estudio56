@@ -2245,12 +2245,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
             
             {/* Header */}
             <div className="flex items-center justify-between px-5 pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🎚️</span>
-                <div>
-                  <h3 className="text-white font-semibold text-sm">Editor de Realidad</h3>
-                  <p className="text-white/50 text-[10px]">Ajusta el nivel de realismo de tu imagen</p>
-                </div>
+              <div>
+                <h3 className="text-white font-semibold text-sm">Editor de Realidad</h3>
+                <p className="text-white/50 text-[10px]">Ajusta el nivel de realismo de tu imagen</p>
               </div>
               <button
                 onClick={() => setShowRealityBottomSheet(false)}
