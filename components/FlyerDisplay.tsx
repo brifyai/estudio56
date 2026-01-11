@@ -2065,18 +2065,29 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         </div>
         
         {/* 🎚️ FAB PARA ABRIR EDITOR DE REALIDAD - Solo mobile, fuera del contenedor para evitar overflow */}
-        {imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && !showComparison && realityLevel !== undefined && onRealityLevelChange && (
-          <div className="lg:hidden relative w-full flex justify-center mt-4">
-            <button
-              onClick={() => setShowRealityBottomSheet(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 shadow-[0_4px_20px_rgba(139,92,246,0.5)] transition-all hover:scale-105 active:scale-95 border border-white/20"
-              aria-label="Abrir editor de realidad"
-            >
-              <span className="text-lg">🎚️</span>
-              <span className="text-white text-xs font-medium">Realismo</span>
-            </button>
-          </div>
-        )}
+        {(() => {
+          const shouldShow = imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && realityLevel !== undefined && onRealityLevelChange;
+          console.log('🎚️ [FAB Debug]', {
+            imageUrl: !!imageUrl,
+            mediaType,
+            showComparison,
+            realityLevel,
+            hasCallback: !!onRealityLevelChange,
+            shouldShow
+          });
+          return shouldShow ? (
+            <div className="lg:hidden relative w-full flex justify-center mt-4">
+              <button
+                onClick={() => setShowRealityBottomSheet(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 shadow-[0_4px_20px_rgba(139,92,246,0.5)] transition-all hover:scale-105 active:scale-95 border border-white/20"
+                aria-label="Abrir editor de realidad"
+              >
+                <span className="text-lg">🎚️</span>
+                <span className="text-white text-xs font-medium">Realismo</span>
+              </button>
+            </div>
+          ) : null;
+        })()}
         </>
         )}
 
