@@ -2067,14 +2067,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         {/* 🎚️ FAB PARA ABRIR EDITOR DE REALIDAD - Solo mobile, fuera del contenedor para evitar overflow */}
         {(() => {
           const shouldShow = imageUrl && mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && !showComparison && realityLevel !== undefined && onRealityLevelChange;
-          console.log('🎚️ [FAB Debug]', {
-            imageUrl: !!imageUrl,
-            mediaType,
-            showComparison,
-            realityLevel,
-            hasCallback: !!onRealityLevelChange,
-            shouldShow
-          });
+          console.log('🎚️ [FAB Debug] imageUrl:', !!imageUrl, 'mediaType:', mediaType, 'showComparison:', showComparison, 'realityLevel:', realityLevel, 'hasCallback:', !!onRealityLevelChange, '→ shouldShow:', shouldShow);
           return shouldShow ? (
             <div className="lg:hidden relative w-full flex justify-center mt-4">
               <button
