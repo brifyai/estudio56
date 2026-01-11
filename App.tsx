@@ -2453,7 +2453,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]"></div>
                 
                 {/* Botón Genera nuevo borrador - Solo visible cuando hay borrador y NO está el comparador abierto */}
-                {draftImageUrl && !showRealityComparator && (
+                {draftImageUrl && !showRealityComparator && !showComparison && (
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
                     <button
                       onClick={() => {
