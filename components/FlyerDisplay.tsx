@@ -1907,7 +1907,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <>
         <div
           id="flyer-container-mobile"
-          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden mt-8
+          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden mt-4
             ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
               aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
               aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
