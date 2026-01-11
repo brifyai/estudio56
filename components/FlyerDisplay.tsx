@@ -1700,18 +1700,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start animate-fade-in">
 
-      {/* CERRAR COMPARACIÓN DE IMÁGENES - Centrado debajo del botón "Generar nuevo borrador" */}
-      {showComparison && (
-        <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-50">
-          <button
-            onClick={() => setShowComparison(false)}
-            className="bg-red-500/20 backdrop-blur-xl border border-red-500/50 text-red-300 px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-red-500/30 transition-all"
-          >
-            ✕ CERRAR COMPARACIÓN (IMAGEN)
-          </button>
-        </div>
-      )}
-
       {/* DRAFT BADGE */}
       {isDraft && !showComparison && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[60] bg-yellow-500/90 backdrop-blur text-black text-[10px] font-mono font-bold px-3 py-1 rounded-sm flex items-center gap-1">
