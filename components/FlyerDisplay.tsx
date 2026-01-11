@@ -1745,12 +1745,12 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         
         {/* IMAGE COMPARISON MODE - OPTIMIZADO PARA MOBILE */}
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
-          <div className="fixed inset-0 z-50 bg-checkered flex items-start lg:items-center justify-center overflow-y-auto">
+          <div className="fixed inset-0 z-50 bg-checkered flex items-center justify-center overflow-y-auto">
             {/* Contenedor principal con scroll en mobile */}
-            <div className="flex flex-col items-center w-full max-w-6xl py-4 lg:py-0 px-3 lg:px-4 min-h-full lg:min-h-0">
+            <div className="flex flex-col items-center w-full max-w-6xl py-6 lg:py-0 px-3 lg:px-4">
               
               {/* Layout: Columna en mobile, fila en desktop */}
-              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center justify-center w-full">
+              <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
                 
                 {/* BORRADOR - Gemini 2.5 Flash */}
                 <div className="flex flex-col items-center w-full lg:w-auto">
@@ -1759,10 +1759,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                   </div>
                   <div
                     className={`relative bg-black rounded-xl shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[3px] border-yellow-500/40 overflow-hidden
-                      ${aspectRatio === '9:16' ? 'w-[240px] h-[427px] lg:w-[200px] lg:h-[356px]' :
-                        aspectRatio === '1:1' ? 'w-[260px] h-[260px] lg:w-[225px] lg:h-[225px]' :
-                        aspectRatio === '4:5' ? 'w-[240px] h-[300px] lg:w-[200px] lg:h-[250px]' :
-                        'w-[240px] h-[427px] lg:w-[200px] lg:h-[356px]'}`}
+                      ${aspectRatio === '9:16' ? 'w-[180px] h-[320px] lg:w-[200px] lg:h-[356px]' :
+                        aspectRatio === '1:1' ? 'w-[200px] h-[200px] lg:w-[225px] lg:h-[225px]' :
+                        aspectRatio === '4:5' ? 'w-[180px] h-[225px] lg:w-[200px] lg:h-[250px]' :
+                        'w-[180px] h-[320px] lg:w-[200px] lg:h-[356px]'}`}
                   >
                     <div className="w-full h-full relative">
                       <img src={draftImageUrl} alt="Draft - Gemini 2.5" className="w-full h-full object-cover opacity-90" crossOrigin="anonymous" />
@@ -1785,10 +1785,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                   </div>
                   <div
                     className={`relative bg-black rounded-xl shadow-[0_0_40px_rgba(16,185,129,0.4)] border-[3px] border-emerald-500/60 overflow-hidden hd-download-container
-                      ${aspectRatio === '9:16' ? 'w-[280px] h-[498px] lg:w-[320px] lg:h-[569px]' :
-                        aspectRatio === '1:1' ? 'w-[300px] h-[300px] lg:w-[360px] lg:h-[360px]' :
-                        aspectRatio === '4:5' ? 'w-[280px] h-[350px] lg:w-[320px] lg:h-[400px]' :
-                        'w-[280px] h-[498px] lg:w-[320px] lg:h-[569px]'}`}
+                      ${aspectRatio === '9:16' ? 'w-[220px] h-[391px] lg:w-[320px] lg:h-[569px]' :
+                        aspectRatio === '1:1' ? 'w-[240px] h-[240px] lg:w-[360px] lg:h-[360px]' :
+                        aspectRatio === '4:5' ? 'w-[220px] h-[275px] lg:w-[320px] lg:h-[400px]' :
+                        'w-[220px] h-[391px] lg:w-[320px] lg:h-[569px]'}`}
                   >
                     <div className="w-full h-full relative">
                       <img src={hdImageUrl} alt="HD - Gemini 3.0" className="w-full h-full object-cover" crossOrigin="anonymous" />
@@ -1801,7 +1801,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               </div>
               
               {/* BOTÓN DESCARGAR IMAGEN HD */}
-              <div className="mt-6 flex flex-col items-center gap-3 w-full max-w-[300px]">
+              <div className="mt-4 flex flex-col items-center gap-2 w-full max-w-[300px]">
                 <button
                   onClick={async () => {
                     // Componer imagen con todos los overlays usando canvas
