@@ -1747,7 +1747,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         {showComparison && !isDraft && typeof draftImageUrl === 'string' && draftImageUrl.length > 0 && typeof hdImageUrl === 'string' && hdImageUrl.length > 0 && (
           <div className="fixed inset-0 z-50 bg-checkered overflow-y-auto">
             {/* Contenedor principal con scroll en mobile */}
-            <div className="flex flex-col items-center justify-center w-full max-w-6xl mx-auto py-6 lg:py-0 px-3 lg:px-4 min-h-full">
+            <div className="flex flex-col items-center w-full max-w-6xl mx-auto py-3 lg:py-0 px-3 lg:px-4">
               
               {/* Layout: Columna en mobile, fila en desktop */}
               <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center justify-center w-full">
