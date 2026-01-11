@@ -2560,7 +2560,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
         <aside className={`
           fixed inset-0 z-50 flex items-start justify-center p-2 pt-4 transition-all duration-300
           lg:relative lg:inset-auto lg:z-40
-          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:min-h-screen lg:py-2 lg:pr-2 lg:pl-2
+          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:min-h-screen lg:p-2 lg:pr-2 lg:pl-2
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
