@@ -2559,15 +2559,16 @@ progressAlert.updateProgress(60, 'Renderizando...');
       {showRealityComparator && (
         <aside className={`
           w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto p-1 lg:p-2 pr-0 lg:pr-2
-          fixed inset-0 z-50 items-start justify-center pt-4 transition-all duration-300
-          lg:relative lg:inset-auto lg:z-40 lg:min-h-screen
+          fixed inset-0 z-50 transition-all duration-300
+          lg:relative lg:inset-auto lg:z-40
+          ${showRealityComparator ? 'lg:min-h-screen' : 'lg:h-screen'}
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
-            className="absolute inset-0 bg-black/80 lg:hidden touch-none"
+            className="fixed inset-0 bg-black/80 lg:hidden touch-none -z-10"
             onClick={() => setShowRealityComparator(false)}
           />
-          <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden w-full max-w-[320px] lg:max-w-none z-10">
+          <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden">
             {/* Header con botón cerrar */}
             <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5">
               <span className="text-xs font-bold">Comparador de Realidad</span>
