@@ -2558,29 +2558,30 @@ progressAlert.updateProgress(60, 'Renderizando...');
       {/* RIGHT PANEL: REALITY COMPARATOR - Solo visible cuando el usuario lo activa */}
       {showRealityComparator && (
         <aside className={`
-          fixed inset-0 z-50 flex items-start justify-center p-2 pt-4 transition-all duration-300
-          lg:relative lg:inset-auto lg:z-40
-          lg:w-[320px] lg:flex-shrink-0 lg:flex lg:flex-col lg:min-h-screen lg:p-2 lg:pr-2 lg:pl-2
+          w-full lg:w-[320px] flex-shrink-0 flex flex-col z-20 h-auto p-1 lg:p-2 pr-0 lg:pr-2
+          fixed inset-0 z-50 items-start justify-center pt-4 transition-all duration-300
+          lg:relative lg:inset-auto lg:z-40 lg:min-h-screen
         `}>
           {/* Overlay background solo en mobile portrait */}
           <div
             className="absolute inset-0 bg-black/80 lg:hidden touch-none"
             onClick={() => setShowRealityComparator(false)}
           />
-          {/* Contenedor relativo para posicionar el botón */}
-          <div className="relative w-full max-w-[320px] z-10">
-            {/* Botón cerrar - Flotante FUERA del panel con overflow-hidden */}
-            <button
-              onClick={() => setShowRealityComparator(false)}
-              className="absolute -top-12 right-2 z-30 w-10 h-10 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded-full transition-colors cursor-pointer shadow-xl"
-              title="Cerrar comparación"
-            >
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="glass-panel rounded-xl lg:rounded-[2rem] w-full max-h-[80vh] flex flex-col shadow-2xl overflow-hidden relative lg:max-h-none lg:h-full">
-              <div className="flex-1 overflow-y-auto">
+          <div className="glass-panel rounded-xl lg:rounded-[2rem] h-full flex flex-col shadow-2xl relative overflow-hidden w-full max-w-[320px] lg:max-w-none z-10">
+            {/* Header con botón cerrar */}
+            <div className="h-14 flex-shrink-0 flex items-center justify-between px-4 border-b border-white/5">
+              <span className="text-xs font-bold">Comparador de Realidad</span>
+              <button
+                onClick={() => setShowRealityComparator(false)}
+                className="w-8 h-8 flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors cursor-pointer lg:hidden"
+                title="Cerrar comparación"
+              >
+                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
               <RealityComparator
                 key={`comparator-${Object.keys(realityVariations).length}-${realityLevel}`}
                 sceneId={sceneId}
@@ -2601,7 +2602,6 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 originalImage={draftImageUrl || undefined}
               />
             </div>
-          </div>
           </div>
         </aside>
       )}
