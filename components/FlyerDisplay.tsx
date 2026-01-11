@@ -1907,7 +1907,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <>
         <div
           id="flyer-container-mobile"
-          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden
+          className={`relative bg-black rounded-[1.5rem] shadow-[0_20px_80px_-20px_rgba(0,0,0,0.8)] border-[4px] border-[#2a2a2a] overflow-hidden flyer-download-container lg:hidden mt-8
             ${aspectRatio === '9:16' ? 'w-[280px] h-[498px]' :
               aspectRatio === '1:1' ? 'w-[280px] h-[280px]' :
               aspectRatio === '4:5' ? 'w-[280px] h-[350px]' :
@@ -2083,7 +2083,6 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
                 className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 shadow-[0_4px_20px_rgba(139,92,246,0.5)] transition-all hover:scale-105 active:scale-95 border border-white/20"
                 aria-label="Abrir editor de realidad"
               >
-                <span className="text-lg">🎚️</span>
                 <span className="text-white text-xs font-medium">Realismo</span>
               </button>
             </div>
