@@ -2319,6 +2319,23 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 onSurfaceTypeChange={setSurfaceType}
                                 autoDetectedSurface={autoDetectedSurface}
                                 isGeneratingReality={isGeneratingReality}
+                                realityLevel={realityLevel}
+                                sceneId={sceneId}
+                                seed={seed}
+                                onRealityLevelChange={handleRealityChange}
+                                cachedRealityVariations={realityVariations}
+                                onRealityGenerationStart={handleRealityGenerationStart}
+                                isRealityVariation={isRealityVariation}
+                                onOpenRealityComparator={() => {
+                                  const originalLevel = 1.0;
+                                  if (!realityVariations[originalLevel] && draftImageUrl) {
+                                    setRealityVariations(prev => ({
+                                      ...prev,
+                                      [originalLevel]: draftImageUrl
+                                    }));
+                                  }
+                                  setShowRealityComparator(true);
+                                }}
                               />
                             );
                           })()}
