@@ -824,7 +824,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                {creationMode === 'design' && 'Pega una URL o describe tu negocio'}
                {creationMode === 'free' && 'Describe tu diseño sin restricciones'}
                {creationMode === 'canva' && 'Editor visual drag & drop'}
-               {creationMode === 'brand' && 'Selecciona el modo'}
+               {creationMode === 'brand' && 'Desarrollo manual de marca'}
              </p>
          </div>
          
