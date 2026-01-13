@@ -1242,7 +1242,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     console.log('🏷️ [FlyerDisplay] Renderizando BrandPreview...');
     
     return (
-      <div className="w-full h-full">
+      <div className="w-full h-full overflow-hidden">
         <BrandPreview brand={brandData} />
       </div>
     );
