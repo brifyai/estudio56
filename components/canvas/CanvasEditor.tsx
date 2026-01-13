@@ -93,11 +93,11 @@ export default function CanvasEditor({ aspectRatio: aspectRatioProp, onExport, o
   const generateImage = async (prompt: string, aspectRatio = "1:1") => {
     const key = getEffectiveKey();
     if (!key) throw new Error("Falta la API Key. Por favor configúrala en el botón de ajustes.");
-    const url = \`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=\${key}\`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
     const payload = { instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio } };
     const response = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await response.json();
-    if (data.predictions?.[0]?.bytesBase64Encoded) return \`data:image/png;base64,\${data.predictions[0].bytesBase64Encoded}\`;
+    if (data.predictions?.[0]?.bytesBase64Encoded) return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
     throw new Error("No se pudo generar la imagen.");
   };
 
@@ -107,13 +107,13 @@ export default function CanvasEditor({ aspectRatio: aspectRatioProp, onExport, o
     setPosition({ x: 0, y: 0 });
     try {
       const style = BANNER_STYLES.find(s => s.id === styleId) || BANNER_STYLES[0];
-      const finalPrompt = \`IMPORTANT: PURE GRAPHIC/PHOTO ONLY. NO TEXT. NO NUMBERS. NO HEX CODES. NO ALPHANUMERIC CHARACTERS.
+      const finalPrompt = `IMPORTANT: PURE GRAPHIC/PHOTO ONLY. NO TEXT. NO NUMBERS. NO HEX CODES. NO ALPHANUMERIC CHARACTERS.
 Create a high-quality image.
-SUBJECT: \${data.basePrompt}.
->>> VISUAL STYLE (STRICT): \${style.promptMod} <<<
-COLORS: Incorporate nuances of \${data.colors.join(', ')} into the style described above.
+SUBJECT: ${data.basePrompt}.
+>>> VISUAL STYLE (STRICT): ${style.promptMod} <<<
+COLORS: Incorporate nuances of ${data.colors.join(', ')} into the style described above.
 COMPOSITION: Rule of Thirds. Off-center subject to leave negative space for text.
-Technical: 8k resolution, photorealistic or 3D render depending on style.\`;
+Technical: 8k resolution, photorealistic or 3D render depending on style.`;
       const [landscapeImg, portraitImg, squareImg] = await Promise.all([
         generateImage(finalPrompt, "16:9"),
         generateImage(finalPrompt, "9:16"),
@@ -138,8 +138,8 @@ Technical: 8k resolution, photorealistic or 3D render depending on style.\`;
     try {
       const key = getEffectiveKey();
       if (!key) throw new Error("Falta la API Key. Por favor configúrala en el botón de ajustes.");
-      const analysisUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=\${key}\`;
-      const analysisPrompt = \`Investiga en profundidad el sitio web o marca: "\${urlInput}" usando Google Search.
+      const analysisUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
+      const analysisPrompt = `Investiga en profundidad el sitio web o marca: "${urlInput}" usando Google Search.
 Busca su identidad visual, colores, logotipos y qué venden.
 Luego, actúa como un Copywriter y Director de Arte Experto y genera un plan de diseño.
 Responde EXCLUSIVAMENTE con un objeto JSON válido.
@@ -153,7 +153,7 @@ Estructura requerida:
     "subhead": "Subtítulo persuasivo breve (Máx 8 palabras)",
     "cta": "Texto del Botón (ej: Compra Ahora)"
   }
-}\`;
+}`;
       const payload = {
         contents: [{ parts: [{ text: analysisPrompt }] }],
         tools: [{ google_search: {} }],
@@ -167,7 +167,7 @@ Estructura requerida:
       const analysisData = await analysisResp.json();
       const text = analysisData.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("No se pudo analizar la URL (sin respuesta de IA).");
-      let jsonStr = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+      let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const firstBrace = jsonStr.indexOf('{');
       const lastBrace = jsonStr.lastIndexOf('}');
       if (firstBrace !== -1 && lastBrace !== -1) {
@@ -211,7 +211,7 @@ Estructura requerida:
       // Descargar la imagen
       const link = document.createElement('a');
       link.href = currentImage;
-      link.download = \`banner-\${activeFormat}.png\`;
+      link.download = `banner-${activeFormat}.png`;
       link.click();
       
       // Guardar estado si hay callback
@@ -267,7 +267,7 @@ Estructura requerida:
 
   return (
     <div className="min-h-screen bg-[#121212] text-white font-sans flex flex-col items-center justify-center relative overflow-hidden">
-      <div className={\`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 \${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}\`}>
+      <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
         {showSettings && (
           <div className="bg-[#1E1E1E] p-4 rounded-xl border border-white/10 shadow-2xl">
             <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
@@ -306,13 +306,13 @@ Estructura requerida:
           </div>
         )}
         {brandImages.landscape && !loadingStep && (
-          <div className={\`relative transition-all duration-500 shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 group \${activeFormat === 'landscape' ? 'w-full max-w-5xl aspect-video' : ''} \${activeFormat === 'portrait' ? 'h-[80vh] aspect-[9/16]' : ''} \${activeFormat === 'square' ? 'h-[80vh] aspect-square' : ''}\`}>
+          <div className={`relative transition-all duration-500 shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 group ${activeFormat === 'landscape' ? 'w-full max-w-5xl aspect-video' : ''} ${activeFormat === 'portrait' ? 'h-[80vh] aspect-[9/16]' : ''} ${activeFormat === 'square' ? 'h-[80vh] aspect-square' : ''}`}>
             {brandImages[activeFormat] ? (<img src={brandImages[activeFormat]!} alt="Generated Banner" className="w-full h-full object-cover select-none pointer-events-none"/>) : (<div className="w-full h-full bg-[#1A1A1A] flex items-center justify-center text-gray-500">Cargando...</div>)}
             {brandData && showText && (
-              <div ref={textContainerRef} className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center cursor-move z-20" style={{ transform: \`translate(calc(-50% + \${position.x}px), calc(-50% + \${position.y}px))\`, touchAction: 'none' }} onMouseDown={handleMouseDown}>
-                <div className={\`absolute -top-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 transition-opacity duration-200 pointer-events-none \${isDragging ? 'opacity-100' : 'opacity-0 group-hover/text:opacity-100'}\`}><Move className="w-3 h-3" /> Arrastrar</div>
+              <div ref={textContainerRef} className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center cursor-move z-20" style={{ transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`, touchAction: 'none' }} onMouseDown={handleMouseDown}>
+                <div className={`absolute -top-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 transition-opacity duration-200 pointer-events-none ${isDragging ? 'opacity-100' : 'opacity-0 group-hover/text:opacity-100'}`}><Move className="w-3 h-3" /> Arrastrar</div>
                 <div className="group/text flex flex-col items-center justify-center text-center max-w-lg bg-black/20 hover:bg-black/40 backdrop-blur-[2px] p-6 rounded-2xl border border-white/0 hover:border-white/20 transition-all">
-                  <div contentEditable suppressContentEditableWarning onBlur={(e) => setEditableCopy({...editableCopy, headline: e.currentTarget.innerText})} className={\`text-4xl md:text-5xl font-black text-white mb-3 leading-tight tracking-tight drop-shadow-xl outline-none min-w-[200px] cursor-text focus:border-b focus:border-white/50 \${getFontStack(brandData.fontCategory)}\`} style={{ textShadow: '0 4px 10px rgba(0,0,0,0.6)' }}>{editableCopy.headline}</div>
+                  <div contentEditable suppressContentEditableWarning onBlur={(e) => setEditableCopy({...editableCopy, headline: e.currentTarget.innerText})} className={`text-4xl md:text-5xl font-black text-white mb-3 leading-tight tracking-tight drop-shadow-xl outline-none min-w-[200px] cursor-text focus:border-b focus:border-white/50 ${getFontStack(brandData.fontCategory)}`} style={{ textShadow: '0 4px 10px rgba(0,0,0,0.6)' }}>{editableCopy.headline}</div>
                   <div contentEditable suppressContentEditableWarning onBlur={(e) => setEditableCopy({...editableCopy, subhead: e.currentTarget.innerText})} className="text-lg text-white/95 font-medium mb-6 drop-shadow-md outline-none min-w-[150px] cursor-text focus:border-b focus:border-white/50">{editableCopy.subhead}</div>
                   <div className="relative group/btn">
                     <button className="px-8 py-3 rounded-full font-bold text-lg shadow-xl" style={{ backgroundColor: brandData.colors[0] || '#ffffff', color: brandData.colors[1] || '#000000' }}>
@@ -324,7 +324,7 @@ Estructura requerida:
               </div>
             )}
             <div className="absolute top-4 left-4 z-30">
-              <button onClick={() => setShowText(!showText)} className={\`bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur transition-all \${!showText ? 'opacity-50' : ''}\`} title={showText ? "Ocultar Texto" : "Mostrar Texto"}><Type className="w-4 h-4" /></button>
+              <button onClick={() => setShowText(!showText)} className={`bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur transition-all ${!showText ? 'opacity-50' : ''}`} title={showText ? "Ocultar Texto" : "Mostrar Texto"}><Type className="w-4 h-4" /></button>
             </div>
             <button onClick={handleDownload} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur transition-all opacity-0 group-hover:opacity-100 z-30" title="Descargar Imagen"><Download className="w-5 h-5" /></button>
           </div>
@@ -334,14 +334,14 @@ Estructura requerida:
         <div className="fixed bottom-8 z-30 flex flex-col items-center gap-4 pointer-events-auto">
           <div className="flex bg-[#1E1E1E]/90 backdrop-blur rounded-full p-1.5 border border-white/10 shadow-xl">
             {[{ id: 'landscape', icon: Monitor, label: 'Banner' }, { id: 'portrait', icon: Smartphone, label: 'Story' }, { id: 'square', icon: Square, label: 'Post' }].map((fmt) => (
-              <button key={fmt.id} onClick={() => setActiveFormat(fmt.id as any)} className={\`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-all \${activeFormat === fmt.id ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'}\`}>
+              <button key={fmt.id} onClick={() => setActiveFormat(fmt.id as any)} className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-all ${activeFormat === fmt.id ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                 <fmt.icon className="w-4 h-4" /><span className="hidden md:inline">{fmt.label}</span>
               </button>
             ))}
           </div>
           <div className="flex gap-2 overflow-x-auto max-w-[90vw] p-2">
             {BANNER_STYLES.map((style) => (
-              <button key={style.id} onClick={() => handleStyleChange(style.id)} className={\`flex items-center gap-2 px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-all \${selectedStyle === style.id ? 'bg-white/10 border-white text-white' : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'}\`}>
+              <button key={style.id} onClick={() => handleStyleChange(style.id)} className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-all ${selectedStyle === style.id ? 'bg-white/10 border-white text-white' : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'}`}>
                 <style.icon className="w-3 h-3" />{style.label}
               </button>
             ))}
