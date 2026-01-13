@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 interface BrandAnalysis {
   name: string;
@@ -25,9 +25,8 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
     });
 
@@ -46,76 +45,43 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
                       html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
     const description = descMatch ? descMatch[1].trim() : '';
 
-    // Arrays separados para logos e imágenes generales
     const logoImages: string[] = [];
     const images: string[] = [];
     
-    // 1. PRIORIDAD ALTA: Buscar og:image (suele ser el logo o imagen principal)
-    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
-                         html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-    if (ogImageMatch) {
-      logoImages.push(ogImageMatch[1]);
-    }
+    // Buscar og:image
+    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+    if (ogImageMatch) logoImages.push(ogImageMatch[1]);
 
-    // 2. PRIORIDAD ALTA: Buscar apple-touch-icon (suele ser el logo de alta calidad)
+    // Buscar apple-touch-icon
     const appleTouchMatches = html.matchAll(/<link[^>]*rel=["']apple-touch-icon[^"']*["'][^>]*href=["']([^"']+)["']/gi);
-    for (const match of appleTouchMatches) {
-      logoImages.push(match[1]);
+    for (const match of appleTouchMatches) logoImages.push(match[1]);
+
+    // Buscar imágenes con "logo"
+    const logoImgMatches = html.matchAll(/<img[^>]*src=["']([^"']*logo[^"']*)["'][^>]*>/gi);
+    for (const match of logoImgMatches) {
+      if (match[1] && !logoImages.includes(match[1])) logoImages.push(match[1]);
     }
 
-    // 3. PRIORIDAD ALTA: Buscar imágenes con "logo" en src, class, id o alt
-    const logoPatterns = [
-      /<img[^>]*src=["']([^"']*logo[^"']*)["'][^>]*>/gi,
-      /<img[^>]*class=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/gi,
-      /<img[^>]*id=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/gi,
-      /<img[^>]*alt=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/gi,
-    ];
-    
-    for (const pattern of logoPatterns) {
-      const matches = html.matchAll(pattern);
-      for (const match of matches) {
-        if (match[1] && !logoImages.includes(match[1])) {
-          logoImages.push(match[1]);
-        }
-      }
-    }
-
-    // 4. Buscar imágenes dentro de header o nav (suelen contener el logo)
+    // Buscar en header/nav
     const headerMatch = html.match(/<header[^>]*>([\s\S]*?)<\/header>/i);
-    const navMatch = html.match(/<nav[^>]*>([\s\S]*?)<\/nav>/i);
-    const headerNavContent = (headerMatch?.[1] || '') + (navMatch?.[1] || '');
-    
-    const headerImgMatches = headerNavContent.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
-    for (const match of headerImgMatches) {
-      if (match[1] && !logoImages.includes(match[1])) {
-        logoImages.push(match[1]);
+    if (headerMatch) {
+      const headerImgs = headerMatch[1].matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
+      for (const match of headerImgs) {
+        if (match[1] && !logoImages.includes(match[1])) logoImages.push(match[1]);
       }
     }
 
-    // 5. Buscar SVG con logo en el nombre o clase
-    const svgLogoMatches = html.matchAll(/<(?:img|object|embed)[^>]*(?:src|data)=["']([^"']*\.svg[^"']*)["'][^>]*>/gi);
-    for (const match of svgLogoMatches) {
-      if (match[1] && match[1].toLowerCase().includes('logo')) {
-        logoImages.push(match[1]);
-      }
-    }
-
-    // 6. Favicon como último recurso
+    // Favicon
     const faviconMatches = html.matchAll(/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']/gi);
-    for (const match of faviconMatches) {
-      images.push(match[1]); // Agregar a images generales, no a logoImages
-    }
+    for (const match of faviconMatches) images.push(match[1]);
 
-    // Limpiar texto HTML para análisis
+    // Limpiar HTML
     const cleanHtml = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .substring(0, 5000);
-
-    console.log('🖼️ Logos encontrados:', logoImages.length, logoImages);
-    console.log('🖼️ Imágenes generales:', images.length);
 
     return { html: cleanHtml, title, description, images, logoImages };
   } catch (error) {
@@ -124,32 +90,25 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
   }
 }
 
-// Detectar tipo de URL
 function detectUrlType(url: string): 'instagram' | 'facebook' | 'tiktok' | 'web' {
   const lower = url.toLowerCase();
-  if (lower.includes('instagram.com') || lower.includes('instagr.am')) return 'instagram';
-  if (lower.includes('facebook.com') || lower.includes('fb.com')) return 'facebook';
+  if (lower.includes('instagram.com')) return 'instagram';
+  if (lower.includes('facebook.com')) return 'facebook';
   if (lower.includes('tiktok.com')) return 'tiktok';
   return 'web';
 }
 
-// Extraer nombre de usuario de redes sociales
 function extractUsername(url: string, type: string): string {
   try {
     const urlObj = new URL(url);
     const pathParts = urlObj.pathname.split('/').filter(Boolean);
-    
-    if (type === 'instagram' || type === 'tiktok' || type === 'facebook') {
-      return pathParts[0]?.replace('@', '') || '';
-    }
-    
+    if (type !== 'web') return pathParts[0]?.replace('@', '') || '';
     return urlObj.hostname.replace('www.', '').split('.')[0] || '';
   } catch {
     return '';
   }
 }
 
-// Resolver URL relativa a absoluta
 function resolveUrl(base: string, relative: string): string {
   try {
     return new URL(relative, base).href;
@@ -159,7 +118,6 @@ function resolveUrl(base: string, relative: string): string {
 }
 
 export const handler: Handler = async (event) => {
-  // CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -188,104 +146,72 @@ export const handler: Handler = async (event) => {
     const username = extractUsername(url, urlType);
     const { html, title, description, images, logoImages } = await fetchUrlContent(url);
 
-    console.log('📄 Contenido extraído:', { title, description, logoImagesCount: logoImages.length, imagesCount: images.length });
+    console.log('📄 Contenido extraído:', { title, description, logoImagesCount: logoImages.length });
 
-    // Usar Gemini para analizar el contenido
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-    const prompt = `Eres un experto en branding y marketing. Analiza el siguiente contenido de una ${urlType === 'web' ? 'página web empresarial' : `cuenta de ${urlType}`} y genera información COMPLETA y DETALLADA para un manual de identidad de marca profesional.
+    // Construir prompt
+    const prompt = `Eres un experto en branding. Analiza este contenido y genera información para un manual de marca.
 
 URL: ${url}
-Tipo de fuente: ${urlType}
-Usuario/Dominio: ${username}
-Título de la página: ${title}
-Meta descripción: ${description}
+Título: ${title}
+Descripción: ${description}
+Contenido: ${html.substring(0, 3000)}
 
-Contenido extraído de la página:
-${html.substring(0, 4000)}
-
-INSTRUCCIONES IMPORTANTES:
-1. Analiza TODO el contenido disponible para entender qué hace la empresa/marca
-2. Genera contenido EXTENSO y PROFESIONAL para cada campo
-3. La descripción debe ser de AL MENOS 3-4 oraciones explicando claramente qué hace la empresa
-4. La misión debe ser inspiradora y específica al negocio (2-3 oraciones)
-5. La visión debe ser ambiciosa y orientada al futuro (2-3 oraciones)
-6. El tagline debe ser memorable y capturar la esencia de la marca
-7. Los colores deben reflejar la industria y personalidad de la marca
-
-Genera un JSON con esta estructura:
-
+Genera un JSON con esta estructura exacta (sin markdown, solo JSON):
 {
-  "name": "Nombre oficial de la marca/empresa",
-  "tagline": "Eslogan memorable que capture la esencia (máximo 8 palabras)",
-  "description": "Descripción completa de la empresa: qué productos o servicios ofrece, a qué público se dirige, qué la hace única, y cuál es su propuesta de valor. Mínimo 3 oraciones detalladas.",
-  "mission": "Declaración de misión que explique el propósito fundamental de la empresa, a quién sirve y cómo genera valor. Debe ser inspiradora y específica. Mínimo 2 oraciones.",
-  "vision": "Declaración de visión que describa hacia dónde se dirige la empresa, sus aspiraciones a largo plazo y el impacto que quiere generar. Debe ser ambiciosa. Mínimo 2 oraciones.",
-  "industry": "Sector o industria específica (ej: tecnología, e-commerce, gastronomía, servicios profesionales, retail, educación)",
+  "name": "Nombre de la marca",
+  "tagline": "Eslogan memorable (máximo 8 palabras)",
+  "description": "Descripción completa de la empresa en 3-4 oraciones. Qué hace, a quién sirve, qué la hace única.",
+  "mission": "Misión de la empresa en 2-3 oraciones. Propósito fundamental.",
+  "vision": "Visión de la empresa en 2-3 oraciones. Aspiraciones a largo plazo.",
+  "industry": "Sector (tecnología, retail, servicios, etc)",
   "suggestedColors": {
     "primary": "#hexcolor",
-    "secondary": "#hexcolor", 
+    "secondary": "#hexcolor",
     "accent": "#hexcolor",
     "neutral": "#hexcolor"
   }
 }
 
-REGLAS:
-- Responde ÚNICAMENTE con el JSON, sin markdown, sin explicaciones, sin texto adicional
-- Todos los colores deben ser códigos hexadecimales válidos de 6 dígitos (ej: #3B82F6)
-- Todo el contenido debe estar en español
-- Si no hay suficiente información, infiere de manera inteligente basándote en el tipo de negocio
-- Sé profesional, creativo y coherente con la identidad que percibes de la marca`;
+IMPORTANTE: Responde SOLO con el JSON, sin explicaciones. Contenido en español.`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    
+    // Llamar a Gemini
+    const response = await genAI.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: prompt,
+    });
+
+    const responseText = response.text || '';
     console.log('🤖 Respuesta Gemini:', responseText);
 
-    // Parsear respuesta JSON
+    // Parsear respuesta
     let analysis: any;
     try {
-      // Limpiar posibles caracteres extra
       const cleanJson = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysis = JSON.parse(cleanJson);
-    } catch (parseError) {
-      console.error('Error parsing Gemini response:', parseError);
-      // Fallback con datos básicos
+    } catch {
       analysis = {
-        name: username || title.split('|')[0].split('-')[0].trim() || 'Mi Marca',
-        tagline: description.substring(0, 50) || 'Innovación y calidad',
+        name: username || title.split('|')[0].trim() || 'Mi Marca',
+        tagline: 'Innovación y calidad',
         description: description || 'Una marca comprometida con la excelencia.',
         mission: 'Ofrecer productos y servicios de la más alta calidad.',
         vision: 'Ser líderes en nuestro sector.',
         industry: 'general',
-        suggestedColors: {
-          primary: '#3B82F6',
-          secondary: '#1E293B',
-          accent: '#F59E0B',
-          neutral: '#F1F5F9'
-        }
+        suggestedColors: { primary: '#3B82F6', secondary: '#1E293B', accent: '#F59E0B', neutral: '#F1F5F9' }
       };
     }
 
-    // Resolver URLs de imágenes - priorizar logoImages
-    const resolvedLogoImages = logoImages.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
+    // Resolver logos
+    const resolvedLogos = logoImages.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
     const resolvedImages = images.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
     
-    // Buscar el mejor logo candidato con prioridad mejorada
     let logoUrl: string | null = null;
-    
-    if (resolvedLogoImages.length > 0) {
-      // Priorizar: 1) imágenes con "logo" explícito, 2) PNG/SVG sobre otros formatos, 3) primera imagen
-      const withLogoInName = resolvedLogoImages.find(img => img.toLowerCase().includes('logo'));
-      const pngOrSvg = resolvedLogoImages.find(img => img.toLowerCase().endsWith('.png') || img.toLowerCase().endsWith('.svg'));
-      logoUrl = withLogoInName || pngOrSvg || resolvedLogoImages[0];
+    if (resolvedLogos.length > 0) {
+      const withLogo = resolvedLogos.find(img => img.toLowerCase().includes('logo'));
+      const pngSvg = resolvedLogos.find(img => img.endsWith('.png') || img.endsWith('.svg'));
+      logoUrl = withLogo || pngSvg || resolvedLogos[0];
     } else if (resolvedImages.length > 0) {
-      // Fallback a imágenes generales
-      const logoCandidate = resolvedImages.find(img => img.toLowerCase().includes('logo'));
-      logoUrl = logoCandidate || resolvedImages[0];
+      logoUrl = resolvedImages[0];
     }
-
-    console.log('🎯 Logo seleccionado:', logoUrl);
 
     const brandAnalysis: BrandAnalysis = {
       name: analysis.name || username || 'Mi Marca',
@@ -294,7 +220,7 @@ REGLAS:
       mission: analysis.mission || '',
       vision: analysis.vision || '',
       industry: analysis.industry || 'general',
-      logoUrl: logoUrl,
+      logoUrl,
       colors: {
         primary: analysis.suggestedColors?.primary || '#3B82F6',
         secondary: analysis.suggestedColors?.secondary || '#1E293B',
@@ -306,21 +232,14 @@ REGLAS:
 
     console.log('✅ Análisis completado:', brandAnalysis);
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(brandAnalysis),
-    };
+    return { statusCode: 200, headers, body: JSON.stringify(brandAnalysis) };
 
   } catch (error) {
-    console.error('❌ Error en analyze-brand-url:', error);
+    console.error('❌ Error:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ 
-        error: 'Error analyzing URL',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
+      body: JSON.stringify({ error: 'Error analyzing URL', details: error instanceof Error ? error.message : 'Unknown' }),
     };
   }
 };
