@@ -8,14 +8,14 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 5, ba
   try {
     const response = await fetch(url, options);
     if (response.status === 401 || response.status === 403) {
-      throw new Error(\`API Key inválida o no autorizada (\${response.status}). Por favor configura tu API Key.\`);
+      throw new Error(`API Key inválida o no autorizada (${response.status}). Por favor configura tu API Key.`);
     }
     if (!response.ok && (response.status === 429 || response.status === 503)) {
-      throw new Error(\`Server returned \${response.status}\`);
+      throw new Error(`Server returned ${response.status}`);
     }
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new Error(\`API Error \${response.status}: \${errorBody}\`);
+      throw new Error(`API Error ${response.status}: ${errorBody}`);
     }
     return response;
   } catch (error) {
