@@ -243,6 +243,234 @@ function extractLogoCandidates(html: string, baseUrl: string): LogoCandidate[] {
 }
 
 // ============================================
+// EXTRACCIÓN DE COLORES DEL CSS/HTML
+// ============================================
+interface ExtractedColors {
+  colors: string[];
+  cssVariables: Record<string, string>;
+  themeColor: string | null;
+}
+
+function extractColorsFromHtml(html: string): ExtractedColors {
+  const colors: string[] = [];
+  const cssVariables: Record<string, string> = {};
+  let themeColor: string | null = null;
+
+  // 1. Meta theme-color (muy confiable - color principal de la marca)
+  const themeColorMatch = html.match(/<meta[^>]*name=["']theme-color["'][^>]*content=["']([^"']+)["']/i);
+  if (themeColorMatch) {
+    themeColor = themeColorMatch[1];
+    colors.push(themeColorMatch[1]);
+    console.log('🎨 Theme color found:', themeColor);
+  }
+
+  // 2. Variables CSS (--primary, --brand, --main, etc.)
+  const styleBlocks = html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || [];
+  const inlineStyles = html.match(/style=["'][^"']+["']/gi) || [];
+  const allStyles = [...styleBlocks, ...inlineStyles].join(' ');
+
+  // Buscar variables CSS
+  const cssVarPatterns = [
+    /--(?:primary|brand|main|accent|secondary|theme)[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
+    /--color[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
+  ];
+  
+  for (const pattern of cssVarPatterns) {
+    const matches = allStyles.matchAll(pattern);
+    for (const m of matches) {
+      const varName = m[0].split(':')[0].trim();
+      const color = m[1].trim();
+      cssVariables[varName] = color;
+      if (!colors.includes(color)) colors.push(color);
+    }
+  }
+
+  // 3. Colores hex directos en estilos (priorizando los que aparecen primero/más frecuentes)
+  const hexPattern = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+  const hexMatches = allStyles.match(hexPattern) || [];
+  
+  // Contar frecuencia de colores
+  const colorFrequency: Record<string, number> = {};
+  for (const hex of hexMatches) {
+    const normalized = hex.toLowerCase();
+    // Ignorar colores muy comunes/genéricos
+    if (['#fff', '#ffffff', '#000', '#000000', '#333', '#333333', '#666', '#999', '#ccc', '#eee', '#f5f5f5'].includes(normalized)) continue;
+    colorFrequency[normalized] = (colorFrequency[normalized] || 0) + 1;
+  }
+
+  // Ordenar por frecuencia y agregar los más comunes
+  const sortedColors = Object.entries(colorFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([color]) => color);
+  
+  for (const color of sortedColors) {
+    if (!colors.includes(color)) colors.push(color);
+  }
+
+  // 4. Colores RGB
+  const rgbPattern = /rgb[a]?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/gi;
+  const rgbMatches = allStyles.matchAll(rgbPattern);
+  for (const m of rgbMatches) {
+    const hex = rgbToHex(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
+    if (!colors.includes(hex) && !['#ffffff', '#000000'].includes(hex)) {
+      colors.push(hex);
+    }
+  }
+
+  console.log('🎨 Extracted colors:', colors.slice(0, 8));
+  console.log('🎨 CSS variables:', Object.keys(cssVariables).length);
+
+  return { colors: colors.slice(0, 15), cssVariables, themeColor };
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+// ============================================
+// ANÁLISIS DE LOGO CON GEMINI VISION
+// ============================================
+async function fetchImageAsBase64(imageUrl: string): Promise<{ base64: string; mimeType: string } | null> {
+  console.log('📥 Fetching image:', imageUrl);
+  
+  return new Promise((resolve) => {
+    try {
+      const protocol = imageUrl.startsWith('https') ? https : http;
+      const urlObj = new URL(imageUrl);
+      
+      const options = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (imageUrl.startsWith('https') ? 443 : 80),
+        path: urlObj.pathname + urlObj.search,
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'image/*',
+        },
+        timeout: 10000,
+      };
+
+      const req = protocol.request(options, (res) => {
+        if (res.statusCode !== 200) {
+          console.log('⚠️ Image fetch failed:', res.statusCode);
+          resolve(null);
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          const base64 = buffer.toString('base64');
+          
+          // Determinar MIME type
+          const contentType = res.headers['content-type'] || '';
+          let mimeType = 'image/png';
+          if (contentType.includes('jpeg') || contentType.includes('jpg')) mimeType = 'image/jpeg';
+          else if (contentType.includes('png')) mimeType = 'image/png';
+          else if (contentType.includes('webp')) mimeType = 'image/webp';
+          else if (contentType.includes('gif')) mimeType = 'image/gif';
+          else if (imageUrl.toLowerCase().includes('.jpg') || imageUrl.toLowerCase().includes('.jpeg')) mimeType = 'image/jpeg';
+          else if (imageUrl.toLowerCase().includes('.webp')) mimeType = 'image/webp';
+          
+          console.log('✅ Image fetched:', Math.round(buffer.length / 1024), 'KB,', mimeType);
+          resolve({ base64, mimeType });
+        });
+        res.on('error', () => resolve(null));
+      });
+
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(null);
+      });
+      
+      req.end();
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+async function analyzeLogoColors(logoUrl: string, apiKey: string): Promise<string[] | null> {
+  console.log('🔍 Analyzing logo colors with Gemini Vision:', logoUrl.substring(0, 60));
+  
+  try {
+    // Primero descargar la imagen y convertir a base64
+    const imageData = await fetchImageAsBase64(logoUrl);
+    if (!imageData) {
+      console.log('⚠️ Could not fetch logo image');
+      return null;
+    }
+
+    // Limitar tamaño de imagen (max ~1MB en base64)
+    if (imageData.base64.length > 1400000) {
+      console.log('⚠️ Image too large for analysis');
+      return null;
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                text: `Analiza esta imagen de logo/marca y extrae los colores principales que la identifican.
+Responde ÚNICAMENTE con un JSON array de colores hexadecimales, máximo 4 colores, ordenados por dominancia/importancia visual.
+Formato exacto: ["#RRGGBB", "#RRGGBB"]
+NO incluyas blanco puro (#FFFFFF) ni negro puro (#000000) a menos que sean colores distintivos del diseño.
+Solo el array JSON, sin texto adicional.`
+              },
+              {
+                inlineData: {
+                  mimeType: imageData.mimeType,
+                  data: imageData.base64
+                }
+              }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 128,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('⚠️ Gemini Vision error:', response.status, errorText.substring(0, 100));
+      return null;
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('🎨 Gemini Vision response:', text);
+    
+    // Parsear el array de colores
+    const cleanJson = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const logoColors = JSON.parse(cleanJson);
+    
+    if (Array.isArray(logoColors) && logoColors.length > 0) {
+      // Validar que son colores hex válidos
+      const validColors = logoColors.filter((c: string) => /^#[0-9A-Fa-f]{6}$/.test(c));
+      if (validColors.length > 0) {
+        console.log('✅ Logo colors extracted:', validColors);
+        return validColors;
+      }
+    }
+  } catch (error) {
+    console.log('⚠️ Error analyzing logo:', error instanceof Error ? error.message : 'Unknown');
+  }
+  
+  return null;
+}
+
+// ============================================
 // EXTRACCIÓN DE METADATOS
 // ============================================
 function extractMetadata(html: string) {
@@ -405,13 +633,37 @@ export const handler: Handler = async (event) => {
     const { title, description, cleanHtml } = extractMetadata(html);
     console.log('📄 Metadata:', { title: title.substring(0, 50), descLength: description.length });
 
+    // Extraer colores del CSS/HTML
+    const extractedColors = extractColorsFromHtml(html);
+    console.log('🎨 Colors from CSS:', extractedColors.colors.length, 'Theme:', extractedColors.themeColor);
+
     // Extraer candidatos de logo
     const logoCandidates = extractLogoCandidates(html, url);
     const bestLogo = logoCandidates.length > 0 ? logoCandidates[0].url : null;
     console.log('🖼️ Best logo:', bestLogo);
 
-    // Construir prompt para Gemini
+    // Intentar analizar colores del logo con Gemini Vision
+    let logoColors: string[] | null = null;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (bestLogo && apiKey && !bestLogo.endsWith('.svg')) {
+      // Solo intentar con imágenes rasterizadas (no SVG)
+      logoColors = await analyzeLogoColors(bestLogo, apiKey);
+    }
+
+    // Construir prompt para Gemini con información de colores
     const brandName = extractBrandName(url, title);
+    
+    // Preparar información de colores para el prompt
+    let colorContext = '';
+    if (logoColors && logoColors.length > 0) {
+      colorContext = `\nColores extraídos del logo: ${logoColors.join(', ')}`;
+    }
+    if (extractedColors.themeColor) {
+      colorContext += `\nColor tema del sitio: ${extractedColors.themeColor}`;
+    }
+    if (extractedColors.colors.length > 0) {
+      colorContext += `\nColores encontrados en el CSS: ${extractedColors.colors.slice(0, 6).join(', ')}`;
+    }
     
     const prompt = `Eres un experto en branding y marketing. Analiza la siguiente información de una página web y genera contenido profesional para un manual de identidad de marca.
 
@@ -419,7 +671,8 @@ URL: ${url}
 Nombre detectado: ${brandName}
 Título de la página: ${title}
 Descripción meta: ${description}
-${fetchSuccess ? `Contenido de la página: ${cleanHtml.substring(0, 3000)}` : 'No se pudo obtener el contenido de la página.'}
+${fetchSuccess ? `Contenido de la página: ${cleanHtml.substring(0, 2500)}` : 'No se pudo obtener el contenido de la página.'}
+${colorContext}
 
 Basándote en esta información, genera un JSON con la siguiente estructura exacta (sin markdown, solo JSON puro):
 
@@ -431,20 +684,19 @@ Basándote en esta información, genera un JSON con la siguiente estructura exac
   "vision": "Declaración de visión profesional en 2-3 oraciones. Las aspiraciones a largo plazo.",
   "industry": "Sector o industria (ej: salud, tecnología, retail, servicios, fitness, gastronomía, etc)",
   "suggestedColors": {
-    "primary": "#hexcolor (color principal que represente la marca)",
-    "secondary": "#hexcolor (color secundario para textos y contrastes)",
+    "primary": "#hexcolor (IMPORTANTE: usa el color principal del logo o theme-color si está disponible)",
+    "secondary": "#hexcolor (color secundario que complemente al primario)",
     "accent": "#hexcolor (color de acento para CTAs y destacados)",
-    "neutral": "#hexcolor (color neutro para fondos)"
+    "neutral": "#hexcolor (color neutro para fondos, generalmente claro)"
   }
 }
 
 IMPORTANTE:
 - Responde SOLO con el JSON, sin explicaciones ni markdown
 - Todo el contenido debe estar en español
-- Los colores deben ser coherentes entre sí y apropiados para el sector
-- Si la marca parece ser de fitness/salud, usa colores energéticos
-- Si es tecnología, usa colores modernos y profesionales
-- Si es gastronomía, usa colores cálidos y apetitosos`;
+- PRIORIZA los colores extraídos del logo y del sitio web si están disponibles
+- Si hay colores del logo, el color primario DEBE ser uno de ellos
+- Los colores deben ser coherentes entre sí`;
 
     // Llamar a Gemini
     console.log('📤 Llamando a Gemini...');
@@ -479,6 +731,45 @@ IMPORTANTE:
     }
 
     // Construir respuesta final
+    // Determinar colores finales (prioridad: Gemini con contexto > logo colors > CSS colors > fallback)
+    let finalColors = {
+      primary: analysis.suggestedColors?.primary || '#3B82F6',
+      secondary: analysis.suggestedColors?.secondary || '#1E293B',
+      accent: analysis.suggestedColors?.accent || '#F59E0B',
+      neutral: analysis.suggestedColors?.neutral || '#F3F4F6',
+    };
+
+    // Si Gemini no usó los colores del logo/CSS, intentar usar los extraídos directamente
+    if (logoColors && logoColors.length > 0) {
+      // Verificar si Gemini usó alguno de los colores del logo
+      const geminiUsedLogoColor = logoColors.some(c => 
+        c.toLowerCase() === finalColors.primary.toLowerCase() ||
+        c.toLowerCase() === finalColors.secondary.toLowerCase()
+      );
+      
+      if (!geminiUsedLogoColor) {
+        console.log('🎨 Overriding with logo colors');
+        finalColors.primary = logoColors[0];
+        if (logoColors[1]) finalColors.accent = logoColors[1];
+      }
+    } else if (extractedColors.themeColor) {
+      // Usar theme-color si no hay colores del logo
+      const themeUsed = finalColors.primary.toLowerCase() === extractedColors.themeColor.toLowerCase();
+      if (!themeUsed) {
+        console.log('🎨 Using theme-color as primary');
+        finalColors.primary = extractedColors.themeColor;
+      }
+    } else if (extractedColors.colors.length > 0) {
+      // Usar colores del CSS como último recurso
+      const cssColorUsed = extractedColors.colors.some(c => 
+        c.toLowerCase() === finalColors.primary.toLowerCase()
+      );
+      if (!cssColorUsed && extractedColors.colors[0]) {
+        console.log('🎨 Using CSS color as primary');
+        finalColors.primary = extractedColors.colors[0];
+      }
+    }
+
     const brandAnalysis: BrandAnalysis = {
       name: analysis.name || brandName,
       tagline: analysis.tagline || '',
@@ -487,12 +778,7 @@ IMPORTANTE:
       vision: analysis.vision || '',
       industry: analysis.industry || 'general',
       logoUrl: bestLogo,
-      colors: {
-        primary: analysis.suggestedColors?.primary || '#3B82F6',
-        secondary: analysis.suggestedColors?.secondary || '#1E293B',
-        accent: analysis.suggestedColors?.accent || '#F59E0B',
-        neutral: analysis.suggestedColors?.neutral || '#F3F4F6',
-      },
+      colors: finalColors,
       socialType: urlType,
     };
 
