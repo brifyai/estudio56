@@ -34,55 +34,18 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
     console.log('📄 Iniciando exportación...');
     
     try {
-      // Crear un contenedor temporal con zoom 1 para la captura
       const container = previewContainerRef.current;
       const originalTransform = container.style.transform;
-      console.log('📄 Transform original:', originalTransform);
       
+      // Resetear zoom para captura
       container.style.transform = 'scale(1)';
-      
-      // Esperar un frame para que se aplique el estilo
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      console.log('📄 Capturando con html2canvas...');
-      
-      // Capturar el contenedor del manual
-      // Nota: ignoreElements para evitar problemas con colores oklch de Tailwind
-      const canvas = await html2canvas(container, {
-        scale: 2, // Alta resolución
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        // Ignorar errores de parsing de colores (oklch no soportado)
-        onclone: (clonedDoc) => {
-          // Convertir colores oklch a hex en el documento clonado
-          const allElements = clonedDoc.querySelectorAll('*');
-          allElements.forEach((el) => {
-            const computedStyle = window.getComputedStyle(el as Element);
-            const htmlEl = el as HTMLElement;
-            
-            // Reemplazar colores problemáticos con fallbacks
-            if (computedStyle.backgroundColor.includes('oklch')) {
-              htmlEl.style.backgroundColor = '#ffffff';
-            }
-            if (computedStyle.color.includes('oklch')) {
-              htmlEl.style.color = '#000000';
-            }
-            if (computedStyle.borderColor.includes('oklch')) {
-              htmlEl.style.borderColor = '#e5e7eb';
-            }
-          });
-        }
-      });
-      
-      console.log('📄 Canvas capturado:', canvas.width, 'x', canvas.height);
-      
-      // Restaurar el zoom original
-      container.style.transform = originalTransform;
+      // Buscar todas las páginas individuales (divs con clase preview-container)
+      const pages = container.querySelectorAll('.preview-container');
+      console.log('📄 Páginas encontradas:', pages.length);
       
       // Crear PDF en formato Carta (Letter)
-      console.log('📄 Creando PDF...');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -92,44 +55,59 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      // Calcular dimensiones manteniendo proporción
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      
-      // El contenido es largo (3 páginas), dividir en páginas
-      const pageHeightPx = (pdfHeight / pdfWidth) * imgWidth;
-      const totalPages = Math.ceil(imgHeight / pageHeightPx);
-      
-      console.log('📄 Total páginas:', totalPages);
-      
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
+      // Capturar cada página por separado
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i] as HTMLElement;
+        
+        console.log(`📄 Capturando página ${i + 1}...`);
+        
+        const canvas = await html2canvas(page, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          onclone: (clonedDoc, element) => {
+            // Convertir colores oklch a hex
+            const allElements = element.querySelectorAll('*');
+            allElements.forEach((el) => {
+              const computedStyle = window.getComputedStyle(el as Element);
+              const htmlEl = el as HTMLElement;
+              if (computedStyle.backgroundColor.includes('oklch')) {
+                htmlEl.style.backgroundColor = '#ffffff';
+              }
+              if (computedStyle.color.includes('oklch')) {
+                htmlEl.style.color = '#000000';
+              }
+              if (computedStyle.borderColor.includes('oklch')) {
+                htmlEl.style.borderColor = '#e5e7eb';
+              }
+            });
+          }
+        });
+        
+        // Agregar nueva página si no es la primera
+        if (i > 0) {
           pdf.addPage();
         }
         
-        // Calcular la porción de la imagen para esta página
-        const sourceY = page * pageHeightPx;
-        const sourceHeight = Math.min(pageHeightPx, imgHeight - sourceY);
+        // Calcular dimensiones para ajustar al tamaño carta
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / (imgWidth / 2), pdfHeight / (imgHeight / 2));
+        const destWidth = (imgWidth / 2) * ratio;
+        const destHeight = (imgHeight / 2) * ratio;
         
-        // Crear canvas temporal para esta página
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = imgWidth;
-        pageCanvas.height = sourceHeight;
-        const ctx = pageCanvas.getContext('2d');
+        // Centrar en la página si es necesario
+        const xOffset = (pdfWidth - destWidth) / 2;
+        const yOffset = 0;
         
-        if (ctx) {
-          ctx.drawImage(
-            canvas,
-            0, sourceY, imgWidth, sourceHeight,
-            0, 0, imgWidth, sourceHeight
-          );
-          
-          const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-          const destHeight = (sourceHeight / imgWidth) * pdfWidth;
-          
-          pdf.addImage(pageImgData, 'JPEG', 0, 0, pdfWidth, destHeight);
-        }
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, destWidth, destHeight);
       }
+      
+      // Restaurar zoom
+      container.style.transform = originalTransform;
       
       // Descargar el PDF
       const fileName = `Manual-Marca-${brand.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
