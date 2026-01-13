@@ -87,6 +87,7 @@ interface LogoCandidate {
   url: string;
   score: number;
   source: string;
+  isWhiteVersion: boolean;
 }
 
 function extractLogoCandidates(html: string, baseUrl: string): LogoCandidate[] {
@@ -111,21 +112,29 @@ function extractLogoCandidates(html: string, baseUrl: string): LogoCandidate[] {
     
     seen.add(resolvedUrl);
     
+    const urlLower = resolvedUrl.toLowerCase();
+    
+    // Detectar si es versión blanca/white del logo
+    const isWhiteVersion = urlLower.includes('white') || urlLower.includes('blanco') || 
+                          urlLower.includes('_w.') || urlLower.includes('-w.') ||
+                          urlLower.includes('light') || urlLower.includes('negative');
+    
     // Bonus por extensión de imagen
-    const ext = resolvedUrl.toLowerCase();
     let extBonus = 0;
-    if (ext.endsWith('.svg')) extBonus = 30;
-    else if (ext.endsWith('.png')) extBonus = 20;
-    else if (ext.endsWith('.webp')) extBonus = 15;
-    else if (ext.endsWith('.jpg') || ext.endsWith('.jpeg')) extBonus = 5;
+    if (urlLower.endsWith('.svg')) extBonus = 30;
+    else if (urlLower.endsWith('.png')) extBonus = 20;
+    else if (urlLower.endsWith('.webp')) extBonus = 15;
+    else if (urlLower.endsWith('.jpg') || urlLower.endsWith('.jpeg')) extBonus = 5;
     
     // Bonus por nombre de archivo
-    const urlLower = resolvedUrl.toLowerCase();
     let nameBonus = 0;
     if (urlLower.includes('logo')) nameBonus += 50;
     if (urlLower.includes('brand')) nameBonus += 30;
     if (urlLower.includes('icon')) nameBonus += 10;
     if (urlLower.includes('favicon')) nameBonus += 5;
+    
+    // Penalización por versión blanca (preferir versión de color)
+    if (isWhiteVersion) nameBonus -= 40;
     
     // Penalización por tamaños pequeños típicos de iconos
     if (urlLower.includes('16x16') || urlLower.includes('32x32')) nameBonus -= 20;
@@ -134,7 +143,8 @@ function extractLogoCandidates(html: string, baseUrl: string): LogoCandidate[] {
     candidates.push({
       url: resolvedUrl,
       score: score + extBonus + nameBonus,
-      source
+      source,
+      isWhiteVersion
     });
   };
 
@@ -257,22 +267,36 @@ function extractColorsFromHtml(html: string): ExtractedColors {
   let themeColor: string | null = null;
 
   // 1. Meta theme-color (muy confiable - color principal de la marca)
-  const themeColorMatch = html.match(/<meta[^>]*name=["']theme-color["'][^>]*content=["']([^"']+)["']/i);
-  if (themeColorMatch) {
-    themeColor = themeColorMatch[1];
-    colors.push(themeColorMatch[1]);
-    console.log('🎨 Theme color found:', themeColor);
+  const themeColorPatterns = [
+    /<meta[^>]*name=["']theme-color["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]*content=["']([^"']+)["'][^>]*name=["']theme-color["']/i,
+  ];
+  for (const pattern of themeColorPatterns) {
+    const match = html.match(pattern);
+    if (match) {
+      themeColor = match[1];
+      colors.push(match[1]);
+      console.log('🎨 Theme color found:', themeColor);
+      break;
+    }
   }
 
-  // 2. Variables CSS (--primary, --brand, --main, etc.)
+  // 2. msapplication-TileColor (otro indicador de color de marca)
+  const tileColorMatch = html.match(/<meta[^>]*name=["']msapplication-TileColor["'][^>]*content=["']([^"']+)["']/i);
+  if (tileColorMatch && !colors.includes(tileColorMatch[1])) {
+    colors.push(tileColorMatch[1]);
+    console.log('🎨 Tile color found:', tileColorMatch[1]);
+  }
+
+  // 3. Variables CSS en bloques <style> y estilos inline
   const styleBlocks = html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || [];
   const inlineStyles = html.match(/style=["'][^"']+["']/gi) || [];
   const allStyles = [...styleBlocks, ...inlineStyles].join(' ');
 
-  // Buscar variables CSS
+  // Buscar variables CSS con nombres relacionados a marca/colores
   const cssVarPatterns = [
-    /--(?:primary|brand|main|accent|secondary|theme)[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
-    /--color[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
+    /--(?:primary|brand|main|accent|secondary|theme|color-primary|color-brand|color-accent)[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
+    /--(?:bg|background|text|heading|link)[-\w]*:\s*(#[0-9a-fA-F]{3,8})/gi,
   ];
   
   for (const pattern of cssVarPatterns) {
@@ -280,22 +304,25 @@ function extractColorsFromHtml(html: string): ExtractedColors {
     for (const m of matches) {
       const varName = m[0].split(':')[0].trim();
       const color = m[1].trim();
-      cssVariables[varName] = color;
-      if (!colors.includes(color)) colors.push(color);
+      // Ignorar colores muy claros o muy oscuros
+      if (!isGenericColor(color)) {
+        cssVariables[varName] = color;
+        if (!colors.includes(color)) colors.push(color);
+      }
     }
   }
 
-  // 3. Colores hex directos en estilos (priorizando los que aparecen primero/más frecuentes)
+  // 4. Colores hex directos en estilos (priorizando los que aparecen primero/más frecuentes)
   const hexPattern = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
   const hexMatches = allStyles.match(hexPattern) || [];
   
   // Contar frecuencia de colores
   const colorFrequency: Record<string, number> = {};
   for (const hex of hexMatches) {
-    const normalized = hex.toLowerCase();
-    // Ignorar colores muy comunes/genéricos
-    if (['#fff', '#ffffff', '#000', '#000000', '#333', '#333333', '#666', '#999', '#ccc', '#eee', '#f5f5f5'].includes(normalized)) continue;
-    colorFrequency[normalized] = (colorFrequency[normalized] || 0) + 1;
+    const normalized = normalizeHexColor(hex);
+    if (!isGenericColor(normalized)) {
+      colorFrequency[normalized] = (colorFrequency[normalized] || 0) + 1;
+    }
   }
 
   // Ordenar por frecuencia y agregar los más comunes
@@ -308,13 +335,30 @@ function extractColorsFromHtml(html: string): ExtractedColors {
     if (!colors.includes(color)) colors.push(color);
   }
 
-  // 4. Colores RGB
+  // 5. Colores RGB
   const rgbPattern = /rgb[a]?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/gi;
   const rgbMatches = allStyles.matchAll(rgbPattern);
   for (const m of rgbMatches) {
     const hex = rgbToHex(parseInt(m[1]), parseInt(m[2]), parseInt(m[3]));
-    if (!colors.includes(hex) && !['#ffffff', '#000000'].includes(hex)) {
+    if (!colors.includes(hex) && !isGenericColor(hex)) {
       colors.push(hex);
+    }
+  }
+
+  // 6. Buscar colores en atributos de elementos (background, color en style inline)
+  const inlineColorPatterns = [
+    /background(?:-color)?:\s*(#[0-9a-fA-F]{3,6})/gi,
+    /(?:^|;)\s*color:\s*(#[0-9a-fA-F]{3,6})/gi,
+    /border(?:-color)?:\s*(#[0-9a-fA-F]{3,6})/gi,
+  ];
+  
+  for (const pattern of inlineColorPatterns) {
+    const matches = html.matchAll(pattern);
+    for (const m of matches) {
+      const color = normalizeHexColor(m[1]);
+      if (!colors.includes(color) && !isGenericColor(color)) {
+        colors.push(color);
+      }
     }
   }
 
@@ -322,6 +366,28 @@ function extractColorsFromHtml(html: string): ExtractedColors {
   console.log('🎨 CSS variables:', Object.keys(cssVariables).length);
 
   return { colors: colors.slice(0, 15), cssVariables, themeColor };
+}
+
+function normalizeHexColor(hex: string): string {
+  hex = hex.toLowerCase();
+  // Expandir colores de 3 dígitos a 6
+  if (hex.length === 4) {
+    return '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+  }
+  return hex;
+}
+
+function isGenericColor(color: string): boolean {
+  const generic = [
+    '#fff', '#ffffff', '#000', '#000000', 
+    '#333', '#333333', '#666', '#666666', '#999', '#999999',
+    '#ccc', '#cccccc', '#ddd', '#dddddd', '#eee', '#eeeeee',
+    '#f5f5f5', '#f0f0f0', '#fafafa', '#f8f8f8', '#e5e5e5',
+    '#111', '#111111', '#222', '#222222', '#444', '#444444',
+    '#555', '#555555', '#777', '#777777', '#888', '#888888',
+    '#aaa', '#aaaaaa', '#bbb', '#bbbbbb',
+  ];
+  return generic.includes(color.toLowerCase());
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
@@ -393,8 +459,8 @@ async function fetchImageAsBase64(imageUrl: string): Promise<{ base64: string; m
   });
 }
 
-async function analyzeLogoColors(logoUrl: string, apiKey: string): Promise<string[] | null> {
-  console.log('🔍 Analyzing logo colors with Gemini Vision:', logoUrl.substring(0, 60));
+async function analyzeLogoColors(logoUrl: string, apiKey: string, isWhiteVersion: boolean): Promise<string[] | null> {
+  console.log('🔍 Analyzing logo colors with Gemini Vision:', logoUrl.substring(0, 60), 'isWhite:', isWhiteVersion);
   
   try {
     // Primero descargar la imagen y convertir a base64
@@ -410,6 +476,21 @@ async function analyzeLogoColors(logoUrl: string, apiKey: string): Promise<strin
       return null;
     }
 
+    // Prompt adaptado según si es versión blanca o no
+    const prompt = isWhiteVersion 
+      ? `Esta imagen es un logo en versión blanca/negativa (probablemente blanco sobre fondo transparente).
+Aunque el logo sea blanco, analiza la FORMA y ESTILO del logo para sugerir colores apropiados para la marca.
+Basándote en el estilo del logo (moderno, clásico, minimalista, etc.) y el tipo de negocio que parece representar, sugiere una paleta de colores profesional.
+Responde ÚNICAMENTE con un JSON array de 3-4 colores hexadecimales que serían apropiados para esta marca.
+Formato: ["#RRGGBB", "#RRGGBB", "#RRGGBB"]
+Solo el array JSON, sin explicaciones.`
+      : `Analiza esta imagen de logo/marca y extrae los colores principales visibles.
+Identifica los colores dominantes del diseño, ignorando el fondo transparente si lo hay.
+Responde ÚNICAMENTE con un JSON array de colores hexadecimales, máximo 4 colores, ordenados por dominancia visual.
+Formato: ["#RRGGBB", "#RRGGBB"]
+NO incluyas blanco puro (#FFFFFF) ni negro puro (#000000) a menos que sean colores distintivos del diseño.
+Solo el array JSON, sin texto adicional.`;
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
@@ -418,13 +499,7 @@ async function analyzeLogoColors(logoUrl: string, apiKey: string): Promise<strin
         body: JSON.stringify({
           contents: [{
             parts: [
-              {
-                text: `Analiza esta imagen de logo/marca y extrae los colores principales que la identifican.
-Responde ÚNICAMENTE con un JSON array de colores hexadecimales, máximo 4 colores, ordenados por dominancia/importancia visual.
-Formato exacto: ["#RRGGBB", "#RRGGBB"]
-NO incluyas blanco puro (#FFFFFF) ni negro puro (#000000) a menos que sean colores distintivos del diseño.
-Solo el array JSON, sin texto adicional.`
-              },
+              { text: prompt },
               {
                 inlineData: {
                   mimeType: imageData.mimeType,
@@ -434,7 +509,7 @@ Solo el array JSON, sin texto adicional.`
             ]
           }],
           generationConfig: {
-            temperature: 0.1,
+            temperature: 0.3,
             maxOutputTokens: 128,
           },
         }),
@@ -639,15 +714,32 @@ export const handler: Handler = async (event) => {
 
     // Extraer candidatos de logo
     const logoCandidates = extractLogoCandidates(html, url);
-    const bestLogo = logoCandidates.length > 0 ? logoCandidates[0].url : null;
-    console.log('🖼️ Best logo:', bestLogo);
+    
+    // Buscar el mejor logo (preferir versión de color sobre blanca)
+    let bestLogo: string | null = null;
+    let isWhiteVersion = false;
+    
+    if (logoCandidates.length > 0) {
+      // Primero intentar encontrar una versión de color
+      const colorVersion = logoCandidates.find(c => !c.isWhiteVersion && c.url.toLowerCase().includes('logo'));
+      if (colorVersion) {
+        bestLogo = colorVersion.url;
+        isWhiteVersion = false;
+      } else {
+        // Si no hay versión de color, usar la mejor disponible
+        bestLogo = logoCandidates[0].url;
+        isWhiteVersion = logoCandidates[0].isWhiteVersion;
+      }
+    }
+    
+    console.log('🖼️ Best logo:', bestLogo, 'isWhite:', isWhiteVersion);
 
     // Intentar analizar colores del logo con Gemini Vision
     let logoColors: string[] | null = null;
     const apiKey = process.env.GEMINI_API_KEY;
     if (bestLogo && apiKey && !bestLogo.endsWith('.svg')) {
       // Solo intentar con imágenes rasterizadas (no SVG)
-      logoColors = await analyzeLogoColors(bestLogo, apiKey);
+      logoColors = await analyzeLogoColors(bestLogo, apiKey, isWhiteVersion);
     }
 
     // Construir prompt para Gemini con información de colores
