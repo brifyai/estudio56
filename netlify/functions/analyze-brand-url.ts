@@ -193,39 +193,49 @@ export const handler: Handler = async (event) => {
     // Usar Gemini para analizar el contenido
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `Analiza el siguiente contenido de una ${urlType === 'web' ? 'página web' : `cuenta de ${urlType}`} y genera información para un manual de identidad de marca.
+    const prompt = `Eres un experto en branding y marketing. Analiza el siguiente contenido de una ${urlType === 'web' ? 'página web empresarial' : `cuenta de ${urlType}`} y genera información COMPLETA y DETALLADA para un manual de identidad de marca profesional.
 
 URL: ${url}
-Tipo: ${urlType}
+Tipo de fuente: ${urlType}
 Usuario/Dominio: ${username}
-Título: ${title}
-Descripción meta: ${description}
+Título de la página: ${title}
+Meta descripción: ${description}
 
-Contenido de la página (extracto):
-${html.substring(0, 3000)}
+Contenido extraído de la página:
+${html.substring(0, 4000)}
 
-Basándote en esta información, genera un JSON con la siguiente estructura. Sé creativo pero coherente con el contenido real de la página. Si no hay suficiente información, infiere basándote en el tipo de negocio/cuenta:
+INSTRUCCIONES IMPORTANTES:
+1. Analiza TODO el contenido disponible para entender qué hace la empresa/marca
+2. Genera contenido EXTENSO y PROFESIONAL para cada campo
+3. La descripción debe ser de AL MENOS 3-4 oraciones explicando claramente qué hace la empresa
+4. La misión debe ser inspiradora y específica al negocio (2-3 oraciones)
+5. La visión debe ser ambiciosa y orientada al futuro (2-3 oraciones)
+6. El tagline debe ser memorable y capturar la esencia de la marca
+7. Los colores deben reflejar la industria y personalidad de la marca
+
+Genera un JSON con esta estructura:
 
 {
-  "name": "Nombre de la marca (extraído o inferido)",
-  "tagline": "Un eslogan atractivo y memorable (máximo 10 palabras)",
-  "description": "Descripción de la empresa/marca en 2-3 oraciones. Qué hacen, a quién sirven.",
-  "mission": "Declaración de misión en 1-2 oraciones. El propósito de la marca.",
-  "vision": "Declaración de visión en 1-2 oraciones. Hacia dónde se dirige la marca.",
-  "industry": "Industria o sector (ej: tecnología, moda, gastronomía, servicios)",
+  "name": "Nombre oficial de la marca/empresa",
+  "tagline": "Eslogan memorable que capture la esencia (máximo 8 palabras)",
+  "description": "Descripción completa de la empresa: qué productos o servicios ofrece, a qué público se dirige, qué la hace única, y cuál es su propuesta de valor. Mínimo 3 oraciones detalladas.",
+  "mission": "Declaración de misión que explique el propósito fundamental de la empresa, a quién sirve y cómo genera valor. Debe ser inspiradora y específica. Mínimo 2 oraciones.",
+  "vision": "Declaración de visión que describa hacia dónde se dirige la empresa, sus aspiraciones a largo plazo y el impacto que quiere generar. Debe ser ambiciosa. Mínimo 2 oraciones.",
+  "industry": "Sector o industria específica (ej: tecnología, e-commerce, gastronomía, servicios profesionales, retail, educación)",
   "suggestedColors": {
-    "primary": "#hexcolor - color principal que represente la marca",
-    "secondary": "#hexcolor - color secundario para contraste",
-    "accent": "#hexcolor - color de acento para CTAs",
-    "neutral": "#hexcolor - color neutro para fondos"
+    "primary": "#hexcolor",
+    "secondary": "#hexcolor", 
+    "accent": "#hexcolor",
+    "neutral": "#hexcolor"
   }
 }
 
-IMPORTANTE: 
-- Responde SOLO con el JSON, sin markdown ni explicaciones.
-- Los colores deben ser códigos hexadecimales válidos.
-- El contenido debe estar en español.
-- Sé profesional y coherente con la identidad visual que percibes.`;
+REGLAS:
+- Responde ÚNICAMENTE con el JSON, sin markdown, sin explicaciones, sin texto adicional
+- Todos los colores deben ser códigos hexadecimales válidos de 6 dígitos (ej: #3B82F6)
+- Todo el contenido debe estar en español
+- Si no hay suficiente información, infiere de manera inteligente basándote en el tipo de negocio
+- Sé profesional, creativo y coherente con la identidad que percibes de la marca`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
