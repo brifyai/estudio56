@@ -46,21 +46,6 @@ const CreationModeSelector: React.FC<CreationModeSelectorProps> = ({
           );
         })}
       </div>
-      
-      {/* Descripción del modo seleccionado */}
-      <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-        <div className="text-[10px] text-blue-300 font-medium mb-1">
-          Características del modo {CREATION_MODES[selectedMode].name}:
-        </div>
-        <ul className="text-[10px] text-white/60 space-y-0.5">
-          {CREATION_MODES[selectedMode].features.map((feature, idx) => (
-            <li key={idx} className="flex items-start gap-1">
-              <span className="text-blue-400 mt-0.5">•</span>
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 };
