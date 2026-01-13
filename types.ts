@@ -40,7 +40,7 @@ export const CREATION_MODES: Record<CreationMode, CreationModeConfig> = {
   canva: {
     id: 'canva',
     name: 'Canva',
-    description: 'Editor visual (Próximamente)',
+    description: 'Editor visual drag & drop',
     icon: '✏️',
     features: ['Editor drag & drop', 'Plantillas', 'Elementos visuales'],
     showPrompt: false,
@@ -60,6 +60,99 @@ export const CREATION_MODES: Record<CreationMode, CreationModeConfig> = {
     allowManualEditing: false
   }
 };
+
+// ============================================
+// 🎨 CANVAS EDITOR TYPES
+// ============================================
+
+export type CanvasElementType = 'text' | 'shape' | 'image' | 'icon';
+export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'line' | 'star';
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
+export type FontWeight = 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+export type FontStyle = 'normal' | 'italic';
+
+export interface BaseCanvasElement {
+  id: string;
+  type: CanvasElementType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  locked: boolean;
+  visible: boolean;
+  zIndex: number;
+  name?: string;
+}
+
+export interface TextCanvasElement extends BaseCanvasElement {
+  type: 'text';
+  content: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: FontWeight;
+  fontStyle: FontStyle;
+  textAlign: TextAlign;
+  color: string;
+  backgroundColor?: string;
+  lineHeight: number;
+  letterSpacing?: number;
+  textDecoration?: 'none' | 'underline' | 'line-through';
+}
+
+export interface ShapeCanvasElement extends BaseCanvasElement {
+  type: 'shape';
+  shapeType: ShapeType;
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  cornerRadius?: number;
+}
+
+export interface ImageCanvasElement extends BaseCanvasElement {
+  type: 'image';
+  src: string;
+  filters?: string[];
+  cropX?: number;
+  cropY?: number;
+  cropWidth?: number;
+  cropHeight?: number;
+}
+
+export interface IconCanvasElement extends BaseCanvasElement {
+  type: 'icon';
+  iconName: string;
+  color: string;
+}
+
+export type CanvasElement = TextCanvasElement | ShapeCanvasElement | ImageCanvasElement | IconCanvasElement;
+
+export interface CanvasDesign {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  backgroundColor: string;
+  backgroundImage?: string;
+  elements: CanvasElement[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CanvasTemplate {
+  id: string;
+  name: string;
+  category: string;
+  thumbnail: string;
+  design: Omit<CanvasDesign, 'id' | 'createdAt' | 'updatedAt'>;
+}
+
+export interface CanvasHistory {
+  past: CanvasDesign[];
+  present: CanvasDesign;
+  future: CanvasDesign[];
+}
 
 export interface PlanConfig {
   id: PlanId;
