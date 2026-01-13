@@ -920,6 +920,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          
       </div>
 
+        {/* OCULTAR TODO LO SIGUIENTE EN MODO LIBRE */}
+        {creationMode !== 'free' && (
+        <>
         {/* 4. STYLE CARD - SOLO EN MODO MANUAL Y MODO DISEÑO */}
         {workMode === 'manual' && creationMode === 'design' && (
           <div className="space-y-3">
@@ -1423,6 +1426,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
               </div>
             )}
           </div>
+        )}
+
+        {/* FIN DE SECCIONES OCULTAS EN MODO LIBRE */}
+        </>
         )}
 
         {/* GENERATE BUTTON - Oculto en modo estudio */}
