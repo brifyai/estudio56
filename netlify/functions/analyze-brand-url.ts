@@ -20,10 +20,15 @@ interface BrandAnalysis {
 // Llamar a Gemini API directamente con fetch
 async function callGeminiAPI(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
+  console.log('🔑 GEMINI_API_KEY exists:', !!apiKey);
+  
   if (!apiKey) {
+    console.error('❌ GEMINI_API_KEY not found in environment');
     throw new Error('GEMINI_API_KEY not configured');
   }
 
+  console.log('📤 Calling Gemini API...');
+  
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
     {
@@ -39,29 +44,47 @@ async function callGeminiAPI(prompt: string): Promise<string> {
     }
   );
 
+  console.log('📥 Gemini response status:', response.status);
+
   if (!response.ok) {
     const error = await response.text();
-    console.error('Gemini API error:', error);
-    throw new Error(`Gemini API error: ${response.status}`);
+    console.error('❌ Gemini API error:', error);
+    throw new Error(`Gemini API error: ${response.status} - ${error.substring(0, 200)}`);
   }
 
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  console.log('✅ Gemini response length:', text.length);
+  return text;
 }
 
 // Extraer contenido de URL
 async function fetchUrlContent(url: string) {
+  console.log('🌐 Fetching URL:', url);
+  
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    console.log('📄 URL response status:', response.status);
+
+    if (!response.ok) {
+      console.warn('⚠️ URL fetch failed:', response.status);
+      return { html: '', title: url, description: '', logoImages: [] };
+    }
 
     const html = await response.text();
+    console.log('📄 HTML length:', html.length);
 
     // Extraer título
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -100,10 +123,13 @@ async function fetchUrlContent(url: string) {
       .replace(/\s+/g, ' ')
       .substring(0, 4000);
 
+    console.log('✅ Extracted:', { title, descLength: description.length, logos: logoImages.length });
     return { html: cleanHtml, title, description, logoImages };
   } catch (error) {
-    console.error('Error fetching URL:', error);
-    return { html: '', title: '', description: '', logoImages: [] };
+    const errorMsg = error instanceof Error ? error.message : 'Unknown';
+    console.error('❌ Error fetching URL:', errorMsg);
+    // No lanzar error, devolver datos vacíos para que Gemini genere contenido basado en la URL
+    return { html: '', title: url, description: '', logoImages: [] };
   }
 }
 
@@ -244,13 +270,20 @@ IMPORTANTE: Responde SOLO con el JSON, sin explicaciones ni markdown. Todo en es
     return { statusCode: 200, headers, body: JSON.stringify(brandAnalysis) };
 
   } catch (error) {
-    console.error('❌ Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error('❌ Error:', errorMessage);
+    console.error('📋 Stack:', errorStack);
+    
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
         error: 'Error analyzing URL', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+        details: errorMessage,
+        hint: errorMessage.includes('GEMINI_API_KEY') 
+          ? 'Verifica que GEMINI_API_KEY esté configurada en Netlify' 
+          : 'Revisa los logs de Netlify para más detalles'
       }),
     };
   }
