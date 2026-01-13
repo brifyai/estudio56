@@ -26,14 +26,20 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab,
     return null;
   };
 
-  // Analizar URL y generar contenido
+  // Analizar URL y generar contenido usando IA
   const handleAnalyzeUrl = async () => {
     if (!urlInput.trim()) {
       setUrlError('Ingresa una URL válida');
       return;
     }
 
-    const urlType = detectUrlType(urlInput);
+    // Asegurar que la URL tenga protocolo
+    let normalizedUrl = urlInput.trim();
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = 'https://' + normalizedUrl;
+    }
+
+    const urlType = detectUrlType(normalizedUrl);
     if (!urlType) {
       setUrlError('URL no válida. Usa Instagram, Facebook, TikTok o una página web');
       return;
@@ -43,43 +49,47 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab,
     setUrlError(null);
 
     try {
-      // TODO: Implementar llamada a API para analizar URL
-      // Por ahora, simulamos con datos de ejemplo basados en el tipo
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Llamar a la función serverless para analizar la URL con IA
+      const response = await fetch('/.netlify/functions/analyze-brand-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: normalizedUrl }),
+      });
 
-      // Extraer nombre de la URL
-      let extractedName = '';
-      try {
-        const urlObj = new URL(urlInput);
-        if (urlType === 'instagram' || urlType === 'tiktok') {
-          // Extraer username de redes sociales
-          const pathParts = urlObj.pathname.split('/').filter(Boolean);
-          extractedName = pathParts[0]?.replace('@', '') || '';
-        } else if (urlType === 'facebook') {
-          const pathParts = urlObj.pathname.split('/').filter(Boolean);
-          extractedName = pathParts[0] || '';
-        } else {
-          // Para web, usar el dominio
-          extractedName = urlObj.hostname.replace('www.', '').split('.')[0] || '';
-        }
-      } catch {
-        extractedName = 'Mi Marca';
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al analizar la URL');
       }
 
-      // Capitalizar nombre
-      const capitalizedName = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);
+      const analysis = await response.json();
+      console.log('📊 Análisis de marca recibido:', analysis);
 
-      // Actualizar datos de marca con información extraída
+      // Actualizar datos de marca con la información analizada por IA
       setBrand(prev => ({
         ...prev,
-        name: capitalizedName || prev.name,
-        tagline: `Conectando con ${urlType === 'instagram' ? 'Instagram' : urlType === 'facebook' ? 'Facebook' : urlType === 'tiktok' ? 'TikTok' : 'la web'}`,
-        description: `Marca digital con presencia en ${urlType === 'web' ? 'internet' : urlType}. Analizamos tu perfil para crear una identidad visual coherente.`,
+        name: analysis.name || prev.name,
+        tagline: analysis.tagline || prev.tagline,
+        description: analysis.description || prev.description,
+        mission: analysis.mission || prev.mission,
+        vision: analysis.vision || prev.vision,
+        // Si hay logo extraído, usarlo
+        ...(analysis.logoUrl ? { 
+          logoUrl: analysis.logoUrl, 
+          logoMode: 'upload' as const 
+        } : {}),
+        // Actualizar colores sugeridos
+        colors: {
+          primary: analysis.colors?.primary || prev.colors.primary,
+          secondary: analysis.colors?.secondary || prev.colors.secondary,
+          accent: analysis.colors?.accent || prev.colors.accent,
+          neutral: analysis.colors?.neutral || prev.colors.neutral,
+        },
       }));
 
       setUrlInput('');
     } catch (error) {
-      setUrlError('Error al analizar la URL. Intenta de nuevo.');
+      console.error('Error analizando URL:', error);
+      setUrlError(error instanceof Error ? error.message : 'Error al analizar la URL. Intenta de nuevo.');
     } finally {
       setIsAnalyzing(false);
     }
