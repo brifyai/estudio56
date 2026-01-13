@@ -21,7 +21,7 @@ interface BrandAnalysis {
 }
 
 // Función para extraer contenido de una URL
-async function fetchUrlContent(url: string): Promise<{ html: string; title: string; description: string; images: string[] }> {
+async function fetchUrlContent(url: string): Promise<{ html: string; title: string; description: string; images: string[]; logoImages: string[] }> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -46,23 +46,64 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
                       html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
     const description = descMatch ? descMatch[1].trim() : '';
 
-    // Extraer imágenes (logos potenciales)
+    // Arrays separados para logos e imágenes generales
+    const logoImages: string[] = [];
     const images: string[] = [];
     
-    // Buscar og:image
-    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
-    if (ogImageMatch) images.push(ogImageMatch[1]);
-
-    // Buscar favicon/logo
-    const logoMatches = html.matchAll(/<link[^>]*rel=["'](?:icon|shortcut icon|apple-touch-icon)["'][^>]*href=["']([^"']+)["']/gi);
-    for (const match of logoMatches) {
-      images.push(match[1]);
+    // 1. PRIORIDAD ALTA: Buscar og:image (suele ser el logo o imagen principal)
+    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+                         html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+    if (ogImageMatch) {
+      logoImages.push(ogImageMatch[1]);
     }
 
-    // Buscar imágenes con "logo" en el nombre o clase
-    const logoImgMatches = html.matchAll(/<img[^>]*(?:class=["'][^"']*logo[^"']*["']|src=["'][^"']*logo[^"']*["'])[^>]*src=["']([^"']+)["']/gi);
-    for (const match of logoImgMatches) {
-      images.push(match[1]);
+    // 2. PRIORIDAD ALTA: Buscar apple-touch-icon (suele ser el logo de alta calidad)
+    const appleTouchMatches = html.matchAll(/<link[^>]*rel=["']apple-touch-icon[^"']*["'][^>]*href=["']([^"']+)["']/gi);
+    for (const match of appleTouchMatches) {
+      logoImages.push(match[1]);
+    }
+
+    // 3. PRIORIDAD ALTA: Buscar imágenes con "logo" en src, class, id o alt
+    const logoPatterns = [
+      /<img[^>]*src=["']([^"']*logo[^"']*)["'][^>]*>/gi,
+      /<img[^>]*class=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/gi,
+      /<img[^>]*id=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/gi,
+      /<img[^>]*alt=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/gi,
+    ];
+    
+    for (const pattern of logoPatterns) {
+      const matches = html.matchAll(pattern);
+      for (const match of matches) {
+        if (match[1] && !logoImages.includes(match[1])) {
+          logoImages.push(match[1]);
+        }
+      }
+    }
+
+    // 4. Buscar imágenes dentro de header o nav (suelen contener el logo)
+    const headerMatch = html.match(/<header[^>]*>([\s\S]*?)<\/header>/i);
+    const navMatch = html.match(/<nav[^>]*>([\s\S]*?)<\/nav>/i);
+    const headerNavContent = (headerMatch?.[1] || '') + (navMatch?.[1] || '');
+    
+    const headerImgMatches = headerNavContent.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
+    for (const match of headerImgMatches) {
+      if (match[1] && !logoImages.includes(match[1])) {
+        logoImages.push(match[1]);
+      }
+    }
+
+    // 5. Buscar SVG con logo en el nombre o clase
+    const svgLogoMatches = html.matchAll(/<(?:img|object|embed)[^>]*(?:src|data)=["']([^"']*\.svg[^"']*)["'][^>]*>/gi);
+    for (const match of svgLogoMatches) {
+      if (match[1] && match[1].toLowerCase().includes('logo')) {
+        logoImages.push(match[1]);
+      }
+    }
+
+    // 6. Favicon como último recurso
+    const faviconMatches = html.matchAll(/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']/gi);
+    for (const match of faviconMatches) {
+      images.push(match[1]); // Agregar a images generales, no a logoImages
     }
 
     // Limpiar texto HTML para análisis
@@ -71,12 +112,15 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
-      .substring(0, 5000); // Limitar a 5000 caracteres
+      .substring(0, 5000);
 
-    return { html: cleanHtml, title, description, images };
+    console.log('🖼️ Logos encontrados:', logoImages.length, logoImages);
+    console.log('🖼️ Imágenes generales:', images.length);
+
+    return { html: cleanHtml, title, description, images, logoImages };
   } catch (error) {
     console.error('Error fetching URL:', error);
-    return { html: '', title: '', description: '', images: [] };
+    return { html: '', title: '', description: '', images: [], logoImages: [] };
   }
 }
 
@@ -142,9 +186,9 @@ export const handler: Handler = async (event) => {
 
     const urlType = detectUrlType(url);
     const username = extractUsername(url, urlType);
-    const { html, title, description, images } = await fetchUrlContent(url);
+    const { html, title, description, images, logoImages } = await fetchUrlContent(url);
 
-    console.log('📄 Contenido extraído:', { title, description, imagesCount: images.length });
+    console.log('📄 Contenido extraído:', { title, description, logoImagesCount: logoImages.length, imagesCount: images.length });
 
     // Usar Gemini para analizar el contenido
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -213,16 +257,25 @@ IMPORTANTE:
       };
     }
 
-    // Resolver URLs de imágenes
+    // Resolver URLs de imágenes - priorizar logoImages
+    const resolvedLogoImages = logoImages.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
     const resolvedImages = images.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
     
-    // Buscar el mejor logo candidato
+    // Buscar el mejor logo candidato con prioridad mejorada
     let logoUrl: string | null = null;
-    if (resolvedImages.length > 0) {
-      // Priorizar imágenes que contengan "logo" en la URL
+    
+    if (resolvedLogoImages.length > 0) {
+      // Priorizar: 1) imágenes con "logo" explícito, 2) PNG/SVG sobre otros formatos, 3) primera imagen
+      const withLogoInName = resolvedLogoImages.find(img => img.toLowerCase().includes('logo'));
+      const pngOrSvg = resolvedLogoImages.find(img => img.toLowerCase().endsWith('.png') || img.toLowerCase().endsWith('.svg'));
+      logoUrl = withLogoInName || pngOrSvg || resolvedLogoImages[0];
+    } else if (resolvedImages.length > 0) {
+      // Fallback a imágenes generales
       const logoCandidate = resolvedImages.find(img => img.toLowerCase().includes('logo'));
       logoUrl = logoCandidate || resolvedImages[0];
     }
+
+    console.log('🎯 Logo seleccionado:', logoUrl);
 
     const brandAnalysis: BrandAnalysis = {
       name: analysis.name || username || 'Mi Marca',
