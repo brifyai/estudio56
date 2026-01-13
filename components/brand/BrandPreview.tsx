@@ -349,8 +349,8 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
             // El contenedor tiene el tamaño visual del documento escalado
             // Formato Carta: 215.9mm x 279.4mm
             width: `calc(215.9mm * ${zoom})`,
-            // Altura total: 3 páginas Carta (portada + esencia + sistema visual) + footer
-            height: `calc((279.4mm * 3 + 100px) * ${zoom})`,
+            // Altura total: 4 páginas Carta + espacios entre páginas
+            height: `calc((279.4mm * 4 + 150px) * ${zoom})`,
           }}
         >
           <div 
@@ -417,7 +417,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
               </section>
             </div>
 
-            {/* PÁGINA 3: SISTEMA VISUAL */}
+            {/* PÁGINA 3: LOGOTIPO */}
             <div className="preview-container bg-white w-[215.9mm] shadow-2xl mb-8">
               <section className="h-[279.4mm] p-16 flex flex-col">
                 <div className="mb-12 flex items-center gap-4">
@@ -426,7 +426,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
                 </div>
 
               {/* Logo */}
-              <div className="mb-16">
+              <div>
                 <h4 className="text-lg font-bold mb-8 flex items-center gap-2 border-b pb-2" style={{ color: brand.colors.primary, borderColor: brand.colors.primary }}>
                   <LayoutTemplate size={20} /> Logotipo
                 </h4>
@@ -513,6 +513,16 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
                   ))}
                 </div>
               </div>
+              </section>
+            </div>
+
+            {/* PÁGINA 4: COLORES Y TIPOGRAFÍA */}
+            <div className="preview-container bg-white w-[215.9mm] shadow-2xl mb-8">
+              <section className="h-[279.4mm] p-16 flex flex-col">
+                <div className="mb-12 flex items-center gap-4">
+                  <span className="text-4xl font-bold opacity-20">03</span>
+                  <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Colores y Tipografía</h3>
+                </div>
 
               {/* Colores */}
               <div className="mb-16">
