@@ -2440,7 +2440,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
       {/* CENTER: CANVAS - Solo visible en landscape (lg) */}
       <main className={`
         flex-1 flex-col relative z-10 p-1 lg:p-2 overflow-hidden w-full hidden lg:flex ${showRealityComparator ? 'min-h-screen' : 'h-screen'}
-        pr-2 /* Espacio derecho consistente con calendarios */
+        pr-0 lg:pr-0 /* Sin padding derecho para igualar espacio con calendario */
       `}>
           {/* DESKTOP/LANDSCAPE PREVIEW - Visible en landscape (lg) */}
           <div className={`
