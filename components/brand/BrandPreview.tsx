@@ -149,6 +149,25 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
   // Detectar si es el estado por defecto (sin datos reales)
   const isEmptyState = brand.name === "Mi Marca" && brand.tagline === "Tu eslogan aquí";
 
+  // Función para detectar si un color es claro (para ajustar fondo del logo)
+  const isLightColor = (hexColor: string): boolean => {
+    // Remover # si existe
+    const hex = hexColor.replace('#', '');
+    // Convertir a RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calcular luminosidad (fórmula estándar)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    // Si luminosidad > 0.7, es un color claro
+    return luminance > 0.7;
+  };
+
+  // Detectar si el logo/marca usa colores claros
+  const hasLightLogo = isLightColor(brand.colors.primary) || 
+    (brand.logoUrl && brand.logoUrl.toLowerCase().includes('blanco')) ||
+    (brand.logoUrl && brand.logoUrl.toLowerCase().includes('white'));
+
   const getInitials = (name: string) => {
     const words = name.trim().split(/\s+/);
     if (words.length === 0) return "B";
@@ -348,7 +367,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
             <section className="relative h-[279.4mm] flex flex-col justify-between p-16 overflow-hidden">
               <div className="absolute top-0 right-0 w-2/3 h-full opacity-10 pointer-events-none transform skew-x-12 translate-x-32" style={{ backgroundColor: brand.colors.primary }} />
               <div className="relative z-10 pt-20">
-                <div className="mb-12">
+                <div className={`mb-12 inline-block ${hasLightLogo ? 'bg-slate-700 p-6 rounded-xl' : ''}`}>
                   {brand.logoMode === 'upload' && brand.logoUrl ? (
                     <img src={brand.logoUrl} alt="Logo" className="h-24 object-contain" />
                   ) : (
@@ -409,9 +428,11 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
                   <LayoutTemplate size={20} /> Logotipo
                 </h4>
                 
-                {/* Logo principal */}
-                <div className="mb-8 bg-gray-50 p-8 rounded-xl border border-dashed border-gray-300">
-                  <p className="text-sm text-gray-500 mb-4 text-center">Versión Principal</p>
+                {/* Logo principal - fondo oscuro si el logo es claro */}
+                <div 
+                  className={`mb-8 p-8 rounded-xl border border-dashed ${hasLightLogo ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-300'}`}
+                >
+                  <p className={`text-sm mb-4 text-center ${hasLightLogo ? 'text-slate-300' : 'text-gray-500'}`}>Versión Principal</p>
                   <div className="flex justify-center">
                     {brand.logoMode === 'upload' && brand.logoUrl ? (
                       <img src={brand.logoUrl} alt="Logo" className="h-24 object-contain" />
