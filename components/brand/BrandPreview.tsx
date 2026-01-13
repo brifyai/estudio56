@@ -81,12 +81,12 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       // Restaurar el zoom original
       container.style.transform = originalTransform;
       
-      // Crear PDF en formato A4
+      // Crear PDF en formato Carta (Letter)
       console.log('📄 Creando PDF...');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
+        format: 'letter',
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -245,10 +245,10 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
     <div className="flex flex-col h-full bg-gray-950 overflow-hidden" onClick={(e) => e.stopPropagation()}>
       <style>{`
         @media print {
-          @page { margin: 0; size: A4; }
+          @page { margin: 0; size: letter; }
           body { -webkit-print-color-adjust: exact; }
           .no-print { display: none !important; }
-          .preview-container { box-shadow: none !important; border: none !important; width: 210mm !important; }
+          .preview-container { box-shadow: none !important; border: none !important; width: 215.9mm !important; }
         }
       `}</style>
 
@@ -328,9 +328,10 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
           className="mx-auto"
           style={{ 
             // El contenedor tiene el tamaño visual del documento escalado
-            width: `calc(210mm * ${zoom})`,
-            // Altura total: 3 páginas A4 (portada + esencia + sistema visual) + footer
-            height: `calc((297mm * 3 + 100px) * ${zoom})`,
+            // Formato Carta: 215.9mm x 279.4mm
+            width: `calc(215.9mm * ${zoom})`,
+            // Altura total: 3 páginas Carta (portada + esencia + sistema visual) + footer
+            height: `calc((279.4mm * 3 + 100px) * ${zoom})`,
           }}
         >
           <div 
@@ -338,13 +339,13 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
             style={{ 
               transform: `scale(${zoom})`,
               transformOrigin: 'top left',
-              width: '210mm',
+              width: '215.9mm',
             }}
           >
-            <div className="preview-container bg-white w-[210mm] shadow-2xl">
+            <div className="preview-container bg-white w-[215.9mm] shadow-2xl">
             
             {/* PORTADA */}
-            <section className="relative h-[297mm] flex flex-col justify-between p-16 overflow-hidden">
+            <section className="relative h-[279.4mm] flex flex-col justify-between p-16 overflow-hidden">
               <div className="absolute top-0 right-0 w-2/3 h-full opacity-10 pointer-events-none transform skew-x-12 translate-x-32" style={{ backgroundColor: brand.colors.primary }} />
               <div className="relative z-10 pt-20">
                 <div className="mb-12">
@@ -366,7 +367,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
             </section>
 
             {/* ESENCIA */}
-            <section className="min-h-[297mm] p-16 flex flex-col border-t">
+            <section className="min-h-[279.4mm] p-16 flex flex-col border-t">
               <div className="mb-12 flex items-center gap-4">
                 <span className="text-4xl font-bold opacity-20">01</span>
                 <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Esencia</h3>
@@ -396,7 +397,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
             </section>
 
             {/* SISTEMA VISUAL */}
-            <section className="min-h-[297mm] p-16 flex flex-col border-t">
+            <section className="min-h-[279.4mm] p-16 flex flex-col border-t">
               <div className="mb-12 flex items-center gap-4">
                 <span className="text-4xl font-bold opacity-20">02</span>
                 <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Sistema Visual</h3>
