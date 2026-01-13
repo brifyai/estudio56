@@ -1,7 +1,4 @@
 import { Handler } from '@netlify/functions';
-import { GoogleGenAI } from '@google/genai';
-
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 interface BrandAnalysis {
   name: string;
@@ -20,8 +17,40 @@ interface BrandAnalysis {
   socialType: 'instagram' | 'facebook' | 'tiktok' | 'web';
 }
 
-// Función para extraer contenido de una URL
-async function fetchUrlContent(url: string): Promise<{ html: string; title: string; description: string; images: string[]; logoImages: string[] }> {
+// Llamar a Gemini API directamente con fetch
+async function callGeminiAPI(prompt: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY not configured');
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Gemini API error:', error);
+    throw new Error(`Gemini API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// Extraer contenido de URL
+async function fetchUrlContent(url: string) {
   try {
     const response = await fetch(url, {
       headers: {
@@ -30,9 +59,7 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const html = await response.text();
 
@@ -41,39 +68,29 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
     const title = titleMatch ? titleMatch[1].trim() : '';
 
     // Extraer meta description
-    const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i) ||
-                      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
+    const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
     const description = descMatch ? descMatch[1].trim() : '';
 
     const logoImages: string[] = [];
-    const images: string[] = [];
     
-    // Buscar og:image
-    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
-    if (ogImageMatch) logoImages.push(ogImageMatch[1]);
+    // og:image
+    const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+    if (ogMatch) logoImages.push(ogMatch[1]);
 
-    // Buscar apple-touch-icon
-    const appleTouchMatches = html.matchAll(/<link[^>]*rel=["']apple-touch-icon[^"']*["'][^>]*href=["']([^"']+)["']/gi);
-    for (const match of appleTouchMatches) logoImages.push(match[1]);
+    // apple-touch-icon
+    const appleMatches = html.matchAll(/<link[^>]*rel=["']apple-touch-icon[^"']*["'][^>]*href=["']([^"']+)["']/gi);
+    for (const m of appleMatches) logoImages.push(m[1]);
 
-    // Buscar imágenes con "logo"
-    const logoImgMatches = html.matchAll(/<img[^>]*src=["']([^"']*logo[^"']*)["'][^>]*>/gi);
-    for (const match of logoImgMatches) {
-      if (match[1] && !logoImages.includes(match[1])) logoImages.push(match[1]);
-    }
+    // imágenes con "logo"
+    const logoMatches = html.matchAll(/<img[^>]*src=["']([^"']*logo[^"']*)["'][^>]*>/gi);
+    for (const m of logoMatches) if (m[1] && !logoImages.includes(m[1])) logoImages.push(m[1]);
 
-    // Buscar en header/nav
+    // header images
     const headerMatch = html.match(/<header[^>]*>([\s\S]*?)<\/header>/i);
     if (headerMatch) {
       const headerImgs = headerMatch[1].matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
-      for (const match of headerImgs) {
-        if (match[1] && !logoImages.includes(match[1])) logoImages.push(match[1]);
-      }
+      for (const m of headerImgs) if (m[1] && !logoImages.includes(m[1])) logoImages.push(m[1]);
     }
-
-    // Favicon
-    const faviconMatches = html.matchAll(/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']+)["']/gi);
-    for (const match of faviconMatches) images.push(match[1]);
 
     // Limpiar HTML
     const cleanHtml = html
@@ -81,12 +98,12 @@ async function fetchUrlContent(url: string): Promise<{ html: string; title: stri
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
-      .substring(0, 5000);
+      .substring(0, 4000);
 
-    return { html: cleanHtml, title, description, images, logoImages };
+    return { html: cleanHtml, title, description, logoImages };
   } catch (error) {
     console.error('Error fetching URL:', error);
-    return { html: '', title: '', description: '', images: [], logoImages: [] };
+    return { html: '', title: '', description: '', logoImages: [] };
   }
 }
 
@@ -144,11 +161,11 @@ export const handler: Handler = async (event) => {
 
     const urlType = detectUrlType(url);
     const username = extractUsername(url, urlType);
-    const { html, title, description, images, logoImages } = await fetchUrlContent(url);
+    const { html, title, description, logoImages } = await fetchUrlContent(url);
 
-    console.log('📄 Contenido extraído:', { title, description, logoImagesCount: logoImages.length });
+    console.log('📄 Contenido:', { title, description, logos: logoImages.length });
 
-    // Construir prompt
+    // Prompt para Gemini
     const prompt = `Eres un experto en branding. Analiza este contenido y genera información para un manual de marca.
 
 URL: ${url}
@@ -156,7 +173,7 @@ Título: ${title}
 Descripción: ${description}
 Contenido: ${html.substring(0, 3000)}
 
-Genera un JSON con esta estructura exacta (sin markdown, solo JSON):
+Genera un JSON con esta estructura exacta (sin markdown, solo JSON puro):
 {
   "name": "Nombre de la marca",
   "tagline": "Eslogan memorable (máximo 8 palabras)",
@@ -172,16 +189,11 @@ Genera un JSON con esta estructura exacta (sin markdown, solo JSON):
   }
 }
 
-IMPORTANTE: Responde SOLO con el JSON, sin explicaciones. Contenido en español.`;
+IMPORTANTE: Responde SOLO con el JSON, sin explicaciones ni markdown. Todo en español.`;
 
     // Llamar a Gemini
-    const response = await genAI.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: prompt,
-    });
-
-    const responseText = response.text || '';
-    console.log('🤖 Respuesta Gemini:', responseText);
+    const responseText = await callGeminiAPI(prompt);
+    console.log('🤖 Gemini response:', responseText.substring(0, 200));
 
     // Parsear respuesta
     let analysis: any;
@@ -189,6 +201,7 @@ IMPORTANTE: Responde SOLO con el JSON, sin explicaciones. Contenido en español.
       const cleanJson = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysis = JSON.parse(cleanJson);
     } catch {
+      console.log('⚠️ Error parsing, usando fallback');
       analysis = {
         name: username || title.split('|')[0].trim() || 'Mi Marca',
         tagline: 'Innovación y calidad',
@@ -202,15 +215,11 @@ IMPORTANTE: Responde SOLO con el JSON, sin explicaciones. Contenido en español.
 
     // Resolver logos
     const resolvedLogos = logoImages.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
-    const resolvedImages = images.map(img => resolveUrl(url, img)).filter(img => img.startsWith('http'));
-    
     let logoUrl: string | null = null;
     if (resolvedLogos.length > 0) {
       const withLogo = resolvedLogos.find(img => img.toLowerCase().includes('logo'));
       const pngSvg = resolvedLogos.find(img => img.endsWith('.png') || img.endsWith('.svg'));
       logoUrl = withLogo || pngSvg || resolvedLogos[0];
-    } else if (resolvedImages.length > 0) {
-      logoUrl = resolvedImages[0];
     }
 
     const brandAnalysis: BrandAnalysis = {
@@ -230,7 +239,7 @@ IMPORTANTE: Responde SOLO con el JSON, sin explicaciones. Contenido en español.
       socialType: urlType,
     };
 
-    console.log('✅ Análisis completado:', brandAnalysis);
+    console.log('✅ Análisis completado:', brandAnalysis.name);
 
     return { statusCode: 200, headers, body: JSON.stringify(brandAnalysis) };
 
@@ -239,7 +248,10 @@ IMPORTANTE: Responde SOLO con el JSON, sin explicaciones. Contenido en español.
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Error analyzing URL', details: error instanceof Error ? error.message : 'Unknown' }),
+      body: JSON.stringify({ 
+        error: 'Error analyzing URL', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      }),
     };
   }
 };
