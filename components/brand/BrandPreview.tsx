@@ -407,24 +407,85 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
                 <h4 className="text-lg font-bold mb-8 flex items-center gap-2 border-b pb-2" style={{ color: brand.colors.primary, borderColor: brand.colors.primary }}>
                   <LayoutTemplate size={20} /> Logotipo
                 </h4>
-                <div className="grid grid-cols-2 gap-8 items-center bg-gray-50 p-8 rounded-xl border border-dashed border-gray-300">
-                  <div className="flex justify-center border-r border-gray-200 pr-8">
+                
+                {/* Logo principal */}
+                <div className="mb-8 bg-gray-50 p-8 rounded-xl border border-dashed border-gray-300">
+                  <p className="text-sm text-gray-500 mb-4 text-center">Versión Principal</p>
+                  <div className="flex justify-center">
                     {brand.logoMode === 'upload' && brand.logoUrl ? (
-                      <img src={brand.logoUrl} alt="Logo" className="h-32 object-contain" />
+                      <img src={brand.logoUrl} alt="Logo" className="h-24 object-contain" />
                     ) : (
-                      <GeneratedLogo className="h-32" />
+                      <GeneratedLogo className="h-24" />
                     )}
                   </div>
-                  <div className="pl-4">
-                    <p className="text-sm text-gray-500 mb-2">Variante en negativo</p>
-                    <div className="bg-slate-800 p-6 rounded-lg flex justify-center">
-                      {brand.logoMode === 'upload' && brand.logoUrl ? (
-                        <img src={brand.logoUrl} alt="Logo" className="h-16 object-contain brightness-200 grayscale" />
-                      ) : (
-                        <GeneratedLogo className="h-16" forceWhiteText={true} />
-                      )}
+                </div>
+
+                {/* Variaciones de color del logo */}
+                <p className="text-sm text-gray-500 mb-4">Variaciones de Color</p>
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { name: 'Primario', bg: '#ffffff', color: brand.colors.primary },
+                    { name: 'Secundario', bg: '#ffffff', color: brand.colors.secondary },
+                    { name: 'Acento', bg: '#ffffff', color: brand.colors.accent },
+                    { name: 'Negativo', bg: brand.colors.secondary, color: '#ffffff' },
+                  ].map((variant) => (
+                    <div key={variant.name} className="text-center">
+                      <div 
+                        className="aspect-square rounded-xl flex items-center justify-center p-4 border border-gray-200 mb-2"
+                        style={{ backgroundColor: variant.bg }}
+                      >
+                        {brand.logoMode === 'upload' && brand.logoUrl ? (
+                          <img 
+                            src={brand.logoUrl} 
+                            alt={`Logo ${variant.name}`} 
+                            className="h-12 object-contain"
+                            style={{ 
+                              filter: variant.name === 'Negativo' ? 'brightness(0) invert(1)' : 'none'
+                            }}
+                          />
+                        ) : (
+                          <div style={{ color: variant.color }}>
+                            <GeneratedLogo className="h-12" showText={false} />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">{variant.name}</p>
+                      <p className="text-[10px] font-mono text-gray-400">{variant.color}</p>
                     </div>
-                  </div>
+                  ))}
+                </div>
+
+                {/* Fondos de color */}
+                <p className="text-sm text-gray-500 mt-8 mb-4">Aplicaciones sobre Fondos de Color</p>
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { name: 'Fondo Primario', bg: brand.colors.primary, logoColor: '#ffffff' },
+                    { name: 'Fondo Secundario', bg: brand.colors.secondary, logoColor: '#ffffff' },
+                    { name: 'Fondo Acento', bg: brand.colors.accent, logoColor: '#ffffff' },
+                    { name: 'Fondo Neutro', bg: brand.colors.neutral, logoColor: brand.colors.primary },
+                  ].map((variant) => (
+                    <div key={variant.name} className="text-center">
+                      <div 
+                        className="aspect-square rounded-xl flex items-center justify-center p-4 mb-2"
+                        style={{ backgroundColor: variant.bg }}
+                      >
+                        {brand.logoMode === 'upload' && brand.logoUrl ? (
+                          <img 
+                            src={brand.logoUrl} 
+                            alt={`Logo ${variant.name}`} 
+                            className="h-12 object-contain"
+                            style={{ 
+                              filter: variant.logoColor === '#ffffff' ? 'brightness(0) invert(1)' : 'none'
+                            }}
+                          />
+                        ) : (
+                          <GeneratedLogo className="h-12" showText={false} forceWhiteText={variant.logoColor === '#ffffff'} />
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">{variant.name}</p>
+                      <p className="text-[10px] font-mono text-gray-400">{variant.bg}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
