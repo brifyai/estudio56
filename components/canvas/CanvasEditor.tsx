@@ -157,7 +157,6 @@ Estructura requerida:
       const payload = {
         contents: [{ parts: [{ text: analysisPrompt }] }],
         tools: [{ google_search: {} }],
-        generationConfig: { responseMimeType: "application/json" }
       };
       const analysisResp = await fetchWithRetry(analysisUrl, {
         method: 'POST',
