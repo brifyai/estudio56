@@ -1717,29 +1717,47 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
 
   // MODO CANVA: Mostrar editor completo
   if (creationMode === 'canva') {
-    return (
-      <div className="w-full h-full">
-        <CanvasEditor
-          aspectRatio={aspectRatio}
-          onExport={(imageDataUrl) => {
-            console.log('🎨 Imagen exportada desde Canvas Editor');
-            if (onExport) {
-              onExport(imageDataUrl);
-            }
-          }}
-          onSave={(canvasData) => {
-            console.log('💾 Diseño guardado:', canvasData);
-            try {
-              localStorage.setItem('canvas-design-last', canvasData);
-              localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
-              console.log('✅ Diseño guardado en localStorage');
-            } catch (error) {
-              console.error('❌ Error guardando diseño:', error);
-            }
-          }}
-        />
-      </div>
-    );
+    console.log('🎨 [FlyerDisplay] Intentando renderizar CanvasEditor...');
+    console.log('🎨 [FlyerDisplay] aspectRatio:', aspectRatio);
+    
+    try {
+      return (
+        <div className="w-full h-full bg-gray-900">
+          <div className="p-4 text-white text-center bg-green-500/20">
+            <p className="text-sm">✅ Modo Canva activo - Cargando editor...</p>
+          </div>
+          <CanvasEditor
+            aspectRatio={aspectRatio}
+            onExport={(imageDataUrl) => {
+              console.log('🎨 Imagen exportada desde Canvas Editor');
+              if (onExport) {
+                onExport(imageDataUrl);
+              }
+            }}
+            onSave={(canvasData) => {
+              console.log('💾 Diseño guardado:', canvasData);
+              try {
+                localStorage.setItem('canvas-design-last', canvasData);
+                localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
+                console.log('✅ Diseño guardado en localStorage');
+              } catch (error) {
+                console.error('❌ Error guardando diseño:', error);
+              }
+            }}
+          />
+        </div>
+      );
+    } catch (error) {
+      console.error('❌ [FlyerDisplay] Error renderizando CanvasEditor:', error);
+      return (
+        <div className="w-full h-full bg-red-900 flex items-center justify-center">
+          <div className="text-white text-center p-8">
+            <h2 className="text-2xl font-bold mb-4">Error al cargar editor Canva</h2>
+            <p className="text-sm">{String(error)}</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (

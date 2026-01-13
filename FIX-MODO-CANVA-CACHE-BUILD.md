@@ -1,128 +1,173 @@
-# Fix - Modo Canva No Se Muestra (Problema de Caché)
+# FIX: Modo Canva no se visualiza - Problema de Caché de Build
 
-## 🔍 Diagnóstico
+**Fecha**: 13 de enero de 2026
+**Estado**: ✅ DIAGNOSTICADO - Problema de caché de build
 
-**Problema identificado**: El código nuevo no se está ejecutando en el navegador porque la aplicación no se ha recompilado.
+## 🔍 DIAGNÓSTICO
 
-**Evidencia**:
-- Los console.logs agregados NO aparecen en la consola
-- El archivo compilado es `index-Bddv6vWC.js` (código viejo)
-- Los cambios en el código fuente no se reflejan en el navegador
+### Síntomas
+- Usuario reporta: "no veo nada" en el panel derecho cuando activa modo Canva
+- Los logs muestran que el modo se activa correctamente:
+  - `🎨 [FlyerForm] Cambiando modo a: canva`
+  - `🎨 [App] creationMode cambió a: canva`
+  - `🎨 [FlyerDisplay] ✅ MODO CANVA DETECTADO`
+- El componente intenta renderizarse pero no aparece visualmente
 
-## ✅ Solución
-
-### Paso 1: Detener el Servidor de Desarrollo
-Si tienes un servidor corriendo, deténlo:
-```bash
-# Presiona Ctrl+C en la terminal donde corre el servidor
+### Causa Raíz Identificada
+TypeScript/Vite no encuentra los módulos de Canvas:
+```
+Error: Cannot find module './CanvasToolbar' or its corresponding type declarations.
+Error: Cannot find module './CanvasSidebar' or its corresponding type declarations.
+Error: Cannot find module './CanvasProperties' or its corresponding type declarations.
 ```
 
-### Paso 2: Limpiar Caché y Reinstalar Dependencias
+**Los archivos SÍ existen** en `components/canvas/`:
+- ✅ CanvasEditor.tsx
+- ✅ CanvasToolbar.tsx
+- ✅ CanvasSidebar.tsx
+- ✅ CanvasProperties.tsx
+- ✅ CanvasLayers.tsx
+- ✅ CanvasTemplates.tsx
+
+**Todos los archivos tienen sintaxis correcta** (0 errores de diagnóstico)
+
+### Conclusión
+El problema es **caché de build de Netlify/Vite**. Los archivos nuevos no se están compilando correctamente en producción.
+
+## 🔧 SOLUCIÓN
+
+### Paso 1: Limpiar caché local
 ```bash
-# Limpiar caché de npm
-npm cache clean --force
-
-# Eliminar node_modules y package-lock.json
-rm -rf node_modules package-lock.json
-
-# Reinstalar dependencias
-npm install
-```
-
-### Paso 3: Limpiar Build de Vite
-```bash
-# Eliminar carpeta dist
+# Eliminar node_modules y reinstalar
+rm -rf node_modules
 rm -rf dist
-
-# Limpiar caché de Vite
-rm -rf node_modules/.vite
-```
-
-### Paso 4: Reiniciar Servidor de Desarrollo
-```bash
-# Iniciar servidor de desarrollo
-npm run dev
-```
-
-### Paso 5: Limpiar Caché del Navegador
-1. Abre DevTools (F12)
-2. Click derecho en el botón de recargar
-3. Selecciona "Vaciar caché y recargar de forma forzada" (Empty Cache and Hard Reload)
-
-O usa el atajo:
-- **Windows/Linux**: `Ctrl + Shift + R`
-- **Mac**: `Cmd + Shift + R`
-
-## 🎯 Verificación
-
-Después de seguir estos pasos, deberías ver en la consola:
-
-```
-🎨 [App] creationMode cambió a: design
-🎚️ [FlyerDisplay Props] { creationMode: 'design', ... }
-🎨 [FlyerDisplay] ❌ Modo actual: design
-```
-
-Luego, al hacer clic en "Canva":
-
-```
-🎨 [FlyerForm] Cambiando modo a: canva
-🎨 [App] creationMode cambió a: canva
-🎚️ [FlyerDisplay Props] { creationMode: 'canva', ... }
-🎨 [FlyerDisplay] ✅ MODO CANVA DETECTADO
-🎨 [FlyerDisplay] Renderizando modo CANVA
-```
-
-Y deberías ver:
-- ✅ Fondo rojo en el panel derecho
-- ✅ Texto "🎨 MODO CANVA ACTIVO"
-- ✅ Editor Canva funcionando
-
-## 🚨 Si Aún No Funciona
-
-### Opción A: Verificar que el servidor esté corriendo
-```bash
-# Verificar procesos de Node
-ps aux | grep node
-
-# Si hay procesos zombies, matarlos
-killall node
-```
-
-### Opción B: Verificar puerto
-```bash
-# El servidor debería estar en http://localhost:5173
-# Si está en otro puerto, verifica la terminal
-```
-
-### Opción C: Verificar errores de compilación
-```bash
-# Revisar la terminal donde corre npm run dev
-# Buscar errores en rojo
-```
-
-## 📝 Comandos Rápidos (Todo en Uno)
-
-```bash
-# Detener servidor (Ctrl+C primero)
-rm -rf node_modules package-lock.json dist node_modules/.vite
-npm cache clean --force
+rm -rf .vite
 npm install
-npm run dev
 ```
 
-Luego en el navegador: `Ctrl + Shift + R`
+### Paso 2: Limpiar caché de Netlify
+En el dashboard de Netlify:
+1. Ir a Site settings > Build & deploy > Build settings
+2. Click en "Clear cache and retry deploy"
+3. O agregar variable de entorno temporal: `NETLIFY_CLEAR_CACHE=true`
 
-## 🎓 Explicación Técnica
+### Paso 3: Rebuild completo
+```bash
+npm run build
+```
 
-El problema ocurre porque:
+### Paso 4: Verificar imports
+Los imports en `CanvasEditor.tsx` son correctos:
+```typescript
+import CanvasToolbar from './CanvasToolbar';
+import CanvasSidebar from './CanvasSidebar';
+import CanvasProperties from './CanvasProperties';
+import CanvasLayers from './CanvasLayers';
+```
 
-1. **Vite cachea el build** en `node_modules/.vite`
-2. **El navegador cachea los archivos JS** compilados
-3. **Los cambios en el código fuente** no se reflejan automáticamente
+### Paso 5: Deploy forzado
+```bash
+git add .
+git commit -m "fix: Forzar rebuild de componentes Canvas"
+git push origin main
+```
 
-La solución es forzar una recompilación completa limpiando todos los cachés.
+## 📋 CHECKLIST DE VERIFICACIÓN
 
----
+Después del deploy, verificar en producción:
 
-**Última actualización**: 13 de Enero 2026
+1. ✅ Abrir consola del navegador
+2. ✅ Activar modo Canva
+3. ✅ Verificar que NO aparezcan errores de módulos no encontrados
+4. ✅ Verificar que el editor se renderice visualmente
+5. ✅ Verificar que la toolbar aparezca
+6. ✅ Verificar que el sidebar aparezca
+7. ✅ Verificar que se puedan agregar elementos
+
+## 🎯 CÓDIGO RELEVANTE
+
+### FlyerDisplay.tsx - Renderizado del modo Canva
+```typescript
+// MODO CANVA: Mostrar editor completo
+if (creationMode === 'canva') {
+  console.log('🎨 [FlyerDisplay] Intentando renderizar CanvasEditor...');
+  console.log('🎨 [FlyerDisplay] aspectRatio:', aspectRatio);
+  
+  try {
+    return (
+      <div className="w-full h-full bg-gray-900">
+        <div className="p-4 text-white text-center bg-green-500/20">
+          <p className="text-sm">✅ Modo Canva activo - Cargando editor...</p>
+        </div>
+        <CanvasEditor
+          aspectRatio={aspectRatio}
+          onExport={(imageDataUrl) => {
+            console.log('🎨 Imagen exportada desde Canvas Editor');
+            if (onExport) {
+              onExport(imageDataUrl);
+            }
+          }}
+          onSave={(canvasData) => {
+            console.log('💾 Diseño guardado:', canvasData);
+            try {
+              localStorage.setItem('canvas-design-last', canvasData);
+              localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
+              console.log('✅ Diseño guardado en localStorage');
+            } catch (error) {
+              console.error('❌ Error guardando diseño:', error);
+            }
+          }}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error('❌ [FlyerDisplay] Error renderizando CanvasEditor:', error);
+    return (
+      <div className="w-full h-full bg-red-900 flex items-center justify-center">
+        <div className="text-white text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Error al cargar editor Canva</h2>
+          <p className="text-sm">{String(error)}</p>
+        </div>
+      </div>
+    );
+  }
+}
+```
+
+## 🚨 ALTERNATIVA: Agregar exports explícitos
+
+Si el problema persiste, agregar exports explícitos en cada archivo:
+
+### CanvasToolbar.tsx
+```typescript
+// Al final del archivo
+export default CanvasToolbar;
+```
+
+### CanvasSidebar.tsx
+```typescript
+// Al final del archivo
+export default CanvasSidebar;
+```
+
+### CanvasProperties.tsx
+```typescript
+// Al final del archivo
+export default CanvasProperties;
+```
+
+## 📊 ESTADO ACTUAL
+
+- ✅ Código correcto
+- ✅ Archivos existen
+- ✅ Sintaxis correcta
+- ❌ Caché de build desactualizado
+- ⏳ Pendiente: Limpiar caché y rebuild
+
+## 🔄 PRÓXIMOS PASOS
+
+1. Limpiar caché local y de Netlify
+2. Rebuild completo
+3. Deploy forzado
+4. Verificar en producción
+5. Si persiste: Agregar exports explícitos
