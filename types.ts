@@ -7,6 +7,60 @@ export type PlanId = 'GRATIS' | 'ESTOY PARTIENDO' | 'JEFE PYME' | 'AGENCIA';
 
 export type RechargeId = 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO';
 
+// ============================================
+// 🎨 MODOS DE CREACIÓN
+// ============================================
+
+export type CreationMode = 'design' | 'canva' | 'free';
+
+export interface CreationModeConfig {
+  id: CreationMode;
+  name: string;
+  description: string;
+  icon: string;
+  features: string[];
+  showPrompt: boolean;
+  showStyleSelector: boolean;
+  showCanvas: boolean;
+  allowManualEditing: boolean;
+}
+
+export const CREATION_MODES: Record<CreationMode, CreationModeConfig> = {
+  design: {
+    id: 'design',
+    name: 'Diseño',
+    description: 'IA genera el diseño completo',
+    icon: '🎨',
+    features: ['Prompt de texto', 'Estilos predefinidos', 'IA automática'],
+    showPrompt: true,
+    showStyleSelector: true,
+    showCanvas: false,
+    allowManualEditing: false
+  },
+  canva: {
+    id: 'canva',
+    name: 'Canva',
+    description: 'Editor visual (Próximamente)',
+    icon: '✏️',
+    features: ['Editor drag & drop', 'Plantillas', 'Elementos visuales'],
+    showPrompt: false,
+    showStyleSelector: false,
+    showCanvas: true,
+    allowManualEditing: true
+  },
+  free: {
+    id: 'free',
+    name: 'Libre',
+    description: 'Prompt libre sin restricciones',
+    icon: '🚀',
+    features: ['Prompt sin límites', 'Sin estilos', 'Control total'],
+    showPrompt: true,
+    showStyleSelector: false,
+    showCanvas: false,
+    allowManualEditing: false
+  }
+};
+
 export interface PlanConfig {
   id: PlanId;
   name: string;

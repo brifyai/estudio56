@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle, RealityLevel } from './types';
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, GenerationStatus, MediaType, ImageQuality, OverlayStyle, PosterStyle, RealityLevel, CreationMode } from './types';
 import { estudioAlerts } from './src/lib/alerts';
 import Swal from 'sweetalert2';
 import RealitySlider from './components/RealitySlider';
@@ -20,6 +20,7 @@ import {
 } from './services/realityMapper';
 import { POSTER_STYLES, POSTER_INDUSTRY_PROMPTS } from './constants';
 import { FlyerForm } from './components/FlyerForm';
+import CreationModeSelector from './components/CreationModeSelector';
 import { FlyerDisplay, TextStyleOptions } from './components/FlyerDisplay';
 import { TextEditorPanel } from './components/TextEditorPanel';
 import { CollapsibleSection } from './components/CollapsibleSection';
@@ -103,6 +104,7 @@ const Dashboard: React.FC = () => {
   const [mediaType, setMediaType] = useState<MediaType>('image');
   const [posterStyle, setPosterStyle] = useState<PosterStyle>('promotional');
   const [description, setDescription] = useState<string>('');
+  const [creationMode, setCreationMode] = useState<CreationMode>('design'); // NEW: Modo de creación (Diseño, Canva, Libre)
   const [workMode, setWorkMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de trabajo (por defecto AUTO)
   const [textMode, setTextMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de texto (Opción B)
   
@@ -2199,7 +2201,16 @@ progressAlert.updateProgress(60, 'Renderizando...');
 
             {/* Form Container - Scroll container con padding-bottom para footer */}
             <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto overflow-x-hidden pb-32 lg:pb-6 scroll-smooth">
+                {/* Selector de Modo de Creación */}
+                <div className="px-4 pt-4">
+                  <CreationModeSelector
+                    selectedMode={creationMode}
+                    onModeChange={setCreationMode}
+                  />
+                </div>
+                
                 <FlyerForm
+                    creationMode={creationMode}
                     styleKey={styleKey}
                     videoStyleKey={videoStyleKey} // NEW: Pasar estado de video
                     aspectRatio={aspectRatio}

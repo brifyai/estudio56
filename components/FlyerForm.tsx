@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Swal from 'sweetalert2';
 import { estudioAlerts } from '../src/lib/alerts';
-import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle, PosterStyle } from '../types';
+import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle, PosterStyle, CreationMode, CREATION_MODES } from '../types';
 import { FLYER_STYLES, VIDEO_STYLES, ASPECT_RATIO_LABELS, POSTER_STYLES } from '../constants';
 import { analyzeUrlContent, generatePersuasiveText, INDUSTRY_TEXT_TEMPLATES, detectIndustryFromDescription, enhanceUserImage } from '../services/geminiService';
 import { REALITY_MODE_LABELS, type RealityMode } from '../src/constants/promptModifiers';
@@ -18,6 +18,7 @@ import {
 } from '../src/constants/storyArtStyles';
 
 interface FlyerFormProps {
+  creationMode: CreationMode; // NEW: Modo de creación (Diseño, Canva, Libre)
   styleKey: FlyerStyleKey;
   videoStyleKey?: FlyerStyleKeyVideo; // NEW: Estado separado para estilos de video
   aspectRatio: AspectRatio;
@@ -83,6 +84,7 @@ interface FlyerFormProps {
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
+  creationMode, // NEW: Modo de creación
   styleKey,
   videoStyleKey, // NEW: Estado separado para video
   aspectRatio,
@@ -797,16 +799,22 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                </svg>
                Crea tu Diseño
              </h2>
-             <p className="text-sm text-white/70">Pega una URL o describe tu negocio</p>
+             <p className="text-sm text-white/70">
+               {creationMode === 'design' && 'Pega una URL o describe tu negocio'}
+               {creationMode === 'free' && 'Describe tu diseño sin restricciones'}
+               {creationMode === 'canva' && 'Editor visual (Próximamente)'}
+             </p>
          </div>
          
+         {/* MODO DISEÑO Y LIBRE: Mostrar textarea */}
+         {(creationMode === 'design' || creationMode === 'free') && (
          <div className="relative group">
              <textarea
                value={description}
                onChange={(e) => {
                  const value = e.target.value;
-                 // Detectar si es URL y sincronizar con urlInput
-                 if (value.includes('http')) {
+                 // Detectar si es URL y sincronizar con urlInput (solo en modo Diseño)
+                 if (creationMode === 'design' && value.includes('http')) {
                    setUrlInput(value);
                  } else if (urlInput) {
                    setUrlInput('');
@@ -815,8 +823,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                  setDescription(value);
                }}
                disabled={isLoading}
-               placeholder="https://instagram.com/mi-negocio... o describe tu negocio aquí..."
-               className="w-full bg-black/40 border border-white/10 text-white text-sm rounded-xl p-4 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:outline-none h-24 resize-none placeholder-white/20 transition-all font-light leading-relaxed"
+               placeholder={
+                 creationMode === 'design' 
+                   ? "https://instagram.com/mi-negocio... o describe tu negocio aquí..."
+                   : "Describe tu diseño con total libertad. Ejemplo: 'Una imagen futurista con neones azules y texto en el centro que diga OFERTA'..."
+               }
+               className={`w-full bg-black/40 border border-white/10 text-white text-sm rounded-xl p-4 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:outline-none resize-none placeholder-white/20 transition-all font-light leading-relaxed ${
+                 creationMode === 'free' ? 'h-32' : 'h-24'
+               }`}
              />
              {description && (
                <button
@@ -838,6 +852,18 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                </button>
              )}
          </div>
+         )}
+         
+         {/* MODO CANVA: Mostrar mensaje de próximamente */}
+         {creationMode === 'canva' && (
+           <div className="p-8 bg-white/5 border border-white/10 rounded-xl text-center">
+             <div className="text-4xl mb-3">✏️</div>
+             <div className="text-white/70 text-sm mb-2">Editor Visual Canva</div>
+             <div className="text-white/40 text-xs">
+               Próximamente podrás crear diseños con un editor drag & drop
+             </div>
+           </div>
+         )}
          
          {/* OCULTO: Indicador de Modo Magia - ahora solo se muestra en consola, no en UI */}
          {/* El análisis de URL ya no muestra este indicador para evitar duplicados */}
@@ -845,8 +871,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          {/* CONTENEDOR DE ANÁLISIS DE URL - OCULTO PARA EVITAR DUPLICADOS */}
          {/* El análisis ya se muestra en el panel central, no necesitamos duplicarlo aquí */}
          
-         {/* BOTÓN ANALIZAR URL - OCULTO cuando hay análisis completado */}
-         {(urlInput.includes('http') || description.includes('http')) && !currentSpanishPrompt?.trim() && (
+         {/* BOTÓN ANALIZAR URL - OCULTO cuando hay análisis completado - SOLO EN MODO DISEÑO */}
+         {creationMode === 'design' && (urlInput.includes('http') || description.includes('http')) && !currentSpanishPrompt?.trim() && (
            <div className="flex justify-center">
              <button
                onClick={handleAnalyzeUrl}
@@ -874,8 +900,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          
       </div>
 
-        {/* 4. STYLE CARD - SOLO EN MODO MANUAL */}
-        {workMode === 'manual' && (
+        {/* 4. STYLE CARD - SOLO EN MODO MANUAL Y MODO DISEÑO */}
+        {workMode === 'manual' && creationMode === 'design' && (
           <div className="space-y-3">
             <div className="flex justify-between items-end">
                 <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">Estilo</label>
