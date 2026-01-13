@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { Upload, Check, Sparkles, Printer, Hexagon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Upload, Check, Sparkles, Printer, Hexagon, Link, Loader2, Instagram, Globe, Facebook } from 'lucide-react';
 import { BrandData, ICON_CATEGORIES, ALL_ICONS, IconKey, CategoryKey } from './BrandTypes';
 
 interface BrandSidebarProps {
@@ -12,6 +12,87 @@ interface BrandSidebarProps {
 
 export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab, onPrint }: BrandSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [urlInput, setUrlInput] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
+
+  // Detectar tipo de URL
+  const detectUrlType = (url: string): 'instagram' | 'facebook' | 'tiktok' | 'web' | null => {
+    const lower = url.toLowerCase();
+    if (lower.includes('instagram.com') || lower.includes('instagr.am')) return 'instagram';
+    if (lower.includes('facebook.com') || lower.includes('fb.com')) return 'facebook';
+    if (lower.includes('tiktok.com')) return 'tiktok';
+    if (lower.startsWith('http://') || lower.startsWith('https://')) return 'web';
+    return null;
+  };
+
+  // Analizar URL y generar contenido
+  const handleAnalyzeUrl = async () => {
+    if (!urlInput.trim()) {
+      setUrlError('Ingresa una URL válida');
+      return;
+    }
+
+    const urlType = detectUrlType(urlInput);
+    if (!urlType) {
+      setUrlError('URL no válida. Usa Instagram, Facebook, TikTok o una página web');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setUrlError(null);
+
+    try {
+      // TODO: Implementar llamada a API para analizar URL
+      // Por ahora, simulamos con datos de ejemplo basados en el tipo
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Extraer nombre de la URL
+      let extractedName = '';
+      try {
+        const urlObj = new URL(urlInput);
+        if (urlType === 'instagram' || urlType === 'tiktok') {
+          // Extraer username de redes sociales
+          const pathParts = urlObj.pathname.split('/').filter(Boolean);
+          extractedName = pathParts[0]?.replace('@', '') || '';
+        } else if (urlType === 'facebook') {
+          const pathParts = urlObj.pathname.split('/').filter(Boolean);
+          extractedName = pathParts[0] || '';
+        } else {
+          // Para web, usar el dominio
+          extractedName = urlObj.hostname.replace('www.', '').split('.')[0] || '';
+        }
+      } catch {
+        extractedName = 'Mi Marca';
+      }
+
+      // Capitalizar nombre
+      const capitalizedName = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);
+
+      // Actualizar datos de marca con información extraída
+      setBrand(prev => ({
+        ...prev,
+        name: capitalizedName || prev.name,
+        tagline: `Conectando con ${urlType === 'instagram' ? 'Instagram' : urlType === 'facebook' ? 'Facebook' : urlType === 'tiktok' ? 'TikTok' : 'la web'}`,
+        description: `Marca digital con presencia en ${urlType === 'web' ? 'internet' : urlType}. Analizamos tu perfil para crear una identidad visual coherente.`,
+      }));
+
+      setUrlInput('');
+    } catch (error) {
+      setUrlError('Error al analizar la URL. Intenta de nuevo.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const getUrlIcon = () => {
+    const type = detectUrlType(urlInput);
+    if (type === 'instagram') return <Instagram size={14} className="text-pink-400" />;
+    if (type === 'facebook') return <Facebook size={14} className="text-blue-400" />;
+    if (type === 'tiktok') return <span className="text-xs">🎵</span>;
+    if (type === 'web') return <Globe size={14} className="text-green-400" />;
+    return <Link size={14} className="text-white/40" />;
+  };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -132,6 +213,46 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab,
       <div className="space-y-4">
         {activeTab === 'identity' && (
           <>
+            {/* Sección URL para generar contenido */}
+            <div className="space-y-3 p-3 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl border border-blue-500/20">
+              <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                <Sparkles size={12} /> Generar desde URL
+              </label>
+              <p className="text-[10px] text-white/50">Analiza tu Instagram, Facebook, TikTok o página web para generar el contenido automáticamente</p>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    {getUrlIcon()}
+                  </div>
+                  <input
+                    type="url"
+                    placeholder="https://instagram.com/tumarca"
+                    value={urlInput}
+                    onChange={(e) => { setUrlInput(e.target.value); setUrlError(null); }}
+                    className="w-full pl-9 pr-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none placeholder:text-white/30"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAnalyzeUrl}
+                  disabled={isAnalyzing || !urlInput.trim()}
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1"
+                >
+                  {isAnalyzing ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  {isAnalyzing ? 'Analizando...' : 'Analizar'}
+                </button>
+              </div>
+              {urlError && <p className="text-[10px] text-red-400">{urlError}</p>}
+              <div className="flex gap-1 flex-wrap">
+                <span className="text-[9px] px-2 py-0.5 bg-pink-500/20 text-pink-300 rounded-full">Instagram</span>
+                <span className="text-[9px] px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full">Facebook</span>
+                <span className="text-[9px] px-2 py-0.5 bg-white/10 text-white/50 rounded-full">TikTok</span>
+                <span className="text-[9px] px-2 py-0.5 bg-green-500/20 text-green-300 rounded-full">Web</span>
+              </div>
+            </div>
+
+            <hr className="border-white/10" />
+
             <div className="space-y-3">
               <label className="block text-[10px] font-bold text-white uppercase tracking-widest">Datos Básicos</label>
               <input type="text" name="name" placeholder="Nombre de la marca" value={brand.name} onChange={handleTextChange} className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none" />

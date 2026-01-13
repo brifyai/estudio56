@@ -98,9 +98,9 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
           <span>Vista Previa del Manual</span>
         </div>
         <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1">
-          <button onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="p-1.5 hover:bg-white/10 rounded text-white/60 transition-colors"><ZoomOut size={14}/></button>
+          <button type="button" onClick={() => setZoom(z => Math.max(0.2, z - 0.1))} className="p-1.5 hover:bg-white/10 rounded text-white/60 transition-colors"><ZoomOut size={14}/></button>
           <span className="text-xs font-mono text-white/60 w-12 text-center">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom(z => Math.min(1, z + 0.1))} className="p-1.5 hover:bg-white/10 rounded text-white/60 transition-colors"><ZoomIn size={14}/></button>
+          <button type="button" onClick={() => setZoom(z => Math.min(1, z + 0.1))} className="p-1.5 hover:bg-white/10 rounded text-white/60 transition-colors"><ZoomIn size={14}/></button>
         </div>
       </div>
 
