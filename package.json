@@ -23,6 +23,7 @@
     "fabric": "^7.1.0",
     "google-auth-library": "^10.5.0",
     "html2canvas": "^1.4.1",
+    "jspdf": "^4.0.0",
     "konva": "^10.0.12",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",

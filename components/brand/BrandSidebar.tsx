@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Upload, Check, Sparkles, Printer, Hexagon, Link, Loader2, Instagram, Globe, Facebook } from 'lucide-react';
+import { Upload, Check, Sparkles, Hexagon, Link, Loader2, Globe } from 'lucide-react';
+import { Instagram, Facebook } from 'lucide-react';
 import { BrandData, ICON_CATEGORIES, ALL_ICONS, IconKey, CategoryKey } from './BrandTypes';
 
 interface BrandSidebarProps {
@@ -7,10 +8,9 @@ interface BrandSidebarProps {
   setBrand: React.Dispatch<React.SetStateAction<BrandData>>;
   activeTab: 'identity' | 'colors' | 'typography';
   setActiveTab: (tab: 'identity' | 'colors' | 'typography') => void;
-  onPrint: () => void;
 }
 
-export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab, onPrint }: BrandSidebarProps) {
+export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab }: BrandSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -369,11 +369,11 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab,
         )}
       </div>
 
-      {/* Export button */}
+      {/* Export button - Nota informativa */}
       <div className="pt-4">
-        <button onClick={onPrint} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl text-sm font-bold hover:from-green-500 hover:to-emerald-500 flex items-center justify-center gap-2 transition-all shadow-lg">
-          <Printer size={16} /> Exportar Manual PDF
-        </button>
+        <div className="text-center text-xs text-white/40 p-3 bg-white/5 rounded-xl border border-white/10">
+          <p>Usa el botón <span className="text-green-400 font-medium">"Exportar PDF"</span> en la barra superior de la vista previa para descargar tu manual.</p>
+        </div>
       </div>
     </div>
   );

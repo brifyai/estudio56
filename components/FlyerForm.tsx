@@ -897,13 +897,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          )}
 
          {/* MODO BRAND: Mostrar controles del editor de marca */}
-         {creationMode === 'brand' && brandData && setBrandData && setBrandActiveTab && onBrandPrint && (
+         {creationMode === 'brand' && brandData && setBrandData && setBrandActiveTab && (
            <BrandSidebar
              brand={brandData}
              setBrand={setBrandData}
-             activeTab={brandActiveTab}
+             activeTab={brandActiveTab as 'identity' | 'colors' | 'typography'}
              setActiveTab={setBrandActiveTab}
-             onPrint={onBrandPrint}
            />
          )}
          
