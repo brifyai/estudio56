@@ -361,43 +361,44 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
               width: '215.9mm',
             }}
           >
-            <div className="preview-container bg-white w-[215.9mm] shadow-2xl">
-            
-            {/* PORTADA */}
-            <section className="relative h-[279.4mm] flex flex-col justify-between p-16 overflow-hidden">
-              <div className="absolute top-0 right-0 w-2/3 h-full opacity-10 pointer-events-none transform skew-x-12 translate-x-32" style={{ backgroundColor: brand.colors.primary }} />
-              <div className="relative z-10 pt-20">
-                <div className={`mb-12 inline-block ${hasLightLogo ? 'bg-slate-700 p-6 rounded-xl' : ''}`}>
-                  {brand.logoMode === 'upload' && brand.logoUrl ? (
-                    <img src={brand.logoUrl} alt="Logo" className="h-24 object-contain" />
-                  ) : (
-                    <GeneratedLogo className="h-24" />
-                  )}
+            {/* PÁGINA 1: PORTADA */}
+            <div className="preview-container bg-white w-[215.9mm] shadow-2xl mb-8">
+              <section className="relative h-[279.4mm] flex flex-col justify-between p-16 overflow-hidden">
+                <div className="absolute top-0 right-0 w-2/3 h-full opacity-10 pointer-events-none transform skew-x-12 translate-x-32" style={{ backgroundColor: brand.colors.primary }} />
+                <div className="relative z-10 pt-20">
+                  <div className={`mb-12 inline-block ${hasLightLogo ? 'bg-slate-700 p-6 rounded-xl' : ''}`}>
+                    {brand.logoMode === 'upload' && brand.logoUrl ? (
+                      <img src={brand.logoUrl} alt="Logo" className="h-24 object-contain" />
+                    ) : (
+                      <GeneratedLogo className="h-24" />
+                    )}
+                  </div>
+                  <h1 className="text-6xl font-bold leading-tight mb-4" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>
+                    Manual de<br />Identidad
+                  </h1>
+                  <div className="h-2 w-32 mb-8" style={{ backgroundColor: brand.colors.accent }} />
                 </div>
-                <h1 className="text-6xl font-bold leading-tight mb-4" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>
-                  Manual de<br />Identidad
-                </h1>
-                <div className="h-2 w-32 mb-8" style={{ backgroundColor: brand.colors.accent }} />
-              </div>
-              <div className="relative z-10 pb-10">
-                <p className="text-sm text-slate-400 uppercase tracking-widest mb-1">Versión 1.0</p>
-                <p className="text-sm text-slate-400">{new Date().getFullYear()}</p>
-              </div>
-            </section>
+                <div className="relative z-10 pb-10">
+                  <p className="text-sm text-slate-400 uppercase tracking-widest mb-1">Versión 1.0</p>
+                  <p className="text-sm text-slate-400">{new Date().getFullYear()}</p>
+                </div>
+              </section>
+            </div>
 
-            {/* ESENCIA */}
-            <section className="min-h-[279.4mm] p-16 flex flex-col border-t">
-              <div className="mb-12 flex items-center gap-4">
-                <span className="text-4xl font-bold opacity-20">01</span>
-                <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Esencia</h3>
-              </div>
-              <div className="grid gap-12">
-                <div>
-                  <h4 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: brand.colors.primary }}>
-                    <Layout size={20} /> Introducción
-                  </h4>
-                  <p className="text-lg leading-relaxed text-slate-600" style={{ fontFamily: brand.typography.bodyFont }}>{brand.description}</p>
+            {/* PÁGINA 2: ESENCIA */}
+            <div className="preview-container bg-white w-[215.9mm] shadow-2xl mb-8">
+              <section className="h-[279.4mm] p-16 flex flex-col">
+                <div className="mb-12 flex items-center gap-4">
+                  <span className="text-4xl font-bold opacity-20">01</span>
+                  <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Esencia</h3>
                 </div>
+                <div className="grid gap-12">
+                  <div>
+                    <h4 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: brand.colors.primary }}>
+                      <Layout size={20} /> Introducción
+                    </h4>
+                    <p className="text-lg leading-relaxed text-slate-600" style={{ fontFamily: brand.typography.bodyFont }}>{brand.description}</p>
+                  </div>
                 <div className="p-8 bg-gray-50 rounded-xl border-l-4" style={{ borderColor: brand.colors.accent }}>
                   <h4 className="text-xl font-bold mb-2" style={{ fontFamily: brand.typography.headingFont }}>Nuestro Eslogan</h4>
                   <p className="text-3xl italic font-light text-slate-800" style={{ fontFamily: brand.typography.headingFont }}>"{brand.tagline}"</p>
@@ -413,14 +414,16 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
                   </div>
                 </div>
               </div>
-            </section>
+              </section>
+            </div>
 
-            {/* SISTEMA VISUAL */}
-            <section className="min-h-[279.4mm] p-16 flex flex-col border-t">
-              <div className="mb-12 flex items-center gap-4">
-                <span className="text-4xl font-bold opacity-20">02</span>
-                <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Sistema Visual</h3>
-              </div>
+            {/* PÁGINA 3: SISTEMA VISUAL */}
+            <div className="preview-container bg-white w-[215.9mm] shadow-2xl mb-8">
+              <section className="h-[279.4mm] p-16 flex flex-col">
+                <div className="mb-12 flex items-center gap-4">
+                  <span className="text-4xl font-bold opacity-20">02</span>
+                  <h3 className="text-2xl font-bold uppercase tracking-wide" style={{ fontFamily: brand.typography.headingFont, color: brand.colors.secondary }}>Sistema Visual</h3>
+                </div>
 
               {/* Logo */}
               <div className="mb-16">
@@ -562,14 +565,14 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
                   </div>
                 </div>
               </div>
-            </section>
 
-            {/* Footer */}
-            <div className="p-8 border-t flex justify-between text-xs text-slate-300">
-              <span>{brand.name} | Manual de Marca</span>
-              <span>Generado con Estudio 56</span>
+              {/* Footer de página */}
+              <div className="mt-auto pt-8 border-t flex justify-between text-xs text-slate-300">
+                <span>{brand.name} | Manual de Marca</span>
+                <span>Generado con Estudio 56</span>
+              </div>
+              </section>
             </div>
-          </div>
         </div>
         </div>
       </div>
