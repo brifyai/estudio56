@@ -15,18 +15,36 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
 
   // Función para exportar el manual a PDF
   const handleExportPDF = async () => {
-    if (!previewContainerRef.current || isExporting) return;
+    console.log('📄 handleExportPDF llamado');
+    console.log('📄 previewContainerRef.current:', !!previewContainerRef.current);
+    console.log('📄 isExporting:', isExporting);
+    
+    if (!previewContainerRef.current) {
+      console.error('❌ No hay referencia al contenedor');
+      alert('Error: No se encontró el contenedor del manual');
+      return;
+    }
+    
+    if (isExporting) {
+      console.log('⏳ Ya se está exportando...');
+      return;
+    }
     
     setIsExporting(true);
+    console.log('📄 Iniciando exportación...');
     
     try {
       // Crear un contenedor temporal con zoom 1 para la captura
       const container = previewContainerRef.current;
       const originalTransform = container.style.transform;
+      console.log('📄 Transform original:', originalTransform);
+      
       container.style.transform = 'scale(1)';
       
       // Esperar un frame para que se aplique el estilo
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      console.log('📄 Capturando con html2canvas...');
       
       // Capturar el contenedor del manual
       const canvas = await html2canvas(container, {
@@ -34,15 +52,18 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false,
+        logging: true, // Activar logs de html2canvas
         width: 794, // A4 width in pixels at 96 DPI
         windowWidth: 794,
       });
+      
+      console.log('📄 Canvas capturado:', canvas.width, 'x', canvas.height);
       
       // Restaurar el zoom original
       container.style.transform = originalTransform;
       
       // Crear PDF en formato A4
+      console.log('📄 Creando PDF...');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -59,6 +80,8 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       // El contenido es largo (3 páginas), dividir en páginas
       const pageHeightPx = (pdfHeight / pdfWidth) * imgWidth;
       const totalPages = Math.ceil(imgHeight / pageHeightPx);
+      
+      console.log('📄 Total páginas:', totalPages);
       
       for (let page = 0; page < totalPages; page++) {
         if (page > 0) {
@@ -91,11 +114,14 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       
       // Descargar el PDF
       const fileName = `Manual-Marca-${brand.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      console.log('📄 Guardando PDF:', fileName);
       pdf.save(fileName);
       
+      console.log('✅ PDF exportado exitosamente');
+      
     } catch (error) {
-      console.error('Error exportando PDF:', error);
-      alert('Error al exportar el PDF. Por favor intenta de nuevo.');
+      console.error('❌ Error exportando PDF:', error);
+      alert('Error al exportar el PDF. Por favor intenta de nuevo. Error: ' + (error as Error).message);
     } finally {
       setIsExporting(false);
     }
@@ -197,7 +223,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-950 overflow-hidden">
+    <div className="flex flex-col h-full bg-gray-950 overflow-hidden" onClick={(e) => e.stopPropagation()}>
       <style>{`
         @media print {
           @page { margin: 0; size: A4; }
@@ -208,7 +234,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       `}</style>
 
       {/* Zoom toolbar */}
-      <div className="h-12 bg-gray-900 border-b border-white/10 flex items-center justify-between px-4 no-print shrink-0">
+      <div className="h-12 bg-gray-900 border-b border-white/10 flex items-center justify-between px-4 no-print shrink-0 z-50">
         <div className="flex items-center gap-2 text-xs text-white/50">
           <Monitor size={14} />
           <span>Vista Previa del Manual</span>
@@ -217,9 +243,14 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
           {/* Botón Exportar PDF */}
           <button
             type="button"
-            onClick={handleExportPDF}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('📄 Click en Exportar PDF');
+              handleExportPDF();
+            }}
             disabled={isExporting}
-            className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:bg-green-600/50 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:bg-green-600/50 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer z-50"
           >
             {isExporting ? (
               <>
@@ -237,16 +268,34 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
           <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1">
             <button 
               type="button" 
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setZoom(z => Math.max(0.2, z - 0.1)); }} 
-              className="p-1.5 hover:bg-white/10 rounded text-white/60 transition-colors cursor-pointer"
+              onClick={(e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                console.log('🔍 Zoom out clicked, current:', zoom);
+                setZoom(prevZoom => {
+                  const newZoom = Math.max(0.2, prevZoom - 0.1);
+                  console.log('🔍 New zoom:', newZoom);
+                  return newZoom;
+                });
+              }} 
+              className="p-1.5 hover:bg-white/20 rounded text-white/60 hover:text-white transition-colors cursor-pointer z-50"
             >
               <ZoomOut size={14}/>
             </button>
             <span className="text-xs font-mono text-white/60 w-12 text-center">{Math.round(zoom * 100)}%</span>
             <button 
               type="button" 
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setZoom(z => Math.min(1, z + 0.1)); }} 
-              className="p-1.5 hover:bg-white/10 rounded text-white/60 transition-colors cursor-pointer"
+              onClick={(e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                console.log('🔍 Zoom in clicked, current:', zoom);
+                setZoom(prevZoom => {
+                  const newZoom = Math.min(1, prevZoom + 0.1);
+                  console.log('🔍 New zoom:', newZoom);
+                  return newZoom;
+                });
+              }} 
+              className="p-1.5 hover:bg-white/20 rounded text-white/60 hover:text-white transition-colors cursor-pointer z-50"
             >
               <ZoomIn size={14}/>
             </button>
