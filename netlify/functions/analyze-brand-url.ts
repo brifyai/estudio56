@@ -261,7 +261,72 @@ interface ExtractedColors {
   themeColor: string | null;
 }
 
-function extractColorsFromHtml(html: string): ExtractedColors {
+// Extraer URLs de archivos CSS externos
+function extractCssUrls(html: string, baseUrl: string): string[] {
+  const cssUrls: string[] = [];
+  const linkPatterns = [
+    /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi,
+    /<link[^>]*href=["']([^"']+\.css[^"']*)["'][^>]*rel=["']stylesheet["']/gi,
+    /<link[^>]*href=["']([^"']+\.css[^"']*)["']/gi,
+  ];
+  
+  for (const pattern of linkPatterns) {
+    const matches = html.matchAll(pattern);
+    for (const m of matches) {
+      try {
+        const cssUrl = new URL(m[1], baseUrl).href;
+        if (!cssUrls.includes(cssUrl)) {
+          cssUrls.push(cssUrl);
+        }
+      } catch {}
+    }
+  }
+  
+  console.log('📄 Found CSS files:', cssUrls.length);
+  return cssUrls.slice(0, 5); // Limitar a 5 archivos CSS
+}
+
+// Descargar contenido CSS
+async function fetchCssContent(cssUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    try {
+      const protocol = cssUrl.startsWith('https') ? https : http;
+      const urlObj = new URL(cssUrl);
+      
+      const options = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (cssUrl.startsWith('https') ? 443 : 80),
+        path: urlObj.pathname + urlObj.search,
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+          'Accept': 'text/css,*/*',
+        },
+        timeout: 5000,
+      };
+
+      const req = protocol.request(options, (res) => {
+        if (res.statusCode !== 200) {
+          resolve('');
+          return;
+        }
+        let data = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => resolve(data.substring(0, 50000))); // Limitar tamaño
+        res.on('error', () => resolve(''));
+      });
+
+      req.on('error', () => resolve(''));
+      req.on('timeout', () => { req.destroy(); resolve(''); });
+      req.end();
+    } catch {
+      resolve('');
+    }
+  });
+}
+
+async function extractColorsFromHtml(html: string, baseUrl: string): Promise<ExtractedColors> {
   const colors: string[] = [];
   const cssVariables: Record<string, string> = {};
   let themeColor: string | null = null;
@@ -288,15 +353,25 @@ function extractColorsFromHtml(html: string): ExtractedColors {
     console.log('🎨 Tile color found:', tileColorMatch[1]);
   }
 
-  // 3. Variables CSS en bloques <style> y estilos inline
+  // 3. Recopilar todos los estilos (inline + externos)
   const styleBlocks = html.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || [];
   const inlineStyles = html.match(/style=["'][^"']+["']/gi) || [];
-  const allStyles = [...styleBlocks, ...inlineStyles].join(' ');
+  let allStyles = [...styleBlocks, ...inlineStyles].join(' ');
 
-  // Buscar variables CSS con nombres relacionados a marca/colores
+  // 4. Descargar archivos CSS externos
+  const cssUrls = extractCssUrls(html, baseUrl);
+  if (cssUrls.length > 0) {
+    console.log('📥 Downloading external CSS files...');
+    const cssContents = await Promise.all(cssUrls.map(url => fetchCssContent(url)));
+    const externalCss = cssContents.join(' ');
+    allStyles += ' ' + externalCss;
+    console.log('📄 Total CSS content:', allStyles.length, 'chars');
+  }
+
+  // 5. Buscar variables CSS con nombres relacionados a marca/colores
   const cssVarPatterns = [
-    /--(?:primary|brand|main|accent|secondary|theme|color-primary|color-brand|color-accent)[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
-    /--(?:bg|background|text|heading|link)[-\w]*:\s*(#[0-9a-fA-F]{3,8})/gi,
+    /--(?:primary|brand|main|accent|secondary|theme|color-primary|color-brand|color-accent|highlight|cta)[-\w]*:\s*(#[0-9a-fA-F]{3,8}|rgb[a]?\([^)]+\))/gi,
+    /--(?:bg|background|text|heading|link|button|nav|header|footer)[-\w]*:\s*(#[0-9a-fA-F]{3,8})/gi,
   ];
   
   for (const pattern of cssVarPatterns) {
@@ -304,15 +379,15 @@ function extractColorsFromHtml(html: string): ExtractedColors {
     for (const m of matches) {
       const varName = m[0].split(':')[0].trim();
       const color = m[1].trim();
-      // Ignorar colores muy claros o muy oscuros
-      if (!isGenericColor(color)) {
-        cssVariables[varName] = color;
-        if (!colors.includes(color)) colors.push(color);
+      const normalized = normalizeHexColor(color);
+      if (!isGenericColor(normalized)) {
+        cssVariables[varName] = normalized;
+        if (!colors.includes(normalized)) colors.push(normalized);
       }
     }
   }
 
-  // 4. Colores hex directos en estilos (priorizando los que aparecen primero/más frecuentes)
+  // 6. Colores hex directos en estilos (priorizando los que aparecen primero/más frecuentes)
   const hexPattern = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
   const hexMatches = allStyles.match(hexPattern) || [];
   
@@ -328,14 +403,16 @@ function extractColorsFromHtml(html: string): ExtractedColors {
   // Ordenar por frecuencia y agregar los más comunes
   const sortedColors = Object.entries(colorFrequency)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([color]) => color);
+    .slice(0, 15)
+    .map(([color, freq]) => ({ color, freq }));
   
-  for (const color of sortedColors) {
+  console.log('🎨 Top colors by frequency:', sortedColors.slice(0, 5));
+  
+  for (const { color } of sortedColors) {
     if (!colors.includes(color)) colors.push(color);
   }
 
-  // 5. Colores RGB
+  // 7. Colores RGB
   const rgbPattern = /rgb[a]?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/gi;
   const rgbMatches = allStyles.matchAll(rgbPattern);
   for (const m of rgbMatches) {
@@ -345,19 +422,21 @@ function extractColorsFromHtml(html: string): ExtractedColors {
     }
   }
 
-  // 6. Buscar colores en atributos de elementos (background, color en style inline)
-  const inlineColorPatterns = [
-    /background(?:-color)?:\s*(#[0-9a-fA-F]{3,6})/gi,
-    /(?:^|;)\s*color:\s*(#[0-9a-fA-F]{3,6})/gi,
-    /border(?:-color)?:\s*(#[0-9a-fA-F]{3,6})/gi,
+  // 8. Buscar colores en clases de Tailwind/utilidades comunes
+  const tailwindColorPatterns = [
+    /(?:bg|text|border|ring|fill|stroke)-\[#([0-9a-fA-F]{3,6})\]/g,
+    /(?:bg|text|border)-(?:blue|green|red|purple|pink|orange|yellow|teal|cyan|indigo|violet|rose|emerald|lime|amber|sky|fuchsia)-(\d{2,3})/g,
   ];
   
-  for (const pattern of inlineColorPatterns) {
-    const matches = html.matchAll(pattern);
+  for (const pattern of tailwindColorPatterns) {
+    const matches = allStyles.matchAll(pattern);
     for (const m of matches) {
-      const color = normalizeHexColor(m[1]);
-      if (!colors.includes(color) && !isGenericColor(color)) {
-        colors.push(color);
+      if (m[1] && m[1].length <= 6) {
+        const color = '#' + m[1];
+        const normalized = normalizeHexColor(color);
+        if (!colors.includes(normalized) && !isGenericColor(normalized)) {
+          colors.push(normalized);
+        }
       }
     }
   }
@@ -708,8 +787,8 @@ export const handler: Handler = async (event) => {
     const { title, description, cleanHtml } = extractMetadata(html);
     console.log('📄 Metadata:', { title: title.substring(0, 50), descLength: description.length });
 
-    // Extraer colores del CSS/HTML
-    const extractedColors = extractColorsFromHtml(html);
+    // Extraer colores del CSS/HTML (incluyendo archivos externos)
+    const extractedColors = await extractColorsFromHtml(html, url);
     console.log('🎨 Colors from CSS:', extractedColors.colors.length, 'Theme:', extractedColors.themeColor);
 
     // Extraer candidatos de logo
