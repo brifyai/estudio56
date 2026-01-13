@@ -105,9 +105,18 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       </div>
 
       {/* Document preview */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-6 flex justify-center items-start">
-        <div className="transition-transform duration-200 origin-top" style={{ transform: `scale(${zoom})` }}>
-          <div className="preview-container bg-white w-[210mm] min-h-[297mm] shadow-2xl">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-6">
+        <div className="flex justify-center">
+          <div 
+            className="origin-top-left"
+            style={{ 
+              transform: `scale(${zoom})`,
+              transformOrigin: 'top center',
+              width: '210mm',
+              minHeight: `calc(297mm * 3 * ${zoom})`, // Altura aproximada del documento escalado
+            }}
+          >
+            <div className="preview-container bg-white w-[210mm] shadow-2xl" style={{ minHeight: 'auto' }}>
             
             {/* PORTADA */}
             <section className="relative h-[297mm] flex flex-col justify-between p-16 overflow-hidden">
@@ -252,6 +261,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
               <span>{brand.name} | Manual de Marca</span>
               <span>Generado con Estudio 56</span>
             </div>
+          </div>
           </div>
         </div>
       </div>
