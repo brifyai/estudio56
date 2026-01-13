@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Monitor, Smartphone, Square, Download, RefreshCw, AlertCircle, Palette, LayoutTemplate, Zap, Briefcase, Star, MonitorPlay, Type, Move, Edit3, Sun, Moon, Aperture, Coffee, Box, Search, Settings, Key, Leaf, Camera, Building2, Feather } from 'lucide-react';
+import { Monitor, Smartphone, Square, Download, RefreshCw, AlertCircle, Palette, LayoutTemplate, Zap, Briefcase, Star, MonitorPlay, Type, Move, Edit3, Sun, Moon, Aperture, Coffee, Box, Search, Leaf, Camera, Building2, Feather } from 'lucide-react';
 
-const apiKey = "";
+
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function fetchWithRetry(url: string, options: RequestInit, retries = 5, backoff = 1000) {
@@ -85,14 +85,14 @@ export default function CanvasEditor({ aspectRatio: aspectRatioProp, onExport, o
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [editableCopy, setEditableCopy] = useState({ headline: '', subhead: '', cta: '' });
   const textContainerRef = useRef<HTMLDivElement>(null);
-  const [userApiKey, setUserApiKey] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
+  
+  
 
-  const getEffectiveKey = () => userApiKey || apiKey;
+  
 
   const generateImage = async (prompt: string, aspectRatio = "1:1") => {
-    const key = getEffectiveKey();
-    if (!key) throw new Error("Falta la API Key. Por favor configúrala en el botón de ajustes.");
+    const key = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!key) throw new Error("API Key no configurada. Contacta al administrador.");
     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
     const payload = { instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio } };
     const response = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -122,7 +122,6 @@ Technical: 8k resolution, photorealistic or 3D render depending on style.`;
       setBrandImages({ landscape: landscapeImg, portrait: portraitImg, square: squareImg });
     } catch (err: any) {
       setError(err.message);
-      if (err.message.includes("API Key")) setShowSettings(true);
     } finally {
       setLoadingStep(null);
     }
@@ -136,8 +135,8 @@ Technical: 8k resolution, photorealistic or 3D render depending on style.`;
     setActiveFormat('landscape');
     setLoadingStep('analyzing');
     try {
-      const key = getEffectiveKey();
-      if (!key) throw new Error("Falta la API Key. Por favor configúrala en el botón de ajustes.");
+      const key = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!key) throw new Error("API Key no configurada. Contacta al administrador.");
       const analysisUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
       const analysisPrompt = `Investiga en profundidad el sitio web o marca: "${urlInput}" usando Google Search.
 Busca su identidad visual, colores, logotipos y qué venden.
@@ -184,7 +183,6 @@ Estructura requerida:
       await generateAssetsForStyle(branding, selectedStyle);
     } catch (err: any) {
       setError(err.message);
-      if (err.message.includes("API Key")) setShowSettings(true);
       setLoadingStep(null);
     }
   };
@@ -267,18 +265,6 @@ Estructura requerida:
   return (
     <div className="min-h-screen bg-[#121212] text-white font-sans flex flex-col items-center justify-center relative overflow-hidden">
       <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
-        {showSettings && (
-          <div className="bg-[#1E1E1E] p-4 rounded-xl border border-white/10 shadow-2xl">
-            <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-              <Key className="w-4 h-4 text-yellow-500" /> Configuración de API
-            </h3>
-            <p className="text-xs text-slate-400 mb-3">Si ves un Error 401, ingresa tu propia API Key de Google Gemini (AI Studio).</p>
-            <div className="flex gap-2">
-              <input type="password" value={userApiKey} onChange={(e) => setUserApiKey(e.target.value)} placeholder="Pegar API Key aquí (AIza...)" className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 outline-none" />
-              <button onClick={() => setShowSettings(false)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">Guardar</button>
-            </div>
-          </div>
-        )}
         <div className="flex gap-2 items-center">
           <div className="flex-1 bg-[#1E1E1E] rounded-full p-2 flex items-center shadow-2xl border border-white/10 ring-1 ring-white/5">
             <input type="text" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} placeholder="Pega la URL (ej: nike.com)..." className="flex-1 bg-transparent px-6 py-3 outline-none text-lg placeholder:text-gray-500" onKeyDown={(e) => e.key === 'Enter' && handleUrlAnalysis()} />
@@ -286,14 +272,10 @@ Estructura requerida:
               {loadingStep ? <RefreshCw className="w-5 h-5 animate-spin"/> : <Search className="w-5 h-5"/>}
             </button>
           </div>
-          <button onClick={() => setShowSettings(!showSettings)} className="w-12 h-12 rounded-full bg-[#1E1E1E] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all" title="Configurar API Key">
-            <Settings className="w-5 h-5" />
-          </button>
         </div>
         {error && (
           <div className="p-3 bg-red-500/10 text-red-400 rounded-xl text-center flex items-center justify-center gap-2 text-sm border border-red-500/20">
             <AlertCircle className="w-4 h-4"/>{error}
-            {error.includes("API Key") && (<button onClick={() => setShowSettings(true)} className="underline font-bold hover:text-red-300 ml-1">Configurar</button>)}
           </div>
         )}
       </div>
