@@ -6,6 +6,7 @@ import { useSurfaceDetection, SurfaceType, SURFACE_CONFIGS } from '../hooks/useS
 import RealitySlider from './RealitySlider';
 import { ImageComparisonSlider } from './ImageComparisonSlider';
 import Swal from 'sweetalert2';
+import CanvasEditor from './canvas/CanvasEditor'; // NEW: Editor Canva
 
 interface LogoFilters {
   grayscale: number;
@@ -15,6 +16,7 @@ interface LogoFilters {
 }
 
 interface FlyerDisplayProps {
+  creationMode?: 'design' | 'canva' | 'free'; // NEW: Modo de creación
   imageUrl: string | null;
   draftImageUrl?: string | null;
   hdImageUrl?: string | null;
@@ -85,6 +87,7 @@ export interface TextStyleOptions {
 }
 
 export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
+  creationMode = 'design', // NEW: Modo de creación
   imageUrl,
   draftImageUrl,
   hdImageUrl,
@@ -1696,6 +1699,25 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
       </div>
     );
   };
+
+  // MODO CANVA: Mostrar editor completo
+  if (creationMode === 'canva') {
+    return (
+      <div className="w-full h-full">
+        <CanvasEditor
+          aspectRatio={aspectRatio}
+          onExport={(imageDataUrl) => {
+            console.log('🎨 Imagen exportada desde Canvas Editor');
+            // TODO: Integrar con el flujo de generación
+          }}
+          onSave={(canvasData) => {
+            console.log('💾 Diseño guardado:', canvasData);
+            // TODO: Guardar en localStorage o Supabase
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start animate-fade-in">

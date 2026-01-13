@@ -866,22 +866,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          </div>
          )}
          
-         {/* MODO CANVA: Mostrar editor visual */}
+         {/* MODO CANVA: Mostrar mensaje indicando que el editor está en el panel derecho */}
          {creationMode === 'canva' && (
-           <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden" style={{ height: '600px' }}>
-             <CanvasEditor
-               aspectRatio={aspectRatio}
-               onExport={(imageDataUrl) => {
-                 // Cuando el usuario exporta, usar la imagen como si fuera generada
-                 console.log('🎨 Imagen exportada desde Canvas Editor');
-                 // Aquí puedes integrar con el flujo de generación existente
-                 // Por ejemplo, llamar a onSubmit con la imagen del canvas
-               }}
-               onSave={(canvasData) => {
-                 // Guardar el diseño en localStorage o Supabase
-                 console.log('💾 Diseño guardado:', canvasData);
-               }}
-             />
+           <div className="p-8 bg-white/5 border border-white/10 rounded-xl text-center">
+             <div className="text-4xl mb-3">✏️</div>
+             <div className="text-white/70 text-sm mb-2">Editor Visual Canva</div>
+             <div className="text-white/40 text-xs">
+               El editor se encuentra en el panel "Diseño/Previsualización" →
+             </div>
            </div>
          )}
          

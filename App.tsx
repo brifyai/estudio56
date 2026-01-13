@@ -2285,6 +2285,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                             const displayUrl = improvedImageUrl || realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
                             return (
                               <FlyerDisplay
+                                creationMode={creationMode}
                                 imageUrl={displayUrl}
                                 draftImageUrl={draftImageUrl}
                                 hdImageUrl={hdImageUrl}
@@ -2496,6 +2497,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                   const displayUrl = improvedImageUrl || realityImageUrl || hdImageUrl || draftImageUrl || imageUrl;
                   return (
                     <FlyerDisplay
+                      creationMode={creationMode}
                       imageUrl={displayUrl}
                       draftImageUrl={draftImageUrl}
                       hdImageUrl={hdImageUrl}
