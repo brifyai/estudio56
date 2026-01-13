@@ -32,7 +32,6 @@ const CreationModeSelector: React.FC<CreationModeSelectorProps> = ({
                 }
               `}
             >
-              <div className="text-2xl mb-1">{mode.icon}</div>
               <div className="text-xs font-bold">{mode.name}</div>
               {isDisabled && (
                 <div className="mt-1 text-[9px] text-yellow-400">
