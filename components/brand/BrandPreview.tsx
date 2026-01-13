@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ZoomIn, ZoomOut, Monitor, Layout, Palette, Type, LayoutTemplate, Hexagon } from 'lucide-react';
+import { ZoomIn, ZoomOut, Monitor, Layout, Palette, Type, LayoutTemplate, Hexagon, Link, Sparkles } from 'lucide-react';
 import { BrandData, ALL_ICONS } from './BrandTypes';
 
 interface BrandPreviewProps {
@@ -9,12 +9,36 @@ interface BrandPreviewProps {
 export default function BrandPreview({ brand }: BrandPreviewProps) {
   const [zoom, setZoom] = useState(0.45);
 
+  // Detectar si es el estado por defecto (sin datos reales)
+  const isEmptyState = brand.name === "Mi Marca" && brand.tagline === "Tu eslogan aquí";
+
   const getInitials = (name: string) => {
     const words = name.trim().split(/\s+/);
     if (words.length === 0) return "B";
     if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
     return (words[0][0] + words[1][0]).toUpperCase();
   };
+
+  // Estado vacío - mostrar placeholder
+  if (isEmptyState) {
+    return (
+      <div className="flex flex-col h-full bg-gray-950 items-center justify-center">
+        <div className="text-center px-8 max-w-md">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/10">
+            <Sparkles className="w-10 h-10 text-blue-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-3">Genera tu Manual de Marca</h3>
+          <p className="text-white/50 text-sm mb-6">
+            Ingresa la URL de tu página web, Instagram, Facebook o TikTok en el panel izquierdo para generar automáticamente tu manual de identidad de marca.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-white/30 text-xs">
+            <Link size={14} />
+            <span>Pega tu URL y presiona "Analizar"</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Componente GeneratedLogo
   const GeneratedLogo = ({ className = "h-32", showText = true, forceWhiteText = false }: { className?: string, showText?: boolean, forceWhiteText?: boolean }) => {
