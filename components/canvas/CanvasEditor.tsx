@@ -4,6 +4,7 @@ import { AspectRatio } from '../../types';
 import CanvasToolbar from './CanvasToolbar';
 import CanvasSidebar from './CanvasSidebar';
 import CanvasProperties from './CanvasProperties';
+import { type CanvasTemplate } from './CanvasTemplates';
 
 interface CanvasEditorProps {
   aspectRatio: AspectRatio;
@@ -131,7 +132,7 @@ const CanvasEditor = ({
   };
 
   // Agregar forma
-  const addShape = (shapeType: 'rectangle' | 'circle' | 'triangle') => {
+  const addShape = (shapeType: 'rectangle' | 'circle' | 'triangle' | 'star' | 'line') => {
     if (!fabricCanvasRef.current) return;
 
     let shape: fabric.Object;
@@ -169,6 +170,35 @@ const CanvasEditor = ({
           fill: '#f59e0b',
           stroke: '#d97706',
           strokeWidth: 2
+        });
+        break;
+      case 'star':
+        // Crear estrella de 5 puntas
+        const points = [];
+        const spikes = 5;
+        const outerRadius = 50;
+        const innerRadius = 25;
+        
+        for (let i = 0; i < spikes * 2; i++) {
+          const radius = i % 2 === 0 ? outerRadius : innerRadius;
+          const angle = (Math.PI * i) / spikes;
+          points.push({
+            x: centerX + radius * Math.sin(angle),
+            y: centerY - radius * Math.cos(angle)
+          });
+        }
+        
+        shape = new fabric.Polygon(points, {
+          fill: '#ec4899',
+          stroke: '#be185d',
+          strokeWidth: 2
+        });
+        break;
+      case 'line':
+        shape = new fabric.Line([centerX - 50, centerY, centerX + 50, centerY], {
+          stroke: '#6366f1',
+          strokeWidth: 4,
+          strokeLineCap: 'round'
         });
         break;
     }
@@ -215,6 +245,20 @@ const CanvasEditor = ({
     fabricCanvasRef.current.backgroundColor = color;
     fabricCanvasRef.current.renderAll();
     saveHistory();
+  };
+
+  // Cargar plantilla
+  const loadTemplate = (template: CanvasTemplate) => {
+    if (!fabricCanvasRef.current) return;
+
+    // Limpiar canvas
+    fabricCanvasRef.current.clear();
+    
+    // Cargar diseño de la plantilla
+    fabricCanvasRef.current.loadFromJSON(template.design, () => {
+      fabricCanvasRef.current?.renderAll();
+      saveHistory();
+    });
   };
 
   // Exportar a imagen
@@ -268,6 +312,7 @@ const CanvasEditor = ({
           onAddShape={addShape}
           onAddImage={addImage}
           onChangeBackground={changeBackgroundColor}
+          onLoadTemplate={loadTemplate}
         />
 
         {/* Canvas Area */}

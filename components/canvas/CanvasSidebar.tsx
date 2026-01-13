@@ -1,16 +1,23 @@
+import { useState } from 'react';
+import { CANVAS_TEMPLATES, type CanvasTemplate } from './CanvasTemplates';
+
 interface CanvasSidebarProps {
   onAddText: (text?: string) => void;
-  onAddShape: (shapeType: 'rectangle' | 'circle' | 'triangle') => void;
+  onAddShape: (shapeType: 'rectangle' | 'circle' | 'triangle' | 'star' | 'line') => void;
   onAddImage: (url: string) => void;
   onChangeBackground: (color: string) => void;
+  onLoadTemplate: (template: CanvasTemplate) => void;
 }
 
 const CanvasSidebar = ({
   onAddText,
   onAddShape,
   onAddImage,
-  onChangeBackground
+  onChangeBackground,
+  onLoadTemplate
 }: CanvasSidebarProps) => {
+  const [showTemplates, setShowTemplates] = useState(false);
+  
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -26,6 +33,40 @@ const CanvasSidebar = ({
   return (
     <div className="w-64 bg-gray-900 border-r border-white/10 overflow-y-auto">
       <div className="p-4 space-y-6">
+        {/* Plantillas */}
+        <div>
+          <h3 className="text-white text-sm font-bold mb-3 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
+            </svg>
+            Plantillas
+          </h3>
+          <button
+            onClick={() => setShowTemplates(!showTemplates)}
+            className="w-full p-3 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg text-white text-sm transition-colors border border-purple-500/30"
+          >
+            {showTemplates ? '✕ Cerrar' : '📋 Ver Plantillas'}
+          </button>
+          
+          {showTemplates && (
+            <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
+              {CANVAS_TEMPLATES.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => {
+                    onLoadTemplate(template);
+                    setShowTemplates(false);
+                  }}
+                  className="w-full p-2 bg-white/5 hover:bg-white/10 rounded-lg text-left transition-colors"
+                >
+                  <div className="text-white text-xs font-medium">{template.name}</div>
+                  <div className="text-white/50 text-[10px] capitalize">{template.category}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Texto */}
         <div>
           <h3 className="text-white text-sm font-bold mb-3 flex items-center gap-2">
@@ -88,6 +129,22 @@ const CanvasSidebar = ({
               title="Triángulo"
             >
               <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-b-[28px] border-b-orange-500"></div>
+            </button>
+            <button
+              onClick={() => onAddShape('star')}
+              className="aspect-square bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center transition-colors"
+              title="Estrella"
+            >
+              <svg className="w-8 h-8 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => onAddShape('line')}
+              className="aspect-square bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center transition-colors"
+              title="Línea"
+            >
+              <div className="w-8 h-0.5 bg-indigo-500 rounded"></div>
             </button>
           </div>
         </div>
