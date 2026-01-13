@@ -1719,41 +1719,63 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   if (creationMode === 'canva') {
     console.log('🎨 [FlyerDisplay] Intentando renderizar CanvasEditor...');
     console.log('🎨 [FlyerDisplay] aspectRatio:', aspectRatio);
+    console.log('🎨 [FlyerDisplay] CanvasEditor disponible:', typeof CanvasEditor);
     
     try {
-      return (
+      console.log('🎨 [FlyerDisplay] Entrando al try block...');
+      
+      const editorElement = (
         <div className="w-full h-full bg-gray-900">
-          <div className="p-4 text-white text-center bg-green-500/20">
-            <p className="text-sm">✅ Modo Canva activo - Cargando editor...</p>
+          <div className="p-4 text-white text-center bg-green-500/20 border-b-2 border-green-500">
+            <p className="text-sm font-bold">✅ Modo Canva activo - Cargando editor...</p>
+            <p className="text-xs text-white/60 mt-1">Si no ves el editor, revisa la consola</p>
           </div>
-          <CanvasEditor
-            aspectRatio={aspectRatio}
-            onExport={(imageDataUrl) => {
-              console.log('🎨 Imagen exportada desde Canvas Editor');
-              if (onExport) {
-                onExport(imageDataUrl);
-              }
-            }}
-            onSave={(canvasData) => {
-              console.log('💾 Diseño guardado:', canvasData);
-              try {
-                localStorage.setItem('canvas-design-last', canvasData);
-                localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
-                console.log('✅ Diseño guardado en localStorage');
-              } catch (error) {
-                console.error('❌ Error guardando diseño:', error);
-              }
-            }}
-          />
+          <div className="w-full h-[calc(100%-60px)]">
+            <CanvasEditor
+              aspectRatio={aspectRatio}
+              onExport={(imageDataUrl) => {
+                console.log('🎨 Imagen exportada desde Canvas Editor');
+                if (onExport) {
+                  onExport(imageDataUrl);
+                }
+              }}
+              onSave={(canvasData) => {
+                console.log('💾 Diseño guardado:', canvasData);
+                try {
+                  localStorage.setItem('canvas-design-last', canvasData);
+                  localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
+                  console.log('✅ Diseño guardado en localStorage');
+                } catch (error) {
+                  console.error('❌ Error guardando diseño:', error);
+                }
+              }}
+            />
+          </div>
         </div>
       );
+      
+      console.log('🎨 [FlyerDisplay] Editor element creado, retornando...');
+      return editorElement;
     } catch (error) {
       console.error('❌ [FlyerDisplay] Error renderizando CanvasEditor:', error);
+      console.error('❌ [FlyerDisplay] Error stack:', error instanceof Error ? error.stack : 'No stack');
+      console.error('❌ [FlyerDisplay] Error message:', error instanceof Error ? error.message : String(error));
+      
       return (
         <div className="w-full h-full bg-red-900 flex items-center justify-center">
-          <div className="text-white text-center p-8">
-            <h2 className="text-2xl font-bold mb-4">Error al cargar editor Canva</h2>
-            <p className="text-sm">{String(error)}</p>
+          <div className="text-white text-center p-8 max-w-2xl">
+            <h2 className="text-2xl font-bold mb-4">❌ Error al cargar editor Canva</h2>
+            <div className="bg-black/50 p-4 rounded-lg text-left">
+              <p className="text-sm font-mono mb-2">Error:</p>
+              <p className="text-xs text-red-300 font-mono">{error instanceof Error ? error.message : String(error)}</p>
+              {error instanceof Error && error.stack && (
+                <>
+                  <p className="text-sm font-mono mt-4 mb-2">Stack:</p>
+                  <pre className="text-xs text-red-300 font-mono overflow-auto max-h-40">{error.stack}</pre>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-white/60 mt-4">Revisa la consola del navegador para más detalles</p>
           </div>
         </div>
       );
