@@ -263,7 +263,7 @@ Estructura requerida:
   }, [isDragging, dragStart]);
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white font-sans flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden">
       <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
         <div className="flex gap-2 items-center">
           <div className="flex-1 bg-[#1E1E1E] rounded-full p-2 flex items-center shadow-2xl border border-white/10 ring-1 ring-white/5">
@@ -335,7 +335,6 @@ Estructura requerida:
           )}
         </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-[#121212] to-[#1a1a1a] -z-10"></div>
     </div>
   );
 }
