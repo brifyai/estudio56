@@ -1,13 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo, RealityLevel } from '../types';
+import { GenerationStatus, AspectRatio, FlyerStyleKey, FlyerStyleKeyVideo, RealityLevel, CreationMode } from '../types';
 import { downloadComposedImage, getDimensionsForAspectRatio, composeAndExport } from '../services/compositionExportService';
 import { downloadElementAsImage, getElementDimensions } from '../services/domCaptureService';
 import { useSurfaceDetection, SurfaceType, SURFACE_CONFIGS } from '../hooks/useSurfaceDetection';
 import RealitySlider from './RealitySlider';
 import { ImageComparisonSlider } from './ImageComparisonSlider';
 import Swal from 'sweetalert2';
-import CanvasEditor from './canvas/CanvasEditor'; // NEW: Editor Canva
-import CanvasEditorSimple from './canvas/CanvasEditorSimple'; // DEBUG: Versión simplificada
+import CanvasEditor from './canvas/CanvasEditor';
+import BrandEditor from './brand/BrandEditor';
 
 interface LogoFilters {
   grayscale: number;
@@ -17,7 +17,7 @@ interface LogoFilters {
 }
 
 interface FlyerDisplayProps {
-  creationMode?: 'design' | 'canva' | 'free'; // NEW: Modo de creación
+  creationMode?: CreationMode;
   onExport?: (imageDataUrl: string) => void; // NEW: Callback para exportar desde Canva
   imageUrl: string | null;
   draftImageUrl?: string | null;
@@ -1226,6 +1226,24 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
               localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
             } catch (error) {
               console.error('❌ Error guardando diseño:', error);
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
+  // MODO BRAND: Mostrar editor de marca (ANTES del empty state)
+  if (creationMode === 'brand') {
+    console.log('🏷️ [FlyerDisplay] Renderizando BrandEditor...');
+    
+    return (
+      <div className="w-full h-full bg-gray-900">
+        <BrandEditor
+          onExport={(pdfData) => {
+            console.log('🏷️ Manual de marca exportado');
+            if (onExport) {
+              onExport(pdfData);
             }
           }}
         />

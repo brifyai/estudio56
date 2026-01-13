@@ -11,7 +11,7 @@ export type RechargeId = 'INDIVIDUAL' | 'SALVATORE' | 'IMPULSO';
 // 🎨 MODOS DE CREACIÓN
 // ============================================
 
-export type CreationMode = 'design' | 'canva' | 'free';
+export type CreationMode = 'design' | 'canva' | 'free' | 'brand';
 
 export interface CreationModeConfig {
   id: CreationMode;
@@ -58,6 +58,17 @@ export const CREATION_MODES: Record<CreationMode, CreationModeConfig> = {
     showStyleSelector: false,
     showCanvas: false,
     allowManualEditing: false
+  },
+  brand: {
+    id: 'brand',
+    name: 'Marca',
+    description: 'Manual de identidad de marca',
+    icon: '🏷️',
+    features: ['Logo generator', 'Paleta de colores', 'Manual PDF'],
+    showPrompt: false,
+    showStyleSelector: false,
+    showCanvas: false,
+    allowManualEditing: true
   }
 };
 

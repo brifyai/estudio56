@@ -18,14 +18,18 @@ const CanvasEditor = ({
   aspectRatio,
   onExport,
   onSave
-}) => {
+}: CanvasEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
   const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null);
   const [zoom, setZoom] = useState(1);
   const [history, setHistory] = useState<string[]>([]);
   const [historyStep, setHistoryStep] = useState(-1);
-  const [showLayers, setShowLayers] = useState(true); // NEW: Mostrar/ocultar panel de capas
+  const [showLayers, setShowLayers] = useState(true);
+  const [isReady, setIsReady] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  console.log('🎨 [CanvasEditor] Componente montado, aspectRatio:', aspectRatio);
 
   // Calcular dimensiones según aspect ratio
   const getDimensions = () => {
@@ -47,40 +51,59 @@ const CanvasEditor = ({
 
   // Inicializar canvas
   useEffect(() => {
-    if (!canvasRef.current) return;
+    console.log('🎨 [CanvasEditor] useEffect iniciando...');
+    console.log('🎨 [CanvasEditor] canvasRef.current:', canvasRef.current);
+    
+    if (!canvasRef.current) {
+      console.error('❌ [CanvasEditor] canvasRef.current es null');
+      setInitError('Canvas ref no disponible');
+      return;
+    }
 
-    const canvas = new fabric.Canvas(canvasRef.current, {
-      width: dimensions.width,
-      height: dimensions.height,
-      backgroundColor: '#ffffff',
-      preserveObjectStacking: true
-    });
+    try {
+      console.log('🎨 [CanvasEditor] Creando fabric.Canvas...');
+      console.log('🎨 [CanvasEditor] Dimensiones:', dimensions);
+      
+      const canvas = new fabric.Canvas(canvasRef.current, {
+        width: dimensions.width,
+        height: dimensions.height,
+        backgroundColor: '#ffffff',
+        preserveObjectStacking: true
+      });
 
-    fabricCanvasRef.current = canvas;
+      console.log('✅ [CanvasEditor] fabric.Canvas creado exitosamente');
+      fabricCanvasRef.current = canvas;
 
-    // Event listeners
-    canvas.on('selection:created', (e: any) => {
-      setSelectedObject(e.selected?.[0] || null);
-    });
+      // Event listeners
+      canvas.on('selection:created', (e: any) => {
+        setSelectedObject(e.selected?.[0] || null);
+      });
 
-    canvas.on('selection:updated', (e: any) => {
-      setSelectedObject(e.selected?.[0] || null);
-    });
+      canvas.on('selection:updated', (e: any) => {
+        setSelectedObject(e.selected?.[0] || null);
+      });
 
-    canvas.on('selection:cleared', () => {
-      setSelectedObject(null);
-    });
+      canvas.on('selection:cleared', () => {
+        setSelectedObject(null);
+      });
 
-    canvas.on('object:modified', () => {
+      canvas.on('object:modified', () => {
+        saveHistory();
+      });
+
+      // Guardar estado inicial
       saveHistory();
-    });
+      setIsReady(true);
+      console.log('✅ [CanvasEditor] Canvas listo para usar');
 
-    // Guardar estado inicial
-    saveHistory();
-
-    return () => {
-      canvas.dispose();
-    };
+      return () => {
+        console.log('🎨 [CanvasEditor] Limpiando canvas...');
+        canvas.dispose();
+      };
+    } catch (error) {
+      console.error('❌ [CanvasEditor] Error inicializando canvas:', error);
+      setInitError(error instanceof Error ? error.message : 'Error desconocido');
+    }
   }, [aspectRatio]);
 
   // Guardar en historial
@@ -346,7 +369,33 @@ const CanvasEditor = ({
 
   return (
     <div className="flex flex-col h-full bg-gray-900">
-      {/* Toolbar */}
+      {/* Error state */}
+      {initError && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="bg-red-900/50 border border-red-500 rounded-lg p-6 max-w-md">
+            <h3 className="text-red-400 font-bold mb-2">Error inicializando editor</h3>
+            <p className="text-white/70 text-sm">{initError}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+            >
+              Recargar página
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Loading state */}
+      {!isReady && !initError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-50">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white/60">Cargando editor...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Toolbar - siempre visible para que el canvas se inicialice */}
       <CanvasToolbar
         onUndo={undo}
         onRedo={redo}
