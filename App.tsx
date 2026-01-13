@@ -2201,16 +2201,9 @@ progressAlert.updateProgress(60, 'Renderizando...');
 
             {/* Form Container - Scroll container con padding-bottom para footer */}
             <div className="flex-1 mobile-scroll-container custom-scrollbar min-h-0 overflow-y-auto overflow-x-hidden pb-32 lg:pb-6 scroll-smooth">
-                {/* Selector de Modo de Creación */}
-                <div className="px-4 pt-4">
-                  <CreationModeSelector
-                    selectedMode={creationMode}
-                    onModeChange={setCreationMode}
-                  />
-                </div>
-                
                 <FlyerForm
                     creationMode={creationMode}
+                    onCreationModeChange={setCreationMode}
                     styleKey={styleKey}
                     videoStyleKey={videoStyleKey} // NEW: Pasar estado de video
                     aspectRatio={aspectRatio}

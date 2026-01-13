@@ -18,9 +18,12 @@ import {
 } from '../src/constants/storyArtStyles';
 // 🎨 CANVAS EDITOR - Editor visual tipo Canva
 import CanvasEditor from './canvas/CanvasEditor';
+// 🎨 CREATION MODE SELECTOR - Selector de modos de creación
+import CreationModeSelector from './CreationModeSelector';
 
 interface FlyerFormProps {
   creationMode: CreationMode; // NEW: Modo de creación (Diseño, Canva, Libre)
+  onCreationModeChange: (mode: CreationMode) => void; // NEW: Callback para cambiar modo
   styleKey: FlyerStyleKey;
   videoStyleKey?: FlyerStyleKeyVideo; // NEW: Estado separado para estilos de video
   aspectRatio: AspectRatio;
@@ -87,6 +90,7 @@ interface FlyerFormProps {
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
   creationMode, // NEW: Modo de creación
+  onCreationModeChange, // NEW: Callback para cambiar modo
   styleKey,
   videoStyleKey, // NEW: Estado separado para video
   aspectRatio,
@@ -807,6 +811,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                {creationMode === 'canva' && 'Editor visual (Próximamente)'}
              </p>
          </div>
+         
+         {/* Selector de Modo de Creación */}
+         <CreationModeSelector
+           selectedMode={creationMode}
+           onModeChange={onCreationModeChange}
+         />
          
          {/* MODO DISEÑO Y LIBRE: Mostrar textarea */}
          {(creationMode === 'design' || creationMode === 'free') && (
