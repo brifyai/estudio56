@@ -7,7 +7,8 @@ import RealitySlider from './RealitySlider';
 import { ImageComparisonSlider } from './ImageComparisonSlider';
 import Swal from 'sweetalert2';
 import CanvasEditor from './canvas/CanvasEditor';
-import BrandEditor from './brand/BrandEditor';
+import BrandPreview from './brand/BrandPreview';
+import { BrandData } from './brand/BrandTypes';
 
 interface LogoFilters {
   grayscale: number;
@@ -19,6 +20,8 @@ interface LogoFilters {
 interface FlyerDisplayProps {
   creationMode?: CreationMode;
   onExport?: (imageDataUrl: string) => void; // NEW: Callback para exportar desde Canva
+  // Brand mode props
+  brandData?: BrandData;
   imageUrl: string | null;
   draftImageUrl?: string | null;
   hdImageUrl?: string | null;
@@ -91,6 +94,7 @@ export interface TextStyleOptions {
 export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   creationMode = 'design', // NEW: Modo de creación
   onExport, // NEW: Callback para exportar desde Canva
+  brandData, // NEW: Datos de marca para modo brand
   imageUrl,
   draftImageUrl,
   hdImageUrl,
@@ -1233,20 +1237,13 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     );
   }
 
-  // MODO BRAND: Mostrar editor de marca (ANTES del empty state)
-  if (creationMode === 'brand') {
-    console.log('🏷️ [FlyerDisplay] Renderizando BrandEditor...');
+  // MODO BRAND: Mostrar vista previa del manual de marca (ANTES del empty state)
+  if (creationMode === 'brand' && brandData) {
+    console.log('🏷️ [FlyerDisplay] Renderizando BrandPreview...');
     
     return (
-      <div className="w-full h-full bg-gray-900">
-        <BrandEditor
-          onExport={(pdfData) => {
-            console.log('🏷️ Manual de marca exportado');
-            if (onExport) {
-              onExport(pdfData);
-            }
-          }}
-        />
+      <div className="w-full h-full">
+        <BrandPreview brand={brandData} />
       </div>
     );
   }

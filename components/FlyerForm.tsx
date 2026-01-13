@@ -20,10 +20,19 @@ import {
 import CanvasEditor from './canvas/CanvasEditor';
 // 🎨 CREATION MODE SELECTOR - Selector de modos de creación
 import CreationModeSelector from './CreationModeSelector';
+// 🏷️ BRAND SIDEBAR - Controles del editor de marca
+import BrandSidebar from './brand/BrandSidebar';
+import { BrandData, defaultBrandData } from './brand/BrandTypes';
 
 interface FlyerFormProps {
   creationMode: CreationMode; // NEW: Modo de creación (Diseño, Canva, Libre)
   onCreationModeChange: (mode: CreationMode) => void; // NEW: Callback para cambiar modo
+  // Brand mode props
+  brandData?: BrandData;
+  setBrandData?: React.Dispatch<React.SetStateAction<BrandData>>;
+  brandActiveTab?: 'identity' | 'colors' | 'typography';
+  setBrandActiveTab?: (tab: 'identity' | 'colors' | 'typography') => void;
+  onBrandPrint?: () => void;
   styleKey: FlyerStyleKey;
   videoStyleKey?: FlyerStyleKeyVideo; // NEW: Estado separado para estilos de video
   aspectRatio: AspectRatio;
@@ -91,6 +100,12 @@ interface FlyerFormProps {
 export const FlyerForm: React.FC<FlyerFormProps> = ({
   creationMode, // NEW: Modo de creación
   onCreationModeChange, // NEW: Callback para cambiar modo
+  // Brand mode props
+  brandData,
+  setBrandData,
+  brandActiveTab = 'identity',
+  setBrandActiveTab,
+  onBrandPrint,
   styleKey,
   videoStyleKey, // NEW: Estado separado para video
   aspectRatio,
@@ -879,6 +894,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                El editor se encuentra en el panel "Diseño/Previsualización" →
              </div>
            </div>
+         )}
+
+         {/* MODO BRAND: Mostrar controles del editor de marca */}
+         {creationMode === 'brand' && brandData && setBrandData && setBrandActiveTab && onBrandPrint && (
+           <BrandSidebar
+             brand={brandData}
+             setBrand={setBrandData}
+             activeTab={brandActiveTab}
+             setActiveTab={setBrandActiveTab}
+             onPrint={onBrandPrint}
+           />
          )}
          
          {/* OCULTO: Indicador de Modo Magia - ahora solo se muestra en consola, no en UI */}

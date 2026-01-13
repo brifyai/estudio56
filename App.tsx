@@ -28,6 +28,8 @@ import { PricingModal } from './components/PricingModal';
 import { StyleGallery } from './components/StyleGallery';
 import { LandingPage } from './components/LandingPage';
 import { LoginPage } from './components/LoginPage';
+// Brand Editor types
+import { BrandData, defaultBrandData } from './components/brand/BrandTypes';
 import { RegisterPage } from './components/RegisterPage';
 import { AuthCallback } from './components/AuthCallback';
 import { DiagnosticPage } from './components/DiagnosticPage';
@@ -105,6 +107,11 @@ const Dashboard: React.FC = () => {
   const [posterStyle, setPosterStyle] = useState<PosterStyle>('promotional');
   const [description, setDescription] = useState<string>('');
   const [creationMode, setCreationMode] = useState<CreationMode>('design'); // NEW: Modo de creación (Diseño, Canva, Libre)
+  
+  // Brand Editor state
+  const [brandData, setBrandData] = useState<BrandData>(defaultBrandData);
+  const [brandActiveTab, setBrandActiveTab] = useState<'identity' | 'colors' | 'typography'>('identity');
+  const handleBrandPrint = () => window.print();
   
   // DEBUG: Log cuando cambia creationMode
   useEffect(() => {
@@ -2209,6 +2216,12 @@ progressAlert.updateProgress(60, 'Renderizando...');
                 <FlyerForm
                     creationMode={creationMode}
                     onCreationModeChange={setCreationMode}
+                    // Brand mode props
+                    brandData={brandData}
+                    setBrandData={setBrandData}
+                    brandActiveTab={brandActiveTab}
+                    setBrandActiveTab={setBrandActiveTab}
+                    onBrandPrint={handleBrandPrint}
                     styleKey={styleKey}
                     videoStyleKey={videoStyleKey} // NEW: Pasar estado de video
                     aspectRatio={aspectRatio}
@@ -2291,6 +2304,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                             return (
                               <FlyerDisplay
                                 creationMode={creationMode}
+                                brandData={brandData}
                                 onExport={(imageDataUrl) => {
                                   console.log('🎨 [App] Imagen exportada desde Canvas Editor');
                                   // Actualizar imageUrl y draftImageUrl con la imagen exportada
@@ -2511,6 +2525,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                   return (
                     <FlyerDisplay
                       creationMode={creationMode}
+                      brandData={brandData}
                       onExport={(imageDataUrl) => {
                         console.log('🎨 [App Mobile] Imagen exportada desde Canvas Editor');
                         // Actualizar imageUrl y draftImageUrl con la imagen exportada
