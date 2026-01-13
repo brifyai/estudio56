@@ -47,14 +47,33 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       console.log('📄 Capturando con html2canvas...');
       
       // Capturar el contenedor del manual
+      // Nota: ignoreElements para evitar problemas con colores oklch de Tailwind
       const canvas = await html2canvas(container, {
         scale: 2, // Alta resolución
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: true, // Activar logs de html2canvas
-        width: 794, // A4 width in pixels at 96 DPI
-        windowWidth: 794,
+        logging: false,
+        // Ignorar errores de parsing de colores (oklch no soportado)
+        onclone: (clonedDoc) => {
+          // Convertir colores oklch a hex en el documento clonado
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach((el) => {
+            const computedStyle = window.getComputedStyle(el as Element);
+            const htmlEl = el as HTMLElement;
+            
+            // Reemplazar colores problemáticos con fallbacks
+            if (computedStyle.backgroundColor.includes('oklch')) {
+              htmlEl.style.backgroundColor = '#ffffff';
+            }
+            if (computedStyle.color.includes('oklch')) {
+              htmlEl.style.color = '#000000';
+            }
+            if (computedStyle.borderColor.includes('oklch')) {
+              htmlEl.style.borderColor = '#e5e7eb';
+            }
+          });
+        }
       });
       
       console.log('📄 Canvas capturado:', canvas.width, 'x', canvas.height);
