@@ -263,8 +263,10 @@ Estructura requerida:
   }, [isDragging, dragStart]);
 
   return (
-    <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden">
-      <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
+    <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100">
+      {/* Grid Background - mismo que el área de diseño */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+      <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 relative ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
         <div className="flex gap-2 items-center">
           <div className="flex-1 bg-[#1E1E1E] rounded-full p-2 flex items-center shadow-2xl border border-white/10 ring-1 ring-white/5">
             <input type="text" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} placeholder="Pega la URL (ej: nike.com)..." className="flex-1 bg-transparent px-6 py-3 outline-none text-lg placeholder:text-gray-500" onKeyDown={(e) => e.key === 'Enter' && handleUrlAnalysis()} />
@@ -279,7 +281,7 @@ Estructura requerida:
           </div>
         )}
       </div>
-      <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative z-10">
+      <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative z-20">
         {loadingStep && (
           <div className="text-center space-y-4">
             <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
@@ -312,7 +314,7 @@ Estructura requerida:
         )}
       </div>
       {brandImages.landscape && !loadingStep && (
-        <div className="fixed bottom-8 z-30 flex flex-col items-center gap-4 pointer-events-auto">
+        <div className="fixed bottom-8 z-40 flex flex-col items-center gap-4 pointer-events-auto">
           <div className="flex bg-[#1E1E1E]/90 backdrop-blur rounded-full p-1.5 border border-white/10 shadow-xl">
             {[{ id: 'landscape', icon: Monitor, label: 'Banner' }, { id: 'portrait', icon: Smartphone, label: 'Story' }, { id: 'square', icon: Square, label: 'Post' }].map((fmt) => (
               <button key={fmt.id} onClick={() => setActiveFormat(fmt.id as any)} className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-all ${activeFormat === fmt.id ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
