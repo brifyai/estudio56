@@ -809,6 +809,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                {creationMode === 'design' && 'Pega una URL o describe tu negocio'}
                {creationMode === 'free' && 'Describe tu diseño sin restricciones'}
                {creationMode === 'canva' && 'Editor visual drag & drop'}
+               {creationMode === 'brand' && 'Crea tu manual de identidad de marca'}
              </p>
          </div>
          
@@ -945,7 +946,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 5. FORMATO SIMPLIFICADO */}
+        {/* 5. FORMATO SIMPLIFICADO - Oculto en modo brand */}
+        {creationMode !== 'brand' && (
         <div className="space-y-3">
               <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">2. Formato</label>
               <div className="grid grid-cols-2 gap-3">
@@ -984,8 +986,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                   </button>
               </div>
             </div>
+        )}
 
-        {/* 2. TIPO DE CONTENIDO - IMAGEN, VIDEO, ESTUDIO, STORY ART */}
+        {/* 2. TIPO DE CONTENIDO - IMAGEN, VIDEO, ESTUDIO, STORY ART - Oculto en modo brand */}
+        {creationMode !== 'brand' && (
         <div className="space-y-3">
           <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">3. ¿Qué quieres generar?</label>
           <div className="grid grid-cols-2 gap-2 md:gap-4">
@@ -1096,6 +1100,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
             </button>
           </div>
         </div>
+        )}
 
         {/* 6.1 ESTUDIO DE PRODUCTO - MEJORAR CON IA */}
         {console.log('🔍 [RENDER ESTUDIO] mediaType:', mediaType, 'uploadedImage:', uploadedImage ? 'EXISTE' : 'NULL')}
@@ -1298,8 +1303,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* 4. OBJETIVO DEL DISEÑO - BRANDING O LEADS (OCULTO PARA VIDEO, STORY ART Y ESTUDIO) */}
-        {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && (
+        {/* 4. OBJETIVO DEL DISEÑO - BRANDING O LEADS (OCULTO PARA VIDEO, STORY ART, ESTUDIO Y BRAND) */}
+        {mediaType !== 'video' && mediaType !== 'story_art' && mediaType !== 'product_study' && creationMode !== 'brand' && (
           <div className="space-y-3">
             <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">4. ¿Qué quieres lograr?</label>
             
@@ -1427,8 +1432,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
         </>
         )}
 
-        {/* GENERATE BUTTON - Oculto en modo estudio y canva */}
-        {mediaType !== 'product_study' && creationMode !== 'canva' && (
+        {/* GENERATE BUTTON - Oculto en modo estudio, canva y brand */}
+        {mediaType !== 'product_study' && creationMode !== 'canva' && creationMode !== 'brand' && (
           <div className="pt-4 md:pt-6">
             <button
                 onClick={async () => {
