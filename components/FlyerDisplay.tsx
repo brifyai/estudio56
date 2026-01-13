@@ -1207,11 +1207,28 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   if (creationMode === 'canva') {
     console.log('🎨 [FlyerDisplay] Intentando renderizar CanvasEditor...');
     console.log('🎨 [FlyerDisplay] aspectRatio:', aspectRatio);
-    console.log('🎨 [FlyerDisplay] CanvasEditorSimple disponible:', typeof CanvasEditorSimple);
+    console.log('🎨 [FlyerDisplay] CanvasEditor disponible:', typeof CanvasEditor);
     
     return (
       <div className="w-full h-full bg-gray-900">
-        <CanvasEditorSimple aspectRatio={aspectRatio} />
+        <CanvasEditor
+          aspectRatio={aspectRatio}
+          onExport={(imageDataUrl) => {
+            console.log('🎨 Imagen exportada desde Canvas Editor');
+            if (onExport) {
+              onExport(imageDataUrl);
+            }
+          }}
+          onSave={(canvasData) => {
+            console.log('💾 Diseño guardado');
+            try {
+              localStorage.setItem('canvas-design-last', canvasData);
+              localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
+            } catch (error) {
+              console.error('❌ Error guardando diseño:', error);
+            }
+          }}
+        />
       </div>
     );
   }
