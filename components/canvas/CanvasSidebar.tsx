@@ -7,6 +7,7 @@ interface CanvasSidebarProps {
   onAddImage: (url: string) => void;
   onChangeBackground: (color: string) => void;
   onLoadTemplate: (template: CanvasTemplate) => void;
+  onLoadSavedDesign?: (canvasData: string) => void; // NEW: Cargar diseño guardado
 }
 
 const CanvasSidebar = ({
@@ -14,9 +15,17 @@ const CanvasSidebar = ({
   onAddShape,
   onAddImage,
   onChangeBackground,
-  onLoadTemplate
+  onLoadTemplate,
+  onLoadSavedDesign
 }: CanvasSidebarProps) => {
   const [showTemplates, setShowTemplates] = useState(false);
+  const [hasSavedDesign, setHasSavedDesign] = useState(false);
+  
+  // Verificar si hay diseño guardado en localStorage
+  useState(() => {
+    const savedDesign = localStorage.getItem('canvas-design-last');
+    setHasSavedDesign(!!savedDesign);
+  });
   
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,10 +38,47 @@ const CanvasSidebar = ({
       reader.readAsDataURL(file);
     }
   };
+  
+  // Cargar diseño guardado desde localStorage
+  const handleLoadSavedDesign = () => {
+    const savedDesign = localStorage.getItem('canvas-design-last');
+    const timestamp = localStorage.getItem('canvas-design-timestamp');
+    
+    if (savedDesign && onLoadSavedDesign) {
+      const date = timestamp ? new Date(timestamp).toLocaleString('es-CL') : 'Desconocida';
+      
+      // Confirmar antes de cargar
+      if (confirm(`¿Cargar diseño guardado?\n\nÚltima modificación: ${date}\n\nEsto reemplazará el diseño actual.`)) {
+        onLoadSavedDesign(savedDesign);
+        console.log('✅ Diseño cargado desde localStorage');
+      }
+    }
+  };
 
   return (
     <div className="w-64 bg-gray-900 border-r border-white/10 overflow-y-auto">
       <div className="p-4 space-y-6">
+        {/* Cargar Diseño Guardado */}
+        {hasSavedDesign && onLoadSavedDesign && (
+          <div>
+            <h3 className="text-white text-sm font-bold mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Diseño Guardado
+            </h3>
+            <button
+              onClick={handleLoadSavedDesign}
+              className="w-full p-3 bg-green-500/20 hover:bg-green-500/30 rounded-lg text-white text-sm transition-colors border border-green-500/30 flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              Cargar Diseño Anterior
+            </button>
+          </div>
+        )}
+        
         {/* Plantillas */}
         <div>
           <h3 className="text-white text-sm font-bold mb-3 flex items-center gap-2">

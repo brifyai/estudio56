@@ -105,6 +105,11 @@ const Dashboard: React.FC = () => {
   const [posterStyle, setPosterStyle] = useState<PosterStyle>('promotional');
   const [description, setDescription] = useState<string>('');
   const [creationMode, setCreationMode] = useState<CreationMode>('design'); // NEW: Modo de creación (Diseño, Canva, Libre)
+  
+  // DEBUG: Log cuando cambia creationMode
+  useEffect(() => {
+    console.log('🎨 [App] creationMode cambió a:', creationMode);
+  }, [creationMode]);
   const [workMode, setWorkMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de trabajo (por defecto AUTO)
   const [textMode, setTextMode] = useState<'auto' | 'manual'>('auto'); // NEW: Modo de texto (Opción B)
   
@@ -2286,6 +2291,14 @@ progressAlert.updateProgress(60, 'Renderizando...');
                             return (
                               <FlyerDisplay
                                 creationMode={creationMode}
+                                onExport={(imageDataUrl) => {
+                                  console.log('🎨 [App] Imagen exportada desde Canvas Editor');
+                                  // Actualizar imageUrl y draftImageUrl con la imagen exportada
+                                  setImageUrl(imageDataUrl);
+                                  setDraftImageUrl(imageDataUrl);
+                                  setIsDraft(true);
+                                  console.log('✅ [App] Imagen del Canvas guardada como borrador');
+                                }}
                                 imageUrl={displayUrl}
                                 draftImageUrl={draftImageUrl}
                                 hdImageUrl={hdImageUrl}
@@ -2498,6 +2511,14 @@ progressAlert.updateProgress(60, 'Renderizando...');
                   return (
                     <FlyerDisplay
                       creationMode={creationMode}
+                      onExport={(imageDataUrl) => {
+                        console.log('🎨 [App Mobile] Imagen exportada desde Canvas Editor');
+                        // Actualizar imageUrl y draftImageUrl con la imagen exportada
+                        setImageUrl(imageDataUrl);
+                        setDraftImageUrl(imageDataUrl);
+                        setIsDraft(true);
+                        console.log('✅ [App Mobile] Imagen del Canvas guardada como borrador');
+                      }}
                       imageUrl={displayUrl}
                       draftImageUrl={draftImageUrl}
                       hdImageUrl={hdImageUrl}

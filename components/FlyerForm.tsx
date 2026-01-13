@@ -815,7 +815,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          {/* Selector de Modo de Creación */}
          <CreationModeSelector
            selectedMode={creationMode}
-           onModeChange={onCreationModeChange}
+           onModeChange={(mode) => {
+             console.log('🎨 [FlyerForm] Cambiando modo a:', mode);
+             onCreationModeChange(mode);
+           }}
          />
          
          {/* MODO DISEÑO Y LIBRE: Mostrar textarea */}

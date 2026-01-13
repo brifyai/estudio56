@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import * as fabric from 'fabric';
+import Swal from 'sweetalert2';
 import { AspectRatio } from '../../types';
 import CanvasToolbar from './CanvasToolbar';
 import CanvasSidebar from './CanvasSidebar';
 import CanvasProperties from './CanvasProperties';
+import CanvasLayers from './CanvasLayers';
 import { type CanvasTemplate } from './CanvasTemplates';
 
 interface CanvasEditorProps {
@@ -23,6 +25,7 @@ const CanvasEditor = ({
   const [zoom, setZoom] = useState(1);
   const [history, setHistory] = useState<string[]>([]);
   const [historyStep, setHistoryStep] = useState(-1);
+  const [showLayers, setShowLayers] = useState(true); // NEW: Mostrar/ocultar panel de capas
 
   // Calcular dimensiones según aspect ratio
   const getDimensions = () => {
@@ -265,13 +268,64 @@ const CanvasEditor = ({
   const handleExport = () => {
     if (!fabricCanvasRef.current) return;
 
-    const dataURL = fabricCanvasRef.current.toDataURL({
-      format: 'png',
-      quality: 1,
-      multiplier: 2
-    });
+    // Mostrar opciones de exportación con SweetAlert2
+    Swal.fire({
+      title: 'Exportar Diseño',
+      html: `
+        <div class="text-left space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-white mb-2">Formato:</label>
+            <select id="export-format" class="w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2">
+              <option value="png">PNG (Recomendado)</option>
+              <option value="jpg">JPG</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-white mb-2">Calidad:</label>
+            <select id="export-quality" class="w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2">
+              <option value="1">Normal (1x)</option>
+              <option value="2" selected>Alta (2x)</option>
+              <option value="3">Muy Alta (3x)</option>
+            </select>
+          </div>
+        </div>
+      `,
+      background: '#1f2937',
+      color: '#ffffff',
+      showCancelButton: true,
+      confirmButtonText: 'Exportar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      preConfirm: () => {
+        const format = (document.getElementById('export-format') as HTMLSelectElement).value;
+        const quality = parseInt((document.getElementById('export-quality') as HTMLSelectElement).value);
+        return { format, quality };
+      }
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        const { format, quality } = result.value;
+        
+        const dataURL = fabricCanvasRef.current!.toDataURL({
+          format: format,
+          quality: format === 'jpg' ? 0.9 : 1,
+          multiplier: quality
+        });
 
-    onExport(dataURL);
+        onExport(dataURL);
+        
+        // Mostrar confirmación
+        Swal.fire({
+          title: '¡Exportado!',
+          text: `Diseño exportado en ${format.toUpperCase()} (${quality}x)`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          background: '#1f2937',
+          color: '#ffffff'
+        });
+      }
+    });
   };
 
   // Guardar diseño
@@ -303,6 +357,8 @@ const CanvasEditor = ({
         onZoomOut={() => handleZoom(-0.1)}
         onExport={handleExport}
         onSave={handleSave}
+        onToggleLayers={() => setShowLayers(!showLayers)}
+        showLayers={showLayers}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -313,6 +369,20 @@ const CanvasEditor = ({
           onAddImage={addImage}
           onChangeBackground={changeBackgroundColor}
           onLoadTemplate={loadTemplate}
+          onLoadSavedDesign={(canvasData) => {
+            if (!fabricCanvasRef.current) return;
+            
+            try {
+              fabricCanvasRef.current.loadFromJSON(canvasData, () => {
+                fabricCanvasRef.current?.renderAll();
+                saveHistory();
+                console.log('✅ Diseño cargado correctamente');
+              });
+            } catch (error) {
+              console.error('❌ Error cargando diseño:', error);
+              alert('Error al cargar el diseño guardado');
+            }
+          }}
         />
 
         {/* Canvas Area */}
@@ -327,6 +397,17 @@ const CanvasEditor = ({
           <CanvasProperties
             selectedObject={selectedObject}
             onDelete={deleteSelected}
+            onUpdate={() => {
+              fabricCanvasRef.current?.renderAll();
+              saveHistory();
+            }}
+          />
+        )}
+        
+        {/* Layers Panel */}
+        {showLayers && (
+          <CanvasLayers
+            canvas={fabricCanvasRef.current}
             onUpdate={() => {
               fabricCanvasRef.current?.renderAll();
               saveHistory();

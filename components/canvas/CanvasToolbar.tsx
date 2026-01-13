@@ -8,6 +8,8 @@ interface CanvasToolbarProps {
   onZoomOut: () => void;
   onExport: () => void;
   onSave?: () => void;
+  onToggleLayers?: () => void; // NEW: Toggle panel de capas
+  showLayers?: boolean; // NEW: Estado del panel de capas
 }
 
 const CanvasToolbar = ({
@@ -19,7 +21,9 @@ const CanvasToolbar = ({
   onZoomIn,
   onZoomOut,
   onExport,
-  onSave
+  onSave,
+  onToggleLayers,
+  showLayers
 }) => {
   return (
     <div className="h-14 bg-gray-950 border-b border-white/10 flex items-center justify-between px-4">
@@ -74,6 +78,22 @@ const CanvasToolbar = ({
 
       {/* Right: Export/Save */}
       <div className="flex items-center gap-2">
+        {onToggleLayers && (
+          <button
+            onClick={onToggleLayers}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+              showLayers
+                ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border-purple-500/30'
+                : 'bg-white/5 hover:bg-white/10 text-white/60 border-white/10'
+            }`}
+            title={showLayers ? 'Ocultar capas' : 'Mostrar capas'}
+          >
+            <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Capas
+          </button>
+        )}
         {onSave && (
           <button
             onClick={onSave}

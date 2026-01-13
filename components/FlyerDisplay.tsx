@@ -17,6 +17,7 @@ interface LogoFilters {
 
 interface FlyerDisplayProps {
   creationMode?: 'design' | 'canva' | 'free'; // NEW: Modo de creación
+  onExport?: (imageDataUrl: string) => void; // NEW: Callback para exportar desde Canva
   imageUrl: string | null;
   draftImageUrl?: string | null;
   hdImageUrl?: string | null;
@@ -88,6 +89,7 @@ export interface TextStyleOptions {
 
 export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   creationMode = 'design', // NEW: Modo de creación
+  onExport, // NEW: Callback para exportar desde Canva
   imageUrl,
   draftImageUrl,
   hdImageUrl,
@@ -138,14 +140,27 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   isRealityVariation,
   onOpenRealityComparator
 }) => {
-  console.log('🎚️ [FlyerDisplay Props]', {
+  // DEBUG CRÍTICO: Expandir objeto completo
+  const propsDebug = {
+    creationMode,
     hasImageUrl: !!imageUrl,
     mediaType,
     realityLevel,
     hasOnRealityLevelChange: !!onRealityLevelChange,
     sceneId,
     cachedVariationsCount: Object.keys(cachedRealityVariations || {}).length
-  });
+  };
+  console.log('🎚️ [FlyerDisplay Props]', propsDebug);
+  console.log('🎚️ [FlyerDisplay] creationMode VALUE:', creationMode);
+  console.log('�️ [FllyerDisplay] creationMode TYPE:', typeof creationMode);
+  console.log('🎚️ [FlyerDisplay] creationMode === "canva":', creationMode === 'canva');
+  
+  // DEBUG: Log específico para modo Canva
+  if (creationMode === 'canva') {
+    console.log('🎨 [FlyerDisplay] ✅ MODO CANVA DETECTADO');
+  } else {
+    console.log('🎨 [FlyerDisplay] ❌ Modo actual:', creationMode);
+  }
   const [refineText, setRefineText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   
@@ -1708,11 +1723,19 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           aspectRatio={aspectRatio}
           onExport={(imageDataUrl) => {
             console.log('🎨 Imagen exportada desde Canvas Editor');
-            // TODO: Integrar con el flujo de generación
+            if (onExport) {
+              onExport(imageDataUrl);
+            }
           }}
           onSave={(canvasData) => {
             console.log('💾 Diseño guardado:', canvasData);
-            // TODO: Guardar en localStorage o Supabase
+            try {
+              localStorage.setItem('canvas-design-last', canvasData);
+              localStorage.setItem('canvas-design-timestamp', new Date().toISOString());
+              console.log('✅ Diseño guardado en localStorage');
+            } catch (error) {
+              console.error('❌ Error guardando diseño:', error);
+            }
           }}
         />
       </div>
