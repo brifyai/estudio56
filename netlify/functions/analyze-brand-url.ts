@@ -30,7 +30,7 @@ async function callGeminiAPI(prompt: string): Promise<string> {
   console.log('📤 Calling Gemini API...');
   
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -63,27 +63,52 @@ async function fetchUrlContent(url: string) {
   console.log('🌐 Fetching URL:', url);
   
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    // Usar https nativo de Node.js para mejor compatibilidad con Netlify
+    const https = await import('https');
+    const http = await import('http');
     
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      signal: controller.signal,
-    });
-    
-    clearTimeout(timeoutId);
+    const fetchWithNode = (targetUrl: string): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const protocol = targetUrl.startsWith('https') ? https : http;
+        const options = {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+          },
+          timeout: 10000,
+        };
+        
+        const req = protocol.get(targetUrl, options, (res: any) => {
+          // Seguir redirects
+          if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+            const redirectUrl = res.headers.location.startsWith('http') 
+              ? res.headers.location 
+              : new URL(res.headers.location, targetUrl).href;
+            console.log('↪️ Redirect to:', redirectUrl);
+            fetchWithNode(redirectUrl).then(resolve).catch(reject);
+            return;
+          }
+          
+          if (res.statusCode !== 200) {
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
+          }
+          
+          let data = '';
+          res.on('data', (chunk: any) => { data += chunk; });
+          res.on('end', () => resolve(data));
+        });
+        
+        req.on('error', reject);
+        req.on('timeout', () => {
+          req.destroy();
+          reject(new Error('Timeout'));
+        });
+      });
+    };
 
-    console.log('📄 URL response status:', response.status);
-
-    if (!response.ok) {
-      console.warn('⚠️ URL fetch failed:', response.status);
-      return { html: '', title: url, description: '', logoImages: [] };
-    }
-
-    const html = await response.text();
+    const html = await fetchWithNode(url);
     console.log('📄 HTML length:', html.length);
 
     // Extraer título
@@ -103,6 +128,10 @@ async function fetchUrlContent(url: string) {
     // apple-touch-icon
     const appleMatches = html.matchAll(/<link[^>]*rel=["']apple-touch-icon[^"']*["'][^>]*href=["']([^"']+)["']/gi);
     for (const m of appleMatches) logoImages.push(m[1]);
+
+    // favicon
+    const faviconMatch = html.match(/<link[^>]*rel=["'](?:shortcut )?icon["'][^>]*href=["']([^"']+)["']/i);
+    if (faviconMatch) logoImages.push(faviconMatch[1]);
 
     // imágenes con "logo"
     const logoMatches = html.matchAll(/<img[^>]*src=["']([^"']*logo[^"']*)["'][^>]*>/gi);
@@ -128,8 +157,10 @@ async function fetchUrlContent(url: string) {
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown';
     console.error('❌ Error fetching URL:', errorMsg);
-    // No lanzar error, devolver datos vacíos para que Gemini genere contenido basado en la URL
-    return { html: '', title: url, description: '', logoImages: [] };
+    // Devolver datos mínimos para que Gemini genere contenido basado en la URL
+    const urlObj = new URL(url);
+    const domain = urlObj.hostname.replace('www.', '');
+    return { html: '', title: domain, description: '', logoImages: [] };
   }
 }
 
