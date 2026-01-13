@@ -866,7 +866,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          </div>
          )}
          
-         {/* MODO CANVA: Mostrar mensaje indicando que el editor está en el panel derecho */}
+         {/* MODO CANVA: Mostrar solo mensaje */}
          {creationMode === 'canva' && (
            <div className="p-8 bg-white/5 border border-white/10 rounded-xl text-center">
              <div className="text-4xl mb-3">✏️</div>
@@ -912,8 +912,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          
       </div>
 
-        {/* OCULTAR TODO LO SIGUIENTE EN MODO LIBRE */}
-        {creationMode !== 'free' && (
+        {/* OCULTAR TODO LO SIGUIENTE EN MODO LIBRE Y CANVA */}
+        {creationMode !== 'free' && creationMode !== 'canva' && (
         <>
         {/* 4. STYLE CARD - SOLO EN MODO MANUAL Y MODO DISEÑO */}
         {workMode === 'manual' && creationMode === 'design' && (
@@ -1420,12 +1420,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
           </div>
         )}
 
-        {/* FIN DE SECCIONES OCULTAS EN MODO LIBRE */}
+        {/* FIN DE SECCIONES OCULTAS EN MODO LIBRE Y CANVA */}
         </>
         )}
 
-        {/* GENERATE BUTTON - Oculto en modo estudio */}
-        {mediaType !== 'product_study' && (
+        {/* GENERATE BUTTON - Oculto en modo estudio y canva */}
+        {mediaType !== 'product_study' && creationMode !== 'canva' && (
           <div className="pt-4 md:pt-6">
             <button
                 onClick={async () => {
