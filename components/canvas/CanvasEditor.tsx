@@ -101,8 +101,8 @@ export default function CanvasEditor({
     const key = import.meta.env.VITE_GEMINI_API_KEY;
     if (!key) throw new Error("API Key no configurada.");
     
-    console.log(`🖼️ [generateImage] Generando ${ar}...`);
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
+    console.log('[generateImage] Generando ' + ar + '...');
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=' + key;
     const payload = { instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio: ar } };
     
     try {
@@ -110,38 +110,38 @@ export default function CanvasEditor({
       const data = await response.json();
       
       if (data.predictions?.[0]?.bytesBase64Encoded) {
-        console.log(`✅ [generateImage] ${ar} generada OK`);
-        return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+        console.log('[generateImage] ' + ar + ' generada OK');
+        return 'data:image/png;base64,' + data.predictions[0].bytesBase64Encoded;
       }
       
-      console.error(`❌ [generateImage] ${ar} - Sin imagen:`, JSON.stringify(data).substring(0, 500));
-      throw new Error(`Sin imagen (${ar}): ${data.error?.message || 'respuesta vacía'}`);
+      console.error('[generateImage] ' + ar + ' - Sin imagen:', JSON.stringify(data).substring(0, 500));
+      throw new Error('Sin imagen (' + ar + '): ' + (data.error?.message || 'respuesta vacía'));
     } catch (err: any) {
-      console.error(`❌ [generateImage] ${ar} - Error:`, err.message);
+      console.error('[generateImage] ' + ar + ' - Error:', err.message);
       throw err;
     }
   };
 
   const generateAssetsForStyle = async (data: BrandData, styleId: string) => {
-    console.log('🎨 [CanvasEditor] GENERANDO con estilo:', styleId);
+    console.log('[CanvasEditor] GENERANDO con estilo:', styleId);
     setLoadingStep('generating');
     
     try {
       const style = BANNER_STYLES.find(s => s.id === styleId) || BANNER_STYLES[0];
       const baseSubject = data.basePrompt.replace(/[^\w\s,.-]/g, ' ').trim();
       const colorHints = data.colors.slice(0, 2).join(' and ');
-      const finalPrompt = `Professional studio photography of ${baseSubject}, ${style.promptMod}, color palette ${colorHints}, no text no words no letters no watermarks, 8k quality, anatomically correct humans`;
+      const finalPrompt = 'Professional studio photography of ' + baseSubject + ', ' + style.promptMod + ', color palette ' + colorHints + ', no text no words no letters no watermarks, 8k quality, anatomically correct humans';
       
-      console.log('📸 [CanvasEditor] Prompt:', finalPrompt);
+      console.log('[CanvasEditor] Prompt:', finalPrompt);
       
       const results = await Promise.all([
-        generateImage(finalPrompt, "16:9").catch(e => { console.error('❌ Landscape:', e.message); return null; }),
-        generateImage(finalPrompt, "9:16").catch(e => { console.error('❌ Portrait:', e.message); return null; }),
-        generateImage(finalPrompt, "1:1").catch(e => { console.error('❌ Square:', e.message); return null; })
+        generateImage(finalPrompt, "16:9").catch(e => { console.error('Landscape:', e.message); return null; }),
+        generateImage(finalPrompt, "9:16").catch(e => { console.error('Portrait:', e.message); return null; }),
+        generateImage(finalPrompt, "1:1").catch(e => { console.error('Square:', e.message); return null; })
       ]);
       
       const [landscapeImg, portraitImg, squareImg] = results;
-      console.log('📸 Resultados:', { landscape: !!landscapeImg, portrait: !!portraitImg, square: !!squareImg });
+      console.log('Resultados:', { landscape: !!landscapeImg, portrait: !!portraitImg, square: !!squareImg });
       
       if (!landscapeImg && !portraitImg && !squareImg) {
         throw new Error('No se pudo generar ninguna imagen. Verifica tu API Key.');
@@ -153,7 +153,7 @@ export default function CanvasEditor({
       if (onImagesGenerated) onImagesGenerated(true, data.colors);
       
     } catch (err: any) {
-      console.error('❌ Error:', err.message);
+      console.error('Error:', err.message);
       setError(err.message);
       setLoadingStep(null);
     }
@@ -162,7 +162,7 @@ export default function CanvasEditor({
   const handleUrlAnalysis = async () => {
     if (isAnalyzing.current || !externalUrlInput) return;
     
-    console.log('🔍 Analizando:', externalUrlInput);
+    console.log('Analizando:', externalUrlInput);
     isAnalyzing.current = true;
     setError(null);
     setBrandData(null);
@@ -179,9 +179,17 @@ export default function CanvasEditor({
       const key = import.meta.env.VITE_GEMINI_API_KEY;
       if (!key) throw new Error("API Key no configurada.");
       
-      const analysisUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-      const analysisPrompt = `Investiga "${externalUrlInput}". Todo en ESPAÑOL Chile. Responde SOLO JSON: {"colors":["#hex1","#hex2"],"basePrompt":"descripcion visual en ingles","fontCategory":"sans-serif","copy":{"headline":"Titulo","subhead":"Subtitulo","cta":"Boton"}}`;
-      const payload = { contents: [{ parts: [{ text: analysisPrompt }] }], tools: [{ google_search: {} }] };
+      const analysisUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key;
+      const analysisPrompt = 'Analiza la marca/negocio en "' + externalUrlInput + '" usando busqueda web. RESPONDE UNICAMENTE CON UN OBJETO JSON VALIDO, SIN TEXTO ADICIONAL: {"colors":["#hexPrimario","#hexSecundario"],"basePrompt":"descripcion visual corta en ingles para generar imagen profesional","fontCategory":"sans-serif","copy":{"headline":"Titulo atractivo en espanol","subhead":"Subtitulo descriptivo en espanol","cta":"Texto del boton en espanol"}} REGLAS: colors debe tener 2 colores HEX reales de la marca (NO negro #000000 ni blanco #FFFFFF como primario). basePrompt en INGLES. copy TODO en ESPANOL de Chile. NO incluyas explicaciones, solo el JSON.';
+
+      const payload = { 
+        contents: [{ parts: [{ text: analysisPrompt }] }], 
+        tools: [{ google_search: {} }],
+        generationConfig: {
+          temperature: 0.1,
+          topP: 0.8
+        }
+      };
       
       const resp = await fetchWithRetry(analysisUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await resp.json();
@@ -189,13 +197,18 @@ export default function CanvasEditor({
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("Sin respuesta de IA.");
       
-      let jsonStr = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+      console.log('Respuesta raw de Gemini:', text.substring(0, 200));
+      
+      let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const firstBrace = jsonStr.indexOf('{');
       const lastBrace = jsonStr.lastIndexOf('}');
-      if (firstBrace !== -1 && lastBrace !== -1) jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+      if (firstBrace === -1 || lastBrace === -1) {
+        throw new Error("La IA no devolvio JSON valido. Intenta de nuevo.");
+      }
+      jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
       
       const branding: BrandData = JSON.parse(jsonStr);
-      console.log('✅ Branding:', branding);
+      console.log('Branding:', branding);
       
       setBrandData(branding);
       setEditableCopy(branding.copy);
@@ -204,7 +217,7 @@ export default function CanvasEditor({
       clearTimeout(safetyTimeout);
       
     } catch (err: any) {
-      console.error('❌ Error:', err.message);
+      console.error('Error:', err.message);
       setError(err.message);
       setLoadingStep(null);
       clearTimeout(safetyTimeout);
@@ -248,7 +261,7 @@ export default function CanvasEditor({
     if (onExport) onExport(img);
     const link = document.createElement('a');
     link.href = img;
-    link.download = `banner-${activeFormat}.png`;
+    link.download = 'banner-' + activeFormat + '.png';
     link.click();
   };
 
