@@ -372,29 +372,6 @@ Estructura requerida:
         )}
       </div>
       {brandImages.landscape && !loadingStep && (
-        <div className="fixed bottom-8 z-40 flex flex-col items-center gap-4 pointer-events-auto">
-          <div className="flex bg-[#1E1E1E]/90 backdrop-blur rounded-full p-1.5 border border-white/10 shadow-xl">
-            {[{ id: 'landscape', icon: Monitor, label: 'Banner' }, { id: 'portrait', icon: Smartphone, label: 'Story' }, { id: 'square', icon: Square, label: 'Post' }].map((fmt) => (
-              <button key={fmt.id} onClick={() => setActiveFormat(fmt.id as any)} className={`px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium transition-all ${activeFormat === fmt.id ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                <fmt.icon className="w-4 h-4" /><span className="hidden md:inline">{fmt.label}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2 overflow-x-auto max-w-[90vw] p-2">
-            {BANNER_STYLES.map((style) => (
-              <button key={style.id} onClick={() => handleStyleChange(style.id)} className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-all ${selectedStyle === style.id ? 'bg-white/10 border-white text-white' : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'}`}>
-                <style.icon className="w-3 h-3" />{style.label}
-              </button>
-            ))}
-          </div>
-          {brandData && (
-            <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-white/5">
-              <Palette className="w-3 h-3 text-gray-500" />
-              <div className="flex gap-1">{brandData.colors.map((c, i) => (<div key={i} className="w-3 h-3 rounded-full border border-white/10" style={{backgroundColor: c}} title={c} />))}</div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
