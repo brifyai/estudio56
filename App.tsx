@@ -2328,8 +2328,14 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 canvaUrlInput={canvaUrlInput}
                                 canvaAnalyzeTrigger={canvaAnalyzeTrigger}
                                 onCanvaImagesGenerated={(hasImages, colors) => {
+                                  console.log('🎨 [App] onCanvaImagesGenerated ejecutado:', {
+                                    hasImages,
+                                    colorsCount: colors.length,
+                                    colors
+                                  });
                                   setCanvaHasImages(hasImages);
                                   setCanvaBrandColors(colors);
+                                  console.log('✅ [App] Estados actualizados - canvaHasImages:', hasImages);
                                 }}
                                 onCanvaFormatChange={setCanvaActiveFormat}
                                 onCanvaStyleChange={setCanvaSelectedStyle}
