@@ -74,33 +74,34 @@ export default function CanvasEditor() {
     if (!key) throw new Error('API Key no configurada');
     
     const urlType = detectUrlType(inputUrl);
-    const prompt = `TAREA: Analiza visualmente esta ${urlType === 'website' ? 'pagina web' : 'red social'}: "${inputUrl}"
+    const prompt = `Busca informacion sobre "${inputUrl}" usando Google Search.
 
-USA GOOGLE SEARCH para visitar y analizar la pagina real. Extrae los colores EXACTOS que ves en:
-- El logo de la marca
-- Los titulos principales (headers)
-- Los botones de accion (CTA)
-- El fondo o elementos decorativos
+EXTRACCION DE COLORES CORPORATIVOS - MUY IMPORTANTE:
+Analiza el sitio web y extrae los colores REALES que usa la marca:
+1. COLOR PRIMARIO: El color del texto principal grande (titulos, headers). Si es coral, salmon, naranja, rojo, etc - usa ESE color exacto.
+2. COLOR SECUNDARIO: El color de los botones principales (CTA buttons). Si son verdes, usa verde.
+3. COLOR ACENTO: Color de fondo o elementos decorativos.
 
-IMPORTANTE: 
-- Todo el texto debe estar en ESPAÑOL (Chile)
-- Los colores deben ser los REALES de la pagina, no inventados
-- NO uses colores genericos como blanco puro o negro puro
+REGLAS DE COLORES:
+- NUNCA uses azul (#0000FF, #3B82F6, etc) a menos que la pagina REALMENTE sea azul
+- NUNCA uses colores genericos. Busca los colores ESPECIFICOS de la marca
+- Si el titulo principal es color CORAL/SALMON, el primary debe ser coral (#E8967A, #D4A574, etc)
+- Si los botones son VERDES, el secondary debe ser verde (#6B8E23, #808000, etc)
 
-Responde SOLO con este JSON (sin markdown ni explicaciones):
+Responde SOLO JSON (sin markdown):
 {
-  "name": "nombre exacto del negocio como aparece en la pagina",
-  "industry": "industria/rubro especifico",
-  "tone": "tono de comunicacion que transmite la pagina",
-  "audience": "audiencia objetivo segun el contenido",
+  "name": "nombre del negocio",
+  "industry": "rubro especifico",
+  "tone": "tono de comunicacion",
+  "audience": "audiencia objetivo",
   "colors": {
-    "primary": "#hexcolor del color MAS PROMINENTE en titulos o logo (ej: si el titulo es coral, usar ese coral)",
-    "secondary": "#hexcolor de botones o elementos de accion",
-    "accent": "#hexcolor de acentos o elementos decorativos"
+    "primary": "#hexcolor del TITULO PRINCIPAL (coral, rojo, naranja, etc - el que SEA)",
+    "secondary": "#hexcolor de los BOTONES (verde, azul, etc - el que SEA)", 
+    "accent": "#hexcolor del FONDO o decoracion"
   },
-  "description": "descripcion del negocio basada en lo que dice la pagina EN ESPAÑOL",
-  "tagline": "slogan o frase principal que aparece en la pagina EN ESPAÑOL",
-  "cta": "texto del boton principal que aparece en la pagina EN ESPAÑOL"
+  "description": "descripcion en ESPAÑOL",
+  "tagline": "slogan principal en ESPAÑOL",
+  "cta": "texto del boton en ESPAÑOL"
 }`;
 
     const response = await fetch(
