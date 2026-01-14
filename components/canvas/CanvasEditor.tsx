@@ -8,19 +8,19 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 2, ba
   try {
     const response = await fetch(url, options);
     if (response.status === 401 || response.status === 403) {
-      throw new Error(`API Key inválida (${response.status}).`);
+      throw new Error('API Key invalida (' + response.status + ').');
     }
     if (!response.ok && (response.status === 429 || response.status === 503)) {
-      throw new Error(`Server returned ${response.status}`);
+      throw new Error('Server returned ' + response.status);
     }
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorBody}`);
+      throw new Error('API Error ' + response.status + ': ' + errorBody);
     }
     return response;
   } catch (error) {
     if (retries > 0 && !(error instanceof Error && error.message.includes("API Key"))) {
-      console.log(`⏳ Reintentando... (${retries} intentos restantes)`);
+      console.log('Reintentando... (' + retries + ' intentos restantes)');
       await wait(backoff);
       return fetchWithRetry(url, options, retries - 1, backoff * 2);
     }
@@ -54,8 +54,8 @@ const BANNER_STYLES = [
   { id: 'golden', label: 'Golden Hour', icon: Sun, promptMod: 'golden hour sunset warm glowing sunlight' },
   { id: 'editorial', label: 'Editorial', icon: Aperture, promptMod: 'high fashion editorial vogue style' },
   { id: 'monochrome', label: 'B&W', icon: Moon, promptMod: 'fine art black and white high contrast' },
-  { id: 'rustic', label: 'Rústico', icon: Coffee, promptMod: 'rustic warmth aged wood textures' },
-  { id: 'isometric', label: '3D Isométrico', icon: Box, promptMod: '3d isometric render miniature effect' }
+  { id: 'rustic', label: 'Rustico', icon: Coffee, promptMod: 'rustic warmth aged wood textures' },
+  { id: 'isometric', label: '3D Isometrico', icon: Box, promptMod: '3d isometric render miniature effect' }
 ];
 
 interface CanvasEditorProps {
@@ -115,7 +115,7 @@ export default function CanvasEditor({
       }
       
       console.error('[generateImage] ' + ar + ' - Sin imagen:', JSON.stringify(data).substring(0, 500));
-      throw new Error('Sin imagen (' + ar + '): ' + (data.error?.message || 'respuesta vacía'));
+      throw new Error('Sin imagen (' + ar + '): ' + (data.error?.message || 'respuesta vacia'));
     } catch (err: any) {
       console.error('[generateImage] ' + ar + ' - Error:', err.message);
       throw err;
@@ -180,15 +180,14 @@ export default function CanvasEditor({
       if (!key) throw new Error("API Key no configurada.");
       
       const analysisUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key;
-      const analysisPrompt = 'Analiza la marca/negocio en "' + externalUrlInput + '" usando busqueda web. RESPONDE UNICAMENTE CON UN OBJETO JSON VALIDO, SIN TEXTO ADICIONAL: {"colors":["#hexPrimario","#hexSecundario"],"basePrompt":"descripcion visual corta en ingles para generar imagen profesional","fontCategory":"sans-serif","copy":{"headline":"Titulo atractivo en espanol","subhead":"Subtitulo descriptivo en espanol","cta":"Texto del boton en espanol"}} REGLAS: colors debe tener 2 colores HEX reales de la marca (NO negro #000000 ni blanco #FFFFFF como primario). basePrompt en INGLES. copy TODO en ESPANOL de Chile. NO incluyas explicaciones, solo el JSON.';
-
+      
+      // Prompt mejorado para detectar colores reales de la marca
+      const analysisPrompt = 'Analiza la marca en "' + externalUrlInput + '" usando Google Search. EXTRAE LOS COLORES REALES del logo y sitio web de la marca. INSTRUCCIONES: 1) Busca el sitio web real y encuentra los colores del logo, header, botones. 2) Para PILATES/YOGA/SPA usa colores calidos como coral #E8967A, salmon #FA8072, sage #9DC183. 3) Para TECH usa azules #3B82F6, morados #8B5CF6. 4) Para RESTAURANTES usa rojos #DC2626, naranjas #F97316. 5) NUNCA uses negro #000000 o blanco #FFFFFF como primario. RESPONDE SOLO JSON: {"colors":["#colorPrimarioReal","#colorSecundarioReal"],"basePrompt":"escena visual profesional en ingles","fontCategory":"sans-serif","copy":{"headline":"Titulo en espanol","subhead":"Subtitulo en espanol","cta":"Boton en espanol"}}';
+      
       const payload = { 
         contents: [{ parts: [{ text: analysisPrompt }] }], 
         tools: [{ google_search: {} }],
-        generationConfig: {
-          temperature: 0.1,
-          topP: 0.8
-        }
+        generationConfig: { temperature: 0.2, topP: 0.9 }
       };
       
       const resp = await fetchWithRetry(analysisUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -197,7 +196,7 @@ export default function CanvasEditor({
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("Sin respuesta de IA.");
       
-      console.log('Respuesta raw de Gemini:', text.substring(0, 200));
+      console.log('Respuesta raw de Gemini:', text.substring(0, 300));
       
       let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const firstBrace = jsonStr.indexOf('{');
@@ -208,7 +207,8 @@ export default function CanvasEditor({
       jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
       
       const branding: BrandData = JSON.parse(jsonStr);
-      console.log('Branding:', branding);
+      console.log('Branding detectado:', branding);
+      console.log('Colores detectados:', branding.colors);
       
       setBrandData(branding);
       setEditableCopy(branding.copy);
