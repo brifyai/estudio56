@@ -31,6 +31,36 @@ RUN ls -la dist/ && echo "✅ Build completado"
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
-RUN echo 'server { listen 80; root /usr/share/nginx/html; index index.html; location / { try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
+
+# Create nginx config with proper MIME types
+RUN echo 'server { \
+    listen 80; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    \
+    # Proper MIME types for JavaScript modules \
+    location ~* \.js$ { \
+        types { \
+            application/javascript js; \
+        } \
+        add_header Content-Type application/javascript; \
+        try_files $uri =404; \
+    } \
+    \
+    # CSS files \
+    location ~* \.css$ { \
+        types { \
+            text/css css; \
+        } \
+        add_header Content-Type text/css; \
+        try_files $uri =404; \
+    } \
+    \
+    # All other routes fallback to index.html for SPA \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
