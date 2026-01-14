@@ -217,7 +217,8 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
       }
     }
 
-    const textColor = forceWhiteText ? 'white' : secondaryColor;
+    // Siempre usar blanco para el texto del logo
+    const textColor = 'white';
 
     return (
       <div className={`flex items-center justify-center ${isHorizontal ? 'flex-row gap-4 text-left' : 'flex-col gap-3 text-center'}`}>

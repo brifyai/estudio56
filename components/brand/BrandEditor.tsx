@@ -236,7 +236,8 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
       }
     }
 
-    const textStyle = { fontFamily: brand.typography.headingFont, color: forceWhiteText ? 'white' : secondaryColor, textTransform: brand.genLogoTextCase as any };
+    // Siempre usar blanco para el texto del logo
+    const textStyle = { fontFamily: brand.typography.headingFont, color: 'white', textTransform: brand.genLogoTextCase as any };
 
     return (
       <div className={`flex items-center justify-center ${isHorizontal ? 'flex-row gap-4 text-left' : 'flex-col gap-3 text-center'}`}>
