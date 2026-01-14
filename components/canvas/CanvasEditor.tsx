@@ -76,6 +76,8 @@ export default function CanvasEditor() {
     const urlType = detectUrlType(inputUrl);
     const prompt = `Analiza esta ${urlType === 'website' ? 'pagina web' : 'red social'}: "${inputUrl}"
 
+IMPORTANTE: Todo el texto debe estar en ESPAÑOL (Chile).
+
 Investiga y responde SOLO con este JSON (sin markdown):
 {
   "name": "nombre del negocio",
@@ -87,9 +89,9 @@ Investiga y responde SOLO con este JSON (sin markdown):
     "secondary": "#hexcolor secundario",
     "accent": "#hexcolor de acento"
   },
-  "description": "descripcion corta del negocio en 1 linea",
-  "tagline": "slogan o frase principal de la marca",
-  "cta": "texto para boton de accion (ej: Comenzar, Cotizar, Ver mas)"
+  "description": "descripcion corta del negocio en 1 linea EN ESPAÑOL",
+  "tagline": "slogan o frase principal de la marca EN ESPAÑOL",
+  "cta": "texto para boton de accion EN ESPAÑOL (ej: Comenzar, Cotizar, Ver mas)"
 }`;
 
     const response = await fetch(
