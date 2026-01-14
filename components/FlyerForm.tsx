@@ -25,24 +25,6 @@ import CreationModeSelector from './CreationModeSelector';
 import BrandSidebar from './brand/BrandSidebar';
 import { BrandData, defaultBrandData } from './brand/BrandTypes';
 
-// 🎨 BANNER STYLES para modo Canva
-const BANNER_STYLES = [
-  { id: 'modern', label: 'Moderno / Minimal', icon: LayoutTemplate },
-  { id: 'bold', label: 'Pop / Vibrante', icon: Zap },
-  { id: 'corporate', label: 'Corporativo / Pro', icon: Briefcase },
-  { id: 'luxury', label: 'Lujo / Dark', icon: Star },
-  { id: 'tech', label: 'Futurista / Neon', icon: MonitorPlay },
-  { id: 'natural', label: 'Natural / Eco', icon: Leaf },
-  { id: 'vintage', label: 'Vintage / Film', icon: Camera },
-  { id: 'industrial', label: 'Industrial / Urbano', icon: Building2 },
-  { id: 'pastel', label: 'Pastel / Soft', icon: Feather },
-  { id: 'golden', label: 'Golden Hour', icon: Sun },
-  { id: 'editorial', label: 'Editorial / Moda', icon: Aperture },
-  { id: 'monochrome', label: 'B&W / Artístico', icon: Moon },
-  { id: 'rustic', label: 'Rústico / Hogar', icon: Coffee },
-  { id: 'isometric', label: '3D Isométrico', icon: Box }
-];
-
 interface FlyerFormProps {
   creationMode: CreationMode; // NEW: Modo de creación (Diseño, Canva, Libre)
   onCreationModeChange: (mode: CreationMode) => void; // NEW: Callback para cambiar modo
@@ -988,145 +970,25 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
            />
          )}
          
-         {/* MODO CANVA: Mostrar input de URL para análisis de marca */}
+         {/* MODO CANVA: El editor Brand Intelligence es autónomo */}
          {creationMode === 'canva' && (
            <div className="space-y-4">
-             <div className="flex flex-col gap-2">
-               <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                 Analizar Marca
-               </label>
-               <div className="flex gap-2 items-center">
-                 <input
-                   type="text"
-                   value={canvaUrlInput}
-                   onChange={(e) => setCanvaUrlInput(e.target.value)}
-                   placeholder="Pega la URL (ej: aintelligence.cl)..."
-                   className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                   onKeyDown={(e) => {
-                     if (e.key === 'Enter' && canvaUrlInput.trim()) {
-                       handleCanvaAnalyzeUrl();
-                     }
-                   }}
-                 />
-                 <button
-                   onClick={handleCanvaAnalyzeUrl}
-                   disabled={isCanvaAnalyzing || !canvaUrlInput.trim()}
-                   className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                   title="Analizar URL"
-                 >
-                   {isCanvaAnalyzing ? (
-                     <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                     </svg>
-                   ) : (
-                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                     </svg>
-                   )}
-                 </button>
+             <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4">
+               <div className="flex items-center gap-3 mb-2">
+                 <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                   <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                   </svg>
+                 </div>
+                 <div>
+                   <h3 className="text-sm font-semibold text-white">Brand Intelligence</h3>
+                   <p className="text-xs text-white/60">Kit de Marca Automático</p>
+                 </div>
                </div>
-               <p className="text-xs text-white/40">
-                 Ingresa la URL de una marca para analizar su identidad visual y generar banners automáticamente
+               <p className="text-xs text-white/50 leading-relaxed">
+                 Pega la URL de tu negocio en el panel central y genera piezas gráficas profesionales al instante.
                </p>
              </div>
-             
-             {/* DEBUG: Log del estado de canvaHasImages */}
-             {console.log('🔍 [FlyerForm] canvaHasImages:', canvaHasImages, 'creationMode:', creationMode)}
-             
-             {/* Controles de formato y estilos - SIEMPRE MOSTRAR en modo Canva */}
-             {creationMode === 'canva' && (
-               <>
-                 {/* Selector de formato */}
-                 <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
-                   <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                     Formato
-                   </label>
-                   <div className="flex gap-2">
-                     {[
-                       { id: 'landscape', icon: Monitor, label: 'Banner' },
-                       { id: 'portrait', icon: Smartphone, label: 'Story' },
-                       { id: 'square', icon: Square, label: 'Post' }
-                     ].map((fmt) => (
-                       <button
-                         key={fmt.id}
-                         onClick={() => {
-                           console.log('🖱️ [FlyerForm] Click en formato:', fmt.id, 'canvaHasImages:', canvaHasImages);
-                           if (onCanvaFormatChange) {
-                             console.log('✅ [FlyerForm] Ejecutando onCanvaFormatChange');
-                             onCanvaFormatChange(fmt.id as any);
-                           } else {
-                             console.error('❌ [FlyerForm] onCanvaFormatChange es undefined!');
-                           }
-                         }}
-                         disabled={!canvaHasImages}
-                         className={`flex-1 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
-                           canvaActiveFormat === fmt.id
-                             ? 'bg-white/10 border-white text-white'
-                             : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                         } ${!canvaHasImages ? 'opacity-50 cursor-not-allowed' : ''}`}
-                       >
-                         <fmt.icon className="w-4 h-4" />
-                         <span>{fmt.label}</span>
-                       </button>
-                     ))}
-                   </div>
-                 </div>
-                 
-                 {/* Selector de estilo visual */}
-                 <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
-                   <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                     Estilo Visual
-                   </label>
-                   <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2">
-                     {BANNER_STYLES.map((style) => (
-                       <button
-                         key={style.id}
-                         onClick={() => {
-                           console.log('🖱️ [FlyerForm] Click en estilo:', style.id, 'canvaHasImages:', canvaHasImages);
-                           if (onCanvaStyleChange) {
-                             console.log('✅ [FlyerForm] Ejecutando onCanvaStyleChange');
-                             onCanvaStyleChange(style.id);
-                           } else {
-                             console.error('❌ [FlyerForm] onCanvaStyleChange es undefined!');
-                           }
-                         }}
-                         disabled={!canvaHasImages}
-                         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
-                           canvaSelectedStyle === style.id
-                             ? 'bg-white/10 border-white text-white'
-                             : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                         } ${!canvaHasImages ? 'opacity-50 cursor-not-allowed' : ''}`}
-                       >
-                         <style.icon className="w-3 h-3 flex-shrink-0" />
-                         <span className="text-left leading-tight">{style.label}</span>
-                       </button>
-                     ))}
-                   </div>
-                 </div>
-                 
-                 {/* Paleta de colores */}
-                 {canvaBrandColors.length > 0 && (
-                   <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
-                     <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                       Colores de Marca
-                     </label>
-                     <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
-                       <Palette className="w-4 h-4 text-gray-400" />
-                       <div className="flex gap-2">
-                         {canvaBrandColors.map((c, i) => (
-                           <div
-                             key={i}
-                             className="w-6 h-6 rounded-md border border-white/20 shadow-sm"
-                             style={{ backgroundColor: c }}
-                             title={c}
-                           />
-                         ))}
-                       </div>
-                     </div>
-                   </div>
-                 )}
-               </>
-             )}
            </div>
          )}
          
