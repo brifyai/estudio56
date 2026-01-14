@@ -737,26 +737,21 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       }
     });
     
-    try {
-      console.log('🔍 [Canva] Analizando URL:', canvaUrlInput);
-      // La lógica de análisis está en el CanvasEditor
-      // Aquí solo mostramos la alerta, el CanvasEditor manejará el análisis
-      // La alerta se cerrará cuando el CanvasEditor termine
-    } catch (error: any) {
-      console.error('❌ [Canva] Error en análisis:', error);
+    // TODO: Conectar con CanvasEditor para ejecutar análisis real
+    // Por ahora, cerrar después de 2 segundos
+    setTimeout(() => {
       Swal.close();
+      setIsCanvaAnalyzing(false);
       Swal.fire({
-        title: '⚠️ Error',
-        text: error.message || 'Error analizando la URL',
-        icon: 'error',
+        title: 'En desarrollo',
+        text: 'La funcionalidad de análisis de URL en Canva está en desarrollo. Por favor, usa el modo Diseño para analizar URLs.',
+        icon: 'info',
         confirmButtonText: 'Entendido',
-        confirmButtonColor: '#ef4444',
+        confirmButtonColor: '#3b82f6',
         background: '#1a1a1a',
         color: '#ffffff'
       });
-    } finally {
-      setIsCanvaAnalyzing(false);
-    }
+    }, 2000);
   };
 
   // NEW: Función OPTIMIZADA para generar múltiples opciones de texto
