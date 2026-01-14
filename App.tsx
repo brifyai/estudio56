@@ -108,6 +108,9 @@ const Dashboard: React.FC = () => {
   const [description, setDescription] = useState<string>('');
   const [creationMode, setCreationMode] = useState<CreationMode>('design'); // NEW: Modo de creación (Diseño, Canva, Libre)
   
+  // NEW: Estado para URL de análisis en modo Canva
+  const [canvaUrlInput, setCanvaUrlInput] = useState<string>('');
+  
   // Brand Editor state
   const [brandData, setBrandData] = useState<BrandData>(defaultBrandData);
   const [brandActiveTab, setBrandActiveTab] = useState<'identity' | 'colors' | 'typography'>('identity');
@@ -2286,6 +2289,9 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     // NEW: URLs de imagen para cierre de alerta
                     imageUrl={imageUrl}
                     draftImageUrl={draftImageUrl}
+                    // NEW: Props para modo Canva
+                    canvaUrlInput={canvaUrlInput}
+                    setCanvaUrlInput={setCanvaUrlInput}
                 />
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
@@ -2305,6 +2311,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                               <FlyerDisplay
                                 creationMode={creationMode}
                                 brandData={brandData}
+                                canvaUrlInput={canvaUrlInput}
                                 onExport={(imageDataUrl) => {
                                   console.log('🎨 [App] Imagen exportada desde Canvas Editor');
                                   // Actualizar imageUrl y draftImageUrl con la imagen exportada
@@ -2526,6 +2533,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     <FlyerDisplay
                       creationMode={creationMode}
                       brandData={brandData}
+                      canvaUrlInput={canvaUrlInput}
                       onExport={(imageDataUrl) => {
                         console.log('🎨 [App Mobile] Imagen exportada desde Canvas Editor');
                         // Actualizar imageUrl y draftImageUrl con la imagen exportada

@@ -95,6 +95,10 @@ interface FlyerFormProps {
   // 🎨 Story Art Visual Style props
   storyArtVisualStyleId?: StoryArtStyleId | null;
   onStoryArtStyleSelected?: (id: StoryArtStyleId | null) => void;
+  
+  // NEW: Props para modo Canva
+  canvaUrlInput?: string;
+  setCanvaUrlInput?: (url: string) => void;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -162,14 +166,19 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   autoDetectedSurface = null,
   // 🎨 Story Art Visual Style defaults
   storyArtVisualStyleId: storyArtVisualStyleIdProp = null,
-  onStoryArtStyleSelected = (_id: StoryArtStyleId | null) => {}
+  onStoryArtStyleSelected = (_id: StoryArtStyleId | null) => {},
+  // NEW: Props para modo Canva
+  canvaUrlInput: canvaUrlInputProp = '',
+  setCanvaUrlInput: setCanvaUrlInputProp
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  // NEW: Estado específico para URL en modo Canva
-  const [canvaUrlInput, setCanvaUrlInput] = useState('');
+  // NEW: Usar props externas para URL de Canva si están disponibles
+  const [internalCanvaUrlInput, setInternalCanvaUrlInput] = useState('');
+  const canvaUrlInput = canvaUrlInputProp !== undefined ? canvaUrlInputProp : internalCanvaUrlInput;
+  const setCanvaUrlInput = setCanvaUrlInputProp || setInternalCanvaUrlInput;
   const [isCanvaAnalyzing, setIsCanvaAnalyzing] = useState(false);
   
   // NEW: Ref para mantener la instancia de la alerta de progreso
@@ -737,21 +746,17 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       }
     });
     
-    // TODO: Conectar con CanvasEditor para ejecutar análisis real
-    // Por ahora, cerrar después de 2 segundos
+    // Actualizar el estado para que el CanvasEditor reciba el URL y ejecute el análisis
+    // El CanvasEditor tiene un useEffect que detecta cuando cambia el URL externo
+    console.log('🔍 [Canva] Enviando URL al CanvasEditor:', canvaUrlInput);
+    
+    // El CanvasEditor cerrará la alerta cuando termine
+    // Pero agregamos un timeout de seguridad por si algo falla
     setTimeout(() => {
-      Swal.close();
-      setIsCanvaAnalyzing(false);
-      Swal.fire({
-        title: 'En desarrollo',
-        text: 'La funcionalidad de análisis de URL en Canva está en desarrollo. Por favor, usa el modo Diseño para analizar URLs.',
-        icon: 'info',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#3b82f6',
-        background: '#1a1a1a',
-        color: '#ffffff'
-      });
-    }, 2000);
+      if (isCanvaAnalyzing) {
+        setIsCanvaAnalyzing(false);
+      }
+    }, 120000); // 2 minutos de timeout máximo
   };
 
   // NEW: Función OPTIMIZADA para generar múltiples opciones de texto
