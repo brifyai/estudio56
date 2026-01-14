@@ -905,7 +905,7 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                <div className="flex gap-2 items-center">
                  <input
                    type="text"
-                   placeholder="Pega la URL (ej: nike.com)..."
+                   placeholder="Pega la URL (ej: aintelligence.cl)..."
                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                    onKeyDown={(e) => {
                      if (e.key === 'Enter') {
