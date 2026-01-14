@@ -51,9 +51,20 @@ export const LandingPage: React.FC = () => {
           <span className="text-3xl">🤡</span>
           <span className="text-green-400 uppercase">Estudio 56</span>
         </div>
-        <button onClick={() => navigate('/iniciar-sesion')} className="bg-white text-black font-bold px-4 py-2 rounded-full hover:scale-105 transition-transform text-sm cursor-pointer">
-          Entrar a la Matrix
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => {
+              const contactSection = document.getElementById('contact-form');
+              contactSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }} 
+            className="bg-pink-500 text-white font-bold px-4 py-2 rounded-full hover:scale-105 transition-transform text-sm cursor-pointer"
+          >
+            Escríbenos
+          </button>
+          <button onClick={() => navigate('/iniciar-sesion')} className="bg-white text-black font-bold px-4 py-2 rounded-full hover:scale-105 transition-transform text-sm cursor-pointer">
+            Entrar a la Matrix
+          </button>
+        </div>
       </nav>
 
       {/* HERO SECTION */}
@@ -368,7 +379,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* CONTACT FORM SECTION */}
-      <section className="py-24 px-6 bg-pink-500 text-white relative overflow-hidden">
+      <section id="contact-form" className="py-24 px-6 bg-pink-500 text-white relative overflow-hidden">
          {/* Decorative pattern */}
          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
          
