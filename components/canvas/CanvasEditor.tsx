@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function fetchWithRetry(url: string, options: RequestInit, retries = 5, backoff = 1000) {
+async function fetchWithRetry(url: string, options: RequestInit, retries = 2, backoff = 1000) {
   try {
     const response = await fetch(url, options);
     if (response.status === 401 || response.status === 403) {
