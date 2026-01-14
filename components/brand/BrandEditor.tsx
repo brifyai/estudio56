@@ -250,8 +250,8 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
         </div>
         {showText && (
           <div className={brand.genLogoLayout === 'stacked' ? 'border-t pt-2 mt-1 border-gray-200' : ''}>
-            <span className={`block font-bold leading-none ${brand.genLogoTracking}`} style={{ ...textStyle, fontSize: isHorizontal ? `${iconSize * 0.7}px` : `${iconSize * 0.6}px` }}>{brand.name}</span>
-            {brand.tagline && !isHorizontal && (<span className="block text-xs mt-1 opacity-70" style={{ color: forceWhiteText ? 'white' : secondaryColor }}>{brand.tagline}</span>)}
+            <span className={`block font-bold leading-none ${brand.genLogoTracking} !text-white`} style={{ ...textStyle, color: 'white !important', fontSize: isHorizontal ? `${iconSize * 0.7}px` : `${iconSize * 0.6}px` }}>{brand.name}</span>
+            {brand.tagline && !isHorizontal && (<span className="block text-xs mt-1 opacity-70 !text-white" style={{ color: 'white !important' }}>{brand.tagline}</span>)}
           </div>
         )}
       </div>
