@@ -1,370 +1,472 @@
-import { useState, useEffect, useRef } from 'react';
-import { Download, AlertCircle, LayoutTemplate, Zap, Briefcase, Star, MonitorPlay, Type, Move, Edit3, Sun, Moon, Aperture, Coffee, Box, Leaf, Camera, Building2, Feather } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Download, RefreshCw, Check, Sparkles, Globe, Instagram, Facebook, Music2, Loader2, ChevronRight, Monitor, Smartphone, Square } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// ============================================
+// BRAND INTELLIGENCE - Generador de Kit de Marca
+// ============================================
 
-async function fetchWithRetry(url: string, options: RequestInit, retries = 2, backoff = 1000) {
-  try {
-    const response = await fetch(url, options);
-    if (response.status === 401 || response.status === 403) {
-      throw new Error(`API Key invalida (${response.status}).`);
-    }
-    if (!response.ok && (response.status === 429 || response.status === 503)) {
-      throw new Error(`Server returned ${response.status}`);
-    }
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`API Error ${response.status}: ${errorBody}`);
-    }
-    return response;
-  } catch (error) {
-    if (retries > 0 && !(error instanceof Error && error.message.includes("API Key"))) {
-      console.log(`Reintentando... (${retries} intentos restantes)`);
-      await wait(backoff);
-      return fetchWithRetry(url, options, retries - 1, backoff * 2);
-    }
-    throw error;
-  }
+interface BrandAnalysis {
+  name: string;
+  industry: string;
+  tone: string;
+  audience: string;
+  colors: { primary: string; secondary: string; accent: string };
+  description: string;
+  tagline: string;
+  cta: string;
 }
 
-type BrandData = {
-  colors: string[];
-  basePrompt: string;
-  copy: { headline: string; subhead: string; cta: string; };
-  fontCategory: 'serif' | 'sans-serif' | 'display' | 'handwriting';
-};
-
-type BrandImages = {
+interface GeneratedAssets {
+  preview: string | null;
   landscape: string | null;
   portrait: string | null;
   square: string | null;
-};
-
-const BANNER_STYLES = [
-  { id: 'modern', label: 'Moderno', icon: LayoutTemplate, promptMod: 'EXTREME MINIMALISM. High-key lighting. White background.' },
-  { id: 'bold', label: 'Pop', icon: Zap, promptMod: 'POP ART STYLE. Hard flash. High contrast.' },
-  { id: 'corporate', label: 'Corporativo', icon: Briefcase, promptMod: 'ARCHITECTURAL & BUSINESS. Modern glass office.' },
-  { id: 'luxury', label: 'Lujo', icon: Star, promptMod: 'ULTRA LUXURY DARK MODE. Matte black textures.' },
-  { id: 'tech', label: 'Futurista', icon: MonitorPlay, promptMod: 'CYBERPUNK & FUTURE. Dark mode. Neon rim lighting.' },
-  { id: 'natural', label: 'Natural', icon: Leaf, promptMod: 'ORGANIC & NATURAL. Soft sunlight. Earthy tones.' },
-  { id: 'vintage', label: 'Vintage', icon: Camera, promptMod: 'RETRO FILM PHOTOGRAPHY. Kodak Portra style.' },
-  { id: 'industrial', label: 'Industrial', icon: Building2, promptMod: 'URBAN INDUSTRIAL. Concrete textures.' },
-  { id: 'pastel', label: 'Pastel', icon: Feather, promptMod: 'SOFT PASTEL DREAM. Ethereal lighting.' },
-  { id: 'golden', label: 'Golden Hour', icon: Sun, promptMod: 'GOLDEN HOUR SUNSET. Warm, glowing natural sunlight.' },
-  { id: 'editorial', label: 'Editorial', icon: Aperture, promptMod: 'HIGH FASHION EDITORIAL. Vogue magazine style.' },
-  { id: 'monochrome', label: 'B&W', icon: Moon, promptMod: 'FINE ART BLACK AND WHITE. High contrast monochrome.' },
-  { id: 'rustic', label: 'Rustico', icon: Coffee, promptMod: 'RUSTIC WARMTH. Aged wood textures.' },
-  { id: 'isometric', label: '3D Isometrico', icon: Box, promptMod: '3D ISOMETRIC RENDER. Miniature effect.' }
-];
-
-// Mapeo de formato a aspect ratio
-const FORMAT_TO_AR: Record<string, string> = {
-  landscape: '16:9',
-  portrait: '9:16',
-  square: '1:1'
-};
-
-interface CanvasEditorProps {
-  aspectRatio?: string;
-  onExport?: (imageDataUrl: string) => void;
-  onSave?: (canvasData: string) => void;
-  urlInput?: string;
-  analyzeTrigger?: number;
-  activeFormat?: 'landscape' | 'portrait' | 'square';
-  selectedStyle?: string;
-  onFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
-  onStyleChange?: (styleId: string) => void;
-  onImagesGenerated?: (hasImages: boolean, colors: string[]) => void;
 }
 
-export default function CanvasEditor({ 
-  onExport, 
-  urlInput: externalUrlInput,
-  analyzeTrigger,
-  activeFormat: externalActiveFormat,
-  selectedStyle: externalSelectedStyle,
-  onImagesGenerated
-}: CanvasEditorProps) {
-  const [brandData, setBrandData] = useState<BrandData | null>(null);
-  const [brandImages, setBrandImages] = useState<BrandImages>({ landscape: null, portrait: null, square: null });
-  const [activeFormat, setActiveFormat] = useState<'landscape' | 'portrait' | 'square'>('landscape');
-  const [selectedStyle, setSelectedStyle] = useState<string>('modern');
-  const [loadingStep, setLoadingStep] = useState<string | null>(null);
+type Step = 'input' | 'analyzing' | 'preview' | 'generating' | 'complete';
+type Format = 'landscape' | 'portrait' | 'square';
+
+// Detectar tipo de URL
+const detectUrlType = (url: string): 'website' | 'instagram' | 'facebook' | 'tiktok' | 'unknown' => {
+  if (url.includes('instagram.com')) return 'instagram';
+  if (url.includes('facebook.com') || url.includes('fb.com')) return 'facebook';
+  if (url.includes('tiktok.com')) return 'tiktok';
+  if (url.includes('.')) return 'website';
+  return 'unknown';
+};
+
+const URL_ICONS = {
+  website: Globe,
+  instagram: Instagram,
+  facebook: Facebook,
+  tiktok: Music2,
+  unknown: Globe
+};
+
+// Estilos visuales para las piezas
+const VISUAL_STYLES = [
+  { id: 'modern', name: 'Moderno', prompt: 'Clean minimalist design, white space, modern typography, subtle gradients' },
+  { id: 'bold', name: 'Impactante', prompt: 'Bold colors, strong contrast, dynamic composition, eye-catching' },
+  { id: 'elegant', name: 'Elegante', prompt: 'Luxury aesthetic, refined typography, sophisticated color palette, premium feel' },
+  { id: 'tech', name: 'Tech', prompt: 'Futuristic design, neon accents, dark mode, glassmorphism effects' },
+  { id: 'organic', name: 'Natural', prompt: 'Organic shapes, earthy tones, natural textures, eco-friendly vibe' }
+];
+
+export default function CanvasEditor() {
+  // Estados principales
+  const [url, setUrl] = useState('');
+  const [step, setStep] = useState<Step>('input');
+  const [brand, setBrand] = useState<BrandAnalysis | null>(null);
+  const [assets, setAssets] = useState<GeneratedAssets>({ preview: null, landscape: null, portrait: null, square: null });
+  const [selectedStyle, setSelectedStyle] = useState('modern');
+  const [activeFormat, setActiveFormat] = useState<Format>('landscape');
   const [error, setError] = useState<string | null>(null);
-  const [showText, setShowText] = useState(true);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [editableCopy, setEditableCopy] = useState({ headline: '', subhead: '', cta: '' });
   
-  // Refs para evitar bucles
-  const lastExternalStyle = useRef<string | undefined>(undefined);
-  const lastExternalFormat = useRef<string | undefined>(undefined);
-  const isRegenerating = useRef(false);
-  const isAnalyzing = useRef(false);
-  const lastAnalyzeTrigger = useRef<number>(0);
+  const abortController = useRef<AbortController | null>(null);
 
-  const generateImage = async (prompt: string, ar = "1:1") => {
+  // ============================================
+  // API CALLS
+  // ============================================
+  
+  const analyzeUrl = async (inputUrl: string): Promise<BrandAnalysis> => {
     const key = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!key) throw new Error("API Key no configurada.");
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
-    const payload = { instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio: ar } };
-    const response = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    const data = await response.json();
-    if (data.predictions?.[0]?.bytesBase64Encoded) return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
-    throw new Error("No se pudo generar la imagen.");
-  };
+    if (!key) throw new Error('API Key no configurada');
+    
+    const urlType = detectUrlType(inputUrl);
+    const prompt = `Analiza esta ${urlType === 'website' ? 'pagina web' : 'red social'}: "${inputUrl}"
 
-  // OPTIMIZADO: Genera solo UNA imagen para el formato especificado
-  const generateSingleImage = async (data: BrandData, styleId: string, format: 'landscape' | 'portrait' | 'square') => {
-    console.log('[CanvasEditor] Generando imagen para formato:', format);
-    
-    const style = BANNER_STYLES.find(s => s.id === styleId) || BANNER_STYLES[0];
-    const finalPrompt = `PURE GRAPHIC/PHOTO ONLY. NO TEXT. SUBJECT: ${data.basePrompt}. STYLE: ${style.promptMod} COLORS: ${data.colors.join(', ')}. 8k resolution.`;
-    const ar = FORMAT_TO_AR[format];
-    
-    const img = await generateImage(finalPrompt, ar);
-    return img;
-  };
+Investiga y responde SOLO con este JSON (sin markdown):
+{
+  "name": "nombre del negocio",
+  "industry": "industria/rubro (ej: tecnologia, retail, salud, gastronomia, servicios)",
+  "tone": "tono de comunicacion (formal, casual, premium, juvenil, profesional)",
+  "audience": "audiencia objetivo",
+  "colors": {
+    "primary": "#hexcolor principal de la marca",
+    "secondary": "#hexcolor secundario",
+    "accent": "#hexcolor de acento"
+  },
+  "description": "descripcion corta del negocio en 1 linea",
+  "tagline": "slogan o frase principal de la marca",
+  "cta": "texto para boton de accion (ej: Comenzar, Cotizar, Ver mas)"
+}`;
 
-  // Genera imagen inicial (solo 1) al analizar URL
-  const generateInitialImage = async (data: BrandData, styleId: string, format: 'landscape' | 'portrait' | 'square') => {
-    console.log('[CanvasEditor] Generando imagen inicial para:', format);
-    setLoadingStep('generating');
-    
-    try {
-      const img = await generateSingleImage(data, styleId, format);
-      
-      // Guardar solo la imagen del formato actual
-      setBrandImages(prev => ({ ...prev, [format]: img }));
-      console.log('[CanvasEditor] Imagen generada - QUITANDO LOADING');
-      
-      setLoadingStep(null);
-      
-      if (onImagesGenerated) {
-        onImagesGenerated(true, data.colors);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          tools: [{ google_search: {} }]
+        })
       }
-      
-    } catch (err: any) {
-      console.error('[CanvasEditor] Error generando imagen:', err.message);
-      setError(err.message);
-      setLoadingStep(null);
-    }
+    );
+    
+    if (!response.ok) throw new Error('Error analizando URL');
+    
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('Sin respuesta de IA');
+    
+    // Extraer JSON
+    let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const start = jsonStr.indexOf('{');
+    const end = jsonStr.lastIndexOf('}');
+    if (start !== -1 && end !== -1) jsonStr = jsonStr.substring(start, end + 1);
+    
+    return JSON.parse(jsonStr);
   };
 
-  // Genera imagen bajo demanda cuando el usuario cambia de formato
-  const generateOnDemand = async (format: 'landscape' | 'portrait' | 'square') => {
-    if (!brandData || brandImages[format]) {
-      console.log('[CanvasEditor] Imagen ya existe o no hay brandData');
-      return;
-    }
+  const generateImage = async (prompt: string, aspectRatio: string): Promise<string> => {
+    const key = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!key) throw new Error('API Key no configurada');
     
-    console.log('[CanvasEditor] Generando imagen bajo demanda para:', format);
-    setLoadingStep('generating');
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: { sampleCount: 1, aspectRatio }
+        })
+      }
+    );
     
-    try {
-      const img = await generateSingleImage(brandData, selectedStyle, format);
-      setBrandImages(prev => ({ ...prev, [format]: img }));
-      console.log('[CanvasEditor] Imagen bajo demanda generada');
-      setLoadingStep(null);
-    } catch (err: any) {
-      console.error('[CanvasEditor] Error:', err.message);
-      setError(err.message);
-      setLoadingStep(null);
-    }
+    if (!response.ok) throw new Error('Error generando imagen');
+    
+    const data = await response.json();
+    if (!data.predictions?.[0]?.bytesBase64Encoded) throw new Error('No se genero imagen');
+    
+    return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
   };
 
-  const handleUrlAnalysis = async () => {
-    if (isAnalyzing.current) {
-      console.log('Ya analizando, ignorando');
-      return;
-    }
-    
-    if (!externalUrlInput) {
+  // ============================================
+  // HANDLERS
+  // ============================================
+
+  const handleAnalyze = async () => {
+    if (!url.trim()) {
       Swal.fire({ title: 'Error', text: 'Ingresa una URL', icon: 'warning', background: '#1a1a1a', color: '#fff' });
       return;
     }
     
-    console.log('[CanvasEditor] Iniciando analisis de:', externalUrlInput);
-    isAnalyzing.current = true;
+    setStep('analyzing');
     setError(null);
-    setBrandData(null);
-    setBrandImages({ landscape: null, portrait: null, square: null });
-    setLoadingStep('analyzing');
-    
-    const safetyTimeout = setTimeout(() => {
-      console.warn('[CanvasEditor] TIMEOUT DE SEGURIDAD');
-      setLoadingStep(null);
-      setError('El proceso tomo demasiado tiempo. Intenta de nuevo.');
-      isAnalyzing.current = false;
-    }, 120000);
     
     try {
-      const key = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!key) throw new Error("API Key no configurada.");
+      // Paso 1: Analizar marca
+      const analysis = await analyzeUrl(url);
+      setBrand(analysis);
       
-      const analysisUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-      const analysisPrompt = `Investiga "${externalUrlInput}". Responde SOLO JSON: {"colors":["#hex1","#hex2"],"basePrompt":"descripcion visual","fontCategory":"sans-serif","copy":{"headline":"Titulo","subhead":"Subtitulo","cta":"Boton"}}`;
-      const payload = { contents: [{ parts: [{ text: analysisPrompt }] }], tools: [{ google_search: {} }] };
+      // Paso 2: Generar preview (solo 1 imagen)
+      const style = VISUAL_STYLES.find(s => s.id === selectedStyle) || VISUAL_STYLES[0];
+      const imagePrompt = `Professional marketing banner for ${analysis.industry} business.
+Brand: ${analysis.name}. ${analysis.description}.
+Style: ${style.prompt}
+Colors: Use ${analysis.colors.primary} as primary, ${analysis.colors.secondary} as secondary.
+NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
       
-      console.log('[CanvasEditor] Enviando request a Gemini...');
-      const resp = await fetchWithRetry(analysisUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      const data = await resp.json();
+      const preview = await generateImage(imagePrompt, '16:9');
+      setAssets({ preview, landscape: preview, portrait: null, square: null });
       
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Sin respuesta de IA.");
-      
-      let jsonStr = text.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
-      const firstBrace = jsonStr.indexOf('{');
-      const lastBrace = jsonStr.lastIndexOf('}');
-      if (firstBrace !== -1 && lastBrace !== -1) jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
-      
-      const branding: BrandData = JSON.parse(jsonStr);
-      console.log('[CanvasEditor] Branding:', branding);
-      
-      setBrandData(branding);
-      setEditableCopy(branding.copy);
-      
-      // OPTIMIZADO: Solo genera 1 imagen (formato actual)
-      await generateInitialImage(branding, selectedStyle, activeFormat);
-      
-      clearTimeout(safetyTimeout);
+      setStep('preview');
       
     } catch (err: any) {
-      console.error('[CanvasEditor] Error:', err.message);
+      console.error('Error:', err);
       setError(err.message);
-      setLoadingStep(null);
-      clearTimeout(safetyTimeout);
+      setStep('input');
       Swal.fire({ title: 'Error', text: err.message, icon: 'error', background: '#1a1a1a', color: '#fff' });
-    } finally {
-      isAnalyzing.current = false;
     }
   };
 
-  // Sincronizar formato externo Y generar bajo demanda si no existe
-  useEffect(() => {
-    if (externalActiveFormat && externalActiveFormat !== lastExternalFormat.current) {
-      lastExternalFormat.current = externalActiveFormat;
-      setActiveFormat(externalActiveFormat);
+  const handleApprove = async () => {
+    if (!brand) return;
+    
+    setStep('generating');
+    
+    try {
+      const style = VISUAL_STYLES.find(s => s.id === selectedStyle) || VISUAL_STYLES[0];
+      const basePrompt = `Professional marketing content for ${brand.industry} business.
+Brand: ${brand.name}. ${brand.description}.
+Style: ${style.prompt}
+Colors: ${brand.colors.primary}, ${brand.colors.secondary}, ${brand.colors.accent}.
+NO TEXT. Pure visual. 8K quality.`;
       
-      // Si hay brandData pero no hay imagen para este formato, generarla
-      if (brandData && !brandImages[externalActiveFormat] && !loadingStep) {
-        generateOnDemand(externalActiveFormat);
-      }
-    }
-  }, [externalActiveFormat, brandData, brandImages, loadingStep]);
-
-  // Sincronizar estilo externo - al cambiar estilo, regenerar imagen actual
-  useEffect(() => {
-    if (externalSelectedStyle && externalSelectedStyle !== lastExternalStyle.current) {
-      lastExternalStyle.current = externalSelectedStyle;
-      setSelectedStyle(externalSelectedStyle);
+      // Generar los otros formatos
+      const [portrait, square] = await Promise.all([
+        generateImage(basePrompt + ' Vertical composition for social media stories.', '9:16'),
+        generateImage(basePrompt + ' Square composition for social media feed.', '1:1')
+      ]);
       
-      // Al cambiar estilo, limpiar todas las imagenes y regenerar solo la actual
-      if (brandData && !loadingStep && !isRegenerating.current) {
-        console.log('[CanvasEditor] Estilo cambiado, regenerando imagen actual');
-        isRegenerating.current = true;
-        setBrandImages({ landscape: null, portrait: null, square: null });
-        generateInitialImage(brandData, externalSelectedStyle, activeFormat).finally(() => {
-          isRegenerating.current = false;
-        });
-      }
+      setAssets(prev => ({ ...prev, portrait, square }));
+      setStep('complete');
+      
+      Swal.fire({
+        title: 'Kit de Marca Listo!',
+        text: '3 piezas graficas generadas',
+        icon: 'success',
+        background: '#1a1a1a',
+        color: '#fff',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError(err.message);
+      Swal.fire({ title: 'Error', text: err.message, icon: 'error', background: '#1a1a1a', color: '#fff' });
     }
-  }, [externalSelectedStyle, brandData, loadingStep, activeFormat]);
+  };
 
-  // Trigger de analisis
-  useEffect(() => {
-    if (analyzeTrigger && analyzeTrigger > 0 && analyzeTrigger !== lastAnalyzeTrigger.current && externalUrlInput) {
-      console.log('[CanvasEditor] Trigger:', analyzeTrigger);
-      lastAnalyzeTrigger.current = analyzeTrigger;
-      handleUrlAnalysis();
+  const handleRegenerate = async () => {
+    if (!brand) return;
+    setStep('analyzing');
+    
+    try {
+      const style = VISUAL_STYLES.find(s => s.id === selectedStyle) || VISUAL_STYLES[0];
+      const imagePrompt = `Professional marketing banner for ${brand.industry} business.
+Brand: ${brand.name}. ${brand.description}.
+Style: ${style.prompt}
+Colors: Use ${brand.colors.primary} as primary, ${brand.colors.secondary} as secondary.
+NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
+      
+      const preview = await generateImage(imagePrompt, '16:9');
+      setAssets({ preview, landscape: preview, portrait: null, square: null });
+      setStep('preview');
+      
+    } catch (err: any) {
+      setError(err.message);
+      setStep('preview');
     }
-  }, [analyzeTrigger, externalUrlInput]);
+  };
 
-  const handleDownload = () => {
-    const img = brandImages[activeFormat];
+  const handleDownload = (format: Format) => {
+    const img = assets[format];
     if (!img) return;
-    if (onExport) onExport(img);
+    
     const link = document.createElement('a');
     link.href = img;
-    link.download = `banner-${activeFormat}.png`;
+    link.download = `${brand?.name || 'brand'}-${format}.png`;
     link.click();
   };
 
-  const getFontStack = (cat: string) => {
-    if (cat === 'serif') return 'font-serif';
-    if (cat === 'display') return 'font-bold tracking-tighter';
-    if (cat === 'handwriting') return 'font-mono italic';
-    return 'font-sans';
+  const handleReset = () => {
+    setUrl('');
+    setStep('input');
+    setBrand(null);
+    setAssets({ preview: null, landscape: null, portrait: null, square: null });
+    setError(null);
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const t = e.target as HTMLElement;
-    if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-  };
+  // ============================================
+  // RENDER
+  // ============================================
 
-  useEffect(() => {
-    const move = (e: MouseEvent) => { if (isDragging) setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }); };
-    const up = () => setIsDragging(false);
-    if (isDragging) { window.addEventListener('mousemove', move); window.addEventListener('mouseup', up); }
-    return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
-  }, [isDragging, dragStart]);
-
-  // Imagen actual a mostrar
-  const currentImage = brandImages[activeFormat];
+  const urlType = detectUrlType(url);
+  const UrlIcon = URL_ICONS[urlType];
+  const currentImage = assets[activeFormat] || assets.preview;
 
   return (
-    <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
-      
-      {error && (
-        <div className="absolute top-8 z-40 w-full max-w-3xl px-6">
-          <div className="p-3 bg-red-500/10 text-red-400 rounded-xl text-center flex items-center justify-center gap-2 text-sm border border-red-500/20">
-            <AlertCircle className="w-4 h-4"/>{error}
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-4">
+            <Sparkles className="w-4 h-4 text-blue-400" />
+            <span className="text-sm text-blue-400 font-medium">Brand Intelligence</span>
           </div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Kit de Marca Automatico</h1>
+          <p className="text-gray-400">Pega tu URL y genera piezas graficas profesionales al instante</p>
         </div>
-      )}
-      
-      <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative z-20">
-        {!currentImage && !loadingStep && !brandData && (
-          <div className="flex flex-col items-center justify-center h-full text-white w-full">
-            <p className="text-sm font-mono text-center">Bienvenido a Estudio 56</p>
-            <p className="text-xs text-white/40 mt-2 text-center">Ingresa una URL en el panel lateral</p>
-          </div>
-        )}
-        
-        {loadingStep && (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
-            <p className="text-gray-400 text-lg">{loadingStep === 'analyzing' ? 'Investigando marca...' : 'Generando banner...'}</p>
-          </div>
-        )}
-        
-        {currentImage && !loadingStep && (
-          <div className={`relative transition-all duration-500 shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 group ${activeFormat === 'landscape' ? 'w-full max-w-5xl aspect-video' : ''} ${activeFormat === 'portrait' ? 'h-[80vh] aspect-[9/16]' : ''} ${activeFormat === 'square' ? 'h-[80vh] aspect-square' : ''}`}>
-            <img src={currentImage} alt="Banner" className="w-full h-full object-cover select-none pointer-events-none"/>
-            {brandData && showText && (
-              <div className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center cursor-move z-20" style={{ transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))` }} onMouseDown={handleMouseDown}>
-                <div className={`absolute -top-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 ${isDragging ? 'opacity-100' : 'opacity-0'}`}><Move className="w-3 h-3"/> Arrastrar</div>
-                <div className="flex flex-col items-center text-center max-w-lg bg-black/20 hover:bg-black/40 backdrop-blur-[2px] p-6 rounded-2xl border border-white/0 hover:border-white/20 transition-all">
-                  <div contentEditable suppressContentEditableWarning onBlur={(e) => setEditableCopy({...editableCopy, headline: e.currentTarget.innerText})} className={`text-4xl md:text-5xl font-black text-white mb-3 drop-shadow-xl outline-none min-w-[200px] cursor-text ${getFontStack(brandData.fontCategory)}`} style={{ textShadow: '0 4px 10px rgba(0,0,0,0.6)' }}>{editableCopy.headline}</div>
-                  <div contentEditable suppressContentEditableWarning onBlur={(e) => setEditableCopy({...editableCopy, subhead: e.currentTarget.innerText})} className="text-lg text-white/95 font-medium mb-6 drop-shadow-md outline-none min-w-[150px] cursor-text">{editableCopy.subhead}</div>
-                  <button className="px-8 py-3 rounded-full font-bold text-lg shadow-xl" style={{ backgroundColor: brandData.colors[0] || '#fff', color: brandData.colors[1] || '#000' }}>
-                    <span contentEditable suppressContentEditableWarning onBlur={(e) => setEditableCopy({...editableCopy, cta: e.currentTarget.innerText})} className="outline-none cursor-text">{editableCopy.cta}</span>
+
+        {/* Input Step */}
+        {step === 'input' && (
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* URL Input */}
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                <UrlIcon className="w-5 h-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Pega tu URL (web, Instagram, Facebook, TikTok)"
+                className="w-full pl-12 pr-4 py-4 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+              />
+            </div>
+
+            {/* Style Selector */}
+            <div>
+              <label className="block text-sm text-gray-400 mb-3">Estilo Visual</label>
+              <div className="grid grid-cols-5 gap-2">
+                {VISUAL_STYLES.map(style => (
+                  <button
+                    key={style.id}
+                    onClick={() => setSelectedStyle(style.id)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedStyle === style.id
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    }`}
+                  >
+                    {style.name}
                   </button>
-                  <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-50 text-[10px] text-white flex gap-1"><Edit3 className="w-3 h-3"/> Click para editar</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Analyze Button */}
+            <button
+              onClick={handleAnalyze}
+              disabled={!url.trim()}
+              className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
+            >
+              <Sparkles className="w-5 h-5" />
+              Analizar y Generar Preview
+            </button>
+          </div>
+        )}
+
+        {/* Analyzing Step */}
+        {step === 'analyzing' && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-lg text-gray-400">Analizando tu marca...</p>
+            <p className="text-sm text-gray-500 mt-2">Esto puede tomar unos segundos</p>
+          </div>
+        )}
+
+        {/* Preview Step */}
+        {(step === 'preview' || step === 'generating' || step === 'complete') && brand && (
+          <div className="grid md:grid-cols-3 gap-6">
+            
+            {/* Left: Brand Info */}
+            <div className="space-y-4">
+              <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: brand.colors.primary }} />
+                  {brand.name}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p><span className="text-gray-500">Industria:</span> {brand.industry}</p>
+                  <p><span className="text-gray-500">Tono:</span> {brand.tone}</p>
+                  <p><span className="text-gray-500">Audiencia:</span> {brand.audience}</p>
+                </div>
+                
+                {/* Colors */}
+                <div className="flex gap-2 mt-4">
+                  {Object.entries(brand.colors).map(([key, color]) => (
+                    <div key={key} className="flex-1 text-center">
+                      <div className="w-full h-8 rounded-lg mb-1" style={{ backgroundColor: color }} />
+                      <span className="text-xs text-gray-500">{color}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
-            <div className="absolute top-4 left-4 z-30">
-              <button onClick={() => setShowText(!showText)} className={`bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur ${!showText ? 'opacity-50' : ''}`}><Type className="w-4 h-4"/></button>
+
+              {/* Tagline */}
+              <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                <p className="text-gray-400 text-sm mb-1">Tagline</p>
+                <p className="font-medium">{brand.tagline}</p>
+              </div>
+
+              {/* Actions */}
+              {step === 'preview' && (
+                <div className="space-y-2">
+                  <button
+                    onClick={handleApprove}
+                    className="w-full py-3 bg-green-600 hover:bg-green-500 rounded-xl font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-5 h-5" />
+                    Aprobar y Generar Pack
+                  </button>
+                  <button
+                    onClick={handleRegenerate}
+                    className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-medium flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Regenerar Preview
+                  </button>
+                </div>
+              )}
+
+              {step === 'complete' && (
+                <button
+                  onClick={handleReset}
+                  className="w-full py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-medium"
+                >
+                  Nueva Marca
+                </button>
+              )}
             </div>
-            <button onClick={handleDownload} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur opacity-0 group-hover:opacity-100 z-30"><Download className="w-5 h-5"/></button>
+
+            {/* Center: Image Preview */}
+            <div className="md:col-span-2">
+              {step === 'generating' ? (
+                <div className="aspect-video bg-gray-800/50 rounded-xl flex flex-col items-center justify-center border border-gray-700">
+                  <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-3" />
+                  <p className="text-gray-400">Generando pack completo...</p>
+                </div>
+              ) : currentImage ? (
+                <div className="space-y-4">
+                  {/* Format Tabs */}
+                  {step === 'complete' && (
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'landscape', icon: Monitor, label: 'Banner' },
+                        { id: 'portrait', icon: Smartphone, label: 'Story' },
+                        { id: 'square', icon: Square, label: 'Post' }
+                      ].map(fmt => (
+                        <button
+                          key={fmt.id}
+                          onClick={() => setActiveFormat(fmt.id as Format)}
+                          disabled={!assets[fmt.id as Format]}
+                          className={`flex-1 py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all ${
+                            activeFormat === fmt.id
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-30'
+                          }`}
+                        >
+                          <fmt.icon className="w-4 h-4" />
+                          {fmt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Image */}
+                  <div className={`relative rounded-xl overflow-hidden border border-gray-700 ${
+                    activeFormat === 'portrait' ? 'max-w-xs mx-auto' : ''
+                  }`}>
+                    <img
+                      src={currentImage}
+                      alt="Preview"
+                      className={`w-full ${
+                        activeFormat === 'landscape' ? 'aspect-video' :
+                        activeFormat === 'portrait' ? 'aspect-[9/16]' : 'aspect-square'
+                      } object-cover`}
+                    />
+                    
+                    {/* Download Button */}
+                    <button
+                      onClick={() => handleDownload(activeFormat)}
+                      className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full backdrop-blur transition-colors"
+                    >
+                      <Download className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
         )}
+
       </div>
     </div>
   );
