@@ -1020,6 +1020,83 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                  </button>
                </div>
              </div>
+             
+             {/* Controles adicionales - solo si hay imágenes generadas */}
+             {canvaHasImages && (
+               <>
+                 {/* Selector de Formato */}
+                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                   <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono mb-3 block">Formato</label>
+                   <div className="grid grid-cols-3 gap-2">
+                     {[
+                       { id: 'landscape', label: '16:9', icon: '▬' },
+                       { id: 'portrait', label: '9:16', icon: '▮' },
+                       { id: 'square', label: '1:1', icon: '■' }
+                     ].map(format => (
+                       <button
+                         key={format.id}
+                         onClick={() => onCanvaFormatChange?.(format.id as 'landscape' | 'portrait' | 'square')}
+                         className={`p-2 rounded-lg text-center transition-all ${
+                           canvaActiveFormat === format.id 
+                             ? 'bg-blue-500 text-white' 
+                             : 'bg-white/5 text-white/60 hover:bg-white/10'
+                         }`}
+                       >
+                         <span className="text-lg block">{format.icon}</span>
+                         <span className="text-[10px]">{format.label}</span>
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+                 
+                 {/* Selector de Estilo Visual */}
+                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                   <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono mb-3 block">Estilo Visual</label>
+                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                     {[
+                       { id: 'modern', label: 'Moderno' },
+                       { id: 'bold', label: 'Pop' },
+                       { id: 'corporate', label: 'Corporativo' },
+                       { id: 'luxury', label: 'Lujo' },
+                       { id: 'tech', label: 'Futurista' },
+                       { id: 'natural', label: 'Natural' },
+                       { id: 'vintage', label: 'Vintage' },
+                       { id: 'pastel', label: 'Pastel' }
+                     ].map(style => (
+                       <button
+                         key={style.id}
+                         onClick={() => onCanvaStyleChange?.(style.id)}
+                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                           canvaSelectedStyle === style.id 
+                             ? 'bg-blue-500 text-white' 
+                             : 'bg-white/5 text-white/60 hover:bg-white/10'
+                         }`}
+                       >
+                         {style.label}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+                 
+                 {/* Colores de Marca */}
+                 {canvaBrandColors && canvaBrandColors.length > 0 && (
+                   <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                     <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono mb-3 block">Colores de Marca</label>
+                     <div className="flex gap-2">
+                       {canvaBrandColors.map((color, idx) => (
+                         <div key={idx} className="flex flex-col items-center gap-1">
+                           <div 
+                             className="w-10 h-10 rounded-lg border border-white/20" 
+                             style={{ backgroundColor: color }}
+                           />
+                           <span className="text-[9px] text-white/40 font-mono">{color}</span>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 )}
+               </>
+             )}
            </div>
          )}
          
