@@ -168,6 +168,10 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
+  // NEW: Estado específico para URL en modo Canva
+  const [canvaUrlInput, setCanvaUrlInput] = useState('');
+  const [isCanvaAnalyzing, setIsCanvaAnalyzing] = useState(false);
+  
   // NEW: Ref para mantener la instancia de la alerta de progreso
   const progressAlertRef = useRef<{
     updateProgress: (percent: number, message: string) => void;
@@ -707,6 +711,54 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
     }
   };
 
+  // NEW: Función para analizar URL en modo Canva
+  const handleCanvaAnalyzeUrl = async () => {
+    if (!canvaUrlInput.trim()) return;
+    setIsCanvaAnalyzing(true);
+    
+    // Mostrar alerta de loading con SweetAlert
+    Swal.fire({
+      title: 'Analizando marca...',
+      html: `
+        <div style="text-align: center; padding: 10px;">
+          <p style="color: #9ca3af; font-size: 14px;">Investigando identidad visual en Google</p>
+          <div style="margin-top: 20px;">
+            <div class="swal2-loading"></div>
+          </div>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 15px;">Generando banners publicitarios...</p>
+        </div>
+      `,
+      background: '#111827',
+      color: '#ffffff',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
+    try {
+      console.log('🔍 [Canva] Analizando URL:', canvaUrlInput);
+      // La lógica de análisis está en el CanvasEditor
+      // Aquí solo mostramos la alerta, el CanvasEditor manejará el análisis
+      // La alerta se cerrará cuando el CanvasEditor termine
+    } catch (error: any) {
+      console.error('❌ [Canva] Error en análisis:', error);
+      Swal.close();
+      Swal.fire({
+        title: '⚠️ Error',
+        text: error.message || 'Error analizando la URL',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#ef4444',
+        background: '#1a1a1a',
+        color: '#ffffff'
+      });
+    } finally {
+      setIsCanvaAnalyzing(false);
+    }
+  };
+
   // NEW: Función OPTIMIZADA para generar múltiples opciones de texto
   // SOLO genera opciones para el objetivo seleccionado (branding O leads, nunca ambos)
   const handleGenerateTextOptions = async (objective: 'branding' | 'leads') => {
@@ -905,22 +957,31 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                <div className="flex gap-2 items-center">
                  <input
                    type="text"
+                   value={canvaUrlInput}
+                   onChange={(e) => setCanvaUrlInput(e.target.value)}
                    placeholder="Pega la URL (ej: aintelligence.cl)..."
                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                    onKeyDown={(e) => {
-                     if (e.key === 'Enter') {
-                       // Trigger análisis
-                       console.log('🔍 Análisis de URL desde sidebar');
+                     if (e.key === 'Enter' && canvaUrlInput.trim()) {
+                       handleCanvaAnalyzeUrl();
                      }
                    }}
                  />
                  <button
+                   onClick={handleCanvaAnalyzeUrl}
+                   disabled={isCanvaAnalyzing || !canvaUrlInput.trim()}
                    className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                    title="Analizar URL"
                  >
-                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                   </svg>
+                   {isCanvaAnalyzing ? (
+                     <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                     </svg>
+                   ) : (
+                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                     </svg>
+                   )}
                  </button>
                </div>
                <p className="text-xs text-white/40">
