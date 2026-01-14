@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Swal from 'sweetalert2';
+import { Monitor, Smartphone, Square, Palette, LayoutTemplate, Zap, Briefcase, Star, MonitorPlay, Leaf, Camera, Building2, Feather, Sun, Aperture, Moon, Coffee, Box } from 'lucide-react';
 import { estudioAlerts } from '../src/lib/alerts';
 import { FlyerStyleKey, FlyerStyleKeyVideo, AspectRatio, MediaType, ImageQuality, OverlayStyle, PosterStyle, CreationMode, CREATION_MODES } from '../types';
 import { FLYER_STYLES, VIDEO_STYLES, ASPECT_RATIO_LABELS, POSTER_STYLES } from '../constants';
@@ -23,6 +24,24 @@ import CreationModeSelector from './CreationModeSelector';
 // 🏷️ BRAND SIDEBAR - Controles del editor de marca
 import BrandSidebar from './brand/BrandSidebar';
 import { BrandData, defaultBrandData } from './brand/BrandTypes';
+
+// 🎨 BANNER STYLES para modo Canva
+const BANNER_STYLES = [
+  { id: 'modern', label: 'Moderno / Minimal', icon: LayoutTemplate },
+  { id: 'bold', label: 'Pop / Vibrante', icon: Zap },
+  { id: 'corporate', label: 'Corporativo / Pro', icon: Briefcase },
+  { id: 'luxury', label: 'Lujo / Dark', icon: Star },
+  { id: 'tech', label: 'Futurista / Neon', icon: MonitorPlay },
+  { id: 'natural', label: 'Natural / Eco', icon: Leaf },
+  { id: 'vintage', label: 'Vintage / Film', icon: Camera },
+  { id: 'industrial', label: 'Industrial / Urbano', icon: Building2 },
+  { id: 'pastel', label: 'Pastel / Soft', icon: Feather },
+  { id: 'golden', label: 'Golden Hour', icon: Sun },
+  { id: 'editorial', label: 'Editorial / Moda', icon: Aperture },
+  { id: 'monochrome', label: 'B&W / Artístico', icon: Moon },
+  { id: 'rustic', label: 'Rústico / Hogar', icon: Coffee },
+  { id: 'isometric', label: '3D Isométrico', icon: Box }
+];
 
 interface FlyerFormProps {
   creationMode: CreationMode; // NEW: Modo de creación (Diseño, Canva, Libre)
@@ -101,6 +120,13 @@ interface FlyerFormProps {
   setCanvaUrlInput?: (url: string) => void;
   canvaAnalyzeTrigger?: number;
   setCanvaAnalyzeTrigger?: (trigger: number) => void;
+  // NEW: Props para controles de Canva (formato y estilos)
+  canvaHasImages?: boolean;
+  canvaActiveFormat?: 'landscape' | 'portrait' | 'square';
+  canvaSelectedStyle?: string;
+  canvaBrandColors?: string[];
+  onCanvaFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
+  onCanvaStyleChange?: (styleId: string) => void;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -173,7 +199,14 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   canvaUrlInput: canvaUrlInputProp = '',
   setCanvaUrlInput: setCanvaUrlInputProp,
   canvaAnalyzeTrigger: canvaAnalyzeTriggerProp = 0,
-  setCanvaAnalyzeTrigger: setCanvaAnalyzeTriggerProp
+  setCanvaAnalyzeTrigger: setCanvaAnalyzeTriggerProp,
+  // NEW: Props para controles de Canva
+  canvaHasImages = false,
+  canvaActiveFormat = 'landscape',
+  canvaSelectedStyle = 'modern',
+  canvaBrandColors = [],
+  onCanvaFormatChange,
+  onCanvaStyleChange
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -996,6 +1029,83 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                  Ingresa la URL de una marca para analizar su identidad visual y generar banners automáticamente
                </p>
              </div>
+             
+             {/* Controles de formato y estilos - Solo mostrar cuando hay imágenes */}
+             {canvaHasImages && (
+               <>
+                 {/* Selector de formato */}
+                 <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+                   <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
+                     Formato
+                   </label>
+                   <div className="flex gap-2">
+                     {[
+                       { id: 'landscape', icon: Monitor, label: 'Banner' },
+                       { id: 'portrait', icon: Smartphone, label: 'Story' },
+                       { id: 'square', icon: Square, label: 'Post' }
+                     ].map((fmt) => (
+                       <button
+                         key={fmt.id}
+                         onClick={() => onCanvaFormatChange?.(fmt.id as any)}
+                         className={`flex-1 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
+                           canvaActiveFormat === fmt.id
+                             ? 'bg-white/10 border-white text-white'
+                             : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+                         }`}
+                       >
+                         <fmt.icon className="w-4 h-4" />
+                         <span>{fmt.label}</span>
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+                 
+                 {/* Selector de estilo visual */}
+                 <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+                   <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
+                     Estilo Visual
+                   </label>
+                   <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2">
+                     {BANNER_STYLES.map((style) => (
+                       <button
+                         key={style.id}
+                         onClick={() => onCanvaStyleChange?.(style.id)}
+                         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
+                           canvaSelectedStyle === style.id
+                             ? 'bg-white/10 border-white text-white'
+                             : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+                         }`}
+                       >
+                         <style.icon className="w-3 h-3 flex-shrink-0" />
+                         <span className="text-left leading-tight">{style.label}</span>
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+                 
+                 {/* Paleta de colores */}
+                 {canvaBrandColors.length > 0 && (
+                   <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+                     <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
+                       Colores de Marca
+                     </label>
+                     <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                       <Palette className="w-4 h-4 text-gray-400" />
+                       <div className="flex gap-2">
+                         {canvaBrandColors.map((c, i) => (
+                           <div
+                             key={i}
+                             className="w-6 h-6 rounded-md border border-white/20 shadow-sm"
+                             style={{ backgroundColor: c }}
+                             title={c}
+                           />
+                         ))}
+                       </div>
+                     </div>
+                   </div>
+                 )}
+               </>
+             )}
            </div>
          )}
          

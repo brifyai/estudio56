@@ -22,6 +22,10 @@ interface FlyerDisplayProps {
   onExport?: (imageDataUrl: string) => void; // NEW: Callback para exportar desde Canva
   canvaUrlInput?: string; // NEW: URL para análisis en modo Canva
   canvaAnalyzeTrigger?: number; // NEW: Trigger para forzar análisis en modo Canva
+  // NEW: Callbacks para controles de Canva
+  onCanvaImagesGenerated?: (hasImages: boolean, colors: string[]) => void;
+  onCanvaFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
+  onCanvaStyleChange?: (styleId: string) => void;
   // Brand mode props
   brandData?: BrandData;
   imageUrl: string | null;
@@ -98,6 +102,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   onExport, // NEW: Callback para exportar desde Canva
   canvaUrlInput, // NEW: URL para análisis en modo Canva
   canvaAnalyzeTrigger, // NEW: Trigger para forzar análisis en modo Canva
+  onCanvaImagesGenerated, // NEW: Callback cuando se generan imágenes en Canva
+  onCanvaFormatChange, // NEW: Callback para cambio de formato en Canva
+  onCanvaStyleChange, // NEW: Callback para cambio de estilo en Canva
   brandData, // NEW: Datos de marca para modo brand
   imageUrl,
   draftImageUrl,
@@ -1223,6 +1230,9 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           aspectRatio={aspectRatio}
           urlInput={canvaUrlInput}
           analyzeTrigger={canvaAnalyzeTrigger}
+          onImagesGenerated={onCanvaImagesGenerated}
+          onFormatChange={onCanvaFormatChange}
+          onStyleChange={onCanvaStyleChange}
           onExport={(imageDataUrl) => {
             console.log('🎨 Imagen exportada desde Canvas Editor');
             if (onExport) {
