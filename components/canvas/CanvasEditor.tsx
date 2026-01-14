@@ -272,7 +272,7 @@ NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
   const currentImage = assets[activeFormat] || assets.preview;
 
   return (
-    <div className="min-h-screen text-white p-4 md:p-8 relative bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
+    <div className="min-h-screen text-white p-4 md:p-8 relative bg-[#030303] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
       <div className="max-w-6xl mx-auto">
         
