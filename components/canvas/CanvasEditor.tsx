@@ -8,7 +8,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 2, ba
   try {
     const response = await fetch(url, options);
     if (response.status === 401 || response.status === 403) {
-      throw new Error(`API Key inválida (${response.status}).`);
+      throw new Error(`API Key invalida (${response.status}).`);
     }
     if (!response.ok && (response.status === 429 || response.status === 503)) {
       throw new Error(`Server returned ${response.status}`);
@@ -57,6 +57,13 @@ const BANNER_STYLES = [
   { id: 'rustic', label: 'Rustico', icon: Coffee, promptMod: 'RUSTIC WARMTH. Aged wood textures.' },
   { id: 'isometric', label: '3D Isometrico', icon: Box, promptMod: '3D ISOMETRIC RENDER. Miniature effect.' }
 ];
+
+// Mapeo de formato a aspect ratio
+const FORMAT_TO_AR: Record<string, string> = {
+  landscape: '16:9',
+  portrait: '9:16',
+  square: '1:1'
+};
 
 interface CanvasEditorProps {
   aspectRatio?: string;
@@ -109,47 +116,60 @@ export default function CanvasEditor({
     throw new Error("No se pudo generar la imagen.");
   };
 
-  const generateAssetsForStyle = async (data: BrandData, styleId: string) => {
-    console.log('[CanvasEditor] GENERANDO con estilo:', styleId);
+  // OPTIMIZADO: Genera solo UNA imagen para el formato especificado
+  const generateSingleImage = async (data: BrandData, styleId: string, format: 'landscape' | 'portrait' | 'square') => {
+    console.log('[CanvasEditor] Generando imagen para formato:', format);
+    
+    const style = BANNER_STYLES.find(s => s.id === styleId) || BANNER_STYLES[0];
+    const finalPrompt = `PURE GRAPHIC/PHOTO ONLY. NO TEXT. SUBJECT: ${data.basePrompt}. STYLE: ${style.promptMod} COLORS: ${data.colors.join(', ')}. 8k resolution.`;
+    const ar = FORMAT_TO_AR[format];
+    
+    const img = await generateImage(finalPrompt, ar);
+    return img;
+  };
+
+  // Genera imagen inicial (solo 1) al analizar URL
+  const generateInitialImage = async (data: BrandData, styleId: string, format: 'landscape' | 'portrait' | 'square') => {
+    console.log('[CanvasEditor] Generando imagen inicial para:', format);
     setLoadingStep('generating');
     
     try {
-      const style = BANNER_STYLES.find(s => s.id === styleId) || BANNER_STYLES[0];
-      const finalPrompt = `PURE GRAPHIC/PHOTO ONLY. NO TEXT. SUBJECT: ${data.basePrompt}. STYLE: ${style.promptMod} COLORS: ${data.colors.join(', ')}. 8k resolution.`;
+      const img = await generateSingleImage(data, styleId, format);
       
-      console.log('[CanvasEditor] Generando 3 imagenes en paralelo...');
-      const results = await Promise.all([
-        generateImage(finalPrompt, "16:9").catch(e => { console.error('Landscape error:', e); return null; }),
-        generateImage(finalPrompt, "9:16").catch(e => { console.error('Portrait error:', e); return null; }),
-        generateImage(finalPrompt, "1:1").catch(e => { console.error('Square error:', e); return null; })
-      ]);
+      // Guardar solo la imagen del formato actual
+      setBrandImages(prev => ({ ...prev, [format]: img }));
+      console.log('[CanvasEditor] Imagen generada - QUITANDO LOADING');
       
-      const [landscapeImg, portraitImg, squareImg] = results;
-      console.log('[CanvasEditor] Resultados:', { 
-        landscape: landscapeImg ? 'OK' : 'FAIL', 
-        portrait: portraitImg ? 'OK' : 'FAIL', 
-        square: squareImg ? 'OK' : 'FAIL' 
-      });
-      
-      // Verificar que al menos una imagen se genero
-      if (!landscapeImg && !portraitImg && !squareImg) {
-        throw new Error('No se pudo generar ninguna imagen');
-      }
-      
-      setBrandImages({ landscape: landscapeImg, portrait: portraitImg, square: squareImg });
-      console.log('[CanvasEditor] Imagenes guardadas - QUITANDO LOADING AHORA');
-      
-      // CRITICO: Quitar loading INMEDIATAMENTE
       setLoadingStep(null);
       
-      // Notificar al padre
       if (onImagesGenerated) {
-        console.log('[CanvasEditor] Notificando onImagesGenerated');
         onImagesGenerated(true, data.colors);
       }
       
     } catch (err: any) {
-      console.error('[CanvasEditor] Error en generateAssetsForStyle:', err.message);
+      console.error('[CanvasEditor] Error generando imagen:', err.message);
+      setError(err.message);
+      setLoadingStep(null);
+    }
+  };
+
+  // Genera imagen bajo demanda cuando el usuario cambia de formato
+  const generateOnDemand = async (format: 'landscape' | 'portrait' | 'square') => {
+    if (!brandData || brandImages[format]) {
+      console.log('[CanvasEditor] Imagen ya existe o no hay brandData');
+      return;
+    }
+    
+    console.log('[CanvasEditor] Generando imagen bajo demanda para:', format);
+    setLoadingStep('generating');
+    
+    try {
+      const img = await generateSingleImage(brandData, selectedStyle, format);
+      setBrandImages(prev => ({ ...prev, [format]: img }));
+      console.log('[CanvasEditor] Imagen bajo demanda generada');
+      setLoadingStep(null);
+    } catch (err: any) {
+      console.error('[CanvasEditor] Error:', err.message);
       setError(err.message);
       setLoadingStep(null);
     }
@@ -173,13 +193,12 @@ export default function CanvasEditor({
     setBrandImages({ landscape: null, portrait: null, square: null });
     setLoadingStep('analyzing');
     
-    // TIMEOUT DE SEGURIDAD: Si despues de 2 minutos sigue cargando, quitar loading
     const safetyTimeout = setTimeout(() => {
-      console.warn('[CanvasEditor] TIMEOUT DE SEGURIDAD - Quitando loading forzadamente');
+      console.warn('[CanvasEditor] TIMEOUT DE SEGURIDAD');
       setLoadingStep(null);
       setError('El proceso tomo demasiado tiempo. Intenta de nuevo.');
       isAnalyzing.current = false;
-    }, 120000); // 2 minutos
+    }, 120000);
     
     try {
       const key = import.meta.env.VITE_GEMINI_API_KEY;
@@ -192,7 +211,6 @@ export default function CanvasEditor({
       console.log('[CanvasEditor] Enviando request a Gemini...');
       const resp = await fetchWithRetry(analysisUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await resp.json();
-      console.log('[CanvasEditor] Respuesta recibida de Gemini');
       
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("Sin respuesta de IA.");
@@ -203,21 +221,18 @@ export default function CanvasEditor({
       if (firstBrace !== -1 && lastBrace !== -1) jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
       
       const branding: BrandData = JSON.parse(jsonStr);
-      console.log('[CanvasEditor] Branding parseado:', branding);
+      console.log('[CanvasEditor] Branding:', branding);
       
       setBrandData(branding);
       setEditableCopy(branding.copy);
       
-      // Generar imagenes
-      console.log('[CanvasEditor] Iniciando generacion de imagenes...');
-      await generateAssetsForStyle(branding, selectedStyle);
-      console.log('[CanvasEditor] Proceso completo terminado');
+      // OPTIMIZADO: Solo genera 1 imagen (formato actual)
+      await generateInitialImage(branding, selectedStyle, activeFormat);
       
-      // Limpiar timeout de seguridad
       clearTimeout(safetyTimeout);
       
     } catch (err: any) {
-      console.error('[CanvasEditor] Error en handleUrlAnalysis:', err.message);
+      console.error('[CanvasEditor] Error:', err.message);
       setError(err.message);
       setLoadingStep(null);
       clearTimeout(safetyTimeout);
@@ -227,29 +242,36 @@ export default function CanvasEditor({
     }
   };
 
-  // Sincronizar formato externo
+  // Sincronizar formato externo Y generar bajo demanda si no existe
   useEffect(() => {
     if (externalActiveFormat && externalActiveFormat !== lastExternalFormat.current) {
       lastExternalFormat.current = externalActiveFormat;
       setActiveFormat(externalActiveFormat);
+      
+      // Si hay brandData pero no hay imagen para este formato, generarla
+      if (brandData && !brandImages[externalActiveFormat] && !loadingStep) {
+        generateOnDemand(externalActiveFormat);
+      }
     }
-  }, [externalActiveFormat]);
+  }, [externalActiveFormat, brandData, brandImages, loadingStep]);
 
-  // Sincronizar estilo externo Y REGENERAR
+  // Sincronizar estilo externo - al cambiar estilo, regenerar imagen actual
   useEffect(() => {
     if (externalSelectedStyle && externalSelectedStyle !== lastExternalStyle.current) {
       lastExternalStyle.current = externalSelectedStyle;
       setSelectedStyle(externalSelectedStyle);
       
+      // Al cambiar estilo, limpiar todas las imagenes y regenerar solo la actual
       if (brandData && !loadingStep && !isRegenerating.current) {
-        console.log('[CanvasEditor] Regenerando con nuevo estilo:', externalSelectedStyle);
+        console.log('[CanvasEditor] Estilo cambiado, regenerando imagen actual');
         isRegenerating.current = true;
-        generateAssetsForStyle(brandData, externalSelectedStyle).finally(() => {
+        setBrandImages({ landscape: null, portrait: null, square: null });
+        generateInitialImage(brandData, externalSelectedStyle, activeFormat).finally(() => {
           isRegenerating.current = false;
         });
       }
     }
-  }, [externalSelectedStyle, brandData, loadingStep]);
+  }, [externalSelectedStyle, brandData, loadingStep, activeFormat]);
 
   // Trigger de analisis
   useEffect(() => {
@@ -291,8 +313,8 @@ export default function CanvasEditor({
     return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
   }, [isDragging, dragStart]);
 
-  // DEBUG: Log del estado de loading
-  console.log('[CanvasEditor] Render - loadingStep:', loadingStep, 'hasImages:', !!brandImages.landscape);
+  // Imagen actual a mostrar
+  const currentImage = brandImages[activeFormat];
 
   return (
     <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')]">
@@ -307,7 +329,7 @@ export default function CanvasEditor({
       )}
       
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative z-20">
-        {!brandImages.landscape && !loadingStep && (
+        {!currentImage && !loadingStep && !brandData && (
           <div className="flex flex-col items-center justify-center h-full text-white w-full">
             <p className="text-sm font-mono text-center">Bienvenido a Estudio 56</p>
             <p className="text-xs text-white/40 mt-2 text-center">Ingresa una URL en el panel lateral</p>
@@ -317,13 +339,13 @@ export default function CanvasEditor({
         {loadingStep && (
           <div className="text-center space-y-4">
             <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
-            <p className="text-gray-400 text-lg">{loadingStep === 'analyzing' ? 'Investigando marca...' : 'Disenando banners...'}</p>
+            <p className="text-gray-400 text-lg">{loadingStep === 'analyzing' ? 'Investigando marca...' : 'Generando banner...'}</p>
           </div>
         )}
         
-        {brandImages.landscape && !loadingStep && (
+        {currentImage && !loadingStep && (
           <div className={`relative transition-all duration-500 shadow-2xl rounded-lg overflow-hidden ring-1 ring-white/10 group ${activeFormat === 'landscape' ? 'w-full max-w-5xl aspect-video' : ''} ${activeFormat === 'portrait' ? 'h-[80vh] aspect-[9/16]' : ''} ${activeFormat === 'square' ? 'h-[80vh] aspect-square' : ''}`}>
-            {brandImages[activeFormat] ? <img src={brandImages[activeFormat]!} alt="Banner" className="w-full h-full object-cover select-none pointer-events-none"/> : <div className="w-full h-full bg-[#1A1A1A] flex items-center justify-center text-gray-500">Cargando...</div>}
+            <img src={currentImage} alt="Banner" className="w-full h-full object-cover select-none pointer-events-none"/>
             {brandData && showText && (
               <div className="absolute top-1/2 left-1/2 flex flex-col items-center justify-center cursor-move z-20" style={{ transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))` }} onMouseDown={handleMouseDown}>
                 <div className={`absolute -top-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 ${isDragging ? 'opacity-100' : 'opacity-0'}`}><Move className="w-3 h-3"/> Arrastrar</div>
