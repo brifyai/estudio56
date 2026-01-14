@@ -1230,7 +1230,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
     console.log('🎨 [FlyerDisplay] CanvasEditor disponible:', typeof CanvasEditor);
     
     return (
-      <div className="w-full h-full bg-gray-900">
+      <div className="w-full h-full">
         <CanvasEditor
           aspectRatio={aspectRatio as string}
           urlInput={canvaUrlInput}
