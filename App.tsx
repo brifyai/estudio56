@@ -2327,6 +2327,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 brandData={brandData}
                                 canvaUrlInput={canvaUrlInput}
                                 canvaAnalyzeTrigger={canvaAnalyzeTrigger}
+                                canvaActiveFormat={canvaActiveFormat}
+                                canvaSelectedStyle={canvaSelectedStyle}
                                 onCanvaImagesGenerated={(hasImages, colors) => {
                                   console.log('🎨 [App] onCanvaImagesGenerated ejecutado:', {
                                     hasImages,
@@ -2562,6 +2564,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       brandData={brandData}
                       canvaUrlInput={canvaUrlInput}
                       canvaAnalyzeTrigger={canvaAnalyzeTrigger}
+                      canvaActiveFormat={canvaActiveFormat}
+                      canvaSelectedStyle={canvaSelectedStyle}
                       onCanvaImagesGenerated={(hasImages, colors) => {
                         setCanvaHasImages(hasImages);
                         setCanvaBrandColors(colors);
