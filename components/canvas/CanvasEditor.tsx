@@ -70,9 +70,6 @@ interface CanvasEditorProps {
   onFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
   onStyleChange?: (styleId: string) => void;
   onImagesGenerated?: (hasImages: boolean, colors: string[]) => void;
-  // Props para sincronizar estado externo
-  activeFormat?: 'landscape' | 'portrait' | 'square';
-  selectedStyle?: string;
 }
 
 export default function CanvasEditor({ 
@@ -86,9 +83,7 @@ export default function CanvasEditor({
   error: externalError,
   onFormatChange,
   onStyleChange,
-  onImagesGenerated,
-  activeFormat: externalActiveFormat,
-  selectedStyle: externalSelectedStyle
+  onImagesGenerated
 }: CanvasEditorProps = {}) {
   const [internalUrlInput, setInternalUrlInput] = useState('');
   const [brandData, setBrandData] = useState<BrandData | null>(null);
@@ -104,20 +99,6 @@ export default function CanvasEditor({
   
   const [activeFormat, setActiveFormat] = useState<'landscape' | 'portrait' | 'square'>(getInitialFormat());
   const [selectedStyle, setSelectedStyle] = useState<string>('modern');
-  
-  // Sincronizar formato externo con estado interno
-  useEffect(() => {
-    if (externalActiveFormat && externalActiveFormat !== activeFormat) {
-      setActiveFormat(externalActiveFormat);
-    }
-  }, [externalActiveFormat]);
-  
-  // Sincronizar estilo externo con estado interno
-  useEffect(() => {
-    if (externalSelectedStyle && externalSelectedStyle !== selectedStyle) {
-      setSelectedStyle(externalSelectedStyle);
-    }
-  }, [externalSelectedStyle]);
   const [internalLoadingStep, setInternalLoadingStep] = useState<string | null>(null);
   const [internalError, setInternalError] = useState<string | null>(null);
   
