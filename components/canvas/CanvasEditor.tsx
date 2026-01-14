@@ -284,6 +284,16 @@ Estructura requerida:
         )}
       </div>
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative z-20">
+        {!loadingStep && !brandImages.landscape && (
+          <div className="flex flex-col items-center justify-center h-full text-white w-full">
+            <p className="text-sm md:text-base font-mono tracking-wider text-center px-4">
+              Bienvenido a Estudio 56
+            </p>
+            <p className="text-xs text-white/40 mt-2 text-center px-4">
+              Ingresa tu descripción para comenzar
+            </p>
+          </div>
+        )}
         {loadingStep && (
           <div className="text-center space-y-4">
             <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
