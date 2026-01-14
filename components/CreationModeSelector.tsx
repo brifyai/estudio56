@@ -23,8 +23,8 @@ const CreationModeSelector: React.FC<CreationModeSelectorProps> = ({
               className={`
                 flex-1 p-3 rounded-lg transition-all cursor-pointer
                 ${isSelected 
-                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' 
-                  : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white'
+                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 cursor-pointer' 
+                  : 'bg-white/10 hover:bg-white/20 text-white/70 hover:text-white cursor-pointer'
                 }
               `}
             >

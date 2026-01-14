@@ -246,7 +246,7 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab 
                   type="button"
                   onClick={handleAnalyzeUrl}
                   disabled={isAnalyzing || !urlInput.trim()}
-                  className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1"
+                  className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-white/10 disabled:text-white/30 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   {isAnalyzing ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                   {isAnalyzing ? 'Analizando...' : 'Analizar'}
@@ -291,7 +291,7 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab 
                   <div className="bg-white/5 rounded-xl p-4 flex justify-center border border-white/10">
                     <MiniLogo />
                   </div>
-                  <button onClick={infiniteDesignRemix} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-3 rounded-xl text-sm font-medium hover:from-indigo-500 hover:to-purple-500 flex items-center justify-center gap-2 transition-all">
+                  <button onClick={infiniteDesignRemix} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-3 rounded-xl text-sm font-medium hover:from-indigo-500 hover:to-purple-500 flex items-center justify-center gap-2 transition-all cursor-pointer">
                     <Sparkles size={14} /> Remix Aleatorio
                   </button>
                   <div className="flex gap-2">

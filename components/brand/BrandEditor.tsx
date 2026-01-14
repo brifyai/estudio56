@@ -317,7 +317,7 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
                     <div className="bg-gray-700 rounded-lg p-4 flex justify-center">
                       <GeneratedLogo className="h-16" />
                     </div>
-                    <button onClick={infiniteDesignRemix} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center gap-2">
+                    <button onClick={infiniteDesignRemix} className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-purple-700 flex items-center justify-center gap-2 cursor-pointer">
                       <Sparkles size={16} /> Remix
                     </button>
                     <div className="flex gap-2">
@@ -396,7 +396,7 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
         </div>
 
         <div className="p-4 border-t border-gray-700">
-          <button onClick={handlePrint} className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center justify-center gap-2">
+          <button onClick={handlePrint} className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center justify-center gap-2 cursor-pointer">
             <Printer size={16} /> Exportar PDF
           </button>
         </div>
