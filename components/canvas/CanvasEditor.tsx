@@ -168,8 +168,10 @@ Investiga y responde SOLO con este JSON (sin markdown):
       const imagePrompt = `Professional marketing banner for ${analysis.industry} business.
 Brand: ${analysis.name}. ${analysis.description}.
 Style: ${style.prompt}
-Colors: Use ${analysis.colors.primary} as primary, ${analysis.colors.secondary} as secondary.
-NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
+Use brand colors harmoniously in the composition.
+CRITICAL: NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS in the image.
+If showing people: anatomically correct human bodies, natural poses, correct proportions, realistic limbs.
+Pure visual design. 8K photorealistic quality. Modern UX aesthetic.`;
       
       const preview = await generateImage(imagePrompt, '16:9');
       setAssets({ preview, landscape: preview, portrait: null, square: null });
@@ -194,8 +196,10 @@ NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
       const basePrompt = `Professional marketing content for ${brand.industry} business.
 Brand: ${brand.name}. ${brand.description}.
 Style: ${style.prompt}
-Colors: ${brand.colors.primary}, ${brand.colors.secondary}, ${brand.colors.accent}.
-NO TEXT. Pure visual. 8K quality.`;
+Use brand colors harmoniously.
+CRITICAL: NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS in the image.
+If showing people: anatomically correct human bodies, natural poses, correct proportions, realistic limbs.
+Pure visual. 8K photorealistic quality.`;
       
       // Generar los otros formatos
       const [portrait, square] = await Promise.all([
@@ -232,8 +236,10 @@ NO TEXT. Pure visual. 8K quality.`;
       const imagePrompt = `Professional marketing banner for ${brand.industry} business.
 Brand: ${brand.name}. ${brand.description}.
 Style: ${style.prompt}
-Colors: Use ${brand.colors.primary} as primary, ${brand.colors.secondary} as secondary.
-NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
+Use brand colors harmoniously in the composition.
+CRITICAL: NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS in the image.
+If showing people: anatomically correct human bodies, natural poses, correct proportions, realistic limbs.
+Pure visual design. 8K photorealistic quality. Modern UX aesthetic.`;
       
       const preview = await generateImage(imagePrompt, '16:9');
       setAssets({ preview, landscape: preview, portrait: null, square: null });
