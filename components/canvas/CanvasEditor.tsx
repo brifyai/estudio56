@@ -74,24 +74,33 @@ export default function CanvasEditor() {
     if (!key) throw new Error('API Key no configurada');
     
     const urlType = detectUrlType(inputUrl);
-    const prompt = `Analiza esta ${urlType === 'website' ? 'pagina web' : 'red social'}: "${inputUrl}"
+    const prompt = `TAREA: Analiza visualmente esta ${urlType === 'website' ? 'pagina web' : 'red social'}: "${inputUrl}"
 
-IMPORTANTE: Todo el texto debe estar en ESPAÑOL (Chile).
+USA GOOGLE SEARCH para visitar y analizar la pagina real. Extrae los colores EXACTOS que ves en:
+- El logo de la marca
+- Los titulos principales (headers)
+- Los botones de accion (CTA)
+- El fondo o elementos decorativos
 
-Investiga y responde SOLO con este JSON (sin markdown):
+IMPORTANTE: 
+- Todo el texto debe estar en ESPAÑOL (Chile)
+- Los colores deben ser los REALES de la pagina, no inventados
+- NO uses colores genericos como blanco puro o negro puro
+
+Responde SOLO con este JSON (sin markdown ni explicaciones):
 {
-  "name": "nombre del negocio",
-  "industry": "industria/rubro (ej: tecnologia, retail, salud, gastronomia, servicios)",
-  "tone": "tono de comunicacion (formal, casual, premium, juvenil, profesional)",
-  "audience": "audiencia objetivo",
+  "name": "nombre exacto del negocio como aparece en la pagina",
+  "industry": "industria/rubro especifico",
+  "tone": "tono de comunicacion que transmite la pagina",
+  "audience": "audiencia objetivo segun el contenido",
   "colors": {
-    "primary": "#hexcolor principal DISTINTIVO de la marca (NO usar blanco #FFFFFF ni negro #000000, buscar el color que identifica la marca)",
-    "secondary": "#hexcolor secundario que complementa al primario",
-    "accent": "#hexcolor de acento vibrante para llamados a accion"
+    "primary": "#hexcolor del color MAS PROMINENTE en titulos o logo (ej: si el titulo es coral, usar ese coral)",
+    "secondary": "#hexcolor de botones o elementos de accion",
+    "accent": "#hexcolor de acentos o elementos decorativos"
   },
-  "description": "descripcion corta del negocio en 1 linea EN ESPAÑOL",
-  "tagline": "slogan o frase principal de la marca EN ESPAÑOL",
-  "cta": "texto para boton de accion EN ESPAÑOL (ej: Comenzar, Cotizar, Ver mas)"
+  "description": "descripcion del negocio basada en lo que dice la pagina EN ESPAÑOL",
+  "tagline": "slogan o frase principal que aparece en la pagina EN ESPAÑOL",
+  "cta": "texto del boton principal que aparece en la pagina EN ESPAÑOL"
 }`;
 
     const response = await fetch(
