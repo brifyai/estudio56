@@ -268,21 +268,6 @@ Estructura requerida:
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 pointer-events-none"></div>
       {/* Grid Background - mismo que el área de diseño */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
-      <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 relative ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
-        <div className="flex gap-2 items-center">
-          <div className="flex-1 bg-[#1E1E1E] rounded-full p-2 flex items-center shadow-2xl border border-white/10 ring-1 ring-white/5">
-            <input type="text" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} placeholder="Pega la URL (ej: nike.com)..." className="flex-1 bg-transparent px-6 py-3 outline-none text-lg placeholder:text-gray-500" onKeyDown={(e) => e.key === 'Enter' && handleUrlAnalysis()} />
-            <button onClick={handleUrlAnalysis} disabled={!!loadingStep || !urlInput} className="bg-white text-black hover:bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center transition-all disabled:opacity-50">
-              {loadingStep ? <RefreshCw className="w-5 h-5 animate-spin"/> : <Search className="w-5 h-5"/>}
-            </button>
-          </div>
-        </div>
-        {error && (
-          <div className="p-3 bg-red-500/10 text-red-400 rounded-xl text-center flex items-center justify-center gap-2 text-sm border border-red-500/20">
-            <AlertCircle className="w-4 h-4"/>{error}
-          </div>
-        )}
-      </div>
       <div className="flex-1 w-full h-full flex items-center justify-center p-4 md:p-12 relative z-20">
         {!loadingStep && !brandImages.landscape && (
           <div className="flex flex-col items-center justify-center h-full text-white w-full">

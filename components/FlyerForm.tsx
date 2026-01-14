@@ -895,6 +895,41 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
            />
          )}
          
+         {/* MODO CANVA: Mostrar input de URL para análisis de marca */}
+         {creationMode === 'canva' && (
+           <div className="space-y-4">
+             <div className="flex flex-col gap-2">
+               <label className="text-xs font-medium text-white/70 uppercase tracking-wider">
+                 Analizar Marca
+               </label>
+               <div className="flex gap-2 items-center">
+                 <input
+                   type="text"
+                   placeholder="Pega la URL (ej: nike.com)..."
+                   className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') {
+                       // Trigger análisis
+                       console.log('🔍 Análisis de URL desde sidebar');
+                     }
+                   }}
+                 />
+                 <button
+                   className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                   title="Analizar URL"
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                   </svg>
+                 </button>
+               </div>
+               <p className="text-xs text-white/40">
+                 Ingresa la URL de una marca para analizar su identidad visual y generar banners automáticamente
+               </p>
+             </div>
+           </div>
+         )}
+         
          {/* OCULTO: Indicador de Modo Magia - ahora solo se muestra en consola, no en UI */}
          {/* El análisis de URL ya no muestra este indicador para evitar duplicados */}
          
