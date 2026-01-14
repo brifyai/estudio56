@@ -115,6 +115,7 @@ const Dashboard: React.FC = () => {
   const [canvaHasImages, setCanvaHasImages] = useState<boolean>(false);
   const [canvaActiveFormat, setCanvaActiveFormat] = useState<'landscape' | 'portrait' | 'square'>('landscape');
   const [canvaSelectedStyle, setCanvaSelectedStyle] = useState<string>('modern');
+  const [canvaSelectedLayout, setCanvaSelectedLayout] = useState<string>('center');
   const [canvaBrandColors, setCanvaBrandColors] = useState<string[]>([]);
   
   // Brand Editor state
@@ -2303,9 +2304,11 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     canvaHasImages={canvaHasImages}
                     canvaActiveFormat={canvaActiveFormat}
                     canvaSelectedStyle={canvaSelectedStyle}
+                    canvaSelectedLayout={canvaSelectedLayout}
                     canvaBrandColors={canvaBrandColors}
                     onCanvaFormatChange={setCanvaActiveFormat}
                     onCanvaStyleChange={setCanvaSelectedStyle}
+                    onCanvaLayoutChange={setCanvaSelectedLayout}
                 />
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
@@ -2329,6 +2332,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 canvaAnalyzeTrigger={canvaAnalyzeTrigger}
                                 canvaActiveFormat={canvaActiveFormat}
                                 canvaSelectedStyle={canvaSelectedStyle}
+                                canvaSelectedLayout={canvaSelectedLayout}
                                 onCanvaImagesGenerated={(hasImages, colors) => {
                                   console.log('🎨 [App] onCanvaImagesGenerated ejecutado:', {
                                     hasImages,
@@ -2341,6 +2345,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 }}
                                 onCanvaFormatChange={setCanvaActiveFormat}
                                 onCanvaStyleChange={setCanvaSelectedStyle}
+                                onCanvaLayoutChange={setCanvaSelectedLayout}
                                 onExport={(imageDataUrl) => {
                                   console.log('🎨 [App] Imagen exportada desde Canvas Editor');
                                   // Actualizar imageUrl y draftImageUrl con la imagen exportada
@@ -2566,12 +2571,14 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       canvaAnalyzeTrigger={canvaAnalyzeTrigger}
                       canvaActiveFormat={canvaActiveFormat}
                       canvaSelectedStyle={canvaSelectedStyle}
+                      canvaSelectedLayout={canvaSelectedLayout}
                       onCanvaImagesGenerated={(hasImages, colors) => {
                         setCanvaHasImages(hasImages);
                         setCanvaBrandColors(colors);
                       }}
                       onCanvaFormatChange={setCanvaActiveFormat}
                       onCanvaStyleChange={setCanvaSelectedStyle}
+                      onCanvaLayoutChange={setCanvaSelectedLayout}
                       onExport={(imageDataUrl) => {
                         console.log('🎨 [App Mobile] Imagen exportada desde Canvas Editor');
                         // Actualizar imageUrl y draftImageUrl con la imagen exportada

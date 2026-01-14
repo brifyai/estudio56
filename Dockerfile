@@ -2,16 +2,6 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Force rebuild - timestamp: 2026-01-14-16:45:00
-# Hardcode ALL environment variables for Vite build
-ENV VITE_GEMINI_API_KEY=AIzaSyCjYfdiXyAJHHhpNn2FnSiZSA-xn5oqeLU
-ENV VITE_SUPABASE_URL=https://zskunemvffyqyxtfqyzm.supabase.co
-ENV VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpza3VuZW12ZmZ5cXl4dGZxeXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5ODI0MjcsImV4cCI6MjA4MjU1ODQyN30.fnBdIUv--_UhIg_843aSAKEHSdVtRCcAKdLGawRGTaw
-ENV REACT_APP_SUPABASE_URL=https://zskunemvffyqyxtfqyzm.supabase.co
-ENV REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpza3VuZW12ZmZ5cXl4dGZxeXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5ODI0MjcsImV4cCI6MjA4MjU1ODQyN30.fnBdIUv--_UhIg_843aSAKEHSdVtRCcAKdLGawRGTaw
-ENV REACT_APP_USE_VIDEO_WORKER=true
-ENV REACT_APP_VIDEO_WORKER_URL=https://estudio56-video-worker.brifyaimaster.workers.dev
-
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
@@ -19,13 +9,21 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Verify environment variables are set before build
-RUN echo "🔍 Verificando variables de entorno..." && \
-    echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" && \
-    echo "VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY:0:20}..." && \
-    echo "✅ Variables configuradas"
+# Create .env file with all variables for Vite build
+RUN echo "VITE_GEMINI_API_KEY=AIzaSyCjYfdiXyAJHHhpNn2FnSiZSA-xn5oqeLU" > .env && \
+    echo "VITE_SUPABASE_URL=https://zskunemvffyqyxtfqyzm.supabase.co" >> .env && \
+    echo "VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpza3VuZW12ZmZ5cXl4dGZxeXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5ODI0MjcsImV4cCI6MjA4MjU1ODQyN30.fnBdIUv--_UhIg_843aSAKEHSdVtRCcAKdLGawRGTaw" >> .env && \
+    echo "REACT_APP_SUPABASE_URL=https://zskunemvffyqyxtfqyzm.supabase.co" >> .env && \
+    echo "REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpza3VuZW12ZmZ5cXl4dGZxeXptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5ODI0MjcsImV4cCI6MjA4MjU1ODQyN30.fnBdIUv--_UhIg_843aSAKEHSdVtRCcAKdLGawRGTaw" >> .env && \
+    echo "REACT_APP_USE_VIDEO_WORKER=true" >> .env && \
+    echo "REACT_APP_VIDEO_WORKER_URL=https://estudio56-video-worker.brifyaimaster.workers.dev" >> .env
 
-# Build the application
+# Verify .env file was created
+RUN echo "🔍 Verificando archivo .env..." && \
+    cat .env && \
+    echo "✅ Variables configuradas en .env"
+
+# Build the application with production mode
 RUN npm run build
 
 # Verify build output

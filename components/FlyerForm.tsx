@@ -106,9 +106,11 @@ interface FlyerFormProps {
   canvaHasImages?: boolean;
   canvaActiveFormat?: 'landscape' | 'portrait' | 'square';
   canvaSelectedStyle?: string;
+  canvaSelectedLayout?: string;
   canvaBrandColors?: string[];
   onCanvaFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
   onCanvaStyleChange?: (styleId: string) => void;
+  onCanvaLayoutChange?: (layoutId: string) => void;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -186,9 +188,11 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   canvaHasImages = false,
   canvaActiveFormat = 'landscape',
   canvaSelectedStyle = 'modern',
+  canvaSelectedLayout = 'center',
   canvaBrandColors = [],
   onCanvaFormatChange,
-  onCanvaStyleChange
+  onCanvaStyleChange,
+  onCanvaLayoutChange
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -1073,6 +1077,34 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                          }`}
                        >
                          {style.label}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+                 
+                 {/* Selector de Layout de Texto */}
+                 <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                   <label className="text-[10px] font-bold text-white uppercase tracking-widest font-mono mb-3 block">Diseño de Texto</label>
+                   <div className="grid grid-cols-3 gap-2">
+                     {[
+                       { id: 'center', label: 'Centro', icon: '⬜' },
+                       { id: 'left', label: 'Izquierda', icon: '◧' },
+                       { id: 'right', label: 'Derecha', icon: '◨' },
+                       { id: 'bottom', label: 'Inferior', icon: '⬓' },
+                       { id: 'top', label: 'Superior', icon: '⬒' },
+                       { id: 'card', label: 'Tarjeta', icon: '▢' }
+                     ].map(layout => (
+                       <button
+                         key={layout.id}
+                         onClick={() => onCanvaLayoutChange?.(layout.id)}
+                         className={`px-2 py-2 rounded-lg text-xs font-medium transition-all flex flex-col items-center gap-1 ${
+                           canvaSelectedLayout === layout.id 
+                             ? 'bg-blue-500 text-white' 
+                             : 'bg-white/5 text-white/60 hover:bg-white/10'
+                         }`}
+                       >
+                         <span className="text-base">{layout.icon}</span>
+                         <span className="text-[9px]">{layout.label}</span>
                        </button>
                      ))}
                    </div>

@@ -26,9 +26,11 @@ interface FlyerDisplayProps {
   onCanvaImagesGenerated?: (hasImages: boolean, colors: string[]) => void;
   onCanvaFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
   onCanvaStyleChange?: (styleId: string) => void;
+  onCanvaLayoutChange?: (layoutId: string) => void;
   // NEW: Props para controles de Canva (formato y estilos)
   canvaActiveFormat?: 'landscape' | 'portrait' | 'square';
   canvaSelectedStyle?: string;
+  canvaSelectedLayout?: string;
   // Brand mode props
   brandData?: BrandData;
   imageUrl: string | null;
@@ -108,8 +110,10 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   onCanvaImagesGenerated, // NEW: Callback cuando se generan imágenes en Canva
   onCanvaFormatChange, // NEW: Callback para cambio de formato en Canva
   onCanvaStyleChange, // NEW: Callback para cambio de estilo en Canva
+  onCanvaLayoutChange, // NEW: Callback para cambio de layout en Canva
   canvaActiveFormat = 'landscape', // NEW: Formato activo en Canva
   canvaSelectedStyle = 'modern', // NEW: Estilo seleccionado en Canva
+  canvaSelectedLayout = 'center', // NEW: Layout seleccionado en Canva
   brandData, // NEW: Datos de marca para modo brand
   imageUrl,
   draftImageUrl,
@@ -1237,9 +1241,11 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
           analyzeTrigger={canvaAnalyzeTrigger}
           activeFormat={canvaActiveFormat}
           selectedStyle={canvaSelectedStyle as string}
+          selectedLayout={canvaSelectedLayout as string}
           onImagesGenerated={onCanvaImagesGenerated}
           onFormatChange={onCanvaFormatChange}
           onStyleChange={onCanvaStyleChange}
+          onLayoutChange={onCanvaLayoutChange}
           onExport={(imageDataUrl) => {
             console.log('🎨 Imagen exportada desde Canvas Editor');
             if (onExport) {
