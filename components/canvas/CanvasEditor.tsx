@@ -371,7 +371,6 @@ Estructura requerida:
           </div>
         )}
       </div>
-      {brandImages.landscape && !loadingStep && (
     </div>
   );
 }
