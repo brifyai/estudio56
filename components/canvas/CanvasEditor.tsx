@@ -91,6 +91,7 @@ export default function CanvasEditor({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [editableCopy, setEditableCopy] = useState({ headline: '', subhead: '', cta: '' });
   
+  // Refs para evitar bucles
   const lastExternalStyle = useRef<string | undefined>(undefined);
   const lastExternalFormat = useRef<string | undefined>(undefined);
   const isRegenerating = useRef(false);
@@ -111,22 +112,44 @@ export default function CanvasEditor({
   const generateAssetsForStyle = async (data: BrandData, styleId: string) => {
     console.log('[CanvasEditor] GENERANDO con estilo:', styleId);
     setLoadingStep('generating');
+    
     try {
       const style = BANNER_STYLES.find(s => s.id === styleId) || BANNER_STYLES[0];
       const finalPrompt = `PURE GRAPHIC/PHOTO ONLY. NO TEXT. SUBJECT: ${data.basePrompt}. STYLE: ${style.promptMod} COLORS: ${data.colors.join(', ')}. 8k resolution.`;
-      const [landscapeImg, portraitImg, squareImg] = await Promise.all([
-        generateImage(finalPrompt, "16:9"),
-        generateImage(finalPrompt, "9:16"),
-        generateImage(finalPrompt, "1:1")
+      
+      console.log('[CanvasEditor] Generando 3 imagenes en paralelo...');
+      const results = await Promise.all([
+        generateImage(finalPrompt, "16:9").catch(e => { console.error('Landscape error:', e); return null; }),
+        generateImage(finalPrompt, "9:16").catch(e => { console.error('Portrait error:', e); return null; }),
+        generateImage(finalPrompt, "1:1").catch(e => { console.error('Square error:', e); return null; })
       ]);
+      
+      const [landscapeImg, portraitImg, squareImg] = results;
+      console.log('[CanvasEditor] Resultados:', { 
+        landscape: landscapeImg ? 'OK' : 'FAIL', 
+        portrait: portraitImg ? 'OK' : 'FAIL', 
+        square: squareImg ? 'OK' : 'FAIL' 
+      });
+      
+      // Verificar que al menos una imagen se genero
+      if (!landscapeImg && !portraitImg && !squareImg) {
+        throw new Error('No se pudo generar ninguna imagen');
+      }
+      
       setBrandImages({ landscape: landscapeImg, portrait: portraitImg, square: squareImg });
-      console.log('[CanvasEditor] Imagenes generadas - QUITANDO LOADING');
+      console.log('[CanvasEditor] Imagenes guardadas - QUITANDO LOADING AHORA');
+      
+      // CRITICO: Quitar loading INMEDIATAMENTE
       setLoadingStep(null);
+      
+      // Notificar al padre
       if (onImagesGenerated) {
+        console.log('[CanvasEditor] Notificando onImagesGenerated');
         onImagesGenerated(true, data.colors);
       }
+      
     } catch (err: any) {
-      console.error('[CanvasEditor] Error:', err.message);
+      console.error('[CanvasEditor] Error en generateAssetsForStyle:', err.message);
       setError(err.message);
       setLoadingStep(null);
     }
@@ -150,6 +173,14 @@ export default function CanvasEditor({
     setBrandImages({ landscape: null, portrait: null, square: null });
     setLoadingStep('analyzing');
     
+    // TIMEOUT DE SEGURIDAD: Si despues de 2 minutos sigue cargando, quitar loading
+    const safetyTimeout = setTimeout(() => {
+      console.warn('[CanvasEditor] TIMEOUT DE SEGURIDAD - Quitando loading forzadamente');
+      setLoadingStep(null);
+      setError('El proceso tomo demasiado tiempo. Intenta de nuevo.');
+      isAnalyzing.current = false;
+    }, 120000); // 2 minutos
+    
     try {
       const key = import.meta.env.VITE_GEMINI_API_KEY;
       if (!key) throw new Error("API Key no configurada.");
@@ -158,8 +189,10 @@ export default function CanvasEditor({
       const analysisPrompt = `Investiga "${externalUrlInput}". Responde SOLO JSON: {"colors":["#hex1","#hex2"],"basePrompt":"descripcion visual","fontCategory":"sans-serif","copy":{"headline":"Titulo","subhead":"Subtitulo","cta":"Boton"}}`;
       const payload = { contents: [{ parts: [{ text: analysisPrompt }] }], tools: [{ google_search: {} }] };
       
+      console.log('[CanvasEditor] Enviando request a Gemini...');
       const resp = await fetchWithRetry(analysisUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await resp.json();
+      console.log('[CanvasEditor] Respuesta recibida de Gemini');
       
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("Sin respuesta de IA.");
@@ -170,23 +203,31 @@ export default function CanvasEditor({
       if (firstBrace !== -1 && lastBrace !== -1) jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
       
       const branding: BrandData = JSON.parse(jsonStr);
-      console.log('[CanvasEditor] Branding:', branding);
+      console.log('[CanvasEditor] Branding parseado:', branding);
       
       setBrandData(branding);
       setEditableCopy(branding.copy);
       
+      // Generar imagenes
+      console.log('[CanvasEditor] Iniciando generacion de imagenes...');
       await generateAssetsForStyle(branding, selectedStyle);
+      console.log('[CanvasEditor] Proceso completo terminado');
+      
+      // Limpiar timeout de seguridad
+      clearTimeout(safetyTimeout);
       
     } catch (err: any) {
-      console.error('[CanvasEditor] Error:', err.message);
+      console.error('[CanvasEditor] Error en handleUrlAnalysis:', err.message);
       setError(err.message);
       setLoadingStep(null);
+      clearTimeout(safetyTimeout);
       Swal.fire({ title: 'Error', text: err.message, icon: 'error', background: '#1a1a1a', color: '#fff' });
     } finally {
       isAnalyzing.current = false;
     }
   };
 
+  // Sincronizar formato externo
   useEffect(() => {
     if (externalActiveFormat && externalActiveFormat !== lastExternalFormat.current) {
       lastExternalFormat.current = externalActiveFormat;
@@ -194,6 +235,7 @@ export default function CanvasEditor({
     }
   }, [externalActiveFormat]);
 
+  // Sincronizar estilo externo Y REGENERAR
   useEffect(() => {
     if (externalSelectedStyle && externalSelectedStyle !== lastExternalStyle.current) {
       lastExternalStyle.current = externalSelectedStyle;
@@ -209,6 +251,7 @@ export default function CanvasEditor({
     }
   }, [externalSelectedStyle, brandData, loadingStep]);
 
+  // Trigger de analisis
   useEffect(() => {
     if (analyzeTrigger && analyzeTrigger > 0 && analyzeTrigger !== lastAnalyzeTrigger.current && externalUrlInput) {
       console.log('[CanvasEditor] Trigger:', analyzeTrigger);
@@ -248,6 +291,7 @@ export default function CanvasEditor({
     return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
   }, [isDragging, dragStart]);
 
+  // DEBUG: Log del estado de loading
   console.log('[CanvasEditor] Render - loadingStep:', loadingStep, 'hasImages:', !!brandImages.landscape);
 
   return (
