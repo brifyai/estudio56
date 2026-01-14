@@ -885,17 +885,6 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
          </div>
          )}
          
-         {/* MODO CANVA: Mostrar solo mensaje */}
-         {creationMode === 'canva' && (
-           <div className="p-8 bg-white/5 border border-white/10 rounded-xl text-center">
-             <div className="text-4xl mb-3">✏️</div>
-             <div className="text-white/70 text-sm mb-2">Editor Visual Canva</div>
-             <div className="text-white/40 text-xs">
-               El editor se encuentra en el panel "Diseño/Previsualización" →
-             </div>
-           </div>
-         )}
-
          {/* MODO BRAND: Mostrar controles del editor de marca */}
          {creationMode === 'brand' && brandData && setBrandData && setBrandActiveTab && (
            <BrandSidebar
