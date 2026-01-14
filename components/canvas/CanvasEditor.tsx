@@ -74,34 +74,42 @@ export default function CanvasEditor() {
     if (!key) throw new Error('API Key no configurada');
     
     const urlType = detectUrlType(inputUrl);
-    const prompt = `Busca informacion sobre "${inputUrl}" usando Google Search.
+    const prompt = `Analiza la marca "${inputUrl}" usando Google Search.
 
-EXTRACCION DE COLORES CORPORATIVOS - MUY IMPORTANTE:
-Analiza el sitio web y extrae los colores REALES que usa la marca:
-1. COLOR PRIMARIO: El color del texto principal grande (titulos, headers). Si es coral, salmon, naranja, rojo, etc - usa ESE color exacto.
-2. COLOR SECUNDARIO: El color de los botones principales (CTA buttons). Si son verdes, usa verde.
-3. COLOR ACENTO: Color de fondo o elementos decorativos.
+INSTRUCCIONES CRITICAS PARA COLORES:
+Debes identificar la PALETA DE COLORES CORPORATIVOS real de la marca.
 
-REGLAS DE COLORES:
-- NUNCA uses azul (#0000FF, #3B82F6, etc) a menos que la pagina REALMENTE sea azul
-- NUNCA uses colores genericos. Busca los colores ESPECIFICOS de la marca
-- Si el titulo principal es color CORAL/SALMON, el primary debe ser coral (#E8967A, #D4A574, etc)
-- Si los botones son VERDES, el secondary debe ser verde (#6B8E23, #808000, etc)
+Para sitios de BIENESTAR/PILATES/YOGA/SPA tipicamente usan:
+- Colores calidos: coral (#E8967A), salmon (#FA8072), terracota (#E2725B), durazno (#FFCBA4)
+- Verdes naturales: sage (#9DC183), oliva (#808000), menta (#98FF98)
+- Neutros calidos: beige (#F5F5DC), crema (#FFFDD0), arena (#C2B280)
 
-Responde SOLO JSON (sin markdown):
+Para sitios TECH/STARTUP tipicamente usan:
+- Azules: (#3B82F6), (#2563EB), (#1E40AF)
+- Morados: (#8B5CF6), (#7C3AED)
+
+Para sitios de LUJO/PREMIUM tipicamente usan:
+- Dorados: (#D4AF37), (#FFD700)
+- Negros elegantes: (#1A1A1A), (#2D2D2D)
+
+DETECTA el rubro y asigna colores APROPIADOS para ese rubro.
+NO uses negro (#000000, #1A1A1A, #2D2D2D) como color primario para marcas de bienestar.
+NO uses verde brillante (#00FF00) - usa verdes naturales.
+
+Responde SOLO JSON:
 {
-  "name": "nombre del negocio",
-  "industry": "rubro especifico",
-  "tone": "tono de comunicacion",
-  "audience": "audiencia objetivo",
+  "name": "nombre",
+  "industry": "rubro",
+  "tone": "tono",
+  "audience": "audiencia",
   "colors": {
-    "primary": "#hexcolor del TITULO PRINCIPAL (coral, rojo, naranja, etc - el que SEA)",
-    "secondary": "#hexcolor de los BOTONES (verde, azul, etc - el que SEA)", 
-    "accent": "#hexcolor del FONDO o decoracion"
+    "primary": "#hexcolor calido si es bienestar (coral, salmon, terracota)",
+    "secondary": "#hexcolor de acento (verde sage, oliva para bienestar)",
+    "accent": "#hexcolor neutro (beige, crema, blanco roto)"
   },
-  "description": "descripcion en ESPAÑOL",
-  "tagline": "slogan principal en ESPAÑOL",
-  "cta": "texto del boton en ESPAÑOL"
+  "description": "descripcion ESPAÑOL",
+  "tagline": "slogan ESPAÑOL",
+  "cta": "boton ESPAÑOL"
 }`;
 
     const response = await fetch(
