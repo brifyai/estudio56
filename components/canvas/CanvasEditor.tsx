@@ -183,13 +183,13 @@ Responde SOLO JSON:
       
       // Paso 2: Generar preview (solo 1 imagen)
       const style = VISUAL_STYLES.find(s => s.id === selectedStyle) || VISUAL_STYLES[0];
-      const imagePrompt = `Professional marketing banner for ${analysis.industry} business.
-Brand: ${analysis.name}. ${analysis.description}.
+      const imagePrompt = `PURE PHOTOGRAPHY ONLY - ABSOLUTELY NO TEXT ALLOWED.
+Professional ${analysis.industry} studio photography.
+Scene: ${analysis.description}.
 Style: ${style.prompt}
-Use brand colors harmoniously in the composition.
-CRITICAL: NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS in the image.
-If showing people: anatomically correct human bodies, natural poses, correct proportions, realistic limbs.
-Pure visual design. 8K photorealistic quality. Modern UX aesthetic.`;
+FORBIDDEN: Any text, letters, words, numbers, logos, watermarks, captions, titles, subtitles.
+People must have: anatomically correct bodies, natural poses, correct proportions.
+8K photorealistic quality. Clean composition without any typography.`;
       
       const preview = await generateImage(imagePrompt, '16:9');
       setAssets({ preview, landscape: preview, portrait: null, square: null });
@@ -211,13 +211,13 @@ Pure visual design. 8K photorealistic quality. Modern UX aesthetic.`;
     
     try {
       const style = VISUAL_STYLES.find(s => s.id === selectedStyle) || VISUAL_STYLES[0];
-      const basePrompt = `Professional marketing content for ${brand.industry} business.
-Brand: ${brand.name}. ${brand.description}.
+      const basePrompt = `PURE PHOTOGRAPHY ONLY - ABSOLUTELY NO TEXT ALLOWED.
+Professional ${brand.industry} studio photography.
+Scene: ${brand.description}.
 Style: ${style.prompt}
-Use brand colors harmoniously.
-CRITICAL: NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS in the image.
-If showing people: anatomically correct human bodies, natural poses, correct proportions, realistic limbs.
-Pure visual. 8K photorealistic quality.`;
+FORBIDDEN: Any text, letters, words, numbers, logos, watermarks, captions, titles, subtitles.
+People must have: anatomically correct bodies, natural poses, correct proportions.
+8K photorealistic quality. Clean composition without any typography.`;
       
       // Generar los otros formatos
       const [portrait, square] = await Promise.all([
@@ -251,13 +251,13 @@ Pure visual. 8K photorealistic quality.`;
     
     try {
       const style = VISUAL_STYLES.find(s => s.id === selectedStyle) || VISUAL_STYLES[0];
-      const imagePrompt = `Professional marketing banner for ${brand.industry} business.
-Brand: ${brand.name}. ${brand.description}.
+      const imagePrompt = `PURE PHOTOGRAPHY ONLY - ABSOLUTELY NO TEXT ALLOWED.
+Professional ${brand.industry} studio photography.
+Scene: ${brand.description}.
 Style: ${style.prompt}
-Use brand colors harmoniously in the composition.
-CRITICAL: NO TEXT, NO LETTERS, NO WORDS, NO NUMBERS in the image.
-If showing people: anatomically correct human bodies, natural poses, correct proportions, realistic limbs.
-Pure visual design. 8K photorealistic quality. Modern UX aesthetic.`;
+FORBIDDEN: Any text, letters, words, numbers, logos, watermarks, captions, titles, subtitles.
+People must have: anatomically correct bodies, natural poses, correct proportions.
+8K photorealistic quality. Clean composition without any typography.`;
       
       const preview = await generateImage(imagePrompt, '16:9');
       setAssets({ preview, landscape: preview, portrait: null, square: null });
