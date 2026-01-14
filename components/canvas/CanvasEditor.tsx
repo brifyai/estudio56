@@ -66,6 +66,10 @@ interface CanvasEditorProps {
   analyzeTrigger?: number;
   loadingStep?: string | null;
   error?: string | null;
+  // NEW: Callbacks para controles externos
+  onFormatChange?: (format: 'landscape' | 'portrait' | 'square') => void;
+  onStyleChange?: (styleId: string) => void;
+  onImagesGenerated?: (hasImages: boolean, colors: string[]) => void;
 }
 
 export default function CanvasEditor({ 
@@ -76,7 +80,10 @@ export default function CanvasEditor({
   onUrlInputChange,
   analyzeTrigger,
   loadingStep: externalLoadingStep,
-  error: externalError
+  error: externalError,
+  onFormatChange,
+  onStyleChange,
+  onImagesGenerated
 }: CanvasEditorProps = {}) {
   const [internalUrlInput, setInternalUrlInput] = useState('');
   const [brandData, setBrandData] = useState<BrandData | null>(null);
@@ -242,6 +249,18 @@ Estructura requerida:
     if (!brandData || loadingStep) return;
     setSelectedStyle(newStyleId);
     generateAssetsForStyle(brandData, newStyleId);
+    // Notificar al padre del cambio de estilo
+    if (onStyleChange) {
+      onStyleChange(newStyleId);
+    }
+  };
+  
+  const handleFormatChange = (newFormat: 'landscape' | 'portrait' | 'square') => {
+    setActiveFormat(newFormat);
+    // Notificar al padre del cambio de formato
+    if (onFormatChange) {
+      onFormatChange(newFormat);
+    }
   };
 
   const handleDownload = async () => {
