@@ -21,6 +21,7 @@ interface FlyerDisplayProps {
   creationMode?: CreationMode;
   onExport?: (imageDataUrl: string) => void; // NEW: Callback para exportar desde Canva
   canvaUrlInput?: string; // NEW: URL para análisis en modo Canva
+  canvaAnalyzeTrigger?: number; // NEW: Trigger para forzar análisis en modo Canva
   // Brand mode props
   brandData?: BrandData;
   imageUrl: string | null;
@@ -96,6 +97,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
   creationMode = 'design', // NEW: Modo de creación
   onExport, // NEW: Callback para exportar desde Canva
   canvaUrlInput, // NEW: URL para análisis en modo Canva
+  canvaAnalyzeTrigger, // NEW: Trigger para forzar análisis en modo Canva
   brandData, // NEW: Datos de marca para modo brand
   imageUrl,
   draftImageUrl,
@@ -1220,6 +1222,7 @@ export const FlyerDisplay: React.FC<FlyerDisplayProps> = ({
         <CanvasEditor
           aspectRatio={aspectRatio}
           urlInput={canvaUrlInput}
+          analyzeTrigger={canvaAnalyzeTrigger}
           onExport={(imageDataUrl) => {
             console.log('🎨 Imagen exportada desde Canvas Editor');
             if (onExport) {

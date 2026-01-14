@@ -110,6 +110,7 @@ const Dashboard: React.FC = () => {
   
   // NEW: Estado para URL de análisis en modo Canva
   const [canvaUrlInput, setCanvaUrlInput] = useState<string>('');
+  const [canvaAnalyzeTrigger, setCanvaAnalyzeTrigger] = useState<number>(0); // Trigger para forzar análisis
   
   // Brand Editor state
   const [brandData, setBrandData] = useState<BrandData>(defaultBrandData);
@@ -2292,6 +2293,8 @@ progressAlert.updateProgress(60, 'Renderizando...');
                     // NEW: Props para modo Canva
                     canvaUrlInput={canvaUrlInput}
                     setCanvaUrlInput={setCanvaUrlInput}
+                    canvaAnalyzeTrigger={canvaAnalyzeTrigger}
+                    setCanvaAnalyzeTrigger={setCanvaAnalyzeTrigger}
                 />
                 
                 {/* MOBILE PREVIEW - Debajo del formulario, antes del editor de texto */}
@@ -2312,6 +2315,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                                 creationMode={creationMode}
                                 brandData={brandData}
                                 canvaUrlInput={canvaUrlInput}
+                                canvaAnalyzeTrigger={canvaAnalyzeTrigger}
                                 onExport={(imageDataUrl) => {
                                   console.log('🎨 [App] Imagen exportada desde Canvas Editor');
                                   // Actualizar imageUrl y draftImageUrl con la imagen exportada
@@ -2534,6 +2538,7 @@ progressAlert.updateProgress(60, 'Renderizando...');
                       creationMode={creationMode}
                       brandData={brandData}
                       canvaUrlInput={canvaUrlInput}
+                      canvaAnalyzeTrigger={canvaAnalyzeTrigger}
                       onExport={(imageDataUrl) => {
                         console.log('🎨 [App Mobile] Imagen exportada desde Canvas Editor');
                         // Actualizar imageUrl y draftImageUrl con la imagen exportada

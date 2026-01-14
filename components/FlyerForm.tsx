@@ -99,6 +99,8 @@ interface FlyerFormProps {
   // NEW: Props para modo Canva
   canvaUrlInput?: string;
   setCanvaUrlInput?: (url: string) => void;
+  canvaAnalyzeTrigger?: number;
+  setCanvaAnalyzeTrigger?: (trigger: number) => void;
 }
 
 export const FlyerForm: React.FC<FlyerFormProps> = ({
@@ -169,7 +171,9 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
   onStoryArtStyleSelected = (_id: StoryArtStyleId | null) => {},
   // NEW: Props para modo Canva
   canvaUrlInput: canvaUrlInputProp = '',
-  setCanvaUrlInput: setCanvaUrlInputProp
+  setCanvaUrlInput: setCanvaUrlInputProp,
+  canvaAnalyzeTrigger: canvaAnalyzeTriggerProp = 0,
+  setCanvaAnalyzeTrigger: setCanvaAnalyzeTriggerProp
 }) => {
   const [inputMode, setInputMode] = useState<'text' | 'url'>('text');
   const [urlInput, setUrlInput] = useState('');
@@ -746,9 +750,13 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
       }
     });
     
-    // Actualizar el estado para que el CanvasEditor reciba el URL y ejecute el análisis
-    // El CanvasEditor tiene un useEffect que detecta cuando cambia el URL externo
-    console.log('🔍 [Canva] Enviando URL al CanvasEditor:', canvaUrlInput);
+    // Incrementar el trigger para forzar el análisis en CanvasEditor
+    // Esto funciona incluso si la URL no cambió (re-análisis de la misma URL)
+    if (setCanvaAnalyzeTriggerProp) {
+      setCanvaAnalyzeTriggerProp(canvaAnalyzeTriggerProp + 1);
+    }
+    
+    console.log('🔍 [Canva] Enviando URL al CanvasEditor:', canvaUrlInput, 'Trigger:', canvaAnalyzeTriggerProp + 1);
     
     // El CanvasEditor cerrará la alerta cuando termine
     // Pero agregamos un timeout de seguridad por si algo falla
