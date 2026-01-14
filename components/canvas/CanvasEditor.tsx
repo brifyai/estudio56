@@ -367,7 +367,7 @@ NO TEXT IN IMAGE. Pure visual design. 8K quality. Modern UX aesthetic.`;
                   {Object.entries(brand.colors).map(([key, color]) => (
                     <div key={key} className="flex-1 text-center">
                       <div className="w-full h-8 rounded-lg mb-1" style={{ backgroundColor: color }} />
-                      <span className="text-xs text-gray-500">{color}</span>
+                      
                     </div>
                   ))}
                 </div>
