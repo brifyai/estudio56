@@ -263,7 +263,9 @@ Estructura requerida:
   }, [isDragging, dragStart]);
 
   return (
-    <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100">
+    <div className="min-h-screen text-white font-sans flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-b from-[#0A0A0A] to-[#050505]">
+      {/* Grainy texture overlay */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-100 pointer-events-none"></div>
       {/* Grid Background - mismo que el área de diseño */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
       <div className={`transition-all duration-500 z-40 w-full max-w-3xl px-6 flex flex-col gap-4 relative ${brandImages.landscape || loadingStep ? 'absolute top-8' : ''}`}>
