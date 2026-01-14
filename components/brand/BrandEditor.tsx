@@ -185,7 +185,7 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
   ];
 
   // Componente GeneratedLogo
-  const GeneratedLogo = ({ className = "h-32", showText = true, forceWhiteText = false, forceMonochrome = false }: { className?: string, showText?: boolean, forceWhiteText?: boolean, forceMonochrome?: boolean }) => {
+  const GeneratedLogo = ({ className = "h-32", showText = true, forceWhiteText = true, forceMonochrome = false }: { className?: string, showText?: boolean, forceWhiteText?: boolean, forceMonochrome?: boolean }) => {
     const IconComponent = ALL_ICONS[brand.genLogoIcon] || Hexagon;
     const isHorizontal = brand.genLogoLayout === 'horizontal';
     

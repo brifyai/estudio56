@@ -175,7 +175,7 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
   }
 
   // Componente GeneratedLogo
-  const GeneratedLogo = ({ className = "h-32", showText = true, forceWhiteText = false }: { className?: string, showText?: boolean, forceWhiteText?: boolean }) => {
+  const GeneratedLogo = ({ className = "h-32", showText = true, forceWhiteText = true }: { className?: string, showText?: boolean, forceWhiteText?: boolean }) => {
     const IconComponent = ALL_ICONS[brand.genLogoIcon] || Hexagon;
     const isHorizontal = brand.genLogoLayout === 'horizontal';
     
