@@ -85,9 +85,9 @@ Investiga y responde SOLO con este JSON (sin markdown):
   "tone": "tono de comunicacion (formal, casual, premium, juvenil, profesional)",
   "audience": "audiencia objetivo",
   "colors": {
-    "primary": "#hexcolor principal de la marca",
-    "secondary": "#hexcolor secundario",
-    "accent": "#hexcolor de acento"
+    "primary": "#hexcolor principal DISTINTIVO de la marca (NO usar blanco #FFFFFF ni negro #000000, buscar el color que identifica la marca)",
+    "secondary": "#hexcolor secundario que complementa al primario",
+    "accent": "#hexcolor de acento vibrante para llamados a accion"
   },
   "description": "descripcion corta del negocio en 1 linea EN ESPAÑOL",
   "tagline": "slogan o frase principal de la marca EN ESPAÑOL",
