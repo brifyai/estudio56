@@ -1033,8 +1033,8 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
              {/* DEBUG: Log del estado de canvaHasImages */}
              {console.log('🔍 [FlyerForm] canvaHasImages:', canvaHasImages, 'creationMode:', creationMode)}
              
-             {/* Controles de formato y estilos - Solo mostrar cuando hay imágenes */}
-             {canvaHasImages && (
+             {/* Controles de formato y estilos - SIEMPRE MOSTRAR en modo Canva */}
+             {creationMode === 'canva' && (
                <>
                  {/* Selector de formato */}
                  <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
