@@ -1049,7 +1049,15 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                      ].map((fmt) => (
                        <button
                          key={fmt.id}
-                         onClick={() => onCanvaFormatChange?.(fmt.id as any)}
+                         onClick={() => {
+                           console.log('🖱️ [FlyerForm] Click en formato:', fmt.id, 'canvaHasImages:', canvaHasImages);
+                           if (onCanvaFormatChange) {
+                             console.log('✅ [FlyerForm] Ejecutando onCanvaFormatChange');
+                             onCanvaFormatChange(fmt.id as any);
+                           } else {
+                             console.error('❌ [FlyerForm] onCanvaFormatChange es undefined!');
+                           }
+                         }}
                          disabled={!canvaHasImages}
                          className={`flex-1 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
                            canvaActiveFormat === fmt.id
@@ -1073,7 +1081,15 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                      {BANNER_STYLES.map((style) => (
                        <button
                          key={style.id}
-                         onClick={() => onCanvaStyleChange?.(style.id)}
+                         onClick={() => {
+                           console.log('🖱️ [FlyerForm] Click en estilo:', style.id, 'canvaHasImages:', canvaHasImages);
+                           if (onCanvaStyleChange) {
+                             console.log('✅ [FlyerForm] Ejecutando onCanvaStyleChange');
+                             onCanvaStyleChange(style.id);
+                           } else {
+                             console.error('❌ [FlyerForm] onCanvaStyleChange es undefined!');
+                           }
+                         }}
                          disabled={!canvaHasImages}
                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
                            canvaSelectedStyle === style.id
