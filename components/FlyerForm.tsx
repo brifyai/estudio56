@@ -1050,11 +1050,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                        <button
                          key={fmt.id}
                          onClick={() => onCanvaFormatChange?.(fmt.id as any)}
+                         disabled={!canvaHasImages}
                          className={`flex-1 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
                            canvaActiveFormat === fmt.id
                              ? 'bg-white/10 border-white text-white'
                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                         }`}
+                         } ${!canvaHasImages ? 'opacity-50 cursor-not-allowed' : ''}`}
                        >
                          <fmt.icon className="w-4 h-4" />
                          <span>{fmt.label}</span>
@@ -1073,11 +1074,12 @@ export const FlyerForm: React.FC<FlyerFormProps> = ({
                        <button
                          key={style.id}
                          onClick={() => onCanvaStyleChange?.(style.id)}
+                         disabled={!canvaHasImages}
                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-all cursor-pointer ${
                            canvaSelectedStyle === style.id
                              ? 'bg-white/10 border-white text-white'
                              : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                         }`}
+                         } ${!canvaHasImages ? 'opacity-50 cursor-not-allowed' : ''}`}
                        >
                          <style.icon className="w-3 h-3 flex-shrink-0" />
                          <span className="text-left leading-tight">{style.label}</span>
