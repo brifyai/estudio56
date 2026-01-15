@@ -23,10 +23,10 @@ RUN npm prune --production
 # Copy Nginx config
 COPY nginx.conf /etc/nginx/http.d/default.conf
 
-# Create startup script
-RUN echo '#!/bin/sh' > /start.sh && \
-    echo 'node /app/server.js &' >> /start.sh && \
-    echo 'nginx -g "daemon off;"' >> /start.sh && \
+# Create startup script usando printf (más seguro y portable)
+RUN printf '#!/bin/sh\n\
+node /app/server.js &\n\
+nginx -g "daemon off;"\n' > /start.sh && \
     chmod +x /start.sh
 
 # Expose port
