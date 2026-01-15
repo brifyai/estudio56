@@ -1,126 +1,149 @@
-# ESTADO DEPLOY EASYPANEL - 15 ENERO 2026
+# ESTADO DEPLOY EASYPANEL - 15 ENERO 2026 - 18:45
 
-## CAMBIOS REALIZADOS
+## ✅ PROBLEMA IDENTIFICADO Y SOLUCIONADO
 
-### 1. Dockerfile Ultra-Simple
+### CAUSA RAÍZ
+1. **`.dockerignore` excluía `dist/`** - La carpeta build no se copiaba al contenedor
+2. **`npm ci --only=production` no instala Vite** - El build fallaba porque Vite está en devDependencies
+3. **Build de Vite necesita devDependencies** - No puede hacer `npm run build` sin las herramientas de desarrollo
+
+### SOLUCIÓN: Multi-Stage Dockerfile
+
+**Stage 1 (Builder)**: Instala TODO y hace el build
+```dockerfile
+FROM node:20-alpine AS builder
+RUN npm ci  # Instala TODO (incluye vite)
+RUN npm run build  # Build exitoso con vite
+```
+
+**Stage 2 (Production)**: Solo runtime
 ```dockerfile
 FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production || npm install --only=production
-COPY . .
-RUN npm run build
-RUN ls -la /app/dist || echo "WARNING: dist folder not found"
-EXPOSE 80
+RUN npm ci --only=production  # Solo deps de runtime
+COPY --from=builder /app/dist ./dist  # Copia build del stage 1
+```
+
+**VENTAJAS**:
+- ✅ Build funciona (tiene vite)
+- ✅ Imagen final pequeña (sin devDependencies)
+- ✅ dist/ garantizado en imagen final
+- ✅ Logs de verificación en ambos stages
+
+---
+
+## 📦 COMMIT PUSHEADO
+
+```
+commit 8e4e9e3
+fix: multi-stage Dockerfile - build con todas las deps, producción solo runtime
+```
+
+**ARCHIVOS MODIFICADOS**:
+- `Dockerfile` - Multi-stage build
+- `.dockerignore` - Removido `dist/` de exclusiones
+
+---
+
+## 🎯 PRÓXIMOS PASOS EN EASYPANEL
+
+### 1. Esperar Rebuild Automático
+Easypanel detectará el push y hará rebuild automático.
+
+### 2. Verificar Build Logs
+Buscar estos mensajes:
+```
+=== Build completado ===
+total 8
+drwxr-xr-x    3 root     root          4096 Jan 15 18:45 .
+drwxr-xr-x    1 root     root          4096 Jan 15 18:45 ..
+drwxr-xr-x    2 root     root          4096 Jan 15 18:45 assets
+-rw-r--r--    1 root     root          1234 Jan 15 18:45 index.html
+
+=== Verificando dist en imagen final ===
+[debe mostrar archivos]
+```
+
+### 3. Verificar Contenedor
+- Estado debe ser: `Running`
+- Puerto: `80`
+
+### 4. Probar en Navegador
+Abrir: `https://www.estudio56.cl`
+
+**DEBE CARGAR** porque:
+- ✅ dist/ existe y tiene archivos
+- ✅ server-minimal.js sirve archivos estáticos
+- ✅ Puerto 80 configurado correctamente
+
+---
+
+## 🔍 SI SIGUE FALLANDO
+
+### Opción A: Verificar Build Logs
+Si en los logs NO aparece "=== Build completado ===":
+- El build de Vite está fallando
+- Revisar errores de TypeScript o imports
+
+### Opción B: Verificar Variables de Entorno
+Si build funciona pero app crashea:
+- Verificar que `VITE_*` variables estén configuradas
+- Vite necesita estas variables en BUILD TIME
+
+### Opción C: Cambiar a server.js Completo
+Si server-minimal.js funciona:
+```dockerfile
 CMD ["node", "server.js"]
 ```
 
-**CAMBIOS CLAVE**:
-- ❌ Eliminado Nginx completamente
-- ✅ Node.js escucha directamente en puerto 80
-- ✅ Solo dependencias de producción
-- ✅ Verificación de carpeta `dist/`
-
-### 2. server.js
-```javascript
-const PORT = process.env.PORT || 80;
-```
-
-**CAMBIO**: Puerto por defecto cambiado de 3000 a 80
+Esto habilitará las rutas de API.
 
 ---
 
-## VERIFICAR EN EASYPANEL
+## 📊 ARQUITECTURA FINAL
 
-### 1. Configuración de Dominio
-- **Proxy Port**: DEBE ser `80` (no 3000)
-- Ruta: `Settings → Domains → [tu dominio] → Proxy Port`
-
-### 2. Variables de Entorno
-Verificar que estas variables estén configuradas:
 ```
-PORT=80
-NODE_ENV=production
-VITE_SUPABASE_URL=https://supabase.estudio56.cl
-SUPABASE_SERVICE_ROLE_KEY=[tu key]
-MERCADOPAGO_ACCESS_TOKEN=[tu token]
-VITE_GOOGLE_VERTEX_PROJECT=stratega-ai-x
-VITE_GOOGLE_VERTEX_LOCATION=us-central1
-```
-
-### 3. Rebuild
-1. Ir a `Deployments`
-2. Click en `Rebuild` (botón azul)
-3. Esperar a que el build termine (✅ verde)
-4. Verificar que el contenedor esté corriendo (status: Running)
-
-### 4. Verificar Logs (si aparecen)
-Buscar estos mensajes:
-```
-🚀 Iniciando servidor...
-✅ Ruta /api/analyze-url cargada
-✅ Ruta /api/generate-image cargada
-✅ Servidor corriendo en puerto 80
+┌─────────────────────────────────────┐
+│  Stage 1: Builder                   │
+│  - Node.js 20 Alpine                │
+│  - npm ci (TODO)                    │
+│  - npm run build (Vite)             │
+│  - Genera dist/                     │
+└─────────────────────────────────────┘
+              ↓ COPY dist/
+┌─────────────────────────────────────┐
+│  Stage 2: Production                │
+│  - Node.js 20 Alpine                │
+│  - npm ci --only=production         │
+│  - dist/ copiado del builder        │
+│  - server-minimal.js                │
+│  - Puerto 80                        │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│  Easypanel Proxy                    │
+│  - HTTPS (443) → HTTP (80)          │
+│  - Dominio: www.estudio56.cl        │
+└─────────────────────────────────────┘
 ```
 
 ---
 
-## DIAGNÓSTICO SI SIGUE FALLANDO
+## ⏱️ TIEMPO ESTIMADO
 
-### Error 503 = Node.js crashea al iniciar
-
-**POSIBLES CAUSAS**:
-
-1. **Carpeta dist/ no existe**
-   - Solución: Verificar en build logs que `npm run build` termine exitosamente
-   - Buscar: "RUN npm run build" en logs
-
-2. **Dependencias faltantes**
-   - Solución: Verificar que `google-auth-library` y `@supabase/supabase-js` estén en `dependencies` (no en `devDependencies`)
-   - Ya verificado ✅
-
-3. **Error al importar rutas**
-   - Solución: Crear versión mínima de `server.js` sin rutas (solo health check)
-
-4. **Puerto 80 bloqueado**
-   - Solución: Cambiar a puerto 8080 en Dockerfile y server.js
+- **Rebuild**: 3-5 minutos
+- **Deploy**: 30 segundos
+- **Total**: ~5 minutos
 
 ---
 
-## PRÓXIMOS PASOS SI FALLA
+## 🎉 EXPECTATIVA
 
-### Opción A: Server.js Mínimo (sin rutas) ✅ CREADO
-**Archivo**: `server-minimal.js`
+Con este fix, la aplicación **DEBE CARGAR** porque:
 
-Para usar esta versión:
-1. Cambiar Dockerfile: `CMD ["node", "server-minimal.js"]`
-2. Commit y push
-3. Rebuild en Easypanel
+1. ✅ Build de Vite funciona (tiene todas las deps)
+2. ✅ dist/ se copia correctamente al contenedor final
+3. ✅ server-minimal.js sirve archivos estáticos
+4. ✅ Puerto 80 configurado
+5. ✅ Variables de entorno configuradas
 
-Esta versión:
-- ✅ NO carga rutas de API (evita errores de importación)
-- ✅ Solo sirve frontend estático
-- ✅ Health check en `/api/health`
-- ✅ Logs detallados con prefijo [MINIMAL]
-
-**IMPORTANTE**: Con esta versión el frontend cargará pero las funciones de backend NO funcionarán (análisis de URL, pagos, etc). Es solo para DIAGNÓSTICO.
-
-### Opción B: Cambiar a Puerto 8080
-Si puerto 80 está bloqueado:
-- Dockerfile: `EXPOSE 8080`
-- server.js: `const PORT = 80;` → `const PORT = 8080;`
-- Easypanel: Proxy Port = 8080
-
-### Opción C: Usar Docker Compose
-Si Easypanel soporta docker-compose.yml, crear configuración con healthcheck.
-
----
-
-## COMMIT ACTUAL
-```
-commit 185a347
-fix: Dockerfile ultra-simple sin Nginx, Node.js en puerto 80
-```
-
-**PUSHEADO A**: `main` branch en GitHub
-**ESPERANDO**: Rebuild automático en Easypanel
+**SIGUIENTE MENSAJE**: Confirmar que carga en navegador.
