@@ -20,5 +20,5 @@ RUN npm prune --production
 # Expose port
 EXPOSE 3000
 
-# Start server (will load .env from Easypanel environment variables)
+# Start server directly with node (no shell, no nginx)
 CMD ["node", "server.js"]
