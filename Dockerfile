@@ -2,38 +2,38 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Instalar Nginx
-RUN apk add --no-cache nginx
-
-# Cache bust para forzar rebuild en Easypanel
-ARG CACHEBUST=1
+# Instalar Nginx y bash
+RUN apk add --no-cache nginx bash
 
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm ci
+# Install dependencies
+RUN npm ci || npm install
 
-# Copy source code
+# Copy all source code
 COPY . .
 
 # Build frontend
 RUN npm run build
 
-# Remove dev dependencies
-RUN npm prune --production
+# Clean dev dependencies
+RUN npm prune --production || true
 
-# Copy Nginx config
+# Setup Nginx
 COPY nginx.conf /etc/nginx/http.d/default.conf
 
-# Create startup script usando printf (más seguro y portable)
-RUN printf '#!/bin/sh\n\
-node /app/server.js &\n\
-nginx -g "daemon off;"\n' > /start.sh && \
-    chmod +x /start.sh
+# Create startup script
+RUN cat > /start.sh << 'EOF'
+#!/bin/sh
+echo "Starting Node.js backend..."
+node /app/server.js &
+echo "Starting Nginx..."
+nginx -g "daemon off;"
+EOF
 
-# Expose port
+RUN chmod +x /start.sh
+
 EXPOSE 80
 
-# Start both Node.js and Nginx
 CMD ["/start.sh"]
