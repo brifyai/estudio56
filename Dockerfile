@@ -5,6 +5,9 @@ WORKDIR /app
 # Instalar Nginx
 RUN apk add --no-cache nginx
 
+# Cache bust para forzar rebuild en Easypanel
+ARG CACHEBUST=1
+
 # Copy package files
 COPY package*.json ./
 
