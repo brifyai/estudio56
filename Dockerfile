@@ -81,10 +81,8 @@ COPY --from=builder /app/dist ./dist
 COPY server ./server
 COPY server.js .
 
-# Create startup script that generates .env from build arguments
-RUN cat > /app/start.sh << 'SCRIPT'
-#!/bin/sh
-cat > /app/.env << ENVEOF
+# Create .env for runtime with all variables
+RUN cat > .env << 'EOF'
 NODE_ENV=${NODE_ENV:-production}
 PORT=${PORT:-3000}
 VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
@@ -103,13 +101,8 @@ MERCADOPAGO_ACCESS_TOKEN=${MERCADOPAGO_ACCESS_TOKEN}
 MERCADOPAGO_PUBLIC_KEY=${MERCADOPAGO_PUBLIC_KEY}
 SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
 SECRETS_SCAN_SMART_DETECTION_ENABLED=${SECRETS_SCAN_SMART_DETECTION_ENABLED}
-ENVEOF
-echo "✅ .env generated"
-exec node /app/server.js
-SCRIPT
-
-RUN chmod +x /app/start.sh
+EOF
 
 EXPOSE 3000
 
-CMD ["/app/start.sh"]
+CMD ["node", "server.js"]
