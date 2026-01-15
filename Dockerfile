@@ -2,74 +2,23 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Accept build arguments
-ARG VITE_GEMINI_API_KEY
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
-ARG REACT_APP_SUPABASE_URL
-ARG REACT_APP_USE_VIDEO_WORKER
-ARG REACT_APP_VIDEO_WORKER_URL
-ARG VITE_GOOGLE_VERTEX_PROJECT
-ARG VITE_GOOGLE_VERTEX_LOCATION
-ARG FAL_AI_API_KEY
-ARG GEMINI_API_KEY
-ARG GOOGLE_VERTEX_PROJECT
-ARG GOOGLE_VERTEX_LOCATION
-ARG MERCADOPAGO_ACCESS_TOKEN
-ARG MERCADOPAGO_PUBLIC_KEY
-ARG SUPABASE_SERVICE_ROLE_KEY
-ARG SECRETS_SCAN_SMART_DETECTION_ENABLED
-ARG MERCADOPAGO_PUBLIC_KEY_BUILD
-
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install ALL dependencies (including dev dependencies for build)
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Create .env for build
-RUN echo "VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY" > .env && \
-    echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" >> .env && \
-    echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env && \
-    echo "REACT_APP_SUPABASE_URL=$REACT_APP_SUPABASE_URL" >> .env && \
-    echo "REACT_APP_USE_VIDEO_WORKER=$REACT_APP_USE_VIDEO_WORKER" >> .env && \
-    echo "REACT_APP_VIDEO_WORKER_URL=$REACT_APP_VIDEO_WORKER_URL" >> .env && \
-    echo "VITE_GOOGLE_VERTEX_PROJECT=$VITE_GOOGLE_VERTEX_PROJECT" >> .env && \
-    echo "VITE_GOOGLE_VERTEX_LOCATION=$VITE_GOOGLE_VERTEX_LOCATION" >> .env && \
-    echo "FAL_AI_API_KEY=$FAL_AI_API_KEY" >> .env && \
-    echo "MERCADOPAGO_PUBLIC_KEY=$MERCADOPAGO_PUBLIC_KEY_BUILD" >> .env
-
-# Build frontend
+# Build frontend (Vite will use empty values for missing env vars)
 RUN npm run build
 
 # Remove dev dependencies
 RUN npm prune --production
 
-# Create runtime .env
-RUN echo "NODE_ENV=production" > .env && \
-    echo "PORT=3000" >> .env && \
-    echo "VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY" >> .env && \
-    echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" >> .env && \
-    echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env && \
-    echo "REACT_APP_SUPABASE_URL=$REACT_APP_SUPABASE_URL" >> .env && \
-    echo "REACT_APP_USE_VIDEO_WORKER=$REACT_APP_USE_VIDEO_WORKER" >> .env && \
-    echo "REACT_APP_VIDEO_WORKER_URL=$REACT_APP_VIDEO_WORKER_URL" >> .env && \
-    echo "VITE_GOOGLE_VERTEX_PROJECT=$VITE_GOOGLE_VERTEX_PROJECT" >> .env && \
-    echo "VITE_GOOGLE_VERTEX_LOCATION=$VITE_GOOGLE_VERTEX_LOCATION" >> .env && \
-    echo "FAL_AI_API_KEY=$FAL_AI_API_KEY" >> .env && \
-    echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> .env && \
-    echo "GOOGLE_VERTEX_PROJECT=$GOOGLE_VERTEX_PROJECT" >> .env && \
-    echo "GOOGLE_VERTEX_LOCATION=$GOOGLE_VERTEX_LOCATION" >> .env && \
-    echo "MERCADOPAGO_ACCESS_TOKEN=$MERCADOPAGO_ACCESS_TOKEN" >> .env && \
-    echo "MERCADOPAGO_PUBLIC_KEY=$MERCADOPAGO_PUBLIC_KEY" >> .env && \
-    echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env && \
-    echo "SECRETS_SCAN_SMART_DETECTION_ENABLED=$SECRETS_SCAN_SMART_DETECTION_ENABLED" >> .env
-
+# Expose port
 EXPOSE 3000
 
-# Ensure Node.js is the main process
-ENTRYPOINT []
+# Start server (will load .env from Easypanel environment variables)
 CMD ["node", "server.js"]

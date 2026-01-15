@@ -3,6 +3,31 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import fs from 'fs';
+
+// Crear .env desde variables de entorno de Easypanel
+const envContent = `
+NODE_ENV=${process.env.NODE_ENV || 'production'}
+PORT=${process.env.PORT || '3000'}
+VITE_GEMINI_API_KEY=${process.env.VITE_GEMINI_API_KEY || ''}
+VITE_SUPABASE_URL=${process.env.VITE_SUPABASE_URL || ''}
+VITE_SUPABASE_ANON_KEY=${process.env.VITE_SUPABASE_ANON_KEY || ''}
+REACT_APP_SUPABASE_URL=${process.env.REACT_APP_SUPABASE_URL || ''}
+REACT_APP_USE_VIDEO_WORKER=${process.env.REACT_APP_USE_VIDEO_WORKER || ''}
+REACT_APP_VIDEO_WORKER_URL=${process.env.REACT_APP_VIDEO_WORKER_URL || ''}
+VITE_GOOGLE_VERTEX_PROJECT=${process.env.VITE_GOOGLE_VERTEX_PROJECT || ''}
+VITE_GOOGLE_VERTEX_LOCATION=${process.env.VITE_GOOGLE_VERTEX_LOCATION || ''}
+FAL_AI_API_KEY=${process.env.FAL_AI_API_KEY || ''}
+GEMINI_API_KEY=${process.env.GEMINI_API_KEY || ''}
+GOOGLE_VERTEX_PROJECT=${process.env.GOOGLE_VERTEX_PROJECT || ''}
+GOOGLE_VERTEX_LOCATION=${process.env.GOOGLE_VERTEX_LOCATION || ''}
+MERCADOPAGO_ACCESS_TOKEN=${process.env.MERCADOPAGO_ACCESS_TOKEN || ''}
+MERCADOPAGO_PUBLIC_KEY=${process.env.MERCADOPAGO_PUBLIC_KEY || ''}
+SUPABASE_SERVICE_ROLE_KEY=${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}
+SECRETS_SCAN_SMART_DETECTION_ENABLED=${process.env.SECRETS_SCAN_SMART_DETECTION_ENABLED || ''}
+`.trim();
+
+fs.writeFileSync('.env', envContent);
 
 // Cargar variables de entorno
 dotenv.config();
