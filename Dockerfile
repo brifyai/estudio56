@@ -16,7 +16,7 @@ ARG MERCADOPAGO_PUBLIC_KEY
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --verbose
 
 # Copy source code
 COPY . .
@@ -39,10 +39,10 @@ EOF
 RUN echo "✅ Build .env configurado" && cat .env
 
 # Build the application with production mode
-RUN npm run build
+RUN npm run build || (echo "❌ Build failed" && exit 1)
 
 # Verify build output
-RUN ls -la dist/ && echo "✅ Build completado"
+RUN if [ -d dist ]; then ls -la dist/ && echo "✅ Build completado"; else echo "❌ dist/ no existe" && exit 1; fi
 
 # Production stage
 FROM node:20-alpine
