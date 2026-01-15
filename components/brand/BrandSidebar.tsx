@@ -49,8 +49,8 @@ export default function BrandSidebar({ brand, setBrand, activeTab, setActiveTab 
     setUrlError(null);
 
     try {
-      // Llamar a la función serverless para analizar la URL con IA
-      const response = await fetch('/.netlify/functions/analyze-brand-url', {
+      // Llamar a la API Express para analizar la URL con IA
+      const response = await fetch('/api/analyze-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: normalizedUrl }),

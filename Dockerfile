@@ -33,38 +33,34 @@ RUN npm run build
 # Verify build output
 RUN ls -la dist/ && echo "✅ Build completado"
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Production stage
+FROM node:20-alpine
+WORKDIR /app
 
-# Create nginx config with proper MIME types
-RUN echo 'server { \
-    listen 80; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    \
-    # Proper MIME types for JavaScript modules \
-    location ~* \.js$ { \
-        types { \
-            application/javascript js; \
-        } \
-        add_header Content-Type application/javascript; \
-        try_files $uri =404; \
-    } \
-    \
-    # CSS files \
-    location ~* \.css$ { \
-        types { \
-            text/css css; \
-        } \
-        add_header Content-Type text/css; \
-        try_files $uri =404; \
-    } \
-    \
-    # All other routes fallback to index.html for SPA \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Copy package files
+COPY package*.json ./
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy built frontend from builder
+COPY --from=builder /app/dist ./dist
+
+# Copy server files
+COPY server ./server
+COPY server.js .
+
+# Create .env for runtime
+RUN echo "NODE_ENV=production" > .env && \
+    echo "PORT=3000" >> .env && \
+    echo "VITE_SUPABASE_URL=https://estudio56supabase.brifyai.com" >> .env && \
+    echo "VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE" >> .env && \
+    echo "VITE_GOOGLE_VERTEX_PROJECT=stratega-ai-x" >> .env && \
+    echo "VITE_GOOGLE_VERTEX_LOCATION=us-central1" >> .env && \
+    echo "FAL_AI_API_KEY=53f17bdf-d098-44d0-af18-5c7cc1984203:4ae450f687dd2d6b04b75fcdc8fe7d28" >> .env && \
+    echo "MERCADOPAGO_ACCESS_TOKEN=APP_USR-5737650046044163-010717-c671110b021996141c7378d0fa3743f3-2485402971" >> .env && \
+    echo "SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpza3VuZW12ZmZ5cXl4dGZxeXptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njk4MjQyNywiZXhwIjoyMDgyNTU4NDI3fQ.ttKR7Bp4u8sMnet8Y5u-AkW9u7by7aV6CAIstdtPtbM" >> .env
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]

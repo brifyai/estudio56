@@ -171,7 +171,7 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
       }
 
       // Create subscription with MercadoPago Preapproval API
-      const response = await fetch('/.netlify/functions/create-subscription', {
+      const response = await fetch('/api/create-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

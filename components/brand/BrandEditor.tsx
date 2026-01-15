@@ -236,6 +236,9 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
       }
     }
 
+    // Siempre usar blanco para el texto del logo
+    const textStyle = { fontFamily: brand.typography.headingFont, color: 'white', textTransform: brand.genLogoTextCase as any };
+
     return (
       <div className={`flex items-center justify-center ${isHorizontal ? 'flex-row gap-4 text-left' : 'flex-col gap-3 text-center'}`}>
         <div style={containerStyle}>
@@ -247,8 +250,8 @@ export default function BrandEditor({ onExport }: BrandEditorProps) {
         </div>
         {showText && (
           <div className={brand.genLogoLayout === 'stacked' ? 'border-t pt-2 mt-1 border-gray-200' : ''}>
-            <span className={`block font-bold leading-none ${brand.genLogoTracking}`} style={{ fontFamily: brand.typography.headingFont, color: 'white', WebkitTextStroke: '2px black', WebkitTextFillColor: 'white', paintOrder: 'stroke fill', textTransform: brand.genLogoTextCase as any, fontSize: isHorizontal ? `${iconSize * 0.7}px` : `${iconSize * 0.6}px` }}>{brand.name}</span>
-            {brand.tagline && !isHorizontal && (<span className="block text-xs mt-1 opacity-70" style={{ color: 'white', WebkitTextStroke: '1px black', WebkitTextFillColor: 'white', paintOrder: 'stroke fill' }}>{brand.tagline}</span>)}
+            <span className={`block font-bold leading-none ${brand.genLogoTracking} !text-white`} style={{ ...textStyle, color: 'white !important', fontSize: isHorizontal ? `${iconSize * 0.7}px` : `${iconSize * 0.6}px` }}>{brand.name}</span>
+            {brand.tagline && !isHorizontal && (<span className="block text-xs mt-1 opacity-70 !text-white" style={{ color: 'white !important' }}>{brand.tagline}</span>)}
           </div>
         )}
       </div>
