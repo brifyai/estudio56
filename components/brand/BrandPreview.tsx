@@ -231,8 +231,8 @@ export default function BrandPreview({ brand }: BrandPreviewProps) {
         </div>
         {showText && (
           <div className={brand.genLogoLayout === 'stacked' ? 'border-t pt-2 mt-1 border-gray-200' : ''}>
-            <span className={`block font-bold leading-none ${brand.genLogoTracking} !text-white`} style={{ fontFamily: brand.typography.headingFont, color: 'white !important', textTransform: brand.genLogoTextCase as any, fontSize: isHorizontal ? `${iconSize * 0.7}px` : `${iconSize * 0.6}px` }}>{brand.name}</span>
-            {brand.tagline && !isHorizontal && (<span className="block text-xs mt-1 opacity-70 !text-white" style={{ color: 'white !important' }}>{brand.tagline}</span>)}
+            <span className={`block font-bold leading-none ${brand.genLogoTracking} !text-white`} style={{ fontFamily: brand.typography.headingFont, color: 'white !important', WebkitTextStroke: '2px black', textStroke: '2px black', textTransform: brand.genLogoTextCase as any, fontSize: isHorizontal ? `${iconSize * 0.7}px` : `${iconSize * 0.6}px` }}>{brand.name}</span>
+            {brand.tagline && !isHorizontal && (<span className="block text-xs mt-1 opacity-70 !text-white" style={{ color: 'white !important', WebkitTextStroke: '1px black', textStroke: '1px black' }}>{brand.tagline}</span>)}
           </div>
         )}
       </div>
