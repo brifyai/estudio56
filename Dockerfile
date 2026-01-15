@@ -11,9 +11,9 @@ COPY . .
 
 # Create .env file with all variables for Vite build
 RUN echo "VITE_GEMINI_API_KEY=AIzaSyA40oZ6hUsB4PaZ1emgzDLez06P4ZNmJfw" > .env && \
-    echo "VITE_SUPABASE_URL=https://estudio56supabase.brifyai.com" >> .env && \
+    echo "VITE_SUPABASE_URL=https://supabase.estudio56.cl" >> .env && \
     echo "VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE" >> .env && \
-    echo "REACT_APP_SUPABASE_URL=https://estudio56supabase.brifyai.com" >> .env && \
+    echo "REACT_APP_SUPABASE_URL=https://supabase.estudio56.cl" >> .env && \
     echo "REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE" >> .env && \
     echo "REACT_APP_USE_VIDEO_WORKER=true" >> .env && \
     echo "REACT_APP_VIDEO_WORKER_URL=https://estudio56-video-worker.brifyaimaster.workers.dev" >> .env && \
@@ -54,9 +54,9 @@ COPY server.js .
 RUN echo "NODE_ENV=production" > .env && \
     echo "PORT=3000" >> .env && \
     echo "VITE_GEMINI_API_KEY=AIzaSyA40oZ6hUsB4PaZ1emgzDLez06P4ZNmJfw" >> .env && \
-    echo "VITE_SUPABASE_URL=https://estudio56supabase.brifyai.com" >> .env && \
+    echo "VITE_SUPABASE_URL=https://supabase.estudio56.cl" >> .env && \
     echo "VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE" >> .env && \
-    echo "REACT_APP_SUPABASE_URL=https://estudio56supabase.brifyai.com" >> .env && \
+    echo "REACT_APP_SUPABASE_URL=https://supabase.estudio56.cl" >> .env && \
     echo "REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE" >> .env && \
     echo "REACT_APP_USE_VIDEO_WORKER=true" >> .env && \
     echo "REACT_APP_VIDEO_WORKER_URL=https://estudio56-video-worker.brifyaimaster.workers.dev" >> .env && \
