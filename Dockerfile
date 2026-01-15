@@ -16,13 +16,13 @@ ARG MERCADOPAGO_PUBLIC_KEY
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci --verbose
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Create .env file with build arguments for Vite build
-RUN cat > .env << EOF
+RUN cat > .env << 'EOF'
 VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
 VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
@@ -35,22 +35,16 @@ FAL_AI_API_KEY=${FAL_AI_API_KEY}
 MERCADOPAGO_PUBLIC_KEY=${MERCADOPAGO_PUBLIC_KEY}
 EOF
 
-# Verify .env file was created
-RUN echo "✅ Build .env configurado" && cat .env
-
-# Build the application with production mode
-RUN npm run build || (echo "❌ Build failed" && exit 1)
-
-# Verify build output
-RUN if [ -d dist ]; then ls -la dist/ && echo "✅ Build completado"; else echo "❌ dist/ no existe" && exit 1; fi
+# Build the application
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine
 WORKDIR /app
 
 # Accept runtime arguments from Easypanel
-ARG NODE_ENV
-ARG PORT
+ARG NODE_ENV=production
+ARG PORT=3000
 ARG VITE_GEMINI_API_KEY
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
@@ -81,10 +75,10 @@ COPY --from=builder /app/dist ./dist
 COPY server ./server
 COPY server.js .
 
-# Create .env for runtime with all variables
+# Create .env for runtime
 RUN cat > .env << 'EOF'
-NODE_ENV=${NODE_ENV:-production}
-PORT=${PORT:-3000}
+NODE_ENV=production
+PORT=3000
 VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
 VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
