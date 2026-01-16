@@ -127,8 +127,6 @@ export const AuthCallback: React.FC = () => {
             plan_id: plans.id,
             credits: plans.credits_hd || 0,
             drafts: plans.drafts || 3
-            plan_id: plans.id,
-            credits: plans.credits_per_month
           });
 
         if (insertError) {
