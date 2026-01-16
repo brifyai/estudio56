@@ -112,22 +112,21 @@ export const AuthCallback: React.FC = () => {
 
         if (plansError) {
           console.error('❌ Error fetching plan:', plansError);
-          // Try with default values
-          await supabase.from('users').insert({
-            id: userId,
-            email: email,
-            plan: 'GRATIS',
-            credits: 5
-          });
+          console.error('⚠️ No se pudo obtener el plan GRATIS. El usuario no será creado en la tabla users.');
+          console.error('⚠️ Esto causará problemas al intentar usar la aplicación.');
+          // NO insertar usuario sin plan válido
           return;
         }
 
-        // Insert new user
+        // Insert new user with correct schema
         const { error: insertError } = await supabase
           .from('users')
           .insert({
             id: userId,
             email: email,
+            plan_id: plans.id,
+            credits: plans.credits_hd || 0,
+            drafts: plans.drafts || 3
             plan_id: plans.id,
             credits: plans.credits_per_month
           });

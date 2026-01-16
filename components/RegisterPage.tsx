@@ -181,6 +181,8 @@ Serás redirigido al login.`);
 
   const insertUserData = async (userId: string, email: string) => {
     try {
+      console.log('📝 Insertando datos de usuario en tabla users...');
+      
       // First get the "GRATIS" plan ID
       const { data: plans, error: plansError } = await supabase
         .from('user_plans')
@@ -189,8 +191,11 @@ Serás redirigido al login.`);
         .single();
 
       if (plansError) {
-        throw new Error('No se pudo obtener el plan GRATIS');
+        console.error('❌ Error obteniendo plan GRATIS:', plansError);
+        throw new Error('No se pudo obtener el plan GRATIS. Verifica que los planes estén insertados en la base de datos.');
       }
+
+      console.log('✅ Plan GRATIS encontrado:', plans);
 
       const { error } = await supabase
         .from('users')
@@ -198,15 +203,18 @@ Serás redirigido al login.`);
           id: userId,
           email: email,
           plan_id: plans.id,
-          credits: plans.credits_per_month
+          credits: plans.credits_hd || 0,
+          drafts: plans.drafts || 3
         });
 
       if (error) {
-        console.error('Error inserting user data:', error);
+        console.error('❌ Error inserting user data:', error);
         throw error;
       }
+      
+      console.log('✅ Usuario insertado correctamente en tabla users');
     } catch (err) {
-      console.error('Error inserting user data:', err);
+      console.error('❌ Error inserting user data:', err);
       throw err;
     }
   };
