@@ -43,7 +43,7 @@ export interface UserPlan {
   id: string;
   name: string;
   price: number;
-  credits_hd: number;
-  drafts: number;
+  credits_hd: number | string; // Can be number or string (TEXT in DB)
+  drafts: number | string; // Can be number or string
   features: string[];
 }

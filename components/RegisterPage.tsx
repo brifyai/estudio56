@@ -197,14 +197,18 @@ Serás redirigido al login.`);
 
       console.log('✅ Plan GRATIS encontrado:', plans);
 
+      // Note: credits_hd might be TEXT in DB, so we parse it
+      const creditsHd = typeof plans.credits_hd === 'string' ? parseInt(plans.credits_hd) || 0 : plans.credits_hd || 0;
+      const draftsCount = typeof plans.drafts === 'string' ? parseInt(plans.drafts) || 3 : plans.drafts || 3;
+
       const { error } = await supabase
         .from('users')
         .insert({
           id: userId,
           email: email,
           plan_id: plans.id,
-          credits: plans.credits_hd || 0,
-          drafts: plans.drafts || 3
+          credits: creditsHd,
+          drafts: draftsCount
         });
 
       if (error) {
