@@ -48,7 +48,6 @@ export const LandingPage: React.FC = () => {
       {/* NAV */}
       <nav className="flex justify-between items-center p-6 border-b border-white/10 bg-black/50 backdrop-blur sticky top-0 z-50">
         <div className="text-xl font-bold tracking-tighter flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-          <span className="text-3xl">🤡</span>
           <span className="text-green-400 uppercase">Estudio 56</span>
         </div>
         <div className="flex items-center gap-4">
