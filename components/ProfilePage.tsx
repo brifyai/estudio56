@@ -86,6 +86,11 @@ export const ProfilePage: React.FC = () => {
         throw new Error('Error cargando datos del usuario');
       }
 
+      if (!user) {
+        console.error('❌ Usuario no encontrado');
+        throw new Error('Usuario no encontrado en la base de datos');
+      }
+
       console.log('✅ Usuario cargado:', user);
       
       let planData = null;
