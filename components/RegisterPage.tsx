@@ -350,7 +350,7 @@ Serás redirigido al login.`);
                 <button
                     type="submit"
                     disabled={loading || !formData.name || !formData.businessName || !formData.email || !formData.password || !captchaToken}
-                    className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+                    className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
@@ -373,7 +373,7 @@ Serás redirigido al login.`);
                 type="button"
                 onClick={handleGoogleSignup}
                 disabled={loadingGoogle}
-                className="w-full bg-white/5 border border-white/10 text-white font-medium py-3 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 group disabled:opacity-50"
+                className="w-full bg-white/5 border border-white/10 text-white font-medium py-3 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 group disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
                 {loadingGoogle ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -403,13 +403,13 @@ Serás redirigido al login.`);
             Al registrarte, aceptas nuestros Términos y Condiciones.
           </p>
           <div className="flex justify-center gap-3 text-[10px]">
-            <a href="/privacidad" className="text-white/40 hover:text-white transition-colors">Privacidad</a>
+            <a href="/privacidad" className="text-white/40 hover:text-white transition-colors cursor-pointer">Privacidad</a>
             <span className="text-white/20">|</span>
-            <a href="/cookies" className="text-white/40 hover:text-white transition-colors">Cookies</a>
+            <a href="/cookies" className="text-white/40 hover:text-white transition-colors cursor-pointer">Cookies</a>
             <span className="text-white/20">|</span>
-            <a href="/terminos" className="text-white/40 hover:text-white transition-colors">Términos</a>
+            <a href="/terminos" className="text-white/40 hover:text-white transition-colors cursor-pointer">Términos</a>
             <span className="text-white/20">|</span>
-            <a href="/condiciones" className="text-white/40 hover:text-white transition-colors">Condiciones</a>
+            <a href="/condiciones" className="text-white/40 hover:text-white transition-colors cursor-pointer">Condiciones</a>
           </div>
         </div>
       </div>
