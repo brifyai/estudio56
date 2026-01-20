@@ -471,10 +471,7 @@ const Dashboard: React.FC = () => {
                 .insert({
                   id: session.user.id,
                   email: session.user.email,
-                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario',
-                  credits_hd: 0,
-                  drafts: 3,
-                  drafts_video: 0
+                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario'
                 })
                 .select('*, user_plans(*)')
                 .single();
