@@ -453,16 +453,40 @@ const Dashboard: React.FC = () => {
           // Load user data with better error handling
           try {
             console.log('🔄 Cargando datos de usuario...');
-            const { data: user, error: userError } = await supabase
+            let { data: user, error: userError } = await supabase
               .from('users')
               .select('*, user_plans(*)')
               .eq('id', session.user.id)
-              .single();
+              .maybeSingle();
             
             if (userError) {
               console.log('⚠️ Error cargando datos de usuario:', userError.message);
               console.log('🔄 Usando plan por defecto...');
               setActivePlan('GRATIS');
+            } else if (!user) {
+              // Usuario no existe, crearlo
+              console.log('🔧 Usuario no encontrado, creando...');
+              const { data: newUser, error: createError } = await supabase
+                .from('users')
+                .insert({
+                  id: session.user.id,
+                  email: session.user.email,
+                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario',
+                  credits_hd: 0,
+                  drafts: 3,
+                  drafts_video: 0
+                })
+                .select('*, user_plans(*)')
+                .single();
+
+              if (createError) {
+                console.error('❌ Error creando usuario:', createError);
+                setActivePlan('GRATIS');
+              } else {
+                user = newUser;
+                console.log('✅ Usuario creado:', user);
+                setActivePlan('GRATIS');
+              }
             } else if (user?.user_plans?.name) {
               setActivePlan(user.user_plans.name);
               console.log('✅ Plan cargado:', user.user_plans.name);
