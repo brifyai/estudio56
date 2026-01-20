@@ -104,7 +104,8 @@ export const ProfilePage: React.FC = () => {
 
         if (createError) {
           console.error('❌ Error creando usuario:', createError);
-          throw new Error('Error creando usuario en la base de datos');
+          console.error('❌ Detalles del error:', JSON.stringify(createError, null, 2));
+          throw new Error(`Error creando usuario: ${createError.message || 'Error desconocido'}`);
         }
 
         user = newUser;
