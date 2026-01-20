@@ -75,7 +75,7 @@ export const ProfilePage: React.FC = () => {
 
       console.log('👤 Cargando perfil para usuario:', session.user.id);
 
-      const { data: user, error: userError } = await supabase
+      let { data: user, error: userError } = await supabase
         .from('users')
         .select('*')
         .eq('id', session.user.id)
@@ -86,12 +86,32 @@ export const ProfilePage: React.FC = () => {
         throw new Error('Error cargando datos del usuario');
       }
 
+      // Si el usuario no existe, crearlo
       if (!user) {
-        console.error('❌ Usuario no encontrado');
-        throw new Error('Usuario no encontrado en la base de datos');
-      }
+        console.log('🔧 Usuario no encontrado, creando...');
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Usuario',
+            credits_hd: 0,
+            drafts: 3,
+            drafts_video: 0
+          })
+          .select()
+          .single();
 
-      console.log('✅ Usuario cargado:', user);
+        if (createError) {
+          console.error('❌ Error creando usuario:', createError);
+          throw new Error('Error creando usuario en la base de datos');
+        }
+
+        user = newUser;
+        console.log('✅ Usuario creado:', user);
+      } else {
+        console.log('✅ Usuario cargado:', user);
+      }
       
       let planData = null;
       if (user.plan_id) {
