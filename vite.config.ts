@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     
     return {
       server: {
-        port: 3000,
+        port: 3004,
         host: 'localhost',
         hmr: false, // DESACTIVAR completamente HMR para evitar errores WebSocket
         strictPort: true,

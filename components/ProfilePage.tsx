@@ -79,7 +79,7 @@ export const ProfilePage: React.FC = () => {
         .from('users')
         .select('*')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (userError) {
         console.error('❌ Error cargando usuario:', userError);
@@ -95,7 +95,7 @@ export const ProfilePage: React.FC = () => {
           .from('user_plans')
           .select('*')
           .eq('id', user.plan_id)
-          .single();
+          .maybeSingle();
         planData = plan;
         console.log('📋 Plan directo:', planData);
       }
@@ -145,7 +145,7 @@ export const ProfilePage: React.FC = () => {
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (subData) {
         setSubscription(subData);
